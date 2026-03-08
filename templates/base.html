@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>D&D Exalt Combat Tracker</title>
+    <!--<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/combat.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hud.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templates.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/character.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/summary.css') }}">
+</head>
+<body>
+
+<header>
+    <a href="{{ url_for('main.index') }}" class="btn-secondary">Accueil</a>
+    <h1>⚔️ D&D Exalt Combat Tracker</h1>
+    <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">🛠 Gérer les Profils</a>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

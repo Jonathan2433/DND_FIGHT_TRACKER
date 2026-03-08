@@ -1,0 +1,124 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: #2a2c36;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid rgba(76, 175, 80, 0.3);
+}
+
+.stat-card h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4caf50;
+}
+
+.combat-badge {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.combat-badge.closed {
+    background: #4caf50;
+    color: black;
+}
+
+.combat-badge.active {
+    background: #ff9800;
+    color: black;
+}
+
+/* ===================== */
+/* DASHBOARD PJ GRID */
+/* ===================== */
+
+.pj-dashboard-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.pj-dashboard-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2f3241;
+    padding: 15px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    width: 120px;
+    transition: 0.2s ease;
+}
+
+.pj-dashboard-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+}
+
+/* ✅ Container pour l'avatar avec gestion conditionnelle */
+.template-avatar-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.pj-dashboard-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.pj-avatar-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #1e1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #4caf50;
+}
+
+/* ✅ Masquer les initiales quand il y a une image */
+.template-avatar-container.has-image .pj-avatar-large {
+    display: none;
+}
+
+.combat-card-actions form {
+    display: inline;
+}
+
+.combat-card-actions .btn-danger {
+    background: #e53935;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.combat-card-actions .btn-danger:hover {
+    background: #d32f2f;
+}

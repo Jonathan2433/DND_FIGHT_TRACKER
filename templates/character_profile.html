@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="character-profile">
+    <div class="profile-header">
+        <div class="profile-left">
+            <div class="template-avatar-container {% if character.image_filename %}has-image{% endif %}">
+                {% if character.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
+                         alt="{{ character.name }}" class="profile-avatar">
+                {% endif %}
+                <div class="avatar-placeholder-large">
+                    {{ character.name[:2]|upper }}
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-center">
+            <h1>{{ character.name }}</h1>
+            <p><strong>{{ character.character_class }} • Niveau {{ character.level }}</strong></p>
+
+            <div class="profile-stats">
+                <div class="stat-box">❤️ {{ character.hp_max }}</div>
+                <div class="stat-box">🛡 {{ character.ac_base }}</div>
+                <div class="stat-box">⚡ +{{ character.initiative_bonus }}</div>
+                <div class="stat-box">⚔ {{ combats_played }} combats</div>
+            </div>
+
+            <!-- ✅ NOUVEAU : Caractéristiques en 2 lignes de 3 colonnes -->
+            <div class="char-details">
+                <h3>📊 Caractéristiques</h3>
+                <div class="char-stats-compact">
+                    <!-- Première ligne -->
+                    <div class="char-stat">
+                        <span class="stat-name">💪 Force</span>
+                        <span class="stat-value">{{ character.force }} ({{ character.mod_force|abs if character.mod_force >= 0 else character.mod_force }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_force|abs if character.sauvegarde_force >= 0 else character.sauvegarde_force }}{% if character.maitrise_force %} ✓{% endif %}</span>
+                    </div>
+
+                    <div class="char-stat">
+                        <span class="stat-name">🏃 Dextérité</span>
+                        <span class="stat-value">{{ character.dexterite }} ({{ character.mod_dexterite|abs if character.mod_dexterite >= 0 else character.mod_dexterite }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_dexterite|abs if character.sauvegarde_dexterite >= 0 else character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} ✓{% endif %}</span>
+                    </div>
+
+                    <div class="char-stat">
+                        <span class="stat-name">💚 Constitution</span>
+                        <span class="stat-value">{{ character.constitution }} ({{ character.mod_constitution|abs if character.mod_constitution >= 0 else character.mod_constitution }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_constitution|abs if character.sauvegarde_constitution >= 0 else character.sauvegarde_constitution }}{% if character.maitrise_constitution %} ✓{% endif %}</span>
+                    </div>
+
+                    <!-- Deuxième ligne -->
+                    <div class="char-stat">
+                        <span class="stat-name">🧠 Intelligence</span>
+                        <span class="stat-value">{{ character.intelligence }} ({{ character.mod_intelligence|abs if character.mod_intelligence >= 0 else character.mod_intelligence }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_intelligence|abs if character.sauvegarde_intelligence >= 0 else character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} ✓{% endif %}</span>
+                    </div>
+
+                    <div class="char-stat">
+                        <span class="stat-name">🦉 Sagesse</span>
+                        <span class="stat-value">{{ character.sagesse }} ({{ character.mod_sagesse|abs if character.mod_sagesse >= 0 else character.mod_sagesse }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_sagesse|abs if character.sauvegarde_sagesse >= 0 else character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} ✓{% endif %}</span>
+                    </div>
+
+                    <div class="char-stat">
+                        <span class="stat-name">✨ Charisme</span>
+                        <span class="stat-value">{{ character.charisme }} ({{ character.mod_charisme|abs if character.mod_charisme >= 0 else character.mod_charisme }})</span>
+                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_charisme|abs if character.sauvegarde_charisme >= 0 else character.sauvegarde_charisme }}{% if character.maitrise_charisme %} ✓{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ NOUVEAU : Notes déplacées sous les caractéristiques -->
+            {% if character.notes %}
+            <div class="char-notes">
+                <h3>📝 Notes</h3>
+                <p>{{ character.notes }}</p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 15px;">
+                <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
+            </div>
+        </div>
+
+        <!-- ✅ NOUVEAU : Aperçu PDF élargi à droite -->
+        {% if character.pdf_filename %}
+        <div class="profile-pdf-preview">
+            <h3>📜 Fiche Officielle</h3>
+            <div class="pdf-preview-container">
+                <embed src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                       type="application/pdf"
+                       class="pdf-preview">
+                <div class="pdf-controls">
+                    <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                       target="_blank" class="btn btn-primary btn-pdf">
+                        📄 Ouvrir le PDF complet
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

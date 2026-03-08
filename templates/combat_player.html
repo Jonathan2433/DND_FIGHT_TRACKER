@@ -1,0 +1,974 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ✅ Mode normal sans barre PJ en bas -->
+<div id="normal-view" class="combat-layout player-layout">
+    <div class="combat-main">
+        <div class="card">
+            <h1 data-round="{{ combat.round }}">{{ combat.name }} — Round {{ combat.round }}</h1>
+
+            {% if combat.has_started %}
+            <div class="live-chrono-bar">
+                ⏱ Combat : <span id="combat-time">00:00</span>
+                🔁 Round : <span id="round-time">00:00</span>
+                🎯 Tour : <span id="turn-time">00:00</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="combatants-grid">
+            {% for c in combatants %}
+            <div class="combatant {{ c.type.lower() }} {% if c == current_actor %}active-turn{% endif %}" data-combatant-id="{{ c.id }}">
+                <div class="combatant-header">
+                    <h3>
+                        {{ c.name }}
+                        {% if c == current_actor %}
+                            <span class="turn-badge">🎯 Tour en cours</span>
+                        {% endif %}
+                    </h3>
+                    <div class="initiative">Init {{ c.initiative }}</div>
+                </div>
+
+                <div class="ac-info">
+                    CA : {{ c.ac_total }}
+                    {% if c.ac_bonus != 0 %}
+                        (Base {{ c.ac_base }} + {{ c.ac_bonus }})
+                    {% endif %}
+                </div>
+
+                {% if c.type == "PJ" %}
+                    {% set ratio = c.hp_current / c.hp_max %}
+                    <div class="hp-container">
+                        <div class="hp-bar-container">
+                            <div class="hp-bar {% if ratio > 0.75 %}hp-green{% elif ratio > 0.4 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                 style="width: {{ ratio * 100 }}%"></div>
+                        </div>
+                        <div class="hp-text">{{ c.hp_current }} / {{ c.hp_max }} PV</div>
+                        {% if c.temp_hp > 0 %}
+                            <span class="temp-hp-text">(+{{ c.temp_hp }} temp)</span>
+                        {% else %}
+                            <span class="temp-hp-text" style="display: none;"></span>
+                        {% endif %}
+                    </div>
+
+                    <div class="pj-status">
+                        {% if c.is_dead %}
+                            💀 Mort
+                        {% elif c.has_fled %}
+                            🏃 En fuite
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="health-status
+                        {% if c.is_dead %}dead
+                        {% elif c.has_fled %}fled
+                        {% else %}
+                            {% set ratio = c.hp_current / c.hp_max %}
+                            {% if ratio > 0.75 %}healthy
+                            {% elif ratio > 0.4 %}wounded
+                            {% else %}critical{% endif %}
+                        {% endif %}">
+                        {% if c.is_dead %}
+                            💀 Mort
+                        {% elif c.has_fled %}
+                            🏃 En fuite
+                        {% else %}
+                            {% set ratio = c.hp_current / c.hp_max %}
+                            {% if ratio > 0.75 %}
+                                🟢 En pleine forme
+                            {% elif ratio > 0.4 %}
+                                🟡 Blessé
+                            {% elif ratio > 0.1 %}
+                                🟠 Gravement blessé
+                            {% else %}
+                                🔴 À l'agonie
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="conditions">
+                    {% if c.conditions %}
+                        {% for cond in c.conditions.split(",") %}
+                            {% if cond.strip() %}
+                                <span class="condition-badge active-condition">{{ cond.strip() }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ✅ Initiative simplifiée à droite seulement -->
+    <div class="simple-initiative-panel">
+        <h3>🎯 Initiative</h3>
+        <div class="simple-initiative-list">
+            {% for p in combatants %}
+            <div class="simple-initiative-card {% if p == current_actor %}active-init{% endif %} {% if p.is_dead %}dead-init{% endif %} {% if p.has_fled %}fled-init{% endif %}"
+                 data-combatant-id="{{ p.id }}">
+                <div class="init-name-status">
+                    <span class="init-name">
+                        {% if p.is_dead %}💀 {% elif p.has_fled %}🏃 {% endif %}{{ p.name }}
+                    </span>
+                    <div class="init-status-icons">
+                        {% if p.is_dead %}
+                            <span style="color: #e53935;">💀</span>
+                        {% elif p.has_fled %}
+                            <span style="color: #ff9800;">🏃</span>
+                        {% elif p.type != "PJ" %}
+                            {% set ratio = p.hp_current / p.hp_max %}
+                            {% if ratio > 0.75 %}🟢
+                            {% elif ratio > 0.4 %}🟡
+                            {% elif ratio > 0.1 %}🟠
+                            {% else %}🔴{% endif %}
+                        {% endif %}
+
+                        <!-- Conditions en points -->
+                        {% if p.conditions %}
+                            {% for cond in p.conditions.split(",") %}
+                                {% if cond.strip() %}
+                                    <span class="init-condition-dot" title="{{ cond.strip() }}">●</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="init-initiative">{{ p.initiative }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Mode HUD avec barre PJ en bas -->
+<div id="hud-overlay" class="hud-fullscreen-container" style="display: none;">
+    <!-- Capture d'écran en arrière-plan -->
+    <video id="hud-background-video" class="hud-background" autoplay muted></video>
+
+    <!-- HUD overlay -->
+    <div class="simplified-hud-overlay">
+        <!-- Header -->
+        <div class="hud-header">
+            <div class="hud-combat-title">{{ combat.name }} — Round <span id="hud-round">{{ combat.round }}</span></div>
+            {% if combat.has_started %}
+            <div class="hud-chronos">
+                ⏱ <span id="hud-combat-time">00:00</span> |
+                🔁 <span id="hud-round-time">00:00</span> |
+                🎯 <span id="hud-turn-time">00:00</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Initiative simplifiée HUD -->
+        <div class="hud-simple-initiative">
+            <h4>🎯 Initiative</h4>
+            <div id="hud-simple-list" class="hud-simple-list">
+                {% for p in combatants %}
+                <div class="hud-simple-card {% if p == current_actor %}active{% endif %}" data-combatant-id="{{ p.id }}">
+                    <span class="hud-name">{{ p.name }}</span>
+                    <div class="hud-icons">
+                        {% if p.is_dead %}💀
+                        {% elif p.has_fled %}🏃
+                        {% elif p.type != "PJ" %}
+                            {% set ratio = p.hp_current / p.hp_max %}
+                            {% if ratio > 0.75 %}🟢
+                            {% elif ratio > 0.4 %}🟡
+                            {% elif ratio > 0.1 %}🟠
+                            {% else %}🔴{% endif %}
+                        {% endif %}
+                        {% if p.conditions %}
+                            {% for cond in p.conditions.split(",") %}
+                                {% if cond.strip() %}<span class="hud-cond-dot" title="{{ cond.strip() }}">●</span>{% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Barre PJ en bas de l'écran -->
+        <div class="pj-bottom-bar">
+            <h4>🧙‍♂️ Personnages Joueurs</h4>
+            <div class="pj-portraits-container">
+                {% for c in combatants %}
+                    {% if c.type == "PJ" %}
+                    <div class="pj-portrait {% if c == current_actor %}pj-active{% endif %} {% if c.is_dead %}pj-dead{% endif %} {% if c.has_fled %}pj-fled{% endif %}">
+                        <!-- ✅ MODIFICATION ICI -->
+                        <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
+                            {% if c.notes %}
+                                <img src="{{ url_for('static', filename='uploads/' + c.notes) }}"
+                                     alt="{{ c.name }}" class="hud-pj-img">
+                            {% else %}
+                                <div class="pj-avatar">
+                                    {{ c.name[:2]|upper }}
+                                </div>
+                            {% endif %}
+
+                            {% if c == current_actor %}
+                                <div class="pj-turn-indicator"></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="pj-name">{{ c.name }}</div>
+                        <div class="pj-ac">CA {{ c.ac_total }}</div>
+
+                        <div class="pj-hp-container">
+                            {% set ratio = c.hp_current / c.hp_max %}
+                            <div class="pj-hp-bar">
+                                <div class="pj-hp-fill {% if ratio > 0.6 %}hp-green{% elif ratio > 0.3 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                     style="width: {{ (ratio * 100)|round(1) }}%"></div>
+
+                                {% if c.temp_hp > 0 %}
+                                    <div class="pj-temp-hp"
+                                         style="width: {{ ((c.temp_hp / c.hp_max) * 100)|round(1) }}%"></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="pj-hp-text">
+                                {{ c.hp_current }}/{{ c.hp_max }}
+                                {% if c.temp_hp > 0 %}(+{{ c.temp_hp }}){% endif %}
+                            </div>
+                        </div>
+
+                        {% if c.is_dead %}
+                            <div class="pj-status-text">💀 Mort</div>
+                        {% elif c.has_fled %}
+                            <div class="pj-status-text">🏃 En fuite</div>
+                        {% endif %}
+
+                        {% if c.conditions %}
+                            <div class="pj-conditions">
+                                {% for cond in c.conditions.split(",") %}
+                                    {% if cond.strip() %}
+                                        <span class="pj-condition-tag">{{ cond.strip() }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Contrôles HUD -->
+        <div class="hud-controls">
+            <button class="hud-btn" onclick="exitHudMode()">📱 Vue Normale</button>
+            <button class="hud-btn hud-btn-danger" onclick="stopCapture()">⏹️ Arrêter</button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Boutons flottants (CORRIGER le problème de clic) -->
+<div class="floating-hud">
+    <button class="btn btn-capture btn-primary" id="capture-button">🎥 Partager écran</button>
+    <button class="btn btn-switch-display btn-primary" style="display: none;" onclick="enterHudMode()">🖥️ Switch Display</button>
+    <button class="btn btn-stop-capture btn-danger" style="display: none;">⏹️ Arrêter partage</button>
+
+    <div class="capture-container" style="display: none;">
+        <video id="capture-preview" autoplay muted style="width: 300px; height: auto; border-radius: 8px; margin-top: 10px;"></video>
+    </div>
+</div>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script>
+// Initialisation WebSocket
+const socket = io();
+const combatId = {{ combat.id }};
+socket.emit('join_combat', { combat_id: combatId });
+
+// Variables pour gérer la capture
+let captureStream = null;
+let isCapturing = false;
+
+// ✅ CORRECTION : Fonction de capture d'écran
+function startCapture() {
+    console.log('Tentative de démarrage de capture...');
+    if (isCapturing) {
+        console.log('Capture déjà en cours');
+        return;
+    }
+
+    navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false
+    }).then(stream => {
+        captureStream = stream;
+        isCapturing = true;
+
+        const videoElement = document.getElementById('capture-preview');
+        const captureContainer = document.querySelector('.capture-container');
+        const captureButton = document.querySelector('.btn-capture');
+        const switchButton = document.querySelector('.btn-switch-display');
+        const stopButton = document.querySelector('.btn-stop-capture');
+
+        if (videoElement && captureContainer) {
+            videoElement.srcObject = stream;
+            captureContainer.style.display = 'block';
+            captureButton.style.display = 'none';
+            switchButton.style.display = 'block';
+            stopButton.style.display = 'block';
+        }
+
+        // Gérer l'arrêt automatique
+        stream.getVideoTracks()[0].addEventListener('ended', () => {
+            stopCapture();
+        });
+
+        console.log('Capture d\'écran démarrée avec succès');
+    }).catch(err => {
+        console.error('Erreur lors du démarrage de la capture:', err);
+        alert('Erreur lors du démarrage de la capture d\'écran: ' + err.message);
+    });
+}
+
+function stopCapture() {
+    // Sortir du mode HUD si actif
+    if (document.getElementById('hud-overlay').style.display === 'block') {
+        exitHudMode();
+    }
+
+    if (captureStream) {
+        captureStream.getTracks().forEach(track => track.stop());
+        captureStream = null;
+    }
+
+    isCapturing = false;
+
+    const videoElement = document.getElementById('capture-preview');
+    const captureContainer = document.querySelector('.capture-container');
+    const captureButton = document.querySelector('.btn-capture');
+    const switchButton = document.querySelector('.btn-switch-display');
+    const stopButton = document.querySelector('.btn-stop-capture');
+
+    if (videoElement) {
+        videoElement.srcObject = null;
+    }
+    if (captureContainer) {
+        captureContainer.style.display = 'none';
+    }
+
+    captureButton.style.display = 'block';
+    switchButton.style.display = 'none';
+    stopButton.style.display = 'none';
+
+    console.log('Capture d\'écran arrêtée');
+}
+
+// ✅ Fonctions HUD Mode
+function enterHudMode() {
+    if (!captureStream) {
+        alert('Vous devez d\'abord démarrer la capture d\'écran');
+        return;
+    }
+
+    // Masquer la vue normale
+    document.getElementById('normal-view').style.display = 'none';
+    document.querySelector('.floating-hud').style.display = 'none';
+
+    // Afficher le HUD
+    const hudContainer = document.getElementById('hud-overlay');
+    hudContainer.style.display = 'block';
+
+    // Connecter le flux vidéo
+    const hudVideo = document.getElementById('hud-background-video');
+    hudVideo.srcObject = captureStream;
+
+    // ✅ Initialiser les chronos HUD
+    initializeHudChronos();
+
+    // Passer en plein écran
+    if (hudContainer.requestFullscreen) {
+        hudContainer.requestFullscreen();
+    } else if (hudContainer.webkitRequestFullscreen) {
+        hudContainer.webkitRequestFullscreen();
+    } else if (hudContainer.mozRequestFullScreen) {
+        hudContainer.mozRequestFullScreen();
+    }
+
+    console.log('Mode HUD activé');
+}
+
+function exitHudMode() {
+    // Sortir du plein écran
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else if (document.webkitFullscreenElement) {
+        document.webkitExitFullscreen();
+    } else if (document.mozFullScreenElement) {
+        document.mozCancelFullScreen();
+    }
+
+    // Masquer le HUD
+    document.getElementById('hud-overlay').style.display = 'none';
+
+    // Réafficher la vue normale
+    document.getElementById('normal-view').style.display = 'grid';
+    document.querySelector('.floating-hud').style.display = 'flex';
+
+    console.log('Mode HUD désactivé');
+}
+
+// ✅ CORRECTION : Initialiser les chronos séparément pour éviter les conflits
+function initializeChronos() {
+    {% if combat.has_started %}
+    console.log('Initialisation des chronos...');
+    const startTime = new Date('{{ combat.start_time.isoformat() }}Z');
+    const roundStart = new Date('{{ combat.current_round_start.isoformat() }}Z');
+    const turnStart = new Date('{{ combat.current_turn_start.isoformat() }}Z');
+
+    function updateChronos() {
+        const now = new Date();
+
+        // Combat time
+        const combatSeconds = Math.floor((now - startTime) / 1000);
+        const combatTimeElement = document.getElementById('combat-time');
+        if (combatTimeElement) {
+            combatTimeElement.textContent = `${Math.floor(combatSeconds / 60).toString().padStart(2, '0')}:${(combatSeconds % 60).toString().padStart(2, '0')}`;
+        }
+
+        // Round time
+        const roundSeconds = Math.floor((now - roundStart) / 1000);
+        const roundTimeElement = document.getElementById('round-time');
+        if (roundTimeElement) {
+            roundTimeElement.textContent = `${Math.floor(roundSeconds / 60).toString().padStart(2, '0')}:${(roundSeconds % 60).toString().padStart(2, '0')}`;
+        }
+
+        // Turn time
+        const turnSeconds = Math.floor((now - turnStart) / 1000);
+        const turnTimeElement = document.getElementById('turn-time');
+        if (turnTimeElement) {
+            turnTimeElement.textContent = `${Math.floor(turnSeconds / 60).toString().padStart(2, '0')}:${(turnSeconds % 60).toString().padStart(2, '0')}`;
+        }
+    }
+
+    // ✅ Mettre à jour immédiatement puis toutes les secondes
+    updateChronos();
+    setInterval(updateChronos, 1000);
+    {% endif %}
+}
+
+function initializeHudChronos() {
+    {% if combat.has_started %}
+    console.log('Initialisation des chronos HUD...');
+    const startTime = new Date('{{ combat.start_time.isoformat() }}Z');
+    const roundStart = new Date('{{ combat.current_round_start.isoformat() }}Z');
+    const turnStart = new Date('{{ combat.current_turn_start.isoformat() }}Z');
+
+    function updateHudChronos() {
+        const now = new Date();
+
+        const combatSeconds = Math.floor((now - startTime) / 1000);
+        const hudCombatTime = document.getElementById('hud-combat-time');
+        if (hudCombatTime) {
+            hudCombatTime.textContent = `${Math.floor(combatSeconds / 60).toString().padStart(2, '0')}:${(combatSeconds % 60).toString().padStart(2, '0')}`;
+        }
+
+        const roundSeconds = Math.floor((now - roundStart) / 1000);
+        const hudRoundTime = document.getElementById('hud-round-time');
+        if (hudRoundTime) {
+            hudRoundTime.textContent = `${Math.floor(roundSeconds / 60).toString().padStart(2, '0')}:${(roundSeconds % 60).toString().padStart(2, '0')}`;
+        }
+
+        const turnSeconds = Math.floor((now - turnStart) / 1000);
+        const hudTurnTime = document.getElementById('hud-turn-time');
+        if (hudTurnTime) {
+            hudTurnTime.textContent = `${Math.floor(turnSeconds / 60).toString().padStart(2, '0')}:${(turnSeconds % 60).toString().padStart(2, '0')}`;
+        }
+    }
+
+    setInterval(updateHudChronos, 1000);
+    updateHudChronos();
+    {% endif %}
+}
+
+// ✅ NOUVEAU : Fonction pour centrer automatiquement sur le combattant actif
+function scrollToActiveInitiative(currentActorId) {
+    // Mode normal
+    const normalActiveCard = document.querySelector(`.simple-initiative-card[data-combatant-id="${currentActorId}"]`);
+    const normalList = document.querySelector('.simple-initiative-list');
+    if (normalActiveCard && normalList) {
+        const cardOffsetTop = normalActiveCard.offsetTop;
+        const listHeight = normalList.clientHeight;
+        const cardHeight = normalActiveCard.clientHeight;
+
+        // Calculer la position pour centrer la carte
+        const scrollPosition = cardOffsetTop - (listHeight / 2) + (cardHeight / 2);
+        normalList.scrollTo({
+            top: Math.max(0, scrollPosition),
+            behavior: 'smooth'
+        });
+        console.log('Scroll centré sur combattant actif (mode normal):', normalActiveCard.querySelector('.init-name').textContent);
+    }
+
+    // Mode HUD
+    const hudActiveCard = document.querySelector(`.hud-simple-card[data-combatant-id="${currentActorId}"]`);
+    const hudList = document.getElementById('hud-simple-list');
+    if (hudActiveCard && hudList) {
+        const cardOffsetTop = hudActiveCard.offsetTop;
+        const listHeight = hudList.clientHeight;
+        const cardHeight = hudActiveCard.clientHeight;
+
+        // Calculer la position pour centrer la carte
+        const scrollPosition = cardOffsetTop - (listHeight / 2) + (cardHeight / 2);
+        hudList.scrollTo({
+            top: Math.max(0, scrollPosition),
+            behavior: 'smooth'
+        });
+        console.log('Scroll centré sur combattant actif (mode HUD):', hudActiveCard.querySelector('.hud-name').textContent);
+    }
+}
+
+// ✅ NOUVEAU : Variables pour gérer le cache des combattants
+let lastCombatantCount = {{ combatants|length }};
+
+// ✅ Fonction pour mettre à jour l'affichage avec synchronisation
+async function updateCombatDisplay() {
+    try {
+        const response = await fetch(`/combat/${combatId}/state`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // ✅ NOUVEAU : Vérifier si des combattants ont été ajoutés/supprimés
+        const currentCount = data.combatants.length;
+        const combatantsChanged = currentCount !== lastCombatantCount;
+        lastCombatantCount = currentCount;
+
+        // Mettre à jour le round dans le header
+        updateRoundInfo(data);
+
+        // Mettre à jour la barre PJ en bas
+        updatePJBar(data);
+
+        // Mettre à jour le panel d'initiative
+        updateSimpleInitiativePanel(data.combatants, data.current_actor_id);
+
+        // Mettre à jour les combattants principaux
+        rebuildCombatantsGrid(data.combatants, data.current_actor_id);
+
+        // Si en mode HUD
+        if (document.getElementById('hud-overlay').style.display === 'block') {
+            updateHudSimpleInitiative(data.combatants, data.current_actor_id);
+            updateHudPjBar(data.combatants, data.current_actor_id);
+            const hudRound = document.getElementById('hud-round');
+            if (hudRound) {
+                hudRound.textContent = data.round;
+            }
+        }
+
+        // ✅ NOUVEAU : Centrer automatiquement sur le combattant actif
+        if (data.current_actor_id) {
+            setTimeout(() => {
+                scrollToActiveInitiative(data.current_actor_id);
+            }, 100);
+        }
+
+        // ✅ NOUVEAU : Log si des combattants ont changé
+        if (combatantsChanged) {
+            console.log(`Nombre de combattants mis à jour: ${lastCombatantCount}`);
+        }
+
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour:', error);
+    }
+}
+
+// ✅ NOUVEAU : Mettre à jour les informations de round
+function updateRoundInfo(combatState) {
+    // Mettre à jour le numéro de round dans le header
+    const roundElements = document.querySelectorAll('h1[data-round], h1');
+    roundElements.forEach(el => {
+        const currentText = el.textContent;
+        if (currentText.includes('Round')) {
+            const baseName = currentText.split(' — ')[0];
+            el.textContent = `${baseName} — Round ${combatState.round}`;
+        }
+    });
+}
+
+// ✅ NOUVEAU : Mettre à jour la barre PJ en bas
+function updatePJBar(combatState) {
+    const pjBar = document.querySelector('.pj-bottom-bar .pj-portraits-container');
+    if (!pjBar) return;
+
+    const pjCombatants = combatState.combatants.filter(c => c.type === 'PJ');
+
+    let html = '';
+    pjCombatants.forEach(c => {
+        const ratio = c.hp_current / c.hp_max;
+        const hpColor = ratio > 0.6 ? 'hp-green' : ratio > 0.3 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red';
+        const isActive = c.id === combatState.current_actor_id;
+
+        html += `
+            <div class="pj-portrait ${isActive ? 'pj-active' : ''} ${c.is_dead ? 'pj-dead' : ''} ${c.has_fled ? 'pj-fled' : ''}">
+                <div class="pj-portrait-frame ${c.notes ? 'has-image' : 'no-image'}">
+                    ${c.notes ?
+                        `<img src="/static/uploads/${c.notes}" alt="${c.name}" class="hud-pj-img">` :
+                        `<div class="pj-avatar">${c.name.substring(0, 2).toUpperCase()}</div>`
+                    }
+                    ${isActive ? '<div class="pj-turn-indicator"></div>' : ''}
+                </div>
+                <div class="pj-name">${c.name}</div>
+                <div class="pj-ac">CA ${c.ac_total}</div>
+                <div class="pj-hp-container">
+                    <div class="pj-hp-bar">
+                        <div class="pj-hp-fill ${hpColor}" style="width: ${(ratio * 100).toFixed(1)}%"></div>
+                        ${c.temp_hp > 0 ?
+                            `<div class="pj-temp-hp" style="width: ${((c.temp_hp / c.hp_max) * 100).toFixed(1)}%"></div>` :
+                            ''
+                        }
+                    </div>
+                    <div class="pj-hp-text">
+                        ${c.hp_current}/${c.hp_max}
+                        ${c.temp_hp > 0 ? `(+${c.temp_hp})` : ''}
+                    </div>
+                </div>
+                ${c.is_dead ? '<div class="pj-status-text">💀 Mort</div>' : ''}
+                ${c.has_fled ? '<div class="pj-status-text">🏃 En fuite</div>' : ''}
+                ${c.conditions.length > 0 ?
+                    `<div class="pj-conditions">
+                        ${c.conditions.map(cond => cond.trim() ? `<span class="pj-condition-tag">${cond.trim()}</span>` : '').join('')}
+                    </div>` :
+                    ''
+                }
+            </div>
+        `;
+    });
+
+    pjBar.innerHTML = html;
+}
+
+// ✅ Fonctions pour initiative simplifiée
+function updateSimpleInitiativePanel(combatants, currentActorId) {
+    const simpleList = document.querySelector('.simple-initiative-list');
+    if (!simpleList) return;
+
+    simpleList.innerHTML = '';
+    combatants.forEach(combatant => {
+        const card = createSimpleInitiativeCard(combatant, currentActorId);
+        simpleList.appendChild(card);
+    });
+}
+
+function createSimpleInitiativeCard(combatant, currentActorId) {
+    const div = document.createElement('div');
+
+    // ✅ Classes avec états visuels améliorés
+    let classes = 'simple-initiative-card';
+    if (combatant.id === currentActorId) classes += ' active-init';
+    if (combatant.is_dead) classes += ' dead-init';
+    if (combatant.has_fled) classes += ' fled-init';
+
+    div.className = classes;
+    div.setAttribute('data-combatant-id', combatant.id);
+
+    const ratio = combatant.hp_current / combatant.hp_max;
+    let statusIcon = '';
+
+    // ✅ Icônes avec priorité mort > fuite > santé
+    if (combatant.is_dead) {
+        statusIcon = '<span style="color: #e53935;">💀</span>';
+    } else if (combatant.has_fled) {
+        statusIcon = '<span style="color: #ff9800;">🏃</span>';
+    } else if (combatant.type !== 'PJ') {
+        statusIcon = ratio > 0.75 ? '🟢' : ratio > 0.4 ? '🟡' : ratio > 0.1 ? '🟠' : '🔴';
+    }
+
+    const conditionDots = combatant.conditions.map(cond =>
+        cond.trim() ? `<span class="init-condition-dot" title="${cond.trim()}">●</span>` : ''
+    ).join('');
+
+    // ✅ Nom avec préfixe visuel
+    const namePrefix = combatant.is_dead ? '💀 ' : combatant.has_fled ? '🏃 ' : '';
+
+    div.innerHTML = `
+        <div class="init-name-status">
+            <span class="init-name">${namePrefix}${combatant.name}</span>
+            <div class="init-status-icons">
+                ${statusIcon}
+                ${conditionDots}
+            </div>
+        </div>
+        <span class="init-initiative">${combatant.initiative}</span>
+    `;
+
+    return div;
+}
+
+function rebuildCombatantsGrid(combatants, currentActorId) {
+    const grid = document.querySelector('.combatants-grid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    combatants.forEach(combatant => {
+        const combatantElement = createCombatantElement(combatant, currentActorId);
+        grid.appendChild(combatantElement);
+    });
+}
+
+function createCombatantElement(combatant, currentActorId) {
+    const div = document.createElement('div');
+    div.className = `combatant ${combatant.type.toLowerCase()} ${combatant.id === currentActorId ? 'active-turn' : ''}`;
+    div.setAttribute('data-combatant-id', combatant.id);
+
+    const ratio = combatant.hp_current / combatant.hp_max;
+
+    div.innerHTML = `
+        <div class="combatant-header">
+            <h3>
+                ${combatant.name}
+                ${combatant.id === currentActorId ? '<span class="turn-badge">🎯 Tour en cours</span>' : ''}
+            </h3>
+            <div class="initiative">Init ${combatant.initiative}</div>
+        </div>
+        <div class="ac-info">
+            CA : ${combatant.ac_total}
+        </div>
+        ${combatant.type === 'PJ' ? `
+            <div class="hp-container">
+                <div class="hp-bar-container">
+                    <div class="hp-bar ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
+                         style="width: ${ratio * 100}%"></div>
+                </div>
+                <div class="hp-text">${combatant.hp_current} / ${combatant.hp_max} PV</div>
+                <span class="temp-hp-text" style="${combatant.temp_hp > 0 ? 'display: inline;' : 'display: none;'}">${combatant.temp_hp > 0 ? `(+${combatant.temp_hp} temp)` : ''}</span>
+            </div>
+            <div class="pj-status">
+                ${combatant.is_dead ? '💀 Mort' : combatant.has_fled ? '🏃 En fuite' : ''}
+            </div>
+        ` : `
+            <div class="health-status ${getHealthStatusClass(combatant)}">
+                ${getHealthStatusText(combatant)}
+            </div>
+        `}
+        <div class="conditions">
+            ${combatant.conditions.map(condition =>
+                condition.trim() ? `<span class="condition-badge active-condition">${condition.trim()}</span>` : ''
+            ).join('')}
+        </div>
+    `;
+
+    return div;
+}
+
+function getHealthStatusClass(combatant) {
+    if (combatant.is_dead) return 'dead';
+    if (combatant.has_fled) return 'fled';
+    const ratio = combatant.hp_current / combatant.hp_max;
+    if (ratio > 0.75) return 'healthy';
+    if (ratio > 0.4) return 'wounded';
+    return 'critical';
+}
+
+function getHealthStatusText(combatant) {
+    if (combatant.is_dead) return '💀 Mort';
+    if (combatant.has_fled) return '🏃 En fuite';
+    const ratio = combatant.hp_current / combatant.hp_max;
+    if (ratio > 0.75) return '🟢 En pleine forme';
+    if (ratio > 0.4) return '🟡 Blessé';
+    if (ratio > 0.1) return '🟠 Gravement blessé';
+    return '🔴 À l\'agonie';
+}
+
+// ✅ Fonctions HUD simplifiées
+function updateHudSimpleInitiative(combatants, currentActorId) {
+    const hudList = document.getElementById('hud-simple-list');
+    if (!hudList) return;
+
+    hudList.innerHTML = '';
+    combatants.forEach(combatant => {
+        const card = createHudSimpleCard(combatant, currentActorId);
+        hudList.appendChild(card);
+    });
+}
+
+function createHudSimpleCard(combatant, currentActorId) {
+    const div = document.createElement('div');
+
+    // ✅ Classes avec états visuels améliorés
+    let classes = 'hud-simple-card';
+    if (combatant.id === currentActorId) classes += ' active';
+    if (combatant.is_dead) classes += ' dead';
+    if (combatant.has_fled) classes += ' fled';
+
+    div.className = classes;
+    div.setAttribute('data-combatant-id', combatant.id);
+
+    const ratio = combatant.hp_current / combatant.hp_max;
+    let statusIcon = '';
+
+    if (combatant.is_dead) {
+        statusIcon = '<span style="color: #e53935;">💀</span>';
+    } else if (combatant.has_fled) {
+        statusIcon = '<span style="color: #ff9800;">🏃</span>';
+    } else if (combatant.type !== 'PJ') {
+        statusIcon = ratio > 0.75 ? '🟢' : ratio > 0.4 ? '🟡' : ratio > 0.1 ? '🟠' : '🔴';
+    }
+
+    const conditionDots = combatant.conditions.map(cond =>
+        cond.trim() ? `<span class="hud-cond-dot" title="${cond.trim()}">●</span>` : ''
+    ).join('');
+
+    const namePrefix = combatant.is_dead ? '💀 ' : combatant.has_fled ? '🏃 ' : '';
+
+    div.innerHTML = `
+        <span class="hud-name">${namePrefix}${combatant.name}</span>
+        <div class="hud-icons">
+            ${statusIcon}
+            ${conditionDots}
+        </div>
+    `;
+
+    return div;
+}
+
+function updateHudPjBar(combatants, currentActorId) {
+    const hudPjBar = document.querySelector('.hud-pj-bar');
+    if (!hudPjBar) return;
+
+    hudPjBar.innerHTML = '';
+    const pjCombatants = combatants.filter(c => c.type === 'PJ');
+
+    pjCombatants.forEach(combatant => {
+        const portrait = createHudPjPortrait(combatant, currentActorId);
+        hudPjBar.appendChild(portrait);
+    });
+}
+
+// ✅ CORRECTION : Fix du bug photo + initiales qui se chevauchent
+function createHudPjPortrait(combatant, currentActorId) {
+    const div = document.createElement('div');
+    div.className = `hud-pj-portrait ${combatant.id === currentActorId ? 'hud-pj-active' : ''}`;
+    div.setAttribute('data-combatant-id', combatant.id);
+
+    const ratio = combatant.hp_current / combatant.hp_max;
+
+    div.innerHTML = `
+        <div class="hud-pj-frame ${combatant.notes ? 'has-image' : 'no-image'}">
+            ${combatant.notes ?
+                `<img src="/static/uploads/${combatant.notes}" alt="${combatant.name}" class="hud-pj-img">` :
+                `<div class="hud-pj-avatar">${combatant.name.substring(0,2).toUpperCase()}</div>`
+            }
+            ${combatant.id === currentActorId ? '<div class="hud-pj-turn-indicator"></div>' : ''}
+        </div>
+        <div class="hud-pj-name">${combatant.name}</div>
+        <div class="hud-pj-ac">CA ${combatant.ac_total}</div>
+        <div class="hud-pj-hp">
+            <div class="hud-pj-hp-bar">
+                <div class="hud-pj-hp-fill ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
+                     style="width: ${ratio * 100}%"></div>
+                ${combatant.temp_hp > 0 ? `<div class="hud-pj-temp-hp" style="width: ${(combatant.temp_hp / combatant.hp_max) * 100}%"></div>` : ''}
+            </div>
+            <div class="hud-pj-hp-text">${combatant.hp_current}/${combatant.hp_max}${combatant.temp_hp > 0 ? ` (+${combatant.temp_hp})` : ''}</div>
+        </div>
+        ${combatant.is_dead || combatant.has_fled ? `
+            <div class="hud-pj-status">${combatant.is_dead ? '💀' : '🏃'}</div>
+        ` : ''}
+        ${combatant.conditions.length > 0 ? `
+            <div class="hud-pj-conditions">
+                ${combatant.conditions.map(cond =>
+                    cond.trim() ? `<span class="hud-pj-cond-tag">${cond.trim()}</span>` : ''
+                ).join('')}
+            </div>
+        ` : ''}
+    `;
+
+    return div;
+}
+
+// ✅ Écouter les mises à jour du combat via WebSocket
+socket.on('combat_update', (data) => {
+    if (data.combat_id === combatId) {
+        console.log('🔄 Mise à jour WebSocket reçue pour combat:', data.combat_id);
+        updateCombatDisplay();
+    }
+});
+
+socket.on('connect_error', (error) => {
+    console.error('❌ Erreur de connexion WebSocket:', error);
+});
+
+socket.on('disconnect', () => {
+    console.log('🔌 Connexion WebSocket fermée');
+});
+
+// ✅ CORRECTION : Séparer l'initialisation des événements et des chronos
+function initializeEvents() {
+    console.log('🎮 Initialisation des événements...');
+
+    // Bouton de capture avec sélecteur de classe
+    const captureButton = document.querySelector('.btn-capture');
+    if (captureButton) {
+        console.log('📷 Bouton capture trouvé, ajout de l\'événement');
+        captureButton.addEventListener('click', startCapture);
+    } else {
+        console.error('❌ Bouton capture non trouvé !');
+    }
+
+    const stopButton = document.querySelector('.btn-stop-capture');
+    if (stopButton) {
+        stopButton.addEventListener('click', stopCapture);
+    }
+
+    // ✅ Initialiser les chronos séparément
+    initializeChronos();
+}
+
+// ✅ NOUVEAU : Auto-refresh périodique en fallback si WebSocket échoue
+let autoRefreshInterval = null;
+
+function startAutoRefresh() {
+    // Vérification périodique toutes les 3 secondes
+    autoRefreshInterval = setInterval(async function() {
+        try {
+            const response = await fetch(`/combat/${combatId}/state`);
+            const combatState = await response.json();
+
+            // Comparer avec l'état actuel et mettre à jour si nécessaire
+            const currentCount = combatState.combatants.length;
+            if (currentCount !== lastCombatantCount) {
+                console.log('🔄 Auto-refresh: Changement détecté, mise à jour...');
+                updateCombatDisplay();
+            }
+        } catch (error) {
+            console.error('❌ Erreur de synchronisation auto-refresh:', error);
+        }
+    }, 3000);
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+// Initialiser au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('⚔️ Combat Player initialisé pour le combat:', combatId);
+
+    // ✅ Initialiser les événements et chronos
+    initializeEvents();
+
+    // ✅ Démarrer l'auto-refresh en fallback
+    startAutoRefresh();
+
+    // ✅ Première mise à jour des données
+    setTimeout(() => {
+        console.log('🎯 Première mise à jour...');
+        updateCombatDisplay();
+    }, 500);
+
+    // ✅ Arrêter l'auto-refresh quand la page se ferme
+    window.addEventListener('beforeunload', () => {
+        stopAutoRefresh();
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,260 @@
+/* ===================== */
+/* LAYOUT COMBAT */
+/* ===================== */
+
+.combat-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+}
+
+.player-layout {
+    grid-template-columns: 3fr 1.2fr;
+}
+
+.combat-main {
+    min-width: 0;
+}
+
+.combatants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* ===================== */
+/* DASHBOARD */
+/* ===================== */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.combat-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.combat-card {
+    background: #2f3241;
+    border-radius: 12px;
+    padding: 18px;
+    border: 2px solid rgba(76, 175, 80, 0.2);
+    transition: 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.combat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+}
+
+.combat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.combat-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.combat-card-body {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.combat-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+}
+
+.combat-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.pj-dashboard-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.pj-dashboard-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2f3241;
+    padding: 15px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    width: 120px;
+    transition: 0.2s ease;
+}
+
+.pj-dashboard-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+}
+
+.pj-dashboard-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 8px;
+}
+
+.pj-avatar-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #1e1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #4caf50;
+}
+
+/* ===================== */
+/* TEMPLATES */
+/* ===================== */
+
+.templates-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.templates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* ===================== */
+/* CHARACTER */
+/* ===================== */
+
+.character-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.profile-header {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.edit-character-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-section label {
+    font-size: 13px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    display: block;
+    color: #ccc;
+}
+
+.edit-section input,
+.edit-section textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.stats-grid {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-input {
+    flex: 1;
+}
+
+.media-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.media-preview img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #4caf50;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+}
+
+.avatar-placeholder-large {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: #1e1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: #4caf50;
+    border: 4px solid #4caf50;
+}
+
+.current-file {
+    font-size: 13px;
+    color: #bbb;
+    margin-bottom: 10px;
+}
+
+.edit-actions {
+    text-align: center;
+    margin-top: 20px;
+}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="edit-character-container">
+    <div class="edit-header">
+        <h2>✏️ Modifier {{ character.name }}</h2>
+        <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data">
+
+        <div class="edit-grid">
+            <!-- Colonne 1 : Identité -->
+            <div class="edit-section">
+                <h4>🧙 Identité</h4>
+
+                <label>Nom :</label>
+                <input type="text" name="name" value="{{ character.name }}" required>
+
+                <label>Classe :</label>
+                <input type="text" name="character_class" value="{{ character.character_class }}" required>
+
+                <label>Niveau :</label>
+                <input type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
+
+                <label>Notes :</label>
+                <textarea name="notes" rows="3">{{ character.notes }}</textarea>
+            </div>
+
+            <!-- Colonne 2 : Combat -->
+            <div class="edit-section">
+                <h4>⚔️ Combat</h4>
+
+                <label>❤️ PV Max :</label>
+                <input type="number" name="hp_max" value="{{ character.hp_max }}" required>
+
+                <label>🛡 CA :</label>
+                <input type="number" name="ac_base" value="{{ character.ac_base }}" required>
+
+                <label>⚡ Bonus Initiative :</label>
+                <input type="number" name="initiative_bonus" value="{{ character.initiative_bonus }}">
+            </div>
+        </div>
+
+        <!-- ✅ NOUVEAU : Section Caractéristiques -->
+        <div class="edit-section">
+            <h4>📊 Caractéristiques</h4>
+            <div class="stats-grid">
+                <div class="stat-input">
+                    <label>💪 Force :</label>
+                    <input type="number" name="force" value="{{ character.force }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_force" {% if character.maitrise_force %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_force|abs if character.mod_force >= 0 else character.mod_force }} | Sauvegarde: {{ character.sauvegarde_force|abs if character.sauvegarde_force >= 0 else character.sauvegarde_force }}</small>
+                </div>
+
+                <div class="stat-input">
+                    <label>🏃 Dextérité :</label>
+                    <input type="number" name="dexterite" value="{{ character.dexterite }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_dexterite" {% if character.maitrise_dexterite %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_dexterite|abs if character.mod_dexterite >= 0 else character.mod_dexterite }} | Sauvegarde: {{ character.sauvegarde_dexterite|abs if character.sauvegarde_dexterite >= 0 else character.sauvegarde_dexterite }}</small>
+                </div>
+
+                <div class="stat-input">
+                    <label>💚 Constitution :</label>
+                    <input type="number" name="constitution" value="{{ character.constitution }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_constitution" {% if character.maitrise_constitution %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_constitution|abs if character.mod_constitution >= 0 else character.mod_constitution }} | Sauvegarde: {{ character.sauvegarde_constitution|abs if character.sauvegarde_constitution >= 0 else character.sauvegarde_constitution }}</small>
+                </div>
+
+                <div class="stat-input">
+                    <label>🧠 Intelligence :</label>
+                    <input type="number" name="intelligence" value="{{ character.intelligence }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_intelligence" {% if character.maitrise_intelligence %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_intelligence|abs if character.mod_intelligence >= 0 else character.mod_intelligence }} | Sauvegarde: {{ character.sauvegarde_intelligence|abs if character.sauvegarde_intelligence >= 0 else character.sauvegarde_intelligence }}</small>
+                </div>
+
+                <div class="stat-input">
+                    <label>🦉 Sagesse :</label>
+                    <input type="number" name="sagesse" value="{{ character.sagesse }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_sagesse" {% if character.maitrise_sagesse %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_sagesse|abs if character.mod_sagesse >= 0 else character.mod_sagesse }} | Sauvegarde: {{ character.sauvegarde_sagesse|abs if character.sauvegarde_sagesse >= 0 else character.sauvegarde_sagesse }}</small>
+                </div>
+
+                <div class="stat-input">
+                    <label>✨ Charisme :</label>
+                    <input type="number" name="charisme" value="{{ character.charisme }}" min="1" max="30">
+                    <label>
+                        <input type="checkbox" name="maitrise_charisme" {% if character.maitrise_charisme %}checked{% endif %}> Maîtrise sauvegarde
+                    </label>
+                    <small>Modificateur: {{ character.mod_charisme|abs if character.mod_charisme >= 0 else character.mod_charisme }} | Sauvegarde: {{ character.sauvegarde_charisme|abs if character.sauvegarde_charisme >= 0 else character.sauvegarde_charisme }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Médias -->
+        <div class="edit-section">
+            <h4>🖼 Médias</h4>
+
+            <div class="media-preview">
+                {% if character.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
+                         alt="{{ character.name }}">
+                {% else %}
+                    <div class="avatar-placeholder-large">
+                        {{ character.name[:2]|upper }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="file-row">
+                <div>
+                    <label>Changer l'image :</label>
+                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+                </div>
+
+                <div>
+                    {% if character.pdf_filename %}
+                        <div class="current-file">
+                            📄 PDF actuel : {{ character.pdf_filename }}
+                        </div>
+                    {% endif %}
+                    <label>Remplacer le PDF :</label>
+                    <input type="file" name="pdf" accept=".pdf">
+                </div>
+            </div>
+        </div>
+
+        <div class="edit-actions">
+            <button type="submit" class="btn btn-primary btn-large">💾 Enregistrer les modifications</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

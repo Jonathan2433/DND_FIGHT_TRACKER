@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard">
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>⚔️ Combats totaux</h3>
+            <p>{{ total_combats }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>✅ Combats terminés</h3>
+            <p>{{ total_closed }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>🧙 PJ enregistrés</h3>
+            <p>{{ total_pj }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>🔁 Rounds joués</h3>
+            <p>{{ total_rounds }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>💥 Dégâts infligés</h3>
+            <p>{{ total_damage }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>✨ Soins donnés</h3>
+            <p>{{ total_heal }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>⚔️ Nouveau Combat</h3>
+        <form action="{{ url_for('combat.create_combat') }}" method="post">
+            <input type="text" name="name" placeholder="Nom du combat" required>
+            <button type="submit" class="btn btn-primary">Créer</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>🧙 Fiches Personnages</h3>
+        <div class="pj-dashboard-grid">
+            {% for pj in characters %}
+            <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card">
+                <!-- ✅ CORRECTION : Container conditionnel avec gestion des images -->
+                {% if pj.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                         alt="{{ pj.name }}" class="pj-dashboard-img">
+                {% else %}
+                    <div class="pj-avatar-large">
+                        {{ pj.name[:2]|upper }}
+                    </div>
+                {% endif %}
+                {{ pj.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📜 Derniers combats</h3>
+        <div class="combat-card-grid">
+            {% for combat in combat_cards %}
+            <div class="combat-card">
+                <div class="combat-card-header">
+                    <h3>{{ combat.name }}</h3>
+                    {% if combat.is_closed %}
+                        <span class="combat-badge closed">✅ Terminé</span>
+                    {% else %}
+                        <span class="combat-badge active">🟢 En cours</span>
+                    {% endif %}
+                </div>
+
+                <div class="combat-card-body">
+                    <div class="combat-stat">
+                        🔁 Rounds
+                        {{ combat.rounds }}
+                    </div>
+                    <div class="combat-stat">
+                        💀 Morts
+                        {{ combat.deaths }}
+                    </div>
+                    {% if combat.duration %}
+                    <div class="combat-stat">
+                        ⏱ Durée
+                        {{ combat.duration }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="combat-card-actions">
+                    <a href="{{ url_for('combat.view_combat', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
+                    {% if combat.is_closed %}
+                        <a href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}" class="btn btn-secondary">Résumé</a>
+                    {% endif %}
+                    <!-- ✅ NOUVEAU : Bouton de suppression -->
+                    <form method="post" action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce combat ? Toutes les données seront perdues.')">🗑 Supprimer</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

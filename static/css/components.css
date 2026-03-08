@@ -1,0 +1,295 @@
+/* ===================== */
+/* CARDS */
+/* ===================== */
+
+.card {
+    background: #2a2c36;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+/* ===================== */
+/* BUTTONS */
+/* ===================== */
+
+.btn, .btn-primary, .btn-danger, .btn-secondary {
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn {
+    background: #555;
+}
+
+.btn-primary {
+    background: #4caf50;
+}
+
+.btn-danger {
+    background: #e53935;
+}
+
+.btn-secondary {
+    background: #666;
+}
+
+.btn-warning {
+    background: #ff9800;
+    color: white;
+}
+
+.btn-large {
+    padding: 15px 25px;
+    font-size: 16px;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+}
+
+.btn-stop-capture {
+    background: #e53935;
+}
+
+.btn-stop-capture:hover {
+    background: #d32f2f;
+}
+
+.btn-switch-display {
+    background: #9c27b0;
+    border: none;
+}
+
+.btn-switch-display:hover {
+    background: #7b1fa2;
+    transform: scale(1.05);
+}
+
+.btn-overlay {
+    background: #9c27b0;
+}
+
+.btn-overlay:hover {
+    background: #7b1fa2;
+}
+
+/* ===================== */
+/* FORMULAIRES */
+/* ===================== */
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+input, select, textarea {
+    padding: 6px;
+    border-radius: 4px;
+    border: none;
+}
+
+.damage-form {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+/* ===================== */
+/* HP BARS */
+/* ===================== */
+
+.hp-bar-container {
+    background: #444;
+    height: 18px;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.hp-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.hp-container {
+    margin-top: 10px;
+}
+
+.hp-green {
+    background: #4caf50;
+}
+
+.hp-yellow {
+    background: #fbc02d;
+}
+
+.hp-orange {
+    background: #f57c00;
+}
+
+.hp-red {
+    background: #d32f2f;
+}
+
+.ac-info {
+    margin-top: 8px;
+    font-weight: bold;
+    color: #ccc;
+}
+
+.temp-hp-container {
+    background: #333;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.temp-hp-bar {
+    background: #3498db;
+    height: 100%;
+    border-radius: 5px;
+}
+
+.temp-hp-text {
+    color: #3498db;
+    font-weight: bold;
+}
+
+.pj-status {
+    margin-top: 8px;
+    font-weight: bold;
+    color: #ff9800;
+    font-size: 14px;
+}
+
+.pj-status:empty {
+    display: none;
+}
+
+.health-status {
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+/* ===================== */
+/* CONDITIONS */
+/* ===================== */
+
+.conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 15px;
+}
+
+.condition-badge {
+    padding: 4px 8px;
+    background: #444;
+    border-radius: 12px;
+    font-size: 12px;
+    text-decoration: none;
+    color: white;
+    border: 1px solid #666;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.condition-badge:hover {
+    background: #666;
+}
+
+.active-condition {
+    background: #e53935;
+    border: 1px solid #ff6b6b;
+    font-weight: bold;
+}
+
+.partial-condition {
+    background: #ff9800;
+    border: 1px solid #ffb74d;
+    font-weight: bold;
+}
+
+/* ===================== */
+/* GROUPES ET DIVERS */
+/* ===================== */
+
+.group-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.template-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2f3241;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+}
+
+.encounter-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.fled {
+    background: #1a1a1a;
+    opacity: 0.6;
+    border-left: 4px solid #ff9800;
+    color: orange;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.fled .health-status {
+    display: none;
+}
+
+/* ===================== */
+/* SUMMARY / TIMELINE */
+/* ===================== */
+
+.summary-combatant {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+}
+
+.summary-combatant h4 {
+    margin-bottom: 10px;
+}
+
+.dead {
+    color: #e53935;
+    font-weight: bold;
+}
+
+.round-block {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #23252f;
+    border-radius: 10px;
+}
+
+.turn-block {
+    margin-top: 10px;
+    padding: 10px;
+    background: #2f3241;
+    border-radius: 8px;
+}
+
+.turn-block ul {
+    margin: 5px 0 0 15px;
+}

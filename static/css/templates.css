@@ -1,0 +1,96 @@
+.template-card {
+    background: #2f3241;
+    border-radius: 12px;
+    padding: 18px;
+    border: 2px solid rgba(76,175,80,0.2);
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    transition: 0.25s ease;
+}
+
+.template-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 20px rgba(76,175,80,0.5);
+}
+
+.avatar-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #1e1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #4caf50;
+}
+
+.template-card-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.template-card-body {
+    text-align: center;
+}
+
+.template-avatar-container {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.template-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #1e1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #4caf50;
+    font-size: 18px;
+    border: 2px solid #4caf50;
+}
+
+/* ✅ Masquer placeholder quand il y a une image */
+.template-avatar-container.has-image .avatar-placeholder {
+    display: none;
+}
+
+.template-card-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+
+/* FORM GRID */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.file-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
