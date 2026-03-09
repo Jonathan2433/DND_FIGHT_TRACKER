@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="xp-history-container">
+    <div class="xp-header">
+        <h1>📈 Historique XP - {{ character.name }}</h1>
+        <a href="{{ url_for('template.character_profile', id=character.id) }}" class="btn btn-secondary">← Retour au profil</a>
+    </div>
+
+    <div class="xp-summary-card">
+        <div class="xp-summary-info">
+            <div class="current-level">
+                <div class="level-badge">Niveau {{ character.level }}</div>
+                <div class="xp-total">{{ character.current_xp }} XP Total</div>
+            </div>
+            
+            <div class="xp-progress">
+                <div class="xp-bar-container">
+                    <div class="xp-bar" style="width: {{ character.xp_progress_percentage }}%"></div>
+                </div>
+                <div class="xp-progress-text">
+                    {{ character.current_xp - character.xp_for_current_level }} / {{ character.xp_for_next_level - character.xp_for_current_level }}
+                    {% if character.can_level_up %}
+                        <span class="level-up-notification">🎉 PEUT MONTER DE NIVEAU !</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="xp-logs-section">
+        <h2>📜 Historique des gains</h2>
+        
+        {% if xp_logs %}
+            <div class="xp-logs-list">
+                {% for log in xp_logs %}
+                <div class="xp-log-card">
+                    <div class="xp-log-header">
+                        <div class="xp-amount {% if log.xp_amount > 0 %}xp-positive{% else %}xp-negative{% endif %}">
+                            {% if log.xp_amount > 0 %}+{% endif %}{{ log.xp_amount }} XP
+                        </div>
+                        <div class="xp-date">{{ log.timestamp.strftime('%d/%m/%Y %H:%M') }}</div>
+                    </div>
+                    
+                    <div class="xp-log-body">
+                        <div class="xp-source">
+                            {% if log.xp_source == 'combat' %}
+                                <span class="source-icon">⚔️</span> Combat
+                            {% elif log.xp_source == 'quest' %}
+                                <span class="source-icon">📜</span> Quête
+                            {% elif log.xp_source == 'roleplay' %}
+                                <span class="source-icon">🎭</span> Roleplay
+                            {% elif log.xp_source == 'exploration' %}
+                                <span class="source-icon">🗺️</span> Exploration
+                            {% else %}
+                                <span class="source-icon">✏️</span> Manuel
+                            {% endif %}
+                        </div>
+                        
+                        {% if log.description %}
+                            <div class="xp-description">{{ log.description }}</div>
+                        {% endif %}
+                        
+                        {% if log.level_before != log.level_after %}
+                            <div class="level-change">
+                                🎉 Montée de niveau ! {{ log.level_before }} → {{ log.level_after }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="xp-metadata">
+                            <span>Attribué par : {{ log.awarded_by }}</span>
+                            {% if log.combat_id %}
+                                <span> • <a href="{{ url_for('summary.combat_summary', combat_id=log.combat_id) }}">Voir combat</a></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-xp-logs">
+                <div class="empty-state">
+                    <h3>📭 Aucun gain d'XP enregistré</h3>
+                    <p>{{ character.name }} n'a pas encore gagné d'expérience via l'application.</p>
+                    <a href="{{ url_for('template.character_profile', id=character.id) }}" class="btn btn-primary">Attribuer de l'XP</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="xp-stats-section">
+        <h2>📊 Statistiques XP</h2>
+        <div class="xp-stats-grid">
+            {% set total_combat_xp = xp_logs|selectattr("xp_source", "equalto", "combat")|sum(attribute="xp_amount") %}
+            {% set total_manual_xp = xp_logs|selectattr("xp_source", "equalto", "manual")|sum(attribute="xp_amount") %}
+            {% set total_quest_xp = xp_logs|selectattr("xp_source", "equalto", "quest")|sum(attribute="xp_amount") %}
+            {% set level_ups = xp_logs|selectattr("level_before", "ne", "level_after")|list|length %}
+            
+            <div class="stat-card">
+                <div class="stat-icon">⚔️</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_combat_xp }}</div>
+                    <div class="stat-label">XP de combat</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📜</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_quest_xp }}</div>
+                    <div class="stat-label">XP de quête</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">✏️</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_manual_xp }}</div>
+                    <div class="stat-label">XP manuelle</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🎉</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ level_ups }}</div>
+                    <div class="stat-label">Montées de niveau</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

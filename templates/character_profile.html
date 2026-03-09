@@ -70,6 +70,43 @@
                 </div>
             </div>
 
+            <div class="xp-section">
+                <h2>📈 Progression</h2>
+
+                <div class="xp-container">
+                    <div class="xp-info">
+                        <div class="level-badge">Niveau {{ character.level }}</div>
+                        <div class="xp-text">{{ character.current_xp }} XP</div>
+                    </div>
+
+                    <div class="xp-bar-container">
+                        <div class="xp-bar" style="width: {{ character.xp_progress_percentage }}%"></div>
+                    </div>
+
+                    <div class="xp-details">
+                        <span>{{ character.current_xp - character.xp_for_current_level }} / {{ character.xp_for_next_level - character.xp_for_current_level }}</span>
+                        {% if character.can_level_up %}
+                            <span class="level-up-alert">🎉 PEUT MONTER DE NIVEAU !</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Formulaire d'attribution manuelle d'XP -->
+                <div class="award-xp-form">
+                    <h3>➕ Attribuer XP</h3>
+                    <form action="{{ url_for('xp.award_manual_xp', character_id=character.id) }}" method="post">
+                        <input type="number" name="xp_amount" placeholder="Montant XP" required min="1">
+                        <input type="text" name="description" placeholder="Raison (optionnel)">
+                        <input type="text" name="awarded_by" placeholder="Attribué par" value="DM">
+                        <button type="submit" class="btn btn-primary">💫 Attribuer XP</button>
+                    </form>
+                </div>
+
+                <div class="xp-actions">
+                    <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">📊 Historique XP</a>
+                </div>
+            </div>
+
             <!-- ✅ NOUVEAU : Notes déplacées sous les caractéristiques -->
             {% if character.notes %}
             <div class="char-notes">

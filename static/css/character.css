@@ -117,6 +117,95 @@
 }
 
 /* ===================== */
+/* SECTION XP */
+/* ===================== */
+
+.xp-section {
+    background: #2a2c36;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+    margin-top: 20px;
+}
+
+.xp-container {
+    margin-bottom: 20px;
+}
+
+.xp-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.level-badge {
+    background: #ffc107;
+    color: black;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.xp-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffc107;
+}
+
+.xp-bar-container {
+    background: #444;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.xp-bar {
+    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.xp-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.level-up-alert {
+    background: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.award-xp-form {
+    background: rgba(255, 193, 7, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.award-xp-form form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+/* ===================== */
 /* NOTES SOUS LES CARACTÉRISTIQUES */
 /* ===================== */
 

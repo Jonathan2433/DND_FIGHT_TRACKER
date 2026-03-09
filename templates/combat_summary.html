@@ -59,6 +59,22 @@
                 </div>
             </div>
         </div>
+        <div class="xp-award-section">
+            <h2>💫 Attribution d'XP</h2>
+
+            <div class="xp-calculation">
+                <p><strong>XP estimée pour ce combat :</strong>
+                   <span class="xp-estimate">Calcul automatique basé sur les ennemis vaincus</span>
+                </p>
+            </div>
+
+            <form action="{{ url_for('xp.award_combat_xp', combat_id=combat.id) }}" method="post" class="award-xp-form">
+                <div class="form-row">
+                    <input type="text" name="awarded_by" placeholder="Attribué par" value="DM" required>
+                    <button type="submit" class="btn btn-primary">🎉 Attribuer XP à tous les PJ</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- ✅ Statistiques par combattant - CORRIGÉ -->

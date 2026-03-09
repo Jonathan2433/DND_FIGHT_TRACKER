@@ -34,6 +34,9 @@ class CharacterTemplate(db.Model):
     maitrise_sagesse = db.Column(db.Boolean, default=False)
     maitrise_charisme = db.Column(db.Boolean, default=False)
 
+    # ✅ AJOUT : XP et progression
+    current_xp = db.Column(db.Integer, default=0)
+
     # Fichiers
     image_filename = db.Column(db.String(255), nullable=True)
     pdf_filename = db.Column(db.String(255), nullable=True)
@@ -123,3 +126,48 @@ class CharacterTemplate(db.Model):
         """Jet de sauvegarde de Charisme"""
         bonus = self.bonus_maitrise if self.maitrise_charisme else 0
         return self.mod_charisme + bonus
+
+    # ✅ AJOUT : Propriétés XP
+    @property
+    def xp_for_next_level(self):
+        """XP nécessaire pour le niveau suivant"""
+        XP_TABLE = {
+            1: 0, 2: 300, 3: 900, 4: 2700, 5: 6500,
+            6: 14000, 7: 23000, 8: 34000, 9: 48000, 10: 64000,
+            11: 85000, 12: 100000, 13: 120000, 14: 140000, 15: 165000,
+            16: 195000, 17: 225000, 18: 265000, 19: 305000, 20: 355000
+        }
+
+        if self.level >= 20:
+            return XP_TABLE[20]
+        return XP_TABLE.get(self.level + 1, 355000)
+
+    @property
+    def xp_for_current_level(self):
+        """XP nécessaire pour le niveau actuel"""
+        XP_TABLE = {
+            1: 0, 2: 300, 3: 900, 4: 2700, 5: 6500,
+            6: 14000, 7: 23000, 8: 34000, 9: 48000, 10: 64000,
+            11: 85000, 12: 100000, 13: 120000, 14: 140000, 15: 165000,
+            16: 195000, 17: 225000, 18: 265000, 19: 305000, 20: 355000
+        }
+        return XP_TABLE.get(self.level, 0)
+
+    @property
+    def xp_progress_percentage(self):
+        """Pourcentage de progression vers le niveau suivant"""
+        if self.level >= 20:
+            return 100
+
+        xp_needed_for_next = self.xp_for_next_level - self.xp_for_current_level
+        xp_current_progress = self.current_xp - self.xp_for_current_level
+
+        if xp_needed_for_next <= 0:
+            return 100
+
+        return min(100, (xp_current_progress / xp_needed_for_next) * 100)
+
+    @property
+    def can_level_up(self):
+        """Vérifier si le personnage peut monter de niveau"""
+        return self.current_xp >= self.xp_for_next_level and self.level < 20

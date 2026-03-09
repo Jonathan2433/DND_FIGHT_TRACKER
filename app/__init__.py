@@ -49,7 +49,7 @@ def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
 
     # Import ici pour éviter les imports circulaires
-    from app.routes import main, combat, combatant, group, template, summary
+    from app.routes import main, combat, combatant, group, template, summary, xp
 
     # ✅ Enregistrer TOUS les blueprints maintenant
     app.register_blueprint(main.bp)
@@ -58,6 +58,7 @@ def register_blueprints(app):
     app.register_blueprint(group.bp)
     app.register_blueprint(template.bp)
     app.register_blueprint(summary.bp)
+    app.register_blueprint(xp.bp)
 
 def register_socketio_events():
     """Enregistrement des événements SocketIO"""

@@ -4,6 +4,7 @@
 from .combat import Combat, Combatant, CombatLog
 from .character import CharacterTemplate
 from .encounter import EncounterTemplate
+from .experience import XPLog
 
 # Exposition des modèles
 __all__ = [
@@ -11,5 +12,6 @@ __all__ = [
     'Combatant',
     'CombatLog',
     'CharacterTemplate',
-    'EncounterTemplate'
+    'EncounterTemplate',
+    'XPLog'
 ]

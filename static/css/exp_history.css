@@ -1,0 +1,244 @@
+/* ===================== */
+/* HISTORIQUE XP */
+/* ===================== */
+
+.xp-history-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.xp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.xp-header h1 {
+    color: #ffc107;
+    margin: 0;
+}
+
+/* Carte résumé XP */
+.xp-summary-card {
+    background: linear-gradient(135deg, #2a2c36, #1e1f26);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+.xp-summary-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
+.current-level {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.level-badge {
+    background: #ffc107;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+}
+
+.xp-total {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffc107;
+    text-align: center;
+}
+
+.xp-progress {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.xp-bar-container {
+    background: #444;
+    height: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.xp-bar {
+    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 8px;
+}
+
+.xp-progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.level-up-notification {
+    background: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+/* Liste des logs XP */
+.xp-logs-section h2 {
+    color: #ffc107;
+    margin-bottom: 20px;
+}
+
+.xp-logs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.xp-log-card {
+    background: #2a2c36;
+    border-radius: 10px;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    transition: all 0.2s ease;
+}
+
+.xp-log-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+}
+
+.xp-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.xp-amount {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 15px;
+}
+
+.xp-positive {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.xp-negative {
+    background: rgba(229, 57, 53, 0.2);
+    color: #e53935;
+}
+
+.xp-date {
+    font-size: 14px;
+    color: #999;
+}
+
+.xp-log-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.xp-source {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.source-icon {
+    font-size: 16px;
+}
+
+.xp-description {
+    color: #ccc;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.level-change {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.xp-metadata {
+    font-size: 12px;
+    color: #888;
+}
+
+.xp-metadata a {
+    color: #4caf50;
+}
+
+/* État vide */
+.no-xp-logs {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 40px;
+}
+
+.empty-state {
+    text-align: center;
+}
+
+.empty-state h3 {
+    color: #ffc107;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+/* Statistiques XP */
+.xp-stats-section h2 {
+    color: #ffc107;
+    margin-bottom: 20px;
+}
+
+.xp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: #2a2c36;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0
