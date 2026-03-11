@@ -18,11 +18,42 @@
 </head>
 <body>
 
-<header>
-    <a href="{{ url_for('main.index') }}" class="btn-secondary">Accueil</a>
-    <h1>⚔️ D&D Exalt Combat Tracker</h1>
-    <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">🛠 Gérer les Profils</a>
-</header>
+    <header>
+        <h1><a href="{{ url_for('main.index') }}" style="color: #4caf50; text-decoration: none;">⚔️ D&D Exalt Combat Tracker</a></h1>
+
+        <!-- ✅ NOUVELLE NAVIGATION AUTH -->
+        <nav style="display: flex; gap: 15px; align-items: center;">
+            <a href="{{ url_for('main.index') }}">Accueil</a>
+            <a href="{{ url_for('template.manage_templates') }}">🛠 Gérer les Profils</a>
+
+            {% if session.user_id %}
+                <!-- Utilisateur connecté -->
+                <a href="{{ url_for('auth.profile') }}">👤 Profil</a>
+                <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
+            {% else %}
+                <!-- Utilisateur non connecté -->
+                <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
+                <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
+            {% endif %}
+        </nav>
+    </header>
+
+        <!-- ✅ MESSAGES FLASH -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="margin: 20px;">
+                {% for category, message in messages %}
+                    <div style="padding: 10px; margin: 5px 0; border-radius: 4px;
+                                {% if category == 'error' %}background: #e53935; color: white;
+                                {% elif category == 'success' %}background: #4caf50; color: white;
+                                {% elif category == 'info' %}background: #2196f3; color: white;
+                                {% else %}background: #ff9800; color: white;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
 <main>
     {% block content %}{% endblock %}
