@@ -3,4 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.13 (dnd_combat_tracker)" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (KATA_DATA_SCIENCE)" project-jdk-type="Python SDK" />
 </project>
