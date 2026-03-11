@@ -6,6 +6,7 @@ from .character import CharacterTemplate
 from .encounter import EncounterTemplate
 from .experience import XPLog
 from .user import User, EmailVerification
+from .campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 
 # Exposition des modèles
 __all__ = [
@@ -16,5 +17,9 @@ __all__ = [
     'EncounterTemplate',
     'XPLog',
     'User',
-    'EmailVerification'
+    'EmailVerification',
+    'Campaign',
+    'CampaignMember',
+    'CampaignInvitation',
+    'JoinRequest'
 ]

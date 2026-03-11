@@ -1,5 +1,5 @@
 """Factory Pattern pour l'application Flask"""
-from flask import Flask
+from flask import Flask, g, session
 import os
 from dotenv import load_dotenv
 
@@ -34,6 +34,24 @@ def create_app(config_name='default'):
     # Importer les modèles pour que SQLAlchemy les connaisse
     from app import models
 
+    # ✅ AJOUT : Context processor pour current_user
+    @app.before_request
+    def load_logged_in_user():
+        """Charger l'utilisateur connecté dans g avant chaque requête"""
+        user_id = session.get('user_id')
+
+        if user_id is None:
+            g.current_user = None
+        else:
+            from app.services.auth_service import AuthService
+            g.current_user = AuthService.get_user_by_id(user_id)
+
+    # ✅ AJOUT : Context processor pour les templates
+    @app.context_processor
+    def inject_user():
+        """Rendre current_user disponible dans tous les templates"""
+        return dict(current_user=g.get('current_user', None))
+
     # Enregistrer les Blueprints
     register_blueprints(app)
 
@@ -50,8 +68,7 @@ def create_app(config_name='default'):
 def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
     from app.routes import main, combat, combatant, group, template, summary, xp
-    # ✅ AJOUT : Blueprint auth
-    from app.routes import auth
+    from app.routes import auth, campaign
 
     app.register_blueprint(main.bp)
     app.register_blueprint(combat.bp)
@@ -60,7 +77,8 @@ def register_blueprints(app):
     app.register_blueprint(template.bp)
     app.register_blueprint(summary.bp)
     app.register_blueprint(xp.bp)
-    app.register_blueprint(auth.bp)  # ✅ NOUVEAU
+    app.register_blueprint(auth.bp)  # ✅ AJOUT LOT 1
+    app.register_blueprint(campaign.bp)  # ✅ AJOUT LOT 2
 
 def register_socketio_events():
     """Enregistrement des événements SocketIO"""

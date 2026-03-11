@@ -12,6 +12,14 @@ class AuthService:
     @staticmethod
     def register_user(username, email, password, role='Joueur'):
         """Créer un nouvel utilisateur"""
+        # ✅ SÉCURITÉ : Bloquer la création d'admin via inscription
+        if role == 'Admin':
+            return {"error": "Le rôle Administrateur ne peut pas être créé via inscription"}
+
+        # ✅ SÉCURITÉ : Seuls Joueur et MJ autorisés
+        if role not in ['Joueur', 'MJ']:
+            return {"error": "Rôle non autorisé"}
+
         # Vérifier unicité
         if User.query.filter_by(username=username).first():
             return {"error": "Ce nom d'utilisateur existe déjà"}
@@ -31,8 +39,8 @@ class AuthService:
 
         # Envoyer email
         verification_url = url_for('auth.verify_email',
-                                   token=verification.token,
-                                   _external=True)
+                                 token=verification.token,
+                                 _external=True)
 
         EmailService.send_verification_email(
             user.email,
@@ -114,8 +122,8 @@ class AuthService:
         verification = EmailVerification.create_verification(user.id)
 
         verification_url = url_for('auth.verify_email',
-                                   token=verification.token,
-                                   _external=True)
+                                 token=verification.token,
+                                 _external=True)
 
         EmailService.send_verification_email(
             user.email,
@@ -124,3 +132,23 @@ class AuthService:
         )
 
         return {"success": True, "message": "Email de vérification renvoyé"}
+
+    # ✅ NOUVEAU : Méthode pour créer un admin (usage interne uniquement)
+    @staticmethod
+    def create_admin_user(username, email, password):
+        """Créer un utilisateur admin (usage interne/script uniquement)"""
+        if User.query.filter_by(role='Admin').first():
+            return {"error": "Un administrateur existe déjà"}
+
+        user = User(
+            username=username,
+            email=email,
+            role='Admin',
+            is_verified=True  # Admin vérifié automatiquement
+        )
+        user.set_password(password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return {"success": True, "user": user}
