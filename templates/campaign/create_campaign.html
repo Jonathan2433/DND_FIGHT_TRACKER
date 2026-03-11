@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; background: #2a2c36; padding: 30px; border-radius: 12px;">
+    <h2 style="text-align: center; color: #4caf50; margin-bottom: 30px;">🎲 Créer une Campagne</h2>
+    
+    <form method="POST">
+        <div style="margin-bottom: 20px;">
+            <label for="name" style="color: #ccc; display: block; margin-bottom: 5px;">Nom de la campagne :</label>
+            <input type="text" id="name" name="name" required 
+                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;"
+                   placeholder="Ex: Les Mines de Phandelver">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="description" style="color: #ccc; display: block; margin-bottom: 5px;">Description :</label>
+            <textarea id="description" name="description" rows="4"
+                      style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;"
+                      placeholder="Décrivez brièvement votre campagne..."></textarea>
+        </div>
+        
+        <button type="submit" class="btn-primary" 
+                style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: #4caf50; color: white; border: none; cursor: pointer;">
+            Créer la Campagne
+        </button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px; color: #ccc;">
+        <a href="{{ url_for('main.index') }}" style="color: #4caf50;">← Retour à l'accueil</a>
+    </p>
+</div>
+{% endblock %}

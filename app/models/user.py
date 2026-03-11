@@ -17,6 +17,9 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
 
+    # ✅ AJOUT : Relations avec les campagnes
+    campaign_memberships = db.relationship('CampaignMember', backref='member_user', lazy=True)
+
     def set_password(self, password):
         """Hasher le mot de passe"""
         self.password_hash = generate_password_hash(password)
@@ -24,6 +27,38 @@ class User(db.Model):
     def check_password(self, password):
         """Vérifier le mot de passe"""
         return check_password_hash(self.password_hash, password)
+
+    # ✅ AJOUT : Méthodes pour les campagnes
+    def get_campaigns(self):
+        """Récupérer toutes les campagnes de l'utilisateur"""
+        from app.models.campaign import Campaign
+
+        # Campagnes possédées (en tant que MJ)
+        owned = Campaign.query.filter_by(mj_id=self.id, is_active=True).all()
+
+        # Campagnes où il est membre
+        memberships = [m.campaign for m in self.campaign_memberships if m.campaign.is_active]
+
+        # Fusionner et dédoublonner
+        all_campaigns = list(set(owned + memberships))
+        return sorted(all_campaigns, key=lambda c: c.created_at, reverse=True)
+
+    def is_mj_of(self, campaign):
+        """Vérifier si l'utilisateur est MJ d'une campagne"""
+        return campaign.mj_id == self.id
+
+    def is_member_of(self, campaign):
+        """Vérifier si l'utilisateur est membre d'une campagne"""
+        from app.models.campaign import CampaignMember
+        membership = CampaignMember.query.filter_by(
+            campaign_id=campaign.id,
+            user_id=self.id
+        ).first()
+        return membership is not None
+
+    def can_access_campaign(self, campaign):
+        """Vérifier si l'utilisateur peut accéder à une campagne"""
+        return self.is_mj_of(campaign) or self.is_member_of(campaign) or self.role == 'Admin'
 
     def __repr__(self):
         return f'<User {self.username}>'
