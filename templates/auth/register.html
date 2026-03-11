@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 500px; margin: 50px auto; background: #2a2c36; padding: 30px; border-radius: 12px;">
+    <h2 style="text-align: center; color: #4caf50; margin-bottom: 30px;">🎲 Créer un compte</h2>
+    
+    <form method="POST">
+        <div style="margin-bottom: 20px;">
+            <label for="username" style="color: #ccc; display: block; margin-bottom: 5px;">Nom d'utilisateur :</label>
+            <input type="text" id="username" name="username" required 
+                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="email" style="color: #ccc; display: block; margin-bottom: 5px;">Email :</label>
+            <input type="email" id="email" name="email" required 
+                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="password" style="color: #ccc; display: block; margin-bottom: 5px;">Mot de passe :</label>
+            <input type="password" id="password" name="password" required 
+                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="role" style="color: #ccc; display: block; margin-bottom: 5px;">Rôle :</label>
+            <select id="role" name="role" 
+                    style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+                <option value="Joueur">Joueur</option>
+                <option value="MJ">Maître du Jeu</option>
+                <option value="Admin">Administrateur</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn-primary" 
+                style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: #4caf50; color: white; border: none; cursor: pointer;">
+            Créer mon compte
+        </button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px; color: #ccc;">
+        Déjà un compte ? <a href="{{ url_for('auth.login') }}" style="color: #4caf50;">Se connecter</a>
+    </p>
+</div>
+{% endblock %}

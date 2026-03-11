@@ -1,11 +1,13 @@
 """Factory Pattern pour l'application Flask"""
 from flask import Flask
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def create_app(config_name='default'):
     """Factory pour créer l'application Flask"""
 
-    # ✅ CORRECTION : Créer l'instance Flask avec le bon chemin des templates
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
 
@@ -20,14 +22,14 @@ def create_app(config_name='default'):
     # Créer le dossier d'upload s'il n'existe pas
     upload_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', app.config['UPLOAD_FOLDER']))
     os.makedirs(upload_folder, exist_ok=True)
-
-    # ✅ MISE À JOUR : Corriger le chemin d'upload aussi
     app.config['UPLOAD_FOLDER'] = upload_folder
 
     # Initialiser les extensions
-    from app.extensions import db, socketio
+    from app.extensions import db, socketio, mail
     db.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
+    mail.init_app(app)
+
 
     # Importer les modèles pour que SQLAlchemy les connaisse
     from app import models
@@ -47,11 +49,10 @@ def create_app(config_name='default'):
 
 def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
-
-    # Import ici pour éviter les imports circulaires
     from app.routes import main, combat, combatant, group, template, summary, xp
+    # ✅ AJOUT : Blueprint auth
+    from app.routes import auth
 
-    # ✅ Enregistrer TOUS les blueprints maintenant
     app.register_blueprint(main.bp)
     app.register_blueprint(combat.bp)
     app.register_blueprint(combatant.bp)
@@ -59,6 +60,7 @@ def register_blueprints(app):
     app.register_blueprint(template.bp)
     app.register_blueprint(summary.bp)
     app.register_blueprint(xp.bp)
+    app.register_blueprint(auth.bp)  # ✅ NOUVEAU
 
 def register_socketio_events():
     """Enregistrement des événements SocketIO"""
