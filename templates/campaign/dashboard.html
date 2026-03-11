@@ -38,6 +38,66 @@
             <p style="font-size: 16px; color: #f0f0f0; margin: 0;">Bientôt disponible</p>
         </div>
     </div>
+
+    <div style="background: #2a2c36; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: #4caf50; margin: 0;">📖 Arcs Narratifs</h2>
+            {% if is_mj %}
+                <a href="{{ url_for('story_arc.create_arc', campaign_id=campaign.id) }}" class="btn btn-primary">➕ Nouvel Arc</a>
+            {% endif %}
+        </div>
+
+        {% set arcs = campaign.story_arcs %}
+        {% if arcs %}
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for arc in arcs %}
+                    <div style="background: #1e1f26; padding: 15px; border-radius: 8px;
+                                border-left: 4px solid {% if arc.status == 'en_cours' %}#4caf50{% elif arc.status == 'terminé' %}#666{% else %}#ff9800{% endif %};">
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="color: #f0f0f0; margin: 0 0 5px 0;">{{ arc.name }}</h3>
+                                <p style="color: #ccc; margin: 0; font-size: 14px;">{{ arc.description or "Aucune description" }}</p>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;
+                                             {% if arc.status == 'en_cours' %}background: rgba(76, 175, 80, 0.2); color: #4caf50;
+                                             {% elif arc.status == 'terminé' %}background: rgba(102, 102, 102, 0.2); color: #666;
+                                             {% else %}background: rgba(255, 152, 0, 0.2); color: #ff9800;{% endif %}">
+                                    {% if arc.status == 'en_cours' %}🎯 En cours
+                                    {% elif arc.status == 'terminé' %}✅ Terminé
+                                    {% else %}⏳ À venir{% endif %}
+                                </span>
+
+                                <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary" style="font-size: 12px;">👁 Voir</a>
+
+                                {% if is_mj %}
+                                    {% if arc.can_be_started %}
+                                        <form method="POST" action="{{ url_for('story_arc.start_arc', arc_id=arc.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-primary" style="font-size: 12px;">▶️ Démarrer</button>
+                                        </form>
+                                    {% elif arc.is_current %}
+                                        <form method="POST" action="{{ url_for('story_arc.complete_arc', arc_id=arc.id) }}"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir terminer cet arc ?')" style="display: inline;">
+                                            <button type="submit" class="btn btn-warning" style="font-size: 12px;">🏁 Terminer</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; color: #888;">
+                <p>📖 Aucun arc narratif créé</p>
+                {% if is_mj %}
+                    <a href="{{ url_for('story_arc.create_arc', campaign_id=campaign.id) }}" class="btn btn-primary">Créer le premier arc</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
     
     <!-- Membres de la campagne -->
     <div style="background: #2a2c36; padding: 25px; border-radius: 12px; margin-bottom: 30px;">

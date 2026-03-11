@@ -68,7 +68,7 @@ def create_app(config_name='default'):
 def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
     from app.routes import main, combat, combatant, group, template, summary, xp
-    from app.routes import auth, campaign
+    from app.routes import auth, campaign, story_arc
 
     app.register_blueprint(main.bp)
     app.register_blueprint(combat.bp)
@@ -79,6 +79,7 @@ def register_blueprints(app):
     app.register_blueprint(xp.bp)
     app.register_blueprint(auth.bp)  # ✅ AJOUT LOT 1
     app.register_blueprint(campaign.bp)  # ✅ AJOUT LOT 2
+    app.register_blueprint(story_arc.bp) # ✅ AJOUT LOT 3
 
 def register_socketio_events():
     """Enregistrement des événements SocketIO"""
