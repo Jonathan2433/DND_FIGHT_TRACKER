@@ -1,5 +1,5 @@
 """Routes principales - Version finale avec vrais templates"""
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.models import Combat, CharacterTemplate, CombatLog
 from app.utils import format_duration
 
@@ -52,7 +52,19 @@ def index():
             "deaths": total_deaths
         })
 
-    # ✅ ENFIN : Utiliser le vrai template index.html
+    public_campaigns = []
+    user_is_connected = 'user_id' in session
+
+    from app.models.campaign import Campaign
+    try:
+        public_campaigns = Campaign.query.filter_by(
+            is_public=True,
+            is_active=True
+        ).order_by(Campaign.created_at.desc()).limit(6).all()
+    except Exception as e:
+        print(f"⚠️  Champ is_public non disponible : {e}")
+        public_campaigns = []
+
     return render_template(
         'index.html',
         combats=combats,
@@ -63,5 +75,7 @@ def index():
         total_damage=total_damage,
         total_heal=total_heal,
         characters=characters,
-        combat_cards=combat_cards
+        combat_cards=combat_cards,
+        public_campaigns=public_campaigns,  # ✅ AJOUT
+        user_is_connected=user_is_connected  # ✅ AJOUT
     )

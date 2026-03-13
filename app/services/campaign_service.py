@@ -11,12 +11,13 @@ class CampaignService:
     """Service principal pour la gestion des campagnes"""
 
     @staticmethod
-    def create_campaign(name, description, mj_id):
+    def create_campaign(name, description, mj_id, is_public=False):  # ✅ AJOUT paramètre
         """Créer une nouvelle campagne"""
         campaign = Campaign(
             name=name,
             description=description,
-            mj_id=mj_id
+            mj_id=mj_id,
+            is_public=bool(is_public)  # ✅ AJOUT
         )
 
         db.session.add(campaign)

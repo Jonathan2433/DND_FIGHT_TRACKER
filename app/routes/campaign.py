@@ -17,13 +17,16 @@ def create_campaign():
     if request.method == 'POST':
         name = request.form['name']
         description = request.form.get('description', '')
+        is_public = bool(int(request.form.get('is_public', '0')))  # ✅ AJOUT
 
-        # Seuls les MJ et Admin peuvent créer des campagnes
         if g.current_user.role not in ['MJ', 'Admin']:
             flash('Seuls les MJ et Administrateurs peuvent créer des campagnes.', 'error')
             return redirect(url_for('main.index'))
 
-        campaign = CampaignService.create_campaign(name, description, g.current_user.id)
+        campaign = CampaignService.create_campaign(
+            name, description, g.current_user.id, is_public  # ✅ AJOUT
+        )
+
         flash(f'Campagne "{campaign.name}" créée avec succès !', 'success')
         return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
 

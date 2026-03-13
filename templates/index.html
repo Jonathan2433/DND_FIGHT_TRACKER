@@ -2,6 +2,9 @@
 {% block content %}
 
 <div class="dashboard">
+    <!-- ===================== -->
+    <!-- STATISTIQUES GÉNÉRALES -->
+    <!-- ===================== -->
     <div class="dashboard-stats">
         <div class="stat-card">
             <h3>⚔️ Combats totaux</h3>
@@ -29,61 +32,149 @@
         </div>
     </div>
 
+    <!-- ===================== -->
+    <!-- ACTIONS RAPIDES -->
+    <!-- ===================== -->
     <div class="card">
-        <h3>⚔️ Nouveau Combat</h3>
+        <h2>⚔️ Nouveau Combat</h2>
         <form action="{{ url_for('combat.create_combat') }}" method="post">
-            <input type="text" name="name" placeholder="Nom du combat" required>
-            <button type="submit" class="btn btn-primary">Créer</button>
+            <input type="text" name="name" placeholder="Nom du combat" required
+                   style="width: 300px; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+            <button type="submit" class="btn btn-primary">🚀 Créer</button>
         </form>
     </div>
 
+    <!-- ===================== -->
+    <!-- CAMPAGNES PUBLIQUES POUR NON-CONNECTÉS -->
+    <!-- ===================== -->
+    {% if public_campaigns %}
     <div class="card">
-        <h3>🧙 Fiches Personnages</h3>
+        <h2>🌐 Campagnes Publiques</h2>
+
+        {% if not user_is_connected %}
+            <p>Découvrez les campagnes en cours et créez un compte pour les rejoindre !</p>
+        {% else %}
+            <p>Campagnes ouvertes auxquelles vous pouvez demander à participer :</p>
+        {% endif %}
+
+        <div class="public-campaigns-grid">
+            {% for campaign in public_campaigns %}
+                <div class="public-campaign-card">
+                    <div class="campaign-header">
+                        <h3>{{ campaign.name }}</h3>
+                        <div class="campaign-badge public">🌐 Public</div>
+                    </div>
+
+                    {% if campaign.description %}
+                        <p class="campaign-description">
+                            {{ campaign.description[:120] }}{% if campaign.description|length > 120 %}...{% endif %}
+                        </p>
+                    {% endif %}
+
+                    <div class="campaign-info">
+                        <span>👑 MJ : {{ campaign.mj.username }}</span>
+                        <span>👥 {{ campaign.members|length + 1 }} membres</span>
+                    </div>
+
+                    <div class="campaign-actions">
+                        {% if not user_is_connected %}
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                                📝 S'inscrire pour rejoindre
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">
+                                👁️ Voir la campagne
+                            </a>
+                            {% if current_user and not current_user.is_member_of(campaign) and not current_user.is_mj_of(campaign) %}
+                                <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" style="display: inline;">
+                                    <input type="hidden" name="message" value="Demande automatique depuis la page d'accueil">
+                                    <button type="submit" class="btn btn-secondary">
+                                        🙋 Demander à rejoindre
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if public_campaigns|length == 6 %}
+            <div class="text-center">
+                {% if not user_is_connected %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                        Voir toutes les campagnes publiques
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">
+                        Voir toutes mes campagnes
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+    <!-- ===================== -->
+    <!-- FICHES PERSONNAGES -->
+    <!-- ===================== -->
+    <div class="card">
+        <h2>🧙 Fiches Personnages</h2>
+
+        {% if user_is_connected %}
+            <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">🛠️ Gérer mes Personnages</a>
+        {% endif %}
+
         <div class="pj-dashboard-grid">
             {% for pj in characters %}
             <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card">
-                <!-- ✅ CORRECTION : Container conditionnel avec gestion des images -->
-                {% if pj.image_filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
-                         alt="{{ pj.name }}" class="pj-dashboard-img">
-                {% else %}
+                <div class="template-avatar-container {% if pj.image_filename %}has-image{% else %}no-image{% endif %}">
+                    {% if pj.image_filename %}
+                        <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                             class="pj-dashboard-img" alt="{{ pj.name }}">
+                    {% endif %}
                     <div class="pj-avatar-large">
                         {{ pj.name[:2]|upper }}
                     </div>
-                {% endif %}
-                {{ pj.name }}
+                </div>
+                <span>{{ pj.name }}</span>
             </a>
             {% endfor %}
         </div>
     </div>
 
+    <!-- ===================== -->
+    <!-- DERNIERS COMBATS -->
+    <!-- ===================== -->
     <div class="card">
-        <h3>📜 Derniers combats</h3>
+        <h2>📜 Derniers combats</h2>
+
         <div class="combat-card-grid">
             {% for combat in combat_cards %}
             <div class="combat-card">
                 <div class="combat-card-header">
                     <h3>{{ combat.name }}</h3>
                     {% if combat.is_closed %}
-                        <span class="combat-badge closed">✅ Terminé</span>
+                        <div class="combat-badge closed">✅ Terminé</div>
                     {% else %}
-                        <span class="combat-badge active">🟢 En cours</span>
+                        <div class="combat-badge active">🟢 En cours</div>
                     {% endif %}
                 </div>
 
                 <div class="combat-card-body">
                     <div class="combat-stat">
-                        🔁 Rounds
-                        {{ combat.rounds }}
+                        <strong>🔁 Rounds</strong>
+                        <span>{{ combat.rounds }}</span>
                     </div>
+
                     <div class="combat-stat">
-                        💀 Morts
-                        {{ combat.deaths }}
+                        <strong>💀 Morts</strong>
+                        <span>{{ combat.deaths }}</span>
                     </div>
                     {% if combat.duration %}
                     <div class="combat-stat">
-                        ⏱ Durée
-                        {{ combat.duration }}
+                        <strong>⏱ Durée</strong>
+                        <span>{{ combat.duration }}</span>
                     </div>
                     {% endif %}
                 </div>
@@ -93,15 +184,80 @@
                     {% if combat.is_closed %}
                         <a href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}" class="btn btn-secondary">Résumé</a>
                     {% endif %}
-                    <!-- ✅ NOUVEAU : Bouton de suppression -->
-                    <form method="post" action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce combat ? Toutes les données seront perdues.')">🗑 Supprimer</button>
-                    </form>
+
+                    {% if user_is_connected %}
+                        <form action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Supprimer ce combat ?')">🗑 Supprimer</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
+
+    <!-- ===================== -->
+    <!-- ACTIONS POUR UTILISATEURS CONNECTÉS -->
+    <!-- ===================== -->
+    {% if user_is_connected %}
+        <div class="card">
+            <h2>🎯 Mes Actions</h2>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">
+                        🧙 Gérer mes Personnages
+                    </a>
+                </div>
+
+                {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                    <div class="stat-card">
+                        <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-primary">
+                            ➕ Nouvelle Campagne
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="stat-card">
+                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">
+                        🎲 Mes Campagnes
+                    </a>
+                </div>
+
+                <div class="stat-card">
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
+                        👤 Mon Profil
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- ===================== -->
+    <!-- ACTIONS POUR NON-CONNECTÉS -->
+    <!-- ===================== -->
+    {% if not user_is_connected %}
+        <div class="card">
+            <h2>🚀 Rejoignez-nous !</h2>
+            <p>Créez un compte pour gérer vos campagnes D&D et suivre vos combats !</p>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                        📝 Créer un compte
+                    </a>
+                </div>
+
+                <div class="stat-card">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                        🔐 Se connecter
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}
