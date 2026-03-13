@@ -271,14 +271,14 @@
             </form>
 
             <div class="hp-bar-container">
-                <div class="hp-bar"
-                     style="width: {{ (c.hp_current / c.hp_max) * 100 }}%">
+                <div class="hp-bar js-width"
+                     data-width="{{ (c.hp_current / c.hp_max) * 100 }}%">
                 </div>
             </div>
 
             <div>{{ c.hp_current }} / {{ c.hp_max }} PV</div>
             <div class="temp-hp-container">
-                <div class="temp-hp-bar" style="width: {{ (c.temp_hp / c.hp_max) * 100 }}%"></div>
+                <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 }}%"></div>
             </div>
 
             <div>
@@ -339,9 +339,7 @@
             <!-- ACTIONS ADMINISTRATIVES -->
             <div class="admin-actions">
 
-                <form method="GET"
-                      action="{{ url_for('combatant.toggle_fled', id=c.id) }}"
-                      style="display:inline;">
+                <form method="GET" action="{{ url_for('combatant.toggle_fled', id=c.id) }}" class="inl-combat-001">
                     {% if c.has_fled %}
                         <button type="submit" class="btn-secondary">🔄 Revient</button>
                     {% else %}
@@ -349,10 +347,7 @@
                     {% endif %}
                 </form>
 
-                <form method="POST"
-                      action="{{ url_for('combatant.delete_combatant', id=c.id) }}"
-                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');"
-                      style="display:inline;">
+                <form method="POST" action="{{ url_for('combatant.delete_combatant', id=c.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');" class="inl-combat-001">
                     <button type="submit" class="btn-danger">🗑 Supprimer</button>
                 </form>
 

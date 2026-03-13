@@ -36,7 +36,7 @@
 
                 <div class="campaign-actions">
                     {% if session.user_id %}
-                        <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="POST" style="display: inline;">
+                        <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="POST" class="inl-campaign-020">
                             <input type="hidden" name="message" value="Je souhaite rejoindre votre campagne !">
                             <button type="submit" class="btn btn-primary">
                                 🙋 Demander à rejoindre
@@ -84,61 +84,6 @@
     </div>
 </div>
 
-<style>
-.campaigns-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 25px;
-    margin: 30px 0;
-}
 
-.campaign-card {
-    background: #2a2c36;
-    border-radius: 12px;
-    padding: 25px;
-    border: 2px solid rgba(76, 175, 80, 0.3);
-    transition: all 0.3s ease;
-}
-
-.campaign-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
-}
-
-.public-badge {
-    background: #4caf50;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.campaign-description {
-    margin: 15px 0;
-    color: #ccc;
-    line-height: 1.5;
-}
-
-.campaign-info {
-    margin: 15px 0;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-}
-
-.info-item {
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.no-campaigns {
-    text-align: center;
-    padding: 60px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    margin: 40px 0;
-}
-</style>
 
 {% endblock %}

@@ -47,7 +47,7 @@ def create_app(config_name='default'):
         if user_id is None:
             g.current_user = None
         else:
-            from app.services.auth_service import AuthService
+            from app.application.use_cases.auth_service import AuthService
             g.current_user = AuthService.get_user_by_id(user_id)
 
     @app.context_processor
@@ -62,28 +62,13 @@ def create_app(config_name='default'):
 
 
 def register_blueprints(app):
-    """Enregistrement de tous les blueprints"""
-    from app.routes import main, combat, combatant, group, template, summary, xp
-    from app.routes import auth, campaign, story_arc, pnj
-    app.register_blueprint(main.bp)
-    app.register_blueprint(combat.bp)
-    app.register_blueprint(combatant.bp)
-    app.register_blueprint(group.bp)
-    app.register_blueprint(template.bp)
-    app.register_blueprint(summary.bp)
-    app.register_blueprint(xp.bp)
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(campaign.bp)
-    app.register_blueprint(story_arc.bp)
-    app.register_blueprint(pnj.bp)
+    """Enregistrement des blueprints via le web layer."""
+    from app.web.routes import register_blueprints as register_web_blueprints
+    register_web_blueprints(app)
 
 
 def register_socketio_events():
-    """Enregistrement des événements SocketIO"""
+    """Enregistrement des événements SocketIO via le web layer."""
     from app.extensions import socketio
-    from flask_socketio import join_room
-
-    @socketio.on("join_combat")
-    def handle_join(data):
-        combat_id = data["combat_id"]
-        join_room(f"combat_{combat_id}")
+    from app.web.sockets import register_socketio_events as register_web_socket_events
+    register_web_socket_events(socketio)

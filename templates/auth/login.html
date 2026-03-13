@@ -1,29 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 500px; margin: 50px auto; background: #2a2c36; padding: 30px; border-radius: 12px;">
-    <h2 style="text-align: center; color: #4caf50; margin-bottom: 30px;">🎲 Se connecter</h2>
+<div class="inl-auth-001">
+    <h2 class="inl-auth-002">🎲 Se connecter</h2>
     
     <form method="POST">
-        <div style="margin-bottom: 20px;">
-            <label for="username_or_email" style="color: #ccc; display: block; margin-bottom: 5px;">Nom d'utilisateur ou Email :</label>
-            <input type="text" id="username_or_email" name="username_or_email" required 
-                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        <div class="inl-auth-003">
+            <label for="username_or_email" class="inl-auth-004">Nom d'utilisateur ou Email :</label>
+            <input type="text" id="username_or_email" name="username_or_email" required class="inl-auth-005">
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <label for="password" style="color: #ccc; display: block; margin-bottom: 5px;">Mot de passe :</label>
-            <input type="password" id="password" name="password" required 
-                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        <div class="inl-auth-003">
+            <label for="password" class="inl-auth-004">Mot de passe :</label>
+            <input type="password" id="password" name="password" required class="inl-auth-005">
         </div>
         
-        <button type="submit" class="btn-primary" 
-                style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: #4caf50; color: white; border: none; cursor: pointer;">
+        <button type="submit" class="btn-primary inl-auth-006" >
             Se connecter
         </button>
     </form>
     
-    <p style="text-align: center; margin-top: 20px; color: #ccc;">
-        Pas encore de compte ? <a href="{{ url_for('auth.register') }}" style="color: #4caf50;">S'inscrire</a>
+    <p class="inl-auth-007">
+        Pas encore de compte ? <a href="{{ url_for('auth.register') }}" class="inl-auth-008">S'inscrire</a>
     </p>
 </div>
 {% endblock %}

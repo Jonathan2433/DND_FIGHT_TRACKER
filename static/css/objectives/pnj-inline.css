@@ -1,0 +1,15 @@
+/* Inline styles extracted by objective: pnj */
+
+.inl-pnj-001 { margin-top: 10px; padding: 10px; background: var(--overlay-white-05); border-radius: var(--radius-md); font-size: 12px; }
+.inl-pnj-002 { margin-top: 15px; }
+.inl-pnj-003 { display: block; color: var(--color-text-muted); margin-top: 5px; }
+.inl-pnj-004 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; font-size: 12px; }
+.inl-pnj-005 { text-align: center; padding: 4px; background: var(--overlay-white-05); border-radius: var(--radius-sm); }
+.inl-pnj-006 { margin-top: 10px; padding: 10px; background: var(--overlay-white-10); border-radius: var(--radius-md); }
+.inl-pnj-007 { margin: 5px 0 0 0; font-size: 13px; }
+.inl-pnj-008 { font-style: italic; color: var(--color-text-muted); }
+.inl-pnj-009 { margin-top: 15px; padding: 8px; background: var(--primary-a10); border-radius: var(--radius-md); font-size: 12px; }
+.inl-pnj-010 { background: var(--warning-bright-a20); color: var(--color-warning-bright); margin-left: 5px; }
+.inl-pnj-011 { background: var(--primary-a20); color: var(--color-primary); margin-left: 5px; }
+.inl-pnj-012 { background: var(--danger-a20); color: var(--color-danger); margin-left: 5px; }
+.inl-pnj-013 { display: inline; }

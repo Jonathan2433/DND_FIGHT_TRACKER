@@ -1,0 +1,11 @@
+/* Inline styles extracted by objective: combat */
+
+.inl-combat-001 { display:inline; }
+.inl-combat-002 { display: none; }
+.inl-combat-003 { color: var(--color-danger); }
+.inl-combat-004 { color: var(--color-warning); }
+.inl-combat-005 { width: 300px; height: auto; border-radius: var(--radius-lg); margin-top: 10px; }
+
+.is-hidden { display: none; }
+.status-icon-dead { color: var(--color-danger); }
+.status-icon-fled { color: var(--color-warning); }

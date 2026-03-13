@@ -1,0 +1,203 @@
+/* Exalt Dark Theme
+   Source inspiration: https://www.exalt-company.com/fr-fr/index.html
+   Brand refs observed: navy (#2f2f9b), blue (#5853ff), pink (#fe2c9b), yellow (#ffda3e), Poppins.
+*/
+:root {
+    /* Typography */
+    --font-family-base: 'Poppins', 'Segoe UI', 'Inter', Arial, sans-serif;
+    --font-family-mono: 'Courier New', monospace;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+
+    /* Spacing */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 10px;
+    --space-4: 12px;
+    --space-5: 15px;
+    --space-6: 20px;
+    --space-7: 25px;
+    --space-8: 30px;
+
+    /* Radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
+    --radius-2xl: 12px;
+    --radius-pill: 999px;
+
+    /* eXalt brand palette */
+    --brand-navy: #2f2f9b;
+    --brand-blue: #5853ff;
+    --brand-pink: #fe2c9b;
+    --brand-yellow: #ffda3e;
+    --brand-neutral-black: #282828;
+    --brand-neutral-grey: #f5f5f5;
+    --brand-navy-secondary: #6d6db9;
+    --brand-navy-tertiary: #9797cd;
+    --brand-navy-pastel: #d5d5eb;
+    --brand-blue-pastel: #deddff;
+    --brand-pink-hover: #b5005f;
+    --brand-pink-active: #e2057a;
+    --brand-yellow-hover: #ecab15;
+    --brand-yellow-active: #ffc700;
+    --brand-blue-active: #3733de;
+    --brand-navy-active: #5051be;
+
+    /* Dark adaptation */
+    --dark-ink: #0b0d1d;
+    --dark-bg: #0f1127;
+    --dark-bg-alt: #161a3a;
+    --dark-surface: #1d2250;
+    --dark-surface-alt: #262d66;
+    --dark-surface-soft: #30377a;
+    --dark-border: #3f468f;
+
+    /* Global background */
+    --app-body-bg:
+        radial-gradient(1200px circle at 10% -10%, rgba(88, 83, 255, 0.22), transparent 55%),
+        radial-gradient(900px circle at 100% 0%, rgba(254, 44, 155, 0.16), transparent 48%),
+        linear-gradient(180deg, #0f1127 0%, #0b0d1d 100%);
+
+    /* Semantic tokens used by the app */
+    --color-primary: var(--brand-pink);
+    --color-primary-hover: var(--brand-pink-hover);
+    --color-warning: var(--brand-yellow);
+    --color-warning-bright: var(--brand-yellow);
+    --color-warning-dark: var(--brand-yellow-hover);
+    --color-warning-light: #ffe784;
+    --color-info: var(--brand-blue);
+    --color-info-alt: var(--brand-navy);
+    --color-success-bright: var(--brand-blue-pastel);
+    --color-danger: #ff6f8f;
+    --color-danger-dark: #e64f72;
+    --color-danger-soft: #ff9bb3;
+
+    --color-bg: var(--dark-bg);
+    --color-bg-alt: var(--dark-bg-alt);
+    --color-bg-blackish: #090b18;
+    --color-bg-deep: #0d1022;
+    --color-bg-ink: var(--dark-ink);
+    --color-surface: var(--dark-surface);
+    --color-surface-alt: var(--dark-surface-alt);
+    --color-surface-soft: var(--dark-surface-soft);
+    --color-charcoal: #1b2042;
+
+    --color-text-primary: #f4f4ff;
+    --color-text-secondary: var(--brand-navy-pastel);
+    --color-text-tertiary: #b9bbe4;
+    --color-text-muted: var(--brand-navy-tertiary);
+    --color-text-soft: var(--brand-navy-secondary);
+    --color-text-dim: #8c90c7;
+    --color-text-faint: #767bb3;
+
+    --color-border: var(--dark-border);
+    --color-border-dark: #32396f;
+    --color-border-strong: #525aa5;
+    --color-black: var(--brand-neutral-black);
+    --color-white: #ffffff;
+
+    --color-accent-magenta: var(--brand-pink-active);
+    --color-accent-purple: #7a6dff;
+    --color-accent-purple-dark: #5f50d7;
+    --color-accent-gold: var(--brand-yellow-hover);
+    --color-accent-teal-deep: #2f4f9b;
+    --color-accent-brown-deep: #3b335a;
+    --color-yellow-700: var(--brand-yellow-hover);
+    --color-orange-700: #f5a623;
+
+    /* Alpha system */
+    --overlay-black-20: rgba(8, 10, 26, 0.2);
+    --overlay-black-30: rgba(8, 10, 26, 0.3);
+    --overlay-black-40: rgba(8, 10, 26, 0.4);
+    --overlay-black-50: rgba(8, 10, 26, 0.5);
+    --overlay-black-60: rgba(8, 10, 26, 0.6);
+    --overlay-black-80: rgba(8, 10, 26, 0.8);
+    --overlay-black-90: rgba(8, 10, 26, 0.9);
+    --overlay-white-05: rgba(244, 244, 255, 0.05);
+    --overlay-white-10: rgba(244, 244, 255, 0.1);
+    --overlay-white-30: rgba(244, 244, 255, 0.3);
+    --overlay-white-50: rgba(244, 244, 255, 0.5);
+
+    --primary-a05: rgba(254, 44, 155, 0.05);
+    --primary-a10: rgba(254, 44, 155, 0.1);
+    --primary-a20: rgba(254, 44, 155, 0.2);
+    --primary-a30: rgba(254, 44, 155, 0.3);
+    --primary-a40: rgba(254, 44, 155, 0.4);
+    --primary-a50: rgba(254, 44, 155, 0.5);
+    --primary-a60: rgba(254, 44, 155, 0.6);
+    --primary-a100: rgba(254, 44, 155, 1);
+
+    --warning-a10: rgba(255, 218, 62, 0.1);
+    --warning-a20: rgba(255, 218, 62, 0.2);
+    --warning-a30: rgba(255, 218, 62, 0.3);
+    --warning-a50: rgba(255, 218, 62, 0.5);
+    --warning-a80: rgba(255, 218, 62, 0.8);
+    --warning-bright-a05: rgba(255, 218, 62, 0.05);
+    --warning-bright-a10: rgba(255, 218, 62, 0.1);
+    --warning-bright-a20: rgba(255, 218, 62, 0.2);
+    --warning-bright-a30: rgba(255, 218, 62, 0.3);
+    --warning-bright-a40: rgba(255, 218, 62, 0.4);
+
+    --info-a20: rgba(88, 83, 255, 0.2);
+    --info-a80: rgba(88, 83, 255, 0.8);
+    --info-alt-a80: rgba(47, 47, 155, 0.8);
+    --success-bright-a80: rgba(222, 221, 255, 0.8);
+
+    --danger-a20: rgba(255, 111, 143, 0.2);
+    --danger-a50: rgba(255, 111, 143, 0.5);
+    --danger-a80: rgba(255, 111, 143, 0.8);
+    --danger-a90: rgba(255, 111, 143, 0.9);
+    --dark-red-a80: rgba(230, 79, 114, 0.8);
+    --dark-red-a90: rgba(230, 79, 114, 0.9);
+    --deep-red-a90: rgba(180, 40, 75, 0.9);
+    --red-a60: rgba(255, 111, 143, 0.6);
+
+    --neutral-20-a90: rgba(40, 40, 40, 0.9);
+    --neutral-20-a95: rgba(40, 40, 40, 0.95);
+    --neutral-26-a80: rgba(40, 40, 40, 0.8);
+    --neutral-40-a90: rgba(109, 109, 185, 0.9);
+    --neutral-40-a95: rgba(109, 109, 185, 0.95);
+    --dim-a20: rgba(140, 144, 199, 0.2);
+    --bg-a95: rgba(15, 17, 39, 0.95);
+    --bg-alt-a95: rgba(22, 26, 58, 0.95);
+    --surface-a80: rgba(29, 34, 80, 0.8);
+    --surface-a90: rgba(29, 34, 80, 0.9);
+    --surface-a95: rgba(29, 34, 80, 0.95);
+    --surface-alt-a80: rgba(38, 45, 102, 0.8);
+    --border-a80: rgba(63, 70, 143, 0.8);
+
+    /* Backward-compatible effect tokens */
+    --brown-a20: rgba(47, 47, 155, 0.2);
+    --brown-a60: rgba(47, 47, 155, 0.6);
+    --brown-a80: rgba(47, 47, 155, 0.8);
+    --brown-a90: rgba(47, 47, 155, 0.9);
+    --brown-deep-a80: rgba(22, 26, 58, 0.8);
+    --brown-muted-a20: rgba(109, 109, 185, 0.2);
+    --gold-a30: rgba(255, 218, 62, 0.3);
+    --gold-a50: rgba(255, 218, 62, 0.5);
+    --gold-a60: rgba(255, 218, 62, 0.6);
+    --gold-a90: rgba(255, 218, 62, 0.9);
+    --golden-a80: rgba(255, 218, 62, 0.8);
+    --golden-a90: rgba(255, 218, 62, 0.9);
+    --pink-a20: rgba(254, 44, 155, 0.2);
+    --purple-a20: rgba(122, 109, 255, 0.2);
+    --indigo-a20: rgba(88, 83, 255, 0.2);
+    --sienna-a90: rgba(63, 70, 143, 0.9);
+
+    /* Motion + shadows */
+    --transition-fast: 0.2s ease;
+    --transition-default: 0.3s ease;
+    --shadow-soft: 0 2px 8px var(--overlay-black-30);
+    --shadow-medium: 0 4px 12px var(--overlay-black-40);
+    --shadow-strong: 0 8px 24px var(--overlay-black-50);
+}
+
+body {
+    font-family: var(--font-family-base);
+    background: var(--app-body-bg);
+    color: var(--color-text-primary);
+}

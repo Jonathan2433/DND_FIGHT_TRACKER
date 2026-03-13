@@ -40,14 +40,14 @@
                     {% set ratio = c.hp_current / c.hp_max %}
                     <div class="hp-container">
                         <div class="hp-bar-container">
-                            <div class="hp-bar {% if ratio > 0.75 %}hp-green{% elif ratio > 0.4 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
-                                 style="width: {{ ratio * 100 }}%"></div>
+                            <div class="hp-bar js-width {% if ratio > 0.75 %}hp-green{% elif ratio > 0.4 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                 data-width="{{ ratio * 100 }}%"></div>
                         </div>
                         <div class="hp-text">{{ c.hp_current }} / {{ c.hp_max }} PV</div>
                         {% if c.temp_hp > 0 %}
                             <span class="temp-hp-text">(+{{ c.temp_hp }} temp)</span>
                         {% else %}
-                            <span class="temp-hp-text" style="display: none;"></span>
+                            <span class="temp-hp-text inl-combat-002"></span>
                         {% endif %}
                     </div>
 
@@ -114,9 +114,9 @@
                     </span>
                     <div class="init-status-icons">
                         {% if p.is_dead %}
-                            <span style="color: #e53935;">💀</span>
+                            <span class="inl-combat-003">💀</span>
                         {% elif p.has_fled %}
-                            <span style="color: #ff9800;">🏃</span>
+                            <span class="inl-combat-004">🏃</span>
                         {% elif p.type != "PJ" %}
                             {% set ratio = p.hp_current / p.hp_max %}
                             {% if ratio > 0.75 %}🟢
@@ -143,7 +143,7 @@
 </div>
 
 <!-- ✅ Mode HUD avec barre PJ en bas -->
-<div id="hud-overlay" class="hud-fullscreen-container" style="display: none;">
+<div id="hud-overlay" class="hud-fullscreen-container inl-combat-002">
     <!-- Capture d'écran en arrière-plan -->
     <video id="hud-background-video" class="hud-background" autoplay muted></video>
 
@@ -218,12 +218,12 @@
                         <div class="pj-hp-container">
                             {% set ratio = c.hp_current / c.hp_max %}
                             <div class="pj-hp-bar">
-                                <div class="pj-hp-fill {% if ratio > 0.6 %}hp-green{% elif ratio > 0.3 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
-                                     style="width: {{ (ratio * 100)|round(1) }}%"></div>
+                                <div class="pj-hp-fill js-width {% if ratio > 0.6 %}hp-green{% elif ratio > 0.3 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                     data-width="{{ (ratio * 100)|round(1) }}%"></div>
 
                                 {% if c.temp_hp > 0 %}
-                                    <div class="pj-temp-hp"
-                                         style="width: {{ ((c.temp_hp / c.hp_max) * 100)|round(1) }}%"></div>
+                                    <div class="pj-temp-hp js-width"
+                                         data-width="{{ ((c.temp_hp / c.hp_max) * 100)|round(1) }}%"></div>
                                 {% endif %}
                             </div>
 
@@ -265,11 +265,11 @@
 <!-- ✅ Boutons flottants (CORRIGER le problème de clic) -->
 <div class="floating-hud">
     <button class="btn btn-capture btn-primary" id="capture-button">🎥 Partager écran</button>
-    <button class="btn btn-switch-display btn-primary" style="display: none;" onclick="enterHudMode()">🖥️ Switch Display</button>
-    <button class="btn btn-stop-capture btn-danger" style="display: none;">⏹️ Arrêter partage</button>
+    <button class="btn btn-switch-display btn-primary inl-combat-002" onclick="enterHudMode()">🖥️ Switch Display</button>
+    <button class="btn btn-stop-capture btn-danger inl-combat-002">⏹️ Arrêter partage</button>
 
-    <div class="capture-container" style="display: none;">
-        <video id="capture-preview" autoplay muted style="width: 300px; height: auto; border-radius: 8px; margin-top: 10px;"></video>
+    <div class="capture-container inl-combat-002">
+        <video id="capture-preview" autoplay muted class="inl-combat-005"></video>
     </div>
 </div>
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
@@ -534,8 +534,10 @@ async function updateCombatDisplay() {
 
         const data = await response.json();
 
+        const orderedCombatants = sortCombatantsByInitiative(data.combatants);
+
         // ✅ NOUVEAU : Vérifier si des combattants ont été ajoutés/supprimés
-        const currentCount = data.combatants.length;
+        const currentCount = orderedCombatants.length;
         const combatantsChanged = currentCount !== lastCombatantCount;
         lastCombatantCount = currentCount;
 
@@ -546,15 +548,15 @@ async function updateCombatDisplay() {
         updatePJBar(data);
 
         // Mettre à jour le panel d'initiative
-        updateSimpleInitiativePanel(data.combatants, data.current_actor_id);
+        updateSimpleInitiativePanel(orderedCombatants, data.current_actor_id);
 
         // Mettre à jour les combattants principaux
-        rebuildCombatantsGrid(data.combatants, data.current_actor_id);
+        rebuildCombatantsGrid(orderedCombatants, data.current_actor_id);
 
         // Si en mode HUD
         if (document.getElementById('hud-overlay').style.display === 'block') {
-            updateHudSimpleInitiative(data.combatants, data.current_actor_id);
-            updateHudPjBar(data.combatants, data.current_actor_id);
+            updateHudSimpleInitiative(orderedCombatants, data.current_actor_id);
+            updateHudPjBar(orderedCombatants, data.current_actor_id);
             const hudRound = document.getElementById('hud-round');
             if (hudRound) {
                 hudRound.textContent = data.round;
@@ -576,6 +578,14 @@ async function updateCombatDisplay() {
     } catch (error) {
         console.error('Erreur lors de la mise à jour:', error);
     }
+}
+
+function sortCombatantsByInitiative(combatants) {
+    return [...combatants].sort((a, b) => {
+        const initiativeDiff = b.initiative - a.initiative;
+        if (initiativeDiff !== 0) return initiativeDiff;
+        return a.id - b.id;
+    });
 }
 
 // ✅ NOUVEAU : Mettre à jour les informations de round
@@ -617,9 +627,9 @@ function updatePJBar(combatState) {
                 <div class="pj-ac">CA ${c.ac_total}</div>
                 <div class="pj-hp-container">
                     <div class="pj-hp-bar">
-                        <div class="pj-hp-fill ${hpColor}" style="width: ${(ratio * 100).toFixed(1)}%"></div>
+                        <div class="pj-hp-fill js-width ${hpColor}" data-width="${(ratio * 100).toFixed(1)}%"></div>
                         ${c.temp_hp > 0 ?
-                            `<div class="pj-temp-hp" style="width: ${((c.temp_hp / c.hp_max) * 100).toFixed(1)}%"></div>` :
+                            `<div class="pj-temp-hp js-width" data-width="${((c.temp_hp / c.hp_max) * 100).toFixed(1)}%"></div>` :
                             ''
                         }
                     </div>
@@ -672,9 +682,9 @@ function createSimpleInitiativeCard(combatant, currentActorId) {
 
     // ✅ Icônes avec priorité mort > fuite > santé
     if (combatant.is_dead) {
-        statusIcon = '<span style="color: #e53935;">💀</span>';
+        statusIcon = '<span class="status-icon status-icon-dead">💀</span>';
     } else if (combatant.has_fled) {
-        statusIcon = '<span style="color: #ff9800;">🏃</span>';
+        statusIcon = '<span class="status-icon status-icon-fled">🏃</span>';
     } else if (combatant.type !== 'PJ') {
         statusIcon = ratio > 0.75 ? '🟢' : ratio > 0.4 ? '🟡' : ratio > 0.1 ? '🟠' : '🔴';
     }
@@ -732,11 +742,11 @@ function createCombatantElement(combatant, currentActorId) {
         ${combatant.type === 'PJ' ? `
             <div class="hp-container">
                 <div class="hp-bar-container">
-                    <div class="hp-bar ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
-                         style="width: ${ratio * 100}%"></div>
+                    <div class="hp-bar js-width ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
+                         data-width="${ratio * 100}%"></div>
                 </div>
                 <div class="hp-text">${combatant.hp_current} / ${combatant.hp_max} PV</div>
-                <span class="temp-hp-text" style="${combatant.temp_hp > 0 ? 'display: inline;' : 'display: none;'}">${combatant.temp_hp > 0 ? `(+${combatant.temp_hp} temp)` : ''}</span>
+                <span class="temp-hp-text ${combatant.temp_hp > 0 ? '' : 'is-hidden'}">${combatant.temp_hp > 0 ? `(+${combatant.temp_hp} temp)` : ''}</span>
             </div>
             <div class="pj-status">
                 ${combatant.is_dead ? '💀 Mort' : combatant.has_fled ? '🏃 En fuite' : ''}
@@ -803,9 +813,9 @@ function createHudSimpleCard(combatant, currentActorId) {
     let statusIcon = '';
 
     if (combatant.is_dead) {
-        statusIcon = '<span style="color: #e53935;">💀</span>';
+        statusIcon = '<span class="status-icon status-icon-dead">💀</span>';
     } else if (combatant.has_fled) {
-        statusIcon = '<span style="color: #ff9800;">🏃</span>';
+        statusIcon = '<span class="status-icon status-icon-fled">🏃</span>';
     } else if (combatant.type !== 'PJ') {
         statusIcon = ratio > 0.75 ? '🟢' : ratio > 0.4 ? '🟡' : ratio > 0.1 ? '🟠' : '🔴';
     }
@@ -860,9 +870,9 @@ function createHudPjPortrait(combatant, currentActorId) {
         <div class="hud-pj-ac">CA ${combatant.ac_total}</div>
         <div class="hud-pj-hp">
             <div class="hud-pj-hp-bar">
-                <div class="hud-pj-hp-fill ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
-                     style="width: ${ratio * 100}%"></div>
-                ${combatant.temp_hp > 0 ? `<div class="hud-pj-temp-hp" style="width: ${(combatant.temp_hp / combatant.hp_max) * 100}%"></div>` : ''}
+                <div class="hud-pj-hp-fill js-width ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"
+                     data-width="${ratio * 100}%"></div>
+                ${combatant.temp_hp > 0 ? `<div class="hud-pj-temp-hp js-width" data-width="${(combatant.temp_hp / combatant.hp_max) * 100}%"></div>` : ''}
             </div>
             <div class="hud-pj-hp-text">${combatant.hp_current}/${combatant.hp_max}${combatant.temp_hp > 0 ? ` (+${combatant.temp_hp})` : ''}</div>
         </div>

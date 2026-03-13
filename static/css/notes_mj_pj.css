@@ -9,15 +9,15 @@
 }
 
 .pj-note-card {
-    background: #2a2c36;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 193, 7, 0.3);
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    border: 2px solid var(--warning-bright-a30);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all var(--transition-default);
 }
 
 .pj-note-card:hover {
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+    box-shadow: 0 0 15px var(--warning-bright-a40);
 }
 
 .pj-note-header {
@@ -25,8 +25,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background: rgba(255, 193, 7, 0.1);
-    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+    background: var(--warning-bright-a10);
+    border-bottom: 1px solid var(--warning-bright-a20);
 }
 
 .pj-info {
@@ -40,26 +40,26 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--color-warning-bright);
 }
 
 .pj-mini-avatar-placeholder {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #1e1f26;
+    background: var(--color-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    color: #ffc107;
+    color: var(--color-warning-bright);
     font-size: 14px;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--color-warning-bright);
 }
 
 .pj-meta {
     font-size: 12px;
-    color: #ccc;
+    color: var(--color-text-secondary);
 }
 
 .pj-actions {
@@ -69,7 +69,7 @@
 
 .private-notes-section {
     padding: 20px;
-    background: rgba(255, 193, 7, 0.05);
+    background: var(--warning-bright-a05);
     animation: slideDown 0.3s ease;
 }
 
@@ -79,31 +79,31 @@
 }
 
 .notes-warning {
-    background: rgba(255, 152, 0, 0.2);
-    border: 1px solid rgba(255, 152, 0, 0.5);
-    border-radius: 8px;
+    background: var(--warning-a20);
+    border: 1px solid var(--warning-a50);
+    border-radius: var(--radius-lg);
     padding: 10px 15px;
     margin-bottom: 15px;
-    color: #ff9800;
+    color: var(--color-warning);
     font-size: 13px;
 }
 
 .private-notes-input {
     width: 100%;
     min-height: 120px;
-    background: #1e1f26;
-    border: 2px solid rgba(255, 193, 7, 0.3);
-    border-radius: 8px;
+    background: var(--color-bg);
+    border: 2px solid var(--warning-bright-a30);
+    border-radius: var(--radius-lg);
     padding: 12px;
-    color: #f0f0f0;
-    font-family: 'Courier New', monospace;
+    color: var(--color-text-primary);
+    font-family: var(--font-family-mono);
     resize: vertical;
 }
 
 .private-notes-input:focus {
-    border-color: #ffc107;
+    border-color: var(--color-warning-bright);
     outline: none;
-    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 0 10px var(--warning-bright-a30);
 }
 
 .notes-actions {
@@ -113,44 +113,44 @@
 }
 
 .private-notes-warning {
-    background: rgba(255, 152, 0, 0.1);
-    border: 2px solid rgba(255, 152, 0, 0.5);
-    border-radius: 12px;
+    background: var(--warning-a10);
+    border: 2px solid var(--warning-a50);
+    border-radius: var(--radius-2xl);
     padding: 20px;
     margin-bottom: 25px;
 }
 
 .private-notes-warning h3 {
-    color: #ff9800;
+    color: var(--color-warning);
     margin-bottom: 10px;
 }
 
 .readonly-info {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--overlay-white-05);
     padding: 15px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     margin-bottom: 20px;
 }
 
 .readonly-info p {
     margin: 8px 0;
-    color: #ccc;
+    color: var(--color-text-secondary);
 }
 
 .notes-help {
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 8px;
+    background: var(--primary-a10);
+    border-radius: var(--radius-lg);
     padding: 15px;
     margin-top: 15px;
 }
 
 .notes-help h5 {
-    color: #4caf50;
+    color: var(--color-primary);
     margin-bottom: 10px;
 }
 
 .notes-help ul {
-    color: #ccc;
+    color: var(--color-text-secondary);
     font-size: 13px;
 }
 
@@ -161,25 +161,25 @@
 /* app/static/style.css - AJOUTER */
 
 .mj-private-notes {
-    background: rgba(255, 152, 0, 0.1);
-    border: 2px solid rgba(255, 152, 0, 0.3);
-    border-radius: 8px;
+    background: var(--warning-a10);
+    border: 2px solid var(--warning-a30);
+    border-radius: var(--radius-lg);
     padding: 15px;
     margin-top: 20px;
 }
 
 .mj-private-notes h4 {
-    color: #ff9800;
+    color: var(--color-warning);
     margin-bottom: 10px;
     font-size: 16px;
 }
 
 .mj-notes-content {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--overlay-black-20);
     padding: 12px;
-    border-radius: 6px;
-    font-family: 'Courier New', monospace;
+    border-radius: var(--radius-md);
+    font-family: var(--font-family-mono);
     font-size: 14px;
     line-height: 1.5;
-    white-space: pre-wrap;
+    var(--color-white)-space: pre-wrap;
 }

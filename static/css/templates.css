@@ -1,27 +1,27 @@
 .template-card {
-    background: #2f3241;
-    border-radius: 12px;
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-2xl);
     padding: 18px;
-    border: 2px solid rgba(76,175,80,0.2);
-    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    border: 2px solid var(--primary-a20);
+    box-shadow: 0 0 15px var(--overlay-black-40);
     transition: 0.25s ease;
 }
 
 .template-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 0 20px rgba(76,175,80,0.5);
+    box-shadow: 0 0 20px var(--primary-a50);
 }
 
 .avatar-placeholder {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: #1e1f26;
+    background: var(--color-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    color: #4caf50;
+    color: var(--color-primary);
 }
 
 .template-card-header {
@@ -54,14 +54,14 @@
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: #1e1f26;
+    background: var(--color-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    color: #4caf50;
+    color: var(--color-primary);
     font-size: 18px;
-    border: 2px solid #4caf50;
+    border: 2px solid var(--color-primary);
 }
 
 /* ✅ Masquer placeholder quand il y a une image */

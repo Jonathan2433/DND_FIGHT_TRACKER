@@ -1,38 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 600px; margin: 50px auto; background: #2a2c36; padding: 30px; border-radius: 12px;">
-    <h2 style="text-align: center; color: #4caf50; margin-bottom: 30px;">📖 Nouvel Arc Narratif</h2>
-    <p style="text-align: center; color: #ccc; margin-bottom: 30px;">Campagne : <strong>{{ campaign.name }}</strong></p>
+<div class="inl-campaign-074">
+    <h2 class="inl-campaign-075">📖 Nouvel Arc Narratif</h2>
+    <p class="inl-campaign-076">Campagne : <strong>{{ campaign.name }}</strong></p>
     
     <form method="POST">
-        <div style="margin-bottom: 20px;">
-            <label for="name" style="color: #ccc; display: block; margin-bottom: 5px;">Nom de l'arc :</label>
-            <input type="text" id="name" name="name" required 
-                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;"
-                   placeholder="Ex: Les Mines Perdues">
+        <div class="inl-campaign-077">
+            <label for="name" class="inl-campaign-044">Nom de l'arc :</label>
+            <input type="text" id="name" name="name" required placeholder="Ex: Les Mines Perdues" class="inl-campaign-078">
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <label for="description" style="color: #ccc; display: block; margin-bottom: 5px;">Description :</label>
-            <textarea id="description" name="description" rows="4"
-                      style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;"
-                      placeholder="Décrivez brièvement cet arc narratif..."></textarea>
+        <div class="inl-campaign-077">
+            <label for="description" class="inl-campaign-044">Description :</label>
+            <textarea id="description" name="description" rows="4" placeholder="Décrivez brièvement cet arc narratif..." class="inl-campaign-078"></textarea>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <label for="estimated_sessions" style="color: #ccc; display: block; margin-bottom: 5px;">Sessions estimées :</label>
-            <input type="number" id="estimated_sessions" name="estimated_sessions" value="1" min="1"
-                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
+        <div class="inl-campaign-077">
+            <label for="estimated_sessions" class="inl-campaign-044">Sessions estimées :</label>
+            <input type="number" id="estimated_sessions" name="estimated_sessions" value="1" min="1" class="inl-campaign-078">
         </div>
         
-        <button type="submit" class="btn-primary" 
-                style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: #4caf50; color: white; border: none; cursor: pointer;">
+        <button type="submit" class="btn-primary inl-campaign-079" >
             Créer l'Arc Narratif
         </button>
     </form>
     
-    <p style="text-align: center; margin-top: 20px; color: #ccc;">
-        <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" style="color: #4caf50;">← Retour à la campagne</a>
+    <p class="inl-campaign-080">
+        <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="inl-campaign-081">← Retour à la campagne</a>
     </p>
 </div>
 {% endblock %}

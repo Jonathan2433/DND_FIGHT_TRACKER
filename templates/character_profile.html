@@ -12,13 +12,13 @@
                 <div class="avatar-placeholder-large">
                     {{ character.name[:2]|upper }}
                 </div>
-                <div style="margin-bottom: 15px;">
+                <div class="inl-character-001">
                     {% if character.is_public %}
-                        <span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                        <span class="inl-character-002">
                             🌐 Public
                         </span>
                     {% else %}
-                        <span style="background: rgba(255, 152, 0, 0.2); color: #ff9800; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                        <span class="inl-character-003">
                             🔒 Privé
                         </span>
                     {% endif %}
@@ -57,9 +57,7 @@
                    class="btn btn-primary">✏️ Modifier</a>
 
                 {% if current_user and character.owner_id == current_user.id %}
-                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                          style="display: inline;"
-                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');">
+                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');" class="inl-character-004">
                         <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
                     </form>
                 {% endif %}
@@ -126,7 +124,7 @@
                     </div>
 
                     <div class="xp-bar-container">
-                        <div class="xp-bar" style="width: {{ character.xp_progress_percentage }}%"></div>
+                        <div class="xp-bar js-width" data-width="{{ character.xp_progress_percentage }}%"></div>
                     </div>
 
                     <div class="xp-details">
@@ -162,15 +160,15 @@
                         </div>
                     {% endif %}
 
-                    <div style="text-align: center; margin-top: 10px;">
+                    <div class="inl-character-005">
                         <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">
                             📊 Historique XP
                         </a>
                     </div>
                 {% else %}
                     <!-- Utilisateur non connecté -->
-                    <div style="text-align: center; margin-top: 10px;">
-                        <p style="color: #ccc; font-style: italic;">Connectez-vous pour voir l'historique XP</p>
+                    <div class="inl-character-005">
+                        <p class="inl-character-006">Connectez-vous pour voir l'historique XP</p>
                     </div>
                 {% endif %}
 
@@ -196,22 +194,20 @@
 
             <!-- ✅ MODIFICATION : Afficher les actions de modification uniquement si autorisé -->
             {% if can_edit %}
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="{{ url_for('template.edit_character_template', id=character.id) }}"
-                   class="btn-primary" style="margin-right: 10px;">✏️ Modifier</a>
+            <div class="inl-character-007">
+                <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn-primary inl-character-008">✏️ Modifier</a>
 
                 <!-- Seul le propriétaire peut supprimer -->
                 {% if current_user and character.owner_id == current_user.id %}
-                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')" style="display: inline;">
+                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')" class="inl-character-004">
                         <button type="submit" class="btn-danger">🗑️ Supprimer</button>
                     </form>
                 {% endif %}
             </div>
             {% else %}
                 {% if current_user %}
-                    <div style="text-align: center; margin-top: 20px; color: #ccc;">
-                        <p style="font-style: italic;">Vous ne pouvez que consulter ce personnage</p>
+                    <div class="inl-character-009">
+                        <p class="inl-character-010">Vous ne pouvez que consulter ce personnage</p>
                     </div>
                 {% endif %}
             {% endif %}

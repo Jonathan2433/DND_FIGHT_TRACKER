@@ -8,7 +8,7 @@
     </div>
 
     <!-- ✅ FORMULAIRE ÉTENDU -->
-    <div id="create-form" style="display: none;" class="card">
+    <div id="create-form" class="card inl-core-004">
         <h3>Créer un Template PJ</h3>
         <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data">
 
@@ -98,18 +98,17 @@
                     </div>
                 </div>
             </div>
-            <div style="margin-top: 20px; background: #2a2c36; padding: 20px; border-radius: 8px;">
-                <h4 style="color: #4caf50; margin-bottom: 15px;">🔒 Visibilité</h4>
+            <div class="inl-core-005">
+                <h4 class="inl-core-006">🔒 Visibilité</h4>
 
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <input type="checkbox" id="is_public" name="is_public"
-                           style="width: auto; margin-bottom: 0;">
-                    <label for="is_public" style="color: #ccc; margin-bottom: 0;">
+                <div class="inl-core-007">
+                    <input type="checkbox" id="is_public" name="is_public" class="inl-core-008">
+                    <label for="is_public" class="inl-core-009">
                         Rendre ce personnage public (visible par tous les utilisateurs)
                     </label>
                 </div>
 
-                <small style="color: #999; font-style: italic;">
+                <small class="inl-core-010">
                     Les personnages privés ne sont visibles que par leur créateur et les MJ de leurs campagnes
                 </small>
             </div>
@@ -177,7 +176,7 @@
                 <div class="template-card-actions">
                     <a href="{{ url_for('template.character_profile', id=char.id) }}" class="btn btn-secondary">Voir</a>
                     <a href="{{ url_for('template.edit_character_template', id=char.id) }}" class="btn btn-primary">Modifier</a>
-                    <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" style="display: inline;">
+                    <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" class="inl-core-003">
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer ce template ?')">🗑 Supprimer</button>
                     </form>
                 </div>

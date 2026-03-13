@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:16
+    ports:
+      - "5432:5432"
     container_name: fight_tracker_db
     restart: unless-stopped
     environment:

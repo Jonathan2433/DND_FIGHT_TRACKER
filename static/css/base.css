@@ -3,20 +3,20 @@
 /* ===================== */
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #1e1f26;
-    color: #f0f0f0;
+    font-family: var(--font-family-base);
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
     margin: 0;
     padding: 0;
 }
 
 header {
-    background: #111;
+    background: var(--color-bg-ink);
     padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #4caf50;
+    border-bottom: 2px solid var(--color-primary);
 }
 
 header h1 {
@@ -37,7 +37,7 @@ main {
 /* ===================== */
 
 a {
-    color: #4caf50;
+    color: var(--color-primary);
     text-decoration: none;
 }
 
@@ -51,6 +51,6 @@ a:hover {
 
 hr {
     border: none;
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--color-border);
     margin: 30px 0;
 }

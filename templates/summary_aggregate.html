@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>
+        {% if scope_type == 'campaign' %}
+            Statistiques Campagne
+        {% else %}
+            Statistiques Arc Narratif
+        {% endif %}
+        - {{ scope_title }}
+    </h1>
+
+    <div class="dashboard-stats">
+        <div class="stat-card"><h3>Combats</h3><p>{{ stats.total_combats }}</p></div>
+        <div class="stat-card"><h3>Combats clos</h3><p>{{ stats.closed_combats }}</p></div>
+        <div class="stat-card"><h3>Rounds</h3><p>{{ stats.total_rounds }}</p></div>
+        <div class="stat-card"><h3>Degats</h3><p>{{ stats.total_damage }}</p></div>
+        <div class="stat-card"><h3>Soins</h3><p>{{ stats.total_heal }}</p></div>
+        <div class="stat-card"><h3>Morts</h3><p>{{ stats.total_deaths }}</p></div>
+        <div class="stat-card"><h3>Fuites</h3><p>{{ stats.total_fled }}</p></div>
+        <div class="stat-card">
+            <h3>Duree moyenne</h3>
+            <p>{{ (stats.avg_duration_seconds // 60) }}m {{ (stats.avg_duration_seconds % 60) }}s</p>
+        </div>
+    </div>
+
+    <h2>Combats inclus</h2>
+    {% if combats %}
+        <div class="initiative-list">
+            {% for combat in combats %}
+                <div class="initiative-card">
+                    <div><strong>{{ combat.name }}</strong></div>
+                    <div>Round {{ combat.round }}{% if combat.is_closed %} - clos{% endif %}</div>
+                    <div>
+                        <a class="btn btn-secondary" href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}">Voir resume</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucun combat rattache a ce perimetre.</p>
+    {% endif %}
+
+    <div class="inl-campaign-020">
+        <a class="btn btn-secondary" href="{{ export_url }}">Export JSON</a>
+        <a class="btn btn-primary" href="{{ url_for('main.index') }}">Retour accueil</a>
+    </div>
+</div>
+{% endblock %}

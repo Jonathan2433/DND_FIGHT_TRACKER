@@ -32,6 +32,7 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     SESSION_COOKIE_HTTPONLY = True
 
+TEMPLATES_AUTO_RELOAD = True
 
 class DevelopmentConfig(Config):
     DEBUG = True

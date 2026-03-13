@@ -1,35 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 600px; margin: 50px auto; background: #2a2c36; padding: 30px; border-radius: 12px;">
-    <h2 style="text-align: center; color: #4caf50; margin-bottom: 30px;">👤 Mon Profil</h2>
+<div class="inl-auth-009">
+    <h2 class="inl-auth-002">👤 Mon Profil</h2>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="inl-auth-010">
         <div>
-            <strong style="color: #4caf50;">Nom d'utilisateur :</strong><br>
-            <span style="color: #f0f0f0;">{{ user.username }}</span>
+            <strong class="inl-auth-008">Nom d'utilisateur :</strong><br>
+            <span class="inl-auth-011">{{ user.username }}</span>
         </div>
         
         <div>
-            <strong style="color: #4caf50;">Email :</strong><br>
-            <span style="color: #f0f0f0;">{{ user.email }}</span>
+            <strong class="inl-auth-008">Email :</strong><br>
+            <span class="inl-auth-011">{{ user.email }}</span>
         </div>
         
         <div>
-            <strong style="color: #4caf50;">Rôle :</strong><br>
-            <span style="color: #f0f0f0;">{{ user.role }}</span>
+            <strong class="inl-auth-008">Rôle :</strong><br>
+            <span class="inl-auth-011">{{ user.role }}</span>
         </div>
         
         <div>
-            <strong style="color: #4caf50;">Statut :</strong><br>
+            <strong class="inl-auth-008">Statut :</strong><br>
             {% if user.is_verified %}
-                <span style="color: #4caf50;">✅ Vérifié</span>
+                <span class="inl-auth-008">✅ Vérifié</span>
             {% else %}
-                <span style="color: #ff9800;">⚠️ En attente de vérification</span>
+                <span class="inl-auth-012">⚠️ En attente de vérification</span>
             {% endif %}
         </div>
     </div>
     
-    <div style="text-align: center; margin-top: 30px;">
+    <div class="inl-auth-013">
+        <a href="{{ url_for('auth.edit_profile') }}" class="btn-secondary">Modifier mon profil</a>
         <a href="{{ url_for('main.index') }}" class="btn-primary">Retour à l'accueil</a>
     </div>
 </div>

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="inl-auth-009">
+    <h2 class="inl-auth-002">Modifier Mon Profil</h2>
+
+    <form method="POST" class="inl-auth-010">
+        <div>
+            <label class="inl-auth-008">Nom d'utilisateur</label><br>
+            <input type="text" name="username" value="{{ user.username }}" required class="inl-auth-011">
+        </div>
+
+        <div>
+            <label class="inl-auth-008">Email</label><br>
+            <input type="email" name="email" value="{{ user.email }}" required class="inl-auth-011">
+        </div>
+
+        <div>
+            <label class="inl-auth-008">Nouveau mot de passe (optionnel)</label><br>
+            <input type="password" name="password" minlength="8" class="inl-auth-011">
+        </div>
+
+        <div class="inl-auth-013">
+            <button type="submit" class="btn-primary">Enregistrer</button>
+            <a href="{{ url_for('auth.profile') }}" class="btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

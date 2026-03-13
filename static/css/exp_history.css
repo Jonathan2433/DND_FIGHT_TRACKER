@@ -18,16 +18,16 @@
 }
 
 .xp-header h1 {
-    color: #ffc107;
+    color: var(--color-warning-bright);
     margin: 0;
 }
 
 /* Carte résumé XP */
 .xp-summary-card {
-    background: linear-gradient(135deg, #2a2c36, #1e1f26);
+    background: linear-gradient(135deg, var(--color-surface), var(--color-bg));
     padding: 25px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--radius-2xl);
+    border: 2px solid var(--warning-bright-a30);
 }
 
 .xp-summary-info {
@@ -44,8 +44,8 @@
 }
 
 .level-badge {
-    background: #ffc107;
-    color: black;
+    background: var(--color-warning-bright);
+    color: var(--color-black);
     padding: 10px 20px;
     border-radius: 25px;
     font-weight: bold;
@@ -56,7 +56,7 @@
 .xp-total {
     font-size: 16px;
     font-weight: bold;
-    color: #ffc107;
+    color: var(--color-warning-bright);
     text-align: center;
 }
 
@@ -68,17 +68,17 @@
 }
 
 .xp-bar-container {
-    background: #444;
+    background: var(--color-border);
     height: 15px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
 .xp-bar {
-    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    background: linear-gradient(90deg, var(--color-warning-bright), var(--color-warning-dark));
     height: 100%;
     transition: width 0.3s ease;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .xp-progress-text {
@@ -86,14 +86,14 @@
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
-    color: #ccc;
+    color: var(--color-text-secondary);
 }
 
 .level-up-notification {
-    background: #4caf50;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-white);
     padding: 4px 8px;
-    border-radius: 12px;
+    border-radius: var(--radius-2xl);
     font-size: 12px;
     font-weight: bold;
     animation: pulse 1.5s infinite;
@@ -101,7 +101,7 @@
 
 /* Liste des logs XP */
 .xp-logs-section h2 {
-    color: #ffc107;
+    color: var(--color-warning-bright);
     margin-bottom: 20px;
 }
 
@@ -112,16 +112,16 @@
 }
 
 .xp-log-card {
-    background: #2a2c36;
-    border-radius: 10px;
-    border-left: 4px solid #ffc107;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    border-left: 4px solid var(--color-warning-bright);
     padding: 20px;
     transition: all 0.2s ease;
 }
 
 .xp-log-card:hover {
     transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+    box-shadow: 0 4px 15px var(--warning-bright-a20);
 }
 
 .xp-log-header {
@@ -139,18 +139,18 @@
 }
 
 .xp-positive {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4caf50;
+    background: var(--primary-a20);
+    color: var(--color-primary);
 }
 
 .xp-negative {
-    background: rgba(229, 57, 53, 0.2);
-    color: #e53935;
+    background: var(--danger-a20);
+    color: var(--color-danger);
 }
 
 .xp-date {
     font-size: 14px;
-    color: #999;
+    color: var(--color-text-muted);
 }
 
 .xp-log-body {
@@ -172,33 +172,33 @@
 }
 
 .xp-description {
-    color: #ccc;
+    color: var(--color-text-secondary);
     font-style: italic;
     font-size: 14px;
 }
 
 .level-change {
-    background: rgba(76, 175, 80, 0.1);
-    color: #4caf50;
+    background: var(--primary-a10);
+    color: var(--color-primary);
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     font-weight: bold;
     font-size: 14px;
 }
 
 .xp-metadata {
     font-size: 12px;
-    color: #888;
+    color: var(--color-text-soft);
 }
 
 .xp-metadata a {
-    color: #4caf50;
+    color: var(--color-primary);
 }
 
 /* État vide */
 .no-xp-logs {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    background: var(--overlay-white-05);
+    border-radius: var(--radius-2xl);
     padding: 40px;
 }
 
@@ -207,18 +207,18 @@
 }
 
 .empty-state h3 {
-    color: #ffc107;
+    color: var(--color-warning-bright);
     margin-bottom: 15px;
 }
 
 .empty-state p {
-    color: #ccc;
+    color: var(--color-text-secondary);
     margin-bottom: 20px;
 }
 
 /* Statistiques XP */
 .xp-stats-section h2 {
-    color: #ffc107;
+    color: var(--color-warning-bright);
     margin-bottom: 20px;
 }
 
@@ -229,16 +229,65 @@
 }
 
 .stat-card {
-    background: #2a2c36;
+    background: var(--color-surface);
     padding: 20px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 193, 7, 0.2);
+    border-radius: var(--radius-2xl);
+    border: 2px solid var(--warning-bright-a20);
     display: flex;
     align-items: center;
     gap: 15px;
-    transition: all 0.3s ease;
+    transition: all var(--transition-default);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0
+    box-shadow: 0 4px 15px var(--warning-bright-a30);
+}
+
+.stat-icon {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    background: var(--warning-bright-a20);
+    font-size: 22px;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--color-warning-bright);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .xp-summary-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .xp-progress-text {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .xp-log-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

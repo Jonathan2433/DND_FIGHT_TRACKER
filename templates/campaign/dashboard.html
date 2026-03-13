@@ -1,47 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+<div class="inl-campaign-001">
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1 style="color: #4caf50; margin: 0;">🎲 {{ campaign.name }}</h1>
+    <div class="inl-campaign-002">
+        <h1 class="inl-campaign-003">🎲 {{ campaign.name }}</h1>
         
         {% if is_mj %}
-            <div style="display: flex; gap: 10px;">
+            <div class="inl-campaign-004">
                 <a href="{{ url_for('campaign.campaign_settings', campaign_id=campaign.id) }}" 
                    class="btn btn-secondary">⚙️ Paramètres</a>
-                <a href="{{ url_for('combat.create_combat') }}" 
-                   class="btn btn-primary">⚔️ Nouveau Combat</a>
+                <a href=\"{{ url_for('summary.campaign_stats', campaign_id=campaign.id) }}\" class=\"btn btn-secondary\">Stats campagne</a>
+                <span class="inl-campaign-044">Cr?ez les combats depuis un arc narratif.</span>
             </div>
         {% endif %}
     </div>
     
     {% if campaign.description %}
-    <div style="background: #2a2c36; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #4caf50;">
-        <p style="margin: 0; color: #f0f0f0;">{{ campaign.description }}</p>
+    <div class="inl-campaign-005">
+        <p class="inl-campaign-006">{{ campaign.description }}</p>
     </div>
     {% endif %}
     
     <!-- Statistiques rapides -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-        <div style="background: #2a2c36; padding: 20px; border-radius: 12px; text-align: center;">
-            <h3 style="color: #4caf50; margin-bottom: 10px;">👥 Membres</h3>
-            <p style="font-size: 24px; font-weight: bold; color: #f0f0f0; margin: 0;">{{ members|length + 1 }}</p>
+    <div class="inl-campaign-007">
+        <div class="inl-campaign-008">
+            <h3 class="inl-campaign-009">👥 Membres</h3>
+            <p class="inl-campaign-010">{{ members|length + 1 }}</p>
         </div>
         
-        <div style="background: #2a2c36; padding: 20px; border-radius: 12px; text-align: center;">
-            <h3 style="color: #4caf50; margin-bottom: 10px;">⚔️ Combats</h3>
-            <p style="font-size: 24px; font-weight: bold; color: #f0f0f0; margin: 0;">0</p>
+        <div class="inl-campaign-008">
+            <h3 class="inl-campaign-009">⚔️ Combats</h3>
+            <p class="inl-campaign-010">0</p>
         </div>
         
-        <div style="background: #2a2c36; padding: 20px; border-radius: 12px; text-align: center;">
-            <h3 style="color: #4caf50; margin-bottom: 10px;">📖 Arc Actuel</h3>
-            <p style="font-size: 16px; color: #f0f0f0; margin: 0;">Bientôt disponible</p>
+        <div class="inl-campaign-008">
+            <h3 class="inl-campaign-009">📖 Arc Actuel</h3>
+            <p class="inl-campaign-011">Bientôt disponible</p>
         </div>
     </div>
 
-    <div style="background: #2a2c36; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: #4caf50; margin: 0;">📖 Arcs Narratifs</h2>
+    <div class="inl-campaign-012">
+        <div class="inl-campaign-013">
+            <h2 class="inl-campaign-003">📖 Arcs Narratifs</h2>
             {% if is_mj %}
                 <a href="{{ url_for('story_arc.create_arc', campaign_id=campaign.id) }}" class="btn btn-primary">➕ Nouvel Arc</a>
             {% endif %}
@@ -49,38 +49,45 @@
 
         {% set arcs = campaign.story_arcs %}
         {% if arcs %}
-            <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="inl-campaign-014">
                 {% for arc in arcs %}
-                    <div style="background: #1e1f26; padding: 15px; border-radius: 8px;
-                                border-left: 4px solid {% if arc.status == 'en_cours' %}#4caf50{% elif arc.status == 'terminé' %}#666{% else %}#ff9800{% endif %};">
+                    <div class="arc-item
+                        {% if arc.status == 'en_cours' %}arc-item-current
+                        {% elif arc.status == 'terminé' %}arc-item-complete
+                        {% else %}arc-item-upcoming{% endif %}">
 
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="inl-campaign-015">
                             <div>
-                                <h3 style="color: #f0f0f0; margin: 0 0 5px 0;">{{ arc.name }}</h3>
-                                <p style="color: #ccc; margin: 0; font-size: 14px;">{{ arc.description or "Aucune description" }}</p>
+                                <h3 class="inl-campaign-016">{{ arc.name }}</h3>
+                                <p class="inl-campaign-017">{{ arc.description or "Aucune description" }}</p>
                             </div>
 
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;
-                                             {% if arc.status == 'en_cours' %}background: rgba(76, 175, 80, 0.2); color: #4caf50;
-                                             {% elif arc.status == 'terminé' %}background: rgba(102, 102, 102, 0.2); color: #666;
-                                             {% else %}background: rgba(255, 152, 0, 0.2); color: #ff9800;{% endif %}">
+                            <div class="inl-campaign-018">
+                                <span class="arc-status-badge
+                                    {% if arc.status == 'en_cours' %}arc-status-current
+                                    {% elif arc.status == 'terminé' %}arc-status-complete
+                                    {% else %}arc-status-upcoming{% endif %}">
                                     {% if arc.status == 'en_cours' %}🎯 En cours
                                     {% elif arc.status == 'terminé' %}✅ Terminé
                                     {% else %}⏳ À venir{% endif %}
                                 </span>
 
-                                <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary" style="font-size: 12px;">👁 Voir</a>
+                                <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary inl-campaign-019">👁 Voir</a>
+                                <a href=\"{{ url_for('summary.arc_stats', arc_id=arc.id) }}\" class=\"btn btn-secondary inl-campaign-019\">Stats</a>
 
                                 {% if is_mj %}
+                                    <form method="POST" action="{{ url_for('combat.create_combat') }}" class="inl-campaign-020">
+                                        <input type="hidden" name="name" value="Combat - {{ arc.name }}">
+                                        <input type="hidden" name="story_arc_id" value="{{ arc.id }}">
+                                        <button type="submit" class="btn btn-primary inl-campaign-019">?? Nouveau combat</button>
+                                    </form>
                                     {% if arc.can_be_started %}
-                                        <form method="POST" action="{{ url_for('story_arc.start_arc', arc_id=arc.id) }}" style="display: inline;">
-                                            <button type="submit" class="btn btn-primary" style="font-size: 12px;">▶️ Démarrer</button>
+                                        <form method="POST" action="{{ url_for('story_arc.start_arc', arc_id=arc.id) }}" class="inl-campaign-020">
+                                            <button type="submit" class="btn btn-primary inl-campaign-019">▶️ Démarrer</button>
                                         </form>
                                     {% elif arc.is_current %}
-                                        <form method="POST" action="{{ url_for('story_arc.complete_arc', arc_id=arc.id) }}"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir terminer cet arc ?')" style="display: inline;">
-                                            <button type="submit" class="btn btn-warning" style="font-size: 12px;">🏁 Terminer</button>
+                                        <form method="POST" action="{{ url_for('story_arc.complete_arc', arc_id=arc.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir terminer cet arc ?')" class="inl-campaign-020">
+                                            <button type="submit" class="btn btn-warning inl-campaign-019">🏁 Terminer</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -90,7 +97,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div style="text-align: center; padding: 40px; color: #888;">
+            <div class="inl-campaign-021">
                 <p>📖 Aucun arc narratif créé</p>
                 {% if is_mj %}
                     <a href="{{ url_for('story_arc.create_arc', campaign_id=campaign.id) }}" class="btn btn-primary">Créer le premier arc</a>
@@ -150,7 +157,7 @@
     <h2>🎭 PNJ de la Campagne</h2>
 
     {% if is_mj %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div class="inl-campaign-022">
             <span>Gérez vos personnages non-joueurs</span>
             <div>
                 <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
@@ -166,45 +173,44 @@
     <!-- Aperçu des PNJ récents -->
     {% set recent_pnjs = campaign.characters|selectattr("character_type", "equalto", "PNJ")|list %}
     {% if recent_pnjs %}
-        <div class="pj-dashboard-grid" style="gap: 10px;">
+        <div class="pj-dashboard-grid inl-campaign-023">
             {% for pnj in recent_pnjs[:6] %}
-                <div class="pj-dashboard-card" style="width: 100px;">
+                <div class="pj-dashboard-card inl-campaign-024">
                     <div class="template-avatar-container {% if pnj.image_filename %}has-image{% endif %}">
                         {% if pnj.image_filename %}
-                            <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}"
-                                 class="pj-dashboard-img" alt="{{ pnj.name }}" style="width: 50px; height: 50px;">
+                            <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}" class="pj-dashboard-img inl-campaign-025" alt="{{ pnj.name }}">
                         {% endif %}
-                        <div class="pj-avatar-large" style="width: 50px; height: 50px; font-size: 16px;">
+                        <div class="pj-avatar-large inl-campaign-026">
                             {{ pnj.name[:2]|upper }}
                         </div>
                     </div>
-                    <div style="font-size: 12px; font-weight: bold;">{{ pnj.name }}</div>
+                    <div class="inl-campaign-027">{{ pnj.name }}</div>
 
                     {% if is_mj %}
                         {% if pnj.is_shared %}
-                            <div style="font-size: 10px; color: #4caf50;">📤 Partagé ({{ pnj.visibility_level }})</div>
+                            <div class="inl-campaign-028">📤 Partagé ({{ pnj.visibility_level }})</div>
                         {% else %}
-                            <div style="font-size: 10px; color: #999;">🔒 Privé</div>
+                            <div class="inl-campaign-029">🔒 Privé</div>
                         {% endif %}
                     {% else %}
                         {% if pnj.is_shared %}
-                            <div style="font-size: 10px; color: #4caf50;">👁️ {{ pnj.visibility_level }}</div>
+                            <div class="inl-campaign-028">👁️ {{ pnj.visibility_level }}</div>
                         {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}
         </div>
 
-        <div style="text-align: center; margin-top: 15px;">
+        <div class="inl-campaign-030">
             <a href="{{ url_for('pnj.list_campaign_pnjs', campaign_id=campaign.id) }}" class="btn btn-secondary">
                 📋 Voir tous les PNJ ({{ recent_pnjs|length }})
             </a>
         </div>
     {% else %}
-        <div style="text-align: center; padding: 20px; color: #999;">
+        <div class="inl-campaign-031">
             {% if is_mj %}
                 <p>🎭 Aucun PNJ créé</p>
-                <p style="font-size: 14px; margin-bottom: 15px;">Les PNJ enrichissent votre monde et peuvent être partagés avec vos joueurs selon différents niveaux de visibilité.</p>
+                <p class="inl-campaign-032">Les PNJ enrichissent votre monde et peuvent être partagés avec vos joueurs selon différents niveaux de visibilité.</p>
                 <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
                     ➕ Créer votre premier PNJ
                 </a>
@@ -216,29 +222,29 @@
 </div>
     
     <!-- Membres de la campagne -->
-    <div style="background: #2a2c36; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
-        <h2 style="color: #4caf50; margin-bottom: 20px;">👥 Membres de la Campagne</h2>
+    <div class="inl-campaign-012">
+        <h2 class="inl-campaign-033">👥 Membres de la Campagne</h2>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+        <div class="inl-campaign-034">
             <!-- MJ -->
-            <div style="background: #1e1f26; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 24px;">🎭</span>
+            <div class="inl-campaign-035">
+                <div class="inl-campaign-018">
+                    <span class="inl-campaign-036">🎭</span>
                     <div>
-                        <div style="font-weight: bold; color: #f0f0f0;">{{ campaign.mj.username }}</div>
-                        <div style="color: #ff9800; font-size: 12px;">Maître du Jeu</div>
+                        <div class="inl-campaign-037">{{ campaign.mj.username }}</div>
+                        <div class="inl-campaign-038">Maître du Jeu</div>
                     </div>
                 </div>
             </div>
             
             <!-- Joueurs -->
             {% for member in members %}
-            <div style="background: #1e1f26; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 24px;">🧙</span>
+            <div class="inl-campaign-039">
+                <div class="inl-campaign-018">
+                    <span class="inl-campaign-036">🧙</span>
                     <div>
-                        <div style="font-weight: bold; color: #f0f0f0;">{{ member.user.username }}</div>
-                        <div style="color: #4caf50; font-size: 12px;">Joueur</div>
+                        <div class="inl-campaign-037">{{ member.user.username }}</div>
+                        <div class="inl-campaign-040">Joueur</div>
                     </div>
                 </div>
             </div>
@@ -248,61 +254,64 @@
     
     {% if is_mj %}
     <!-- Section MJ : Invitations et demandes -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+    <div class="inl-campaign-041">
         
         <!-- Inviter de nouveaux joueurs -->
-        <div style="background: #2a2c36; padding: 25px; border-radius: 12px;">
-            <h3 style="color: #4caf50; margin-bottom: 20px;">📧 Inviter un Joueur</h3>
+        <div class="inl-campaign-042">
+            <h3 class="inl-campaign-033">📧 Inviter un Joueur</h3>
             
             <form method="POST" action="{{ url_for('campaign.invite_user', campaign_id=campaign.id) }}">
-                <div style="margin-bottom: 15px;">
-                    <label style="color: #ccc; display: block; margin-bottom: 5px;">Email ou nom d'utilisateur :</label>
-                    <input type="text" name="email_or_username" required
-                           style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;"
-                           placeholder="email@exemple.com ou username">
+                <div class="inl-campaign-043">
+                    <label class="inl-campaign-044">Email ou nom d'utilisateur :</label>
+                    <input type="text" name="email_or_username" required placeholder="email@exemple.com ou username" class="inl-campaign-045">
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <button type="submit" class="btn btn-primary inl-campaign-046">
                     📧 Envoyer l'invitation
                 </button>
             </form>
         </div>
         
         <!-- Demandes en attente -->
-        <div style="background: #2a2c36; padding: 25px; border-radius: 12px;">
-            <h3 style="color: #4caf50; margin-bottom: 20px;">🙋 Demandes en Attente</h3>
+        <div class="inl-campaign-042">
+            <h3 class="inl-campaign-033">🙋 Demandes en Attente</h3>
             
             {% if join_requests %}
                 {% for request in join_requests %}
-                <div style="background: #1e1f26; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="inl-campaign-047">
+                    <div class="inl-campaign-015">
                         <div>
-                            <div style="font-weight: bold; color: #f0f0f0;">{{ request.user.username }}</div>
+                            <div class="inl-campaign-037">{{ request.user.username }}</div>
                             {% if request.message %}
-                                <div style="color: #ccc; font-size: 12px; margin-top: 5px;">{{ request.message }}</div>
+                                <div class="inl-campaign-048">{{ request.message }}</div>
                             {% endif %}
                         </div>
                         
-                        <form method="POST" action="{{ url_for('campaign.approve_join_request', request_id=request.id) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-primary" style="font-size: 12px; padding: 5px 10px;">
+                        <form method="POST" action="{{ url_for('campaign.approve_join_request', request_id=request.id) }}" class="inl-campaign-020">
+                            <button type="submit" class="btn btn-primary inl-campaign-049">
                                 ✅ Approuver
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('campaign.reject_join_request', request_id=request.id) }}" class="inl-campaign-020">
+                            <button type="submit" class="btn btn-secondary inl-campaign-049">
+                                ? Refuser
                             </button>
                         </form>
                     </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="color: #ccc; font-style: italic;">Aucune demande en attente</p>
+                <p class="inl-campaign-050">Aucune demande en attente</p>
             {% endif %}
         </div>
     </div>
     {% endif %}
     
     <!-- Actions pour tous -->
-    <div style="background: #2a2c36; padding: 25px; border-radius: 12px;">
-        <h3 style="color: #4caf50; margin-bottom: 20px;">🎯 Actions</h3>
+    <div class="inl-campaign-042">
+        <h3 class="inl-campaign-033">🎯 Actions</h3>
         
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div class="inl-campaign-051">
             <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">
                 🧙 Gérer mes Personnages
             </a>
@@ -312,8 +321,7 @@
             </a>
             
             {% if not is_mj %}
-            <form method="POST" action="{{ url_for('campaign.leave_campaign', campaign_id=campaign.id) }}" 
-                  onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette campagne ?')" style="display: inline;">
+            <form method="POST" action="{{ url_for('campaign.leave_campaign', campaign_id=campaign.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette campagne ?')" class="inl-campaign-020">
                 <button type="submit" class="btn btn-danger">🚪 Quitter la Campagne</button>
             </form>
             {% endif %}
@@ -380,25 +388,8 @@ function savePrivateNotes(event, pjId) {
 function showFlashMessage(message, category) {
     // Créer un message flash temporaire
     const flashDiv = document.createElement('div');
-    flashDiv.className = `flash-message flash-${category}`;
+    flashDiv.className = `dashboard-flash-message dashboard-flash-${category}`;
     flashDiv.textContent = message;
-    flashDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        animation: slideInRight 0.3s ease;
-    `;
-
-    if (category === 'success') {
-        flashDiv.style.background = '#4caf50';
-    } else {
-        flashDiv.style.background = '#e53935';
-    }
 
     document.body.appendChild(flashDiv);
 
@@ -408,10 +399,6 @@ function showFlashMessage(message, category) {
 }
 </script>
 
-<style>
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-</style>
+
 {% endblock %}
+

@@ -10,12 +10,8 @@ def allowed_file(filename):
 
 
 def get_current_actor(combat):
-    """Récupérer l'acteur actuel du combat (en tenant compte des morts/fuyards)"""
-    combatants = sorted(
-        [c for c in combat.combatants if not c.is_hidden],
-        key=lambda x: x.initiative,
-        reverse=True
-    )
+    """Get current combat actor from initiative order."""
+    combatants = get_initiative_order(combat.combatants)
 
     # Vérification de sécurité
     if not combatants or combat.current_turn >= len(combatants):
@@ -108,11 +104,10 @@ def calculate_ability_modifier(ability_score):
 
 
 def get_initiative_order(combatants):
-    """Obtenir l'ordre d'initiative trié"""
+    """Obtenir un ordre d'initiative stable."""
     return sorted(
         [c for c in combatants if not c.is_hidden],
-        key=lambda x: x.initiative,
-        reverse=True
+        key=lambda x: (-x.initiative, x.id)
     )
 
 

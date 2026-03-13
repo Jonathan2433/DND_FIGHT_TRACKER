@@ -1,19 +1,20 @@
-"""Décorateurs pour la sécurité et authentification"""
+"""Decorateurs pour la securite et l'authentification."""
 from functools import wraps
-from flask import session, redirect, url_for, flash, g, request
-from app.services.auth_service import AuthService
+
+from flask import session, redirect, url_for, flash, g
+
+from app.application.use_cases.auth_service import AuthService
 
 
 def login_required(f):
-    """Décorateur pour vérifier la connexion"""
+    """Decorateur pour verifier la connexion."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Vous devez être connecté pour accéder à cette page.', 'error')
+            flash('Vous devez etre connecte pour acceder a cette page.', 'error')
             return redirect(url_for('auth.login'))
 
-        # Charger l'utilisateur dans g
         g.current_user = AuthService.get_user_by_id(session['user_id'])
         if not g.current_user or not g.current_user.is_active:
             session.clear()
@@ -26,18 +27,18 @@ def login_required(f):
 
 
 def role_required(required_role):
-    """Décorateur pour vérifier le rôle"""
+    """Decorateur pour verifier un role strict."""
 
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if 'user_id' not in session:
-                flash('Vous devez être connecté.', 'error')
+                flash('Vous devez etre connecte.', 'error')
                 return redirect(url_for('auth.login'))
 
             user = AuthService.get_user_by_id(session['user_id'])
             if not user or user.role != required_role:
-                flash('Accès interdit : permissions insuffisantes.', 'error')
+                flash('Acces interdit : permissions insuffisantes.', 'error')
                 return redirect(url_for('main.index'))
 
             g.current_user = user
@@ -49,27 +50,42 @@ def role_required(required_role):
 
 
 def admin_required(f):
-    """Décorateur pour vérifier le rôle Admin"""
+    """Decorateur pour verifier le role Admin."""
     return role_required('Admin')(f)
 
 
 def mj_required(f):
-    """Décorateur pour vérifier le rôle MJ"""
-    return role_required('MJ')(f)
-
-
-def mj_or_admin_required(f):
-    """Décorateur pour vérifier le rôle MJ ou Admin"""
+    """Decorateur pour verifier la capacite MJ."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Vous devez être connecté.', 'error')
+            flash('Vous devez etre connecte.', 'error')
             return redirect(url_for('auth.login'))
 
         user = AuthService.get_user_by_id(session['user_id'])
-        if not user or user.role not in ['MJ', 'Admin']:
-            flash('Accès interdit : vous devez être MJ ou Administrateur.', 'error')
+        if not user or not user.has_mj_capability():
+            flash('Acces interdit : vous devez avoir les droits MJ.', 'error')
+            return redirect(url_for('main.index'))
+
+        g.current_user = user
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def mj_or_admin_required(f):
+    """Decorateur pour verifier la capacite MJ ou Admin."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Vous devez etre connecte.', 'error')
+            return redirect(url_for('auth.login'))
+
+        user = AuthService.get_user_by_id(session['user_id'])
+        if not user or not (user.role == 'Admin' or user.has_mj_capability()):
+            flash('Acces interdit : vous devez etre MJ ou Administrateur.', 'error')
             return redirect(url_for('main.index'))
 
         g.current_user = user
@@ -79,7 +95,7 @@ def mj_or_admin_required(f):
 
 
 def verified_required(f):
-    """Décorateur pour vérifier que l'email est vérifié"""
+    """Decorateur pour verifier que l'email est verifie."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -88,7 +104,7 @@ def verified_required(f):
 
         user = AuthService.get_user_by_id(session['user_id'])
         if not user or not user.is_verified:
-            flash('Veuillez vérifier votre email avant d\'accéder à cette page.', 'warning')
+            flash('Veuillez verifier votre email avant d\'acceder a cette page.', 'warning')
             return redirect(url_for('auth.login'))
 
         g.current_user = user
@@ -98,7 +114,7 @@ def verified_required(f):
 
 
 def anonymous_required(f):
-    """Décorateur pour les pages accessibles uniquement aux non-connectés"""
+    """Decorateur pour les pages accessibles uniquement aux non-connectes."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):

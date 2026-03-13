@@ -54,23 +54,23 @@
                             <p><strong>CA :</strong> {{ pnj.ac_base }}</p>
 
                             <!-- Caractéristiques compactes -->
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; font-size: 12px;">
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                            <div class="inl-pnj-004">
+                                <div class="inl-pnj-005">
                                     <strong>FOR</strong><br>{{ pnj.force }}
                                 </div>
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                <div class="inl-pnj-005">
                                     <strong>DEX</strong><br>{{ pnj.dexterite }}
                                 </div>
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                <div class="inl-pnj-005">
                                     <strong>CON</strong><br>{{ pnj.constitution }}
                                 </div>
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                <div class="inl-pnj-005">
                                     <strong>INT</strong><br>{{ pnj.intelligence }}
                                 </div>
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                <div class="inl-pnj-005">
                                     <strong>SAG</strong><br>{{ pnj.sagesse }}
                                 </div>
-                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                <div class="inl-pnj-005">
                                     <strong>CHA</strong><br>{{ pnj.charisme }}
                                 </div>
                             </div>
@@ -83,29 +83,29 @@
                                 {% endif %}
 
                                 {% if pnj.visibility_level == 'complete' and pnj.background_story %}
-                                    <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div class="inl-pnj-006">
                                         <strong>Histoire :</strong>
-                                        <p style="margin: 5px 0 0 0; font-size: 13px;">{{ pnj.background_story[:80] }}{% if pnj.background_story|length > 80 %}...{% endif %}</p>
+                                        <p class="inl-pnj-007">{{ pnj.background_story[:80] }}{% if pnj.background_story|length > 80 %}...{% endif %}</p>
                                     </div>
                                 {% endif %}
                             {% else %}
-                                <p style="font-style: italic; color: #999;">Informations non partagées</p>
+                                <p class="inl-pnj-008">Informations non partagées</p>
                             {% endif %}
                         {% endif %}
 
                         <!-- Indicateurs pour le MJ -->
                         {% if is_mj %}
-                            <div style="margin-top: 15px; padding: 8px; background: rgba(76, 175, 80, 0.1); border-radius: 6px; font-size: 12px;">
+                            <div class="inl-pnj-009">
                                 <strong>🎯 MJ :</strong>
-                                <span class="status-badge" style="background: rgba(255,193,7,0.2); color: #ffc107; margin-left: 5px;">
+                                <span class="status-badge inl-pnj-010">
                                     {{ pnj.visibility_level }}
                                 </span>
                                 {% if pnj.is_shared %}
-                                    <span class="status-badge" style="background: rgba(76,175,80,0.2); color: #4caf50; margin-left: 5px;">
+                                    <span class="status-badge inl-pnj-011">
                                         Partagé
                                     </span>
                                 {% else %}
-                                    <span class="status-badge" style="background: rgba(229,57,53,0.2); color: #e53935; margin-left: 5px;">
+                                    <span class="status-badge inl-pnj-012">
                                         Privé
                                     </span>
                                 {% endif %}
@@ -122,7 +122,7 @@
                                     ✏️ Modifier
                                 </a>
 
-                                <form method="POST" action="{{ url_for('pnj.toggle_share_pnj', pnj_id=pnj.id) }}" style="display: inline;">
+                                <form method="POST" action="{{ url_for('pnj.toggle_share_pnj', pnj_id=pnj.id) }}" class="inl-pnj-013">
                                     {% if pnj.is_shared %}
                                         <button type="submit" class="btn btn-warning" title="Masquer aux joueurs">
                                             🔒 Masquer

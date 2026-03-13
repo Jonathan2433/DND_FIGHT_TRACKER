@@ -1,0 +1,15 @@
+/* Inline styles extracted by objective: auth */
+
+.inl-auth-001 { max-width: 500px; margin: 50px auto; background: var(--color-surface); padding: 30px; border-radius: var(--radius-2xl); }
+.inl-auth-002 { text-align: center; color: var(--color-primary); margin-bottom: 30px; }
+.inl-auth-003 { margin-bottom: 20px; }
+.inl-auth-004 { color: var(--color-text-secondary); display: block; margin-bottom: 5px; }
+.inl-auth-005 { width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); background: var(--color-bg); color: var(--color-text-primary); }
+.inl-auth-006 { width: 100%; padding: 12px; font-size: 16px; border-radius: var(--radius-lg); background: var(--color-primary); color: var(--color-white); border: none; cursor: pointer; }
+.inl-auth-007 { text-align: center; margin-top: 20px; color: var(--color-text-secondary); }
+.inl-auth-008 { color: var(--color-primary); }
+.inl-auth-009 { max-width: 600px; margin: 50px auto; background: var(--color-surface); padding: 30px; border-radius: var(--radius-2xl); }
+.inl-auth-010 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.inl-auth-011 { color: var(--color-text-primary); }
+.inl-auth-012 { color: var(--color-warning); }
+.inl-auth-013 { text-align: center; margin-top: 30px; }

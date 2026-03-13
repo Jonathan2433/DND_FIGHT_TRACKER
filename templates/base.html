@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>D&D Exalt Combat Tracker</title>
-    <!--<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
@@ -16,7 +19,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/summary.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exp_history.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/campaign.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/note_mj_pj.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notes_mj_pj.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/core-inline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/auth-inline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/campaign-inline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/pnj-inline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/character-inline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/combat-inline.css') }}">
 </head>
 <body>
     <header>
@@ -48,13 +57,13 @@
     <!-- ✅ MESSAGES FLASH -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div style="margin: 20px;">
+            <div class="inl-core-001">
                 {% for category, message in messages %}
-                    <div style="padding: 10px; margin: 5px 0; border-radius: 4px;
-                                {% if category == 'error' %}background: #e53935; color: white;
-                                {% elif category == 'success' %}background: #4caf50; color: white;
-                                {% elif category == 'info' %}background: #2196f3; color: white;
-                                {% else %}background: #ff9800; color: white;{% endif %}">
+                    <div class="flash-alert
+                        {% if category == 'error' %}flash-alert-error
+                        {% elif category == 'success' %}flash-alert-success
+                        {% elif category == 'info' %}flash-alert-info
+                        {% else %}flash-alert-warning{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -65,5 +74,6 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+    <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
 </body>
 </html>

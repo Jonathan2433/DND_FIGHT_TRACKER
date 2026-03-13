@@ -1,12 +1,14 @@
-"""Modèles liés aux utilisateurs et authentification"""
+"""Modeles lies aux utilisateurs et authentification."""
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from app.extensions import db
 
 
 class User(db.Model):
-    """Modèle utilisateur"""
+    """Modele utilisateur."""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -17,55 +19,61 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
 
-    # ✅ AJOUT : Relations avec les campagnes
     campaign_memberships = db.relationship('CampaignMember', backref='member_user', lazy=True)
 
     def set_password(self, password):
-        """Hasher le mot de passe"""
+        """Hasher le mot de passe."""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        """Vérifier le mot de passe"""
+        """Verifier le mot de passe."""
         return check_password_hash(self.password_hash, password)
 
-    # ✅ AJOUT : Méthodes pour les campagnes
     def get_campaigns(self):
-        """Récupérer toutes les campagnes de l'utilisateur"""
+        """Recuperer toutes les campagnes de l'utilisateur."""
         from app.models.campaign import Campaign
 
-        # Campagnes possédées (en tant que MJ)
         owned = Campaign.query.filter_by(mj_id=self.id, is_active=True).all()
-
-        # Campagnes où il est membre
         memberships = [m.campaign for m in self.campaign_memberships if m.campaign.is_active]
-
-        # Fusionner et dédoublonner
         all_campaigns = list(set(owned + memberships))
         return sorted(all_campaigns, key=lambda c: c.created_at, reverse=True)
 
     def is_mj_of(self, campaign):
-        """Vérifier si l'utilisateur est MJ d'une campagne"""
+        """Verifier si l'utilisateur est MJ d'une campagne."""
         return campaign.mj_id == self.id
 
     def is_member_of(self, campaign):
-        """Vérifier si l'utilisateur est membre d'une campagne"""
+        """Verifier si l'utilisateur est membre d'une campagne."""
         from app.models.campaign import CampaignMember
+
         membership = CampaignMember.query.filter_by(
             campaign_id=campaign.id,
-            user_id=self.id
+            user_id=self.id,
         ).first()
         return membership is not None
 
     def can_access_campaign(self, campaign):
-        """Vérifier si l'utilisateur peut accéder à une campagne"""
+        """Verifier si l'utilisateur peut acceder a une campagne."""
         return self.is_mj_of(campaign) or self.is_member_of(campaign) or self.role == 'Admin'
+
+    def has_mj_capability(self):
+        """Capacite MJ: role explicite, admin, ou possession d'une campagne."""
+        if self.role in ['Admin', 'MJ']:
+            return True
+        return len(self.owned_campaigns) > 0
+
+    def has_player_capability(self):
+        """Capacite joueur: role explicite, admin, ou participation a une campagne."""
+        if self.role in ['Admin', 'Joueur']:
+            return True
+        return len(self.campaign_memberships) > 0
 
     def __repr__(self):
         return f'<User {self.username}>'
 
 
 class EmailVerification(db.Model):
-    """Tokens de vérification email"""
+    """Tokens de verification email."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(255), unique=True, nullable=False)
@@ -75,19 +83,19 @@ class EmailVerification(db.Model):
 
     @staticmethod
     def generate_token():
-        """Générer un token sécurisé"""
+        """Generer un token securise."""
         return secrets.token_urlsafe(32)
 
     @staticmethod
     def create_verification(user_id):
-        """Créer une nouvelle vérification"""
+        """Creer une nouvelle verification."""
         token = EmailVerification.generate_token()
         expires_at = datetime.utcnow() + timedelta(hours=24)
 
         verification = EmailVerification(
             user_id=user_id,
             token=token,
-            expires_at=expires_at
+            expires_at=expires_at,
         )
 
         db.session.add(verification)
@@ -97,7 +105,7 @@ class EmailVerification(db.Model):
 
     @property
     def is_expired(self):
-        """Vérifier si le token a expiré"""
+        """Verifier si le token a expire."""
         return datetime.utcnow() > self.expires_at
 
     def __repr__(self):

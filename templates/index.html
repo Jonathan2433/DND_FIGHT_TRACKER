@@ -36,12 +36,13 @@
     <!-- ACTIONS RAPIDES -->
     <!-- ===================== -->
     <div class="card">
-        <h2>⚔️ Nouveau Combat</h2>
-        <form action="{{ url_for('combat.create_combat') }}" method="post">
-            <input type="text" name="name" placeholder="Nom du combat" required
-                   style="width: 300px; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #555; background: #1e1f26; color: #f0f0f0;">
-            <button type="submit" class="btn btn-primary">🚀 Créer</button>
-        </form>
+        <h2>?? Nouveau Combat</h2>
+        <p>Les combats doivent ?tre cr??s depuis un arc narratif de campagne.</p>
+        {% if user_is_connected %}
+            <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-primary">Voir mes campagnes</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Se connecter</a>
+        {% endif %}
     </div>
 
     <!-- ===================== -->
@@ -86,7 +87,7 @@
                                 👁️ Voir la campagne
                             </a>
                             {% if current_user and not current_user.is_member_of(campaign) and not current_user.is_mj_of(campaign) %}
-                                <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" style="display: inline;">
+                                <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" class="inl-core-003">
                                     <input type="hidden" name="message" value="Demande automatique depuis la page d'accueil">
                                     <button type="submit" class="btn btn-secondary">
                                         🙋 Demander à rejoindre
@@ -186,7 +187,7 @@
                     {% endif %}
 
                     {% if user_is_connected %}
-                        <form action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" method="post" style="display: inline;">
+                        <form action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" method="post" class="inl-core-003">
                             <button type="submit" class="btn btn-danger"
                                     onclick="return confirm('Supprimer ce combat ?')">🗑 Supprimer</button>
                         </form>
