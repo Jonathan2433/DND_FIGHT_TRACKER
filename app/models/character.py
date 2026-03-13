@@ -7,6 +7,13 @@ class CharacterTemplate(db.Model):
     """Template de personnage réutilisable"""
     id = db.Column(db.Integer, primary_key=True)
 
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=True)
+    character_type = db.Column(db.String(20), default='PJ')  # PJ, PNJ, Boss
+    is_shared = db.Column(db.Boolean, default=False)  # Pour les PNJ partagés par le MJ
+    is_public = db.Column(db.Boolean, default=False)# ✅ NOUVEAU : Visible par tous
+    is_active = db.Column(db.Boolean, default=False)
+
     # Identité
     name = db.Column(db.String(100), nullable=False)
     character_class = db.Column(db.String(50))
@@ -171,3 +178,25 @@ class CharacterTemplate(db.Model):
     def can_level_up(self):
         """Vérifier si le personnage peut monter de niveau"""
         return self.current_xp >= self.xp_for_next_level and self.level < 20
+
+    def can_be_edited_by(self, user):
+        """Vérifier si un utilisateur peut modifier ce personnage"""
+        if not user:
+            return False
+
+        # Admin : peut tout modifier
+        if user.role == 'Admin':
+            return True
+
+        # Propriétaire : peut toujours modifier ses personnages (même publics)
+        if self.owner_id == user.id:
+            return True
+
+        # MJ de la campagne : peut modifier les personnages de sa campagne
+        if self.campaign and user.is_mj_of(self.campaign):
+            return True
+
+        # ✅ CORRECTION : Un personnage public ne peut PAS être modifié par n'importe qui
+        # La visibilité publique ne donne que le droit de VOIR, pas de MODIFIER
+
+        return False

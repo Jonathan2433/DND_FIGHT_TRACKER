@@ -156,3 +156,41 @@ class XPService:
             "xp_awarded": xp_per_character,
             "characters": results
         }
+
+    @staticmethod
+    def can_award_xp_to_character(character_id, user_id):
+        """Vérifier si un utilisateur peut attribuer de l'XP à un personnage"""
+        from app.services.auth_service import AuthService
+
+        character = CharacterTemplate.query.get_or_404(character_id)
+        user = AuthService.get_user_by_id(user_id)
+
+        if not user:
+            return False
+
+        # Admin : peut tout faire
+        if user.role == 'Admin':
+            return True
+
+        # Propriétaire du personnage
+        if character.owner_id == user.id:
+            return True
+
+        # MJ de la campagne
+        if character.campaign and user.is_mj_of(character.campaign):
+            return True
+
+        return False
+
+    @staticmethod
+    def award_xp_secure(character_id, user_id, xp_amount, source="manual", description="", combat_id=None):
+        """Attribuer de l'XP avec vérification de sécurité"""
+        if not XPService.can_award_xp_to_character(character_id, user_id):
+            return {"error": "Permissions insuffisantes"}
+
+        from app.services.auth_service import AuthService
+        user = AuthService.get_user_by_id(user_id)
+
+        return XPService.award_xp(
+            character_id, xp_amount, source, description, combat_id, user.username
+        )

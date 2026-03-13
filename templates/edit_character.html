@@ -134,6 +134,22 @@
                 </div>
             </div>
         </div>
+        <div class="edit-section">
+            <h4>🔒 Visibilité</h4>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <input type="checkbox" id="is_public" name="is_public" value="1"
+                       {% if character.is_public %}checked{% endif %}
+                       style="width: auto; margin-bottom: 0;">
+                <label for="is_public" style="margin-bottom: 0;">
+                    Personnage public (visible par tous)
+                </label>
+            </div>
+
+            <small style="color: #999; font-style: italic;">
+                Les personnages privés ne sont visibles que par leur créateur et les MJ de leurs campagnes
+            </small>
+        </div>
 
         <div class="edit-actions">
             <button type="submit" class="btn btn-primary btn-large">💾 Enregistrer les modifications</button>

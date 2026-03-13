@@ -29,18 +29,15 @@
                 <a href="{{ url_for('campaign.list_campaigns') }}">🎲 Mes Campagnes</a>
                 <a href="{{ url_for('template.manage_templates') }}">🛠 Mes Personnages</a>
 
-                <!-- ✅ CORRECTION : Vérifier que g.current_user existe -->
-                {% if g.current_user and g.current_user.role in ['MJ', 'Admin'] %}
+                {% if current_user and current_user.role in ['MJ', 'Admin'] %}
                     <a href="{{ url_for('campaign.create_campaign') }}">➕ Nouvelle Campagne</a>
                 {% endif %}
 
-                <a href="{{ url_for('auth.profile') }}">
-                    👤 {{ g.current_user.username if g.current_user else 'Utilisateur' }}
-                </a>
+                <a href="{{ url_for('auth.profile') }}">👤 {{ current_user.username if current_user else 'Utilisateur' }}</a>
                 <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
             {% else %}
                 <!-- Utilisateur non connecté -->
-                <a href="{{ url_for('template.manage_templates') }}">🛠 Gérer les Profils</a>
+                <!-- ✅ SUPPRESSION : Lien "Gérer les Profils" pour les non-connectés -->
                 <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
                 <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
             {% endif %}

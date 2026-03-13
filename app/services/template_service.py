@@ -28,7 +28,21 @@ class TemplateService:
             pdf_filename = secure_filename(pdf.filename)
             pdf.save(os.path.join(upload_folder, pdf_filename))
 
+        # ✅ CORRECTION : Récupérer l'utilisateur connecté
+        from flask import session
+        current_user_id = session.get('user_id')
+        if not current_user_id:
+            raise ValueError("Aucun utilisateur connecté")
+
         template = CharacterTemplate(
+            # ✅ AJOUT : Champs de sécurité
+            owner_id=current_user_id,
+            campaign_id=form_data.get('campaign_id'),
+            character_type=form_data.get('character_type', 'PJ'),
+            is_shared=form_data.get('is_shared', False),
+            is_public=bool(form_data.get('is_public', False)),  # ✅ CORRECTION : Forcer le booléen
+
+            # Données existantes
             name=form_data['name'],
             character_class=form_data['character_class'],
             level=int(form_data['level']),
@@ -54,7 +68,8 @@ class TemplateService:
 
             image_filename=filename,
             pdf_filename=pdf_filename,
-            notes=form_data.get('notes', '')
+            notes=form_data.get('notes', ''),
+            current_xp=int(form_data.get('current_xp', 0))
         )
 
         db.session.add(template)
@@ -75,6 +90,9 @@ class TemplateService:
         template.ac_base = int(form_data['ac_base'])
         template.initiative_bonus = int(form_data['initiative_bonus'])
         template.notes = form_data.get('notes', '')
+
+        # ✅ AJOUT : Gestion du champ is_public
+        template.is_public = bool(form_data.get('is_public', False))
 
         # Mise à jour des caractéristiques
         template.force = int(form_data.get('force', 10))
