@@ -4,3 +4,13 @@ Flask-SocketIO==5.3.6
 python-socketio==5.8.0
 python-engineio==4.7.1
 Werkzeug==2.3.7
+
+Flask-Mail==0.9.1
+
+psycopg[binary]==3.2.13
+
+Flask-Migrate==4.0.5
+alembic==1.13.1
+
+gunicorn==21.2.0
+python-dotenv==1.0.1

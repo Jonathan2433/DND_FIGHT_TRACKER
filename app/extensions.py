@@ -2,8 +2,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_mail import Mail
+from flask_migrate import Migrate
 
-# Initialisation des extensions sans app
 db = SQLAlchemy()
-socketio = SocketIO()
+socketio = SocketIO(async_mode="threading")
 mail = Mail()
+migrate = Migrate()
