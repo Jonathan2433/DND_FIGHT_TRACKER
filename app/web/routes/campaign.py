@@ -5,6 +5,7 @@ from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
 from app.utils.decorators import login_required, mj_or_admin_required
 from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
+from app.models.combat import Combat
 from app.models.user import User
 
 # Créer le blueprint
@@ -50,6 +51,9 @@ def view_campaign(campaign_id):
         is_active=True
     ).all()
 
+    combats_count = Combat.query.filter_by(campaign_id=campaign_id).count()
+    current_arc = next((arc for arc in campaign.story_arcs if arc.status == 'en_cours'), None)
+
     # Récupérer les invitations en attente (si MJ)
     invitations = []
     join_requests = []
@@ -72,7 +76,9 @@ def view_campaign(campaign_id):
         campaign_pjs=campaign_pjs,  # ✅ NOUVEAU
         invitations=invitations,
         join_requests=join_requests,
-        is_mj=g.current_user.is_mj_of(campaign)
+        is_mj=g.current_user.is_mj_of(campaign),
+        combats_count=combats_count,
+        current_arc=current_arc
     )
 
 

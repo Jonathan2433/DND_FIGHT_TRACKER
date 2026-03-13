@@ -17,8 +17,8 @@ class AuthService:
         if role == 'Admin':
             return {"error": "Le rôle Administrateur ne peut pas être créé via inscription"}
 
-        # ✅ SÉCURITÉ : Seuls Joueur et MJ autorisés
-        if role not in ['Joueur', 'MJ']:
+        # ✅ SÉCURITÉ : Seuls Joueur, MJ ou combinaison MJ+Joueur autorisés
+        if role not in ['Joueur', 'MJ', 'MJ+Joueur']:
             return {"error": "Rôle non autorisé"}
 
         # Vérifier unicité

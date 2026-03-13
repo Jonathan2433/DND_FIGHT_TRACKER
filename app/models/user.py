@@ -13,7 +13,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default='Joueur')  # Admin, MJ, Joueur
+    role = db.Column(db.String(20), default='Joueur')  # Admin, MJ, Joueur, MJ+Joueur
     is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
@@ -58,13 +58,13 @@ class User(db.Model):
 
     def has_mj_capability(self):
         """Capacite MJ: role explicite, admin, ou possession d'une campagne."""
-        if self.role in ['Admin', 'MJ']:
+        if self.role in ['Admin', 'MJ', 'MJ+Joueur']:
             return True
         return len(self.owned_campaigns) > 0
 
     def has_player_capability(self):
         """Capacite joueur: role explicite, admin, ou participation a une campagne."""
-        if self.role in ['Admin', 'Joueur']:
+        if self.role in ['Admin', 'Joueur', 'MJ+Joueur', 'MJ']:
             return True
         return len(self.campaign_memberships) > 0
 

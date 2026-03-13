@@ -34,23 +34,26 @@ def _can_view_player_combat(combat):
 @bp.route('/create', methods=['POST'])
 @login_required
 def create_combat():
-    """Creer un nouveau combat rattache a un arc narratif."""
+    """Creer un nouveau combat, avec rattachement optionnel a un arc narratif."""
     story_arc_id = request.form.get('story_arc_id')
-    if not story_arc_id:
-        flash("Un combat doit etre rattache a un arc narratif.", "error")
-        return redirect(url_for('main.index'))
 
-    from app.models.story_arc import StoryArc
-    arc = StoryArc.query.get_or_404(int(story_arc_id))
-    if not (g.current_user.role == 'Admin' or g.current_user.is_mj_of(arc.campaign)):
-        flash("Seul le MJ proprietaire peut creer un combat sur cet arc.", "error")
-        return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
+    if story_arc_id:
+        from app.models.story_arc import StoryArc
+        arc = StoryArc.query.get_or_404(int(story_arc_id))
+        if not (g.current_user.role == 'Admin' or g.current_user.is_mj_of(arc.campaign)):
+            flash("Seul le MJ proprietaire peut creer un combat sur cet arc.", "error")
+            return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
+    elif not g.current_user.has_mj_capability():
+        flash("Seul un MJ peut creer un combat.", "error")
+        return redirect(url_for('main.index'))
 
     name = request.form['name']
     combat = CombatService.create_combat(name)
-    combat.story_arc_id = arc.id
-    combat.campaign_id = arc.campaign_id
-    db.session.commit()
+
+    if story_arc_id:
+        combat.story_arc_id = arc.id
+        combat.campaign_id = arc.campaign_id
+        db.session.commit()
 
     return redirect(url_for('combat.view_combat', combat_id=combat.id))
 

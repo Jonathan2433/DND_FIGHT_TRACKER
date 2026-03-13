@@ -5,14 +5,16 @@
     <div class="inl-campaign-002">
         <h1 class="inl-campaign-003">🎲 {{ campaign.name }}</h1>
         
-        {% if is_mj %}
-            <div class="inl-campaign-004">
+        <div class="inl-campaign-004">
+            {% if is_mj %}
                 <a href="{{ url_for('campaign.campaign_settings', campaign_id=campaign.id) }}" 
                    class="btn btn-secondary">⚙️ Paramètres</a>
-                <a href=\"{{ url_for('summary.campaign_stats', campaign_id=campaign.id) }}\" class=\"btn btn-secondary\">Stats campagne</a>
-                <span class="inl-campaign-044">Cr?ez les combats depuis un arc narratif.</span>
-            </div>
-        {% endif %}
+            {% endif %}
+            <a href="{{ url_for('summary.campaign_stats', campaign_id=campaign.id) }}" class="btn btn-secondary">Stats campagne</a>
+            {% if is_mj %}
+                <span class="inl-campaign-044">Créez les combats depuis un arc narratif.</span>
+            {% endif %}
+        </div>
     </div>
     
     {% if campaign.description %}
@@ -30,12 +32,12 @@
         
         <div class="inl-campaign-008">
             <h3 class="inl-campaign-009">⚔️ Combats</h3>
-            <p class="inl-campaign-010">0</p>
+            <p class="inl-campaign-010">{{ combats_count }}</p>
         </div>
         
         <div class="inl-campaign-008">
             <h3 class="inl-campaign-009">📖 Arc Actuel</h3>
-            <p class="inl-campaign-011">Bientôt disponible</p>
+            <p class="inl-campaign-011">{{ current_arc.name if current_arc else "Aucun" }}</p>
         </div>
     </div>
 
@@ -73,13 +75,13 @@
                                 </span>
 
                                 <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary inl-campaign-019">👁 Voir</a>
-                                <a href=\"{{ url_for('summary.arc_stats', arc_id=arc.id) }}\" class=\"btn btn-secondary inl-campaign-019\">Stats</a>
+                                <a href="{{ url_for('summary.arc_stats', arc_id=arc.id) }}" class="btn btn-secondary inl-campaign-019">Stats</a>
 
                                 {% if is_mj %}
                                     <form method="POST" action="{{ url_for('combat.create_combat') }}" class="inl-campaign-020">
                                         <input type="hidden" name="name" value="Combat - {{ arc.name }}">
                                         <input type="hidden" name="story_arc_id" value="{{ arc.id }}">
-                                        <button type="submit" class="btn btn-primary inl-campaign-019">?? Nouveau combat</button>
+                                        <button type="submit" class="btn btn-primary inl-campaign-019">⚔️ Nouveau combat</button>
                                     </form>
                                     {% if arc.can_be_started %}
                                         <form method="POST" action="{{ url_for('story_arc.start_arc', arc_id=arc.id) }}" class="inl-campaign-020">
@@ -294,7 +296,7 @@
                         </form>
                         <form method="POST" action="{{ url_for('campaign.reject_join_request', request_id=request.id) }}" class="inl-campaign-020">
                             <button type="submit" class="btn btn-secondary inl-campaign-049">
-                                ? Refuser
+                                ❌ Refuser
                             </button>
                         </form>
                     </div>
