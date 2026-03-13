@@ -1,0 +1,213 @@
+<!-- templates/pnj/create_pnj.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="edit-character-container">
+    <div class="edit-header">
+        <h1>🎭 Créer un PNJ - {{ campaign.name }}</h1>
+        <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">
+            ← Retour à la campagne
+        </a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="edit-grid">
+            <!-- Identité du PNJ -->
+            <div class="edit-section">
+                <h4>🎭 Identité du PNJ</h4>
+
+                <label>Nom * :</label>
+                <input type="text" name="name" required placeholder="Nom du PNJ">
+
+                <label>Prénom :</label>
+                <input type="text" name="first_name" placeholder="Prénom du PNJ">
+
+                <label>Âge :</label>
+                <input type="number" name="age" min="1" max="10000" placeholder="Âge en années">
+
+                <label>Race :</label>
+                <input type="text" name="race" placeholder="Humain, Elfe, Nain...">
+
+                <label>Type de PNJ :</label>
+                <select name="character_class">
+                    <option value="PNJ">PNJ Standard</option>
+                    <option value="Marchand">Marchand</option>
+                    <option value="Garde">Garde</option>
+                    <option value="Noble">Noble</option>
+                    <option value="Villageois">Villageois</option>
+                    <option value="Prêtre">Prêtre</option>
+                    <option value="Bandit">Bandit</option>
+                    <option value="Monstre">Monstre</option>
+                    <option value="Boss">Boss</option>
+                </select>
+
+                <label>Niveau :</label>
+                <input type="number" name="level" value="1" min="1" max="20">
+            </div>
+
+            <!-- Combat & Statistiques -->
+            <div class="edit-section">
+                <h4>⚔️ Statistiques de Combat</h4>
+
+                <label>❤️ Points de Vie * :</label>
+                <input type="number" name="hp_max" required min="1" max="9999">
+
+                <label>🛡 Classe d'Armure * :</label>
+                <input type="number" name="ac_base" required min="1" max="30">
+
+                <label>⚡ Bonus Initiative :</label>
+                <input type="number" name="initiative_bonus" value="0" min="-10" max="20">
+            </div>
+        </div>
+
+        <!-- Caractéristiques -->
+        <div class="edit-section">
+            <h4>📊 Caractéristiques</h4>
+            <div class="stats-grid">
+                <div class="stat-input">
+                    <label>💪 Force :</label>
+                    <input type="number" name="force" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-force">+0</span></small>
+                </div>
+                <div class="stat-input">
+                    <label>🏃 Dextérité :</label>
+                    <input type="number" name="dexterite" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-dex">+0</span></small>
+                </div>
+                <div class="stat-input">
+                    <label>💚 Constitution :</label>
+                    <input type="number" name="constitution" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-con">+0</span></small>
+                </div>
+                <div class="stat-input">
+                    <label>🧠 Intelligence :</label>
+                    <input type="number" name="intelligence" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-int">+0</span></small>
+                </div>
+                <div class="stat-input">
+                    <label>🦉 Sagesse :</label>
+                    <input type="number" name="sagesse" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-sag">+0</span></small>
+                </div>
+                <div class="stat-input">
+                    <label>✨ Charisme :</label>
+                    <input type="number" name="charisme" value="10" min="1" max="30">
+                    <small>Modificateur: <span id="mod-cha">+0</span></small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visibilité et Partage SELON TES SPÉCIFICATIONS -->
+        <div class="edit-section">
+            <h4>👁️ Visibilité pour les Joueurs</h4>
+
+            <label>Niveau de visibilité :</label>
+            <select name="visibility_level" id="visibility-select">
+                <option value="private">🔒 Privé (MJ uniquement)</option>
+                <option value="reduced">👁️ Fiche réduite (Nom, prénom, âge, photo)</option>
+                <option value="semi_complete">📊 Fiche semi-complète (+ Caractéristiques)</option>
+                <option value="complete">📜 Fiche complète (Tout visible sauf notes privées)</option>
+            </select>
+
+            <div id="visibility-preview" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 12px;">
+                <strong>Aperçu :</strong> <span id="visibility-description">Le PNJ ne sera visible que par vous (MJ)</span>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <label>
+                    <input type="checkbox" name="is_shared" value="true" id="share-checkbox">
+                    📤 Partager ce PNJ avec les joueurs de la campagne
+                </label>
+                <small style="display: block; color: #999; margin-top: 5px;">
+                    Si coché, ce PNJ sera visible par les joueurs selon le niveau choisi ci-dessus
+                </small>
+            </div>
+        </div>
+
+        <!-- Histoire et Notes -->
+        <div class="edit-section">
+            <h4>📝 Histoire & Notes</h4>
+
+            <label>Background / Histoire :</label>
+            <textarea name="background_story" rows="4" placeholder="Histoire du personnage, motivations, objectifs, relations avec le monde..."></textarea>
+
+            <label>Notes publiques :</label>
+            <textarea name="notes" rows="3" placeholder="Informations visibles par les joueurs selon la visibilité (comportement, apparence, manies...)"></textarea>
+
+            <label>Notes privées (MJ uniquement) :</label>
+            <textarea name="private_notes" rows="3" placeholder="Notes secrètes, stratégies, informations cachées, secrets du personnage..."></textarea>
+        </div>
+
+        <!-- Image -->
+        <div class="edit-section">
+            <h4>🖼 Portrait du PNJ</h4>
+            <label>Image :</label>
+            <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+            <small style="display: block; color: #999; margin-top: 5px;">
+                Formats acceptés : PNG, JPG, JPEG, WEBP (16MB max)
+            </small>
+        </div>
+
+        <div class="edit-actions">
+            <button type="submit" class="btn btn-primary btn-large">
+                🎭 Créer le PNJ
+            </button>
+            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Script pour calculer les modificateurs en temps réel
+function calculateModifier(score) {
+    return Math.floor((score - 10) / 2);
+}
+
+function formatModifier(mod) {
+    return mod >= 0 ? '+' + mod : mod.toString();
+}
+
+// Mettre à jour les modificateurs lors des changements
+document.addEventListener('DOMContentLoaded', function() {
+    const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
+    const modNames = ['force', 'dex', 'con', 'int', 'sag', 'cha'];
+
+    abilities.forEach((ability, index) => {
+        const input = document.querySelector(`input[name="${ability}"]`);
+        const modSpan = document.querySelector(`#mod-${modNames[index]}`);
+
+        if (input && modSpan) {
+            input.addEventListener('input', function() {
+                const score = parseInt(this.value) || 10;
+                const modifier = calculateModifier(score);
+                modSpan.textContent = formatModifier(modifier);
+            });
+
+            // Calculer initiale
+            input.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Gestion de la visibilité
+    const visibilitySelect = document.getElementById('visibility-select');
+    const visibilityDesc = document.getElementById('visibility-description');
+    const shareCheckbox = document.getElementById('share-checkbox');
+
+    const descriptions = {
+        'private': 'Le PNJ ne sera visible que par vous (MJ)',
+        'reduced': 'Les joueurs verront : Nom, prénom, âge et photo uniquement',
+        'semi_complete': 'Les joueurs verront : Infos de base + toutes les caractéristiques',
+        'complete': 'Les joueurs verront tout sauf vos notes privées'
+    };
+
+    if (visibilitySelect && visibilityDesc) {
+        visibilitySelect.addEventListener('change', function() {
+            visibilityDesc.textContent = descriptions[this.value] || descriptions['private'];
+        });
+    }
+});
+</script>
+
+{% endblock %}

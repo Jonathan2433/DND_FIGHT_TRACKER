@@ -98,6 +98,75 @@
             </div>
         {% endif %}
     </div>
+
+    <div class="card">
+    <h2>🎭 PNJ de la Campagne</h2>
+
+    {% if is_mj %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span>Gérez vos personnages non-joueurs</span>
+            <div>
+                <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
+                    ➕ Nouveau PNJ
+                </a>
+                <a href="{{ url_for('pnj.list_campaign_pnjs', campaign_id=campaign.id) }}" class="btn btn-secondary">
+                    📋 Voir tous
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Aperçu des PNJ récents -->
+    {% set recent_pnjs = campaign.characters|selectattr("character_type", "equalto", "PNJ")|list %}
+    {% if recent_pnjs %}
+        <div class="pj-dashboard-grid" style="gap: 10px;">
+            {% for pnj in recent_pnjs[:6] %}
+                <div class="pj-dashboard-card" style="width: 100px;">
+                    <div class="template-avatar-container {% if pnj.image_filename %}has-image{% endif %}">
+                        {% if pnj.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}"
+                                 class="pj-dashboard-img" alt="{{ pnj.name }}" style="width: 50px; height: 50px;">
+                        {% endif %}
+                        <div class="pj-avatar-large" style="width: 50px; height: 50px; font-size: 16px;">
+                            {{ pnj.name[:2]|upper }}
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; font-weight: bold;">{{ pnj.name }}</div>
+
+                    {% if is_mj %}
+                        {% if pnj.is_shared %}
+                            <div style="font-size: 10px; color: #4caf50;">📤 Partagé ({{ pnj.visibility_level }})</div>
+                        {% else %}
+                            <div style="font-size: 10px; color: #999;">🔒 Privé</div>
+                        {% endif %}
+                    {% else %}
+                        {% if pnj.is_shared %}
+                            <div style="font-size: 10px; color: #4caf50;">👁️ {{ pnj.visibility_level }}</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{{ url_for('pnj.list_campaign_pnjs', campaign_id=campaign.id) }}" class="btn btn-secondary">
+                📋 Voir tous les PNJ ({{ recent_pnjs|length }})
+            </a>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 20px; color: #999;">
+            {% if is_mj %}
+                <p>🎭 Aucun PNJ créé</p>
+                <p style="font-size: 14px; margin-bottom: 15px;">Les PNJ enrichissent votre monde et peuvent être partagés avec vos joueurs selon différents niveaux de visibilité.</p>
+                <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
+                    ➕ Créer votre premier PNJ
+                </a>
+            {% else %}
+                <p>🎭 Aucun PNJ partagé par le MJ</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
     
     <!-- Membres de la campagne -->
     <div style="background: #2a2c36; padding: 25px; border-radius: 12px; margin-bottom: 30px;">

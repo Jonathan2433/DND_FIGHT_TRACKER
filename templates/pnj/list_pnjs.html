@@ -1,0 +1,159 @@
+<!-- templates/pnj/list_pnjs.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard">
+    <div class="edit-header">
+        <h1>🎭 PNJ de la campagne "{{ campaign.name }}"</h1>
+        <div>
+            {% if is_mj %}
+                <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
+                    ➕ Nouveau PNJ
+                </a>
+            {% endif %}
+            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">
+                ← Retour à la campagne
+            </a>
+        </div>
+    </div>
+
+    {% if pnjs %}
+        <div class="template-grid">
+            {% for pnj in pnjs %}
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <div class="template-avatar-container {% if pnj.image_filename %}has-image{% endif %}">
+                            {% if pnj.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}"
+                                     class="template-avatar-img" alt="{{ pnj.name }}">
+                            {% endif %}
+                            <div class="avatar-placeholder">
+                                {{ pnj.name[:2]|upper }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="template-card-body">
+                        <h3>{{ pnj.name }}</h3>
+
+                        <!-- Informations visibles selon le rôle -->
+                        {% if pnj.first_name %}
+                            <p><strong>Prénom :</strong> {{ pnj.first_name }}</p>
+                        {% endif %}
+
+                        {% if pnj.age %}
+                            <p><strong>Âge :</strong> {{ pnj.age }} ans</p>
+                        {% endif %}
+
+                        <p><strong>Type :</strong> {{ pnj.character_class }}</p>
+                        <p><strong>Niveau :</strong> {{ pnj.level }}</p>
+
+                        {% if is_mj %}
+                            <!-- Infos complètes pour le MJ -->
+                            <p><strong>PV :</strong> {{ pnj.hp_max }}</p>
+                            <p><strong>CA :</strong> {{ pnj.ac_base }}</p>
+
+                            <!-- Caractéristiques compactes -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; font-size: 12px;">
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>FOR</strong><br>{{ pnj.force }}
+                                </div>
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>DEX</strong><br>{{ pnj.dexterite }}
+                                </div>
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>CON</strong><br>{{ pnj.constitution }}
+                                </div>
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>INT</strong><br>{{ pnj.intelligence }}
+                                </div>
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>SAG</strong><br>{{ pnj.sagesse }}
+                                </div>
+                                <div style="text-align: center; padding: 4px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <strong>CHA</strong><br>{{ pnj.charisme }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Vue joueur selon la visibilité -->
+                            {% if pnj.is_shared %}
+                                {% if pnj.visibility_level in ['semi_complete', 'complete'] %}
+                                    <p><strong>PV :</strong> {{ pnj.hp_max }}</p>
+                                    <p><strong>CA :</strong> {{ pnj.ac_base }}</p>
+                                {% endif %}
+
+                                {% if pnj.visibility_level == 'complete' and pnj.background_story %}
+                                    <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                        <strong>Histoire :</strong>
+                                        <p style="margin: 5px 0 0 0; font-size: 13px;">{{ pnj.background_story[:80] }}{% if pnj.background_story|length > 80 %}...{% endif %}</p>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <p style="font-style: italic; color: #999;">Informations non partagées</p>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- Indicateurs pour le MJ -->
+                        {% if is_mj %}
+                            <div style="margin-top: 15px; padding: 8px; background: rgba(76, 175, 80, 0.1); border-radius: 6px; font-size: 12px;">
+                                <strong>🎯 MJ :</strong>
+                                <span class="status-badge" style="background: rgba(255,193,7,0.2); color: #ffc107; margin-left: 5px;">
+                                    {{ pnj.visibility_level }}
+                                </span>
+                                {% if pnj.is_shared %}
+                                    <span class="status-badge" style="background: rgba(76,175,80,0.2); color: #4caf50; margin-left: 5px;">
+                                        Partagé
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge" style="background: rgba(229,57,53,0.2); color: #e53935; margin-left: 5px;">
+                                        Privé
+                                    </span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="template-card-actions">
+                            <a href="{{ url_for('template.character_profile', id=pnj.id) }}" class="btn btn-secondary">
+                                👁️ Voir
+                            </a>
+
+                            {% if is_mj %}
+                                <a href="{{ url_for('template.edit_character_template', id=pnj.id) }}" class="btn btn-primary">
+                                    ✏️ Modifier
+                                </a>
+
+                                <form method="POST" action="{{ url_for('pnj.toggle_share_pnj', pnj_id=pnj.id) }}" style="display: inline;">
+                                    {% if pnj.is_shared %}
+                                        <button type="submit" class="btn btn-warning" title="Masquer aux joueurs">
+                                            🔒 Masquer
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-primary" title="Partager avec les joueurs">
+                                            📤 Partager
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-xp-logs">
+            <div class="empty-state">
+                <h3>🎭 Aucun PNJ dans cette campagne</h3>
+                {% if is_mj %}
+                    <p>Créez votre premier PNJ pour enrichir votre monde !</p>
+                    <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
+                        ➕ Créer un PNJ
+                    </a>
+                {% else %}
+                    <p>Le MJ n'a pas encore créé de PNJ partagés.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

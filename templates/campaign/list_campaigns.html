@@ -1,0 +1,200 @@
+<!-- templates/campaign/list_campaigns.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard">
+    <div class="edit-header">
+        <h1>🎲 Mes Campagnes</h1>
+        <div>
+            {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-primary">
+                    ➕ Nouvelle Campagne
+                </a>
+            {% endif %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                🏠 Accueil
+            </a>
+        </div>
+    </div>
+
+    <!-- Mes campagnes (où je suis membre ou MJ) -->
+    {% if user_campaigns %}
+        <div class="card">
+            <h2>🎯 Mes Campagnes Actives</h2>
+            <div class="template-grid">
+                {% for campaign in user_campaigns %}
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <div class="campaign-status">
+                            {% if current_user.is_mj_of(campaign) %}
+                                <span class="status-badge" style="background: rgba(255,193,7,0.2); color: #ffc107;">
+                                    👑 MJ
+                                </span>
+                            {% else %}
+                                <span class="status-badge" style="background: rgba(76,175,80,0.2); color: #4caf50;">
+                                    🧙 Joueur
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="template-card-body">
+                        <h3>{{ campaign.name }}</h3>
+
+                        {% if campaign.description %}
+                            <p style="color: #ccc; font-size: 14px; margin: 10px 0;">
+                                {{ campaign.description[:100] }}{% if campaign.description|length > 100 %}...{% endif %}
+                            </p>
+                        {% endif %}
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                            <div>
+                                <span style="color: #999; font-size: 12px;">👑 MJ :</span>
+                                <span style="font-weight: bold;">{{ campaign.mj.username }}</span>
+                            </div>
+                            <div>
+                                <span style="color: #999; font-size: 12px;">👥</span>
+                                <span>{{ campaign.members|length + 1 }} membres</span>
+                            </div>
+                        </div>
+
+                        <!-- Statistiques rapides -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0;">
+                            <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #4caf50;">
+                                    {{ campaign.story_arcs|length }}
+                                </div>
+                                <div style="font-size: 11px; color: #999;">Arcs</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #ff9800;">
+                                    {{ campaign.combats|length }}
+                                </div>
+                                <div style="font-size: 11px; color: #999;">Combats</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #e535ab;">
+                                    {{ campaign.campaign_characters|length }}
+                                </div>
+                                <div style="font-size: 11px; color: #999;">PJ</div>
+                            </div>
+                        </div>
+
+                        <!-- Arc en cours -->
+                        {% set current_arc = campaign.story_arcs|selectattr("status", "equalto", "en_cours")|first %}
+                        {% if current_arc %}
+                            <div style="margin: 15px 0; padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 6px; border-left: 3px solid #4caf50;">
+                                <div style="font-size: 12px; color: #4caf50; font-weight: bold;">📖 Arc en cours :</div>
+                                <div style="font-size: 14px; margin-top: 4px;">{{ current_arc.name }}</div>
+                            </div>
+                        {% endif %}
+
+                        <div class="template-card-actions">
+                            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">
+                                👁️ Entrer
+                            </a>
+
+                            {% if current_user.is_mj_of(campaign) %}
+                                <a href="{{ url_for('campaign.campaign_settings', campaign_id=campaign.id) }}" class="btn btn-secondary">
+                                    ⚙️ Gérer
+                                </a>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('campaign.leave_campaign', campaign_id=campaign.id) }}"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette campagne ?')">
+                                    <button type="submit" class="btn btn-warning">
+                                        🚪 Quitter
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 40px;">
+            <h3>🎲 Aucune campagne</h3>
+            <p style="color: #ccc;">
+                {% if current_user.role in ['MJ', 'Admin'] %}
+                    Vous n'avez pas encore créé de campagne.
+                {% else %}
+                    Vous ne participez à aucune campagne actuellement.
+                {% endif %}
+            </p>
+
+            {% if current_user.role in ['MJ', 'Admin'] %}
+                <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-primary">
+                    ➕ Créer ma première campagne
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Campagnes publiques disponibles (pour les joueurs) -->
+    {% if public_campaigns and current_user.role == 'Joueur' %}
+        <div class="card">
+            <h2>🌐 Campagnes Publiques</h2>
+            <p style="color: #ccc; font-size: 14px;">Campagnes auxquelles vous pouvez demander à participer</p>
+
+            <div class="template-grid">
+                {% for campaign in public_campaigns %}
+                <div class="template-card" style="opacity: 0.8;">
+                    <div class="template-card-header">
+                        <span class="status-badge" style="background: rgba(33, 150, 243, 0.2); color: #2196f3;">
+                            🌐 Public
+                        </span>
+                    </div>
+
+                    <div class="template-card-body">
+                        <h3>{{ campaign.name }}</h3>
+
+                        {% if campaign.description %}
+                            <p style="color: #ccc; font-size: 14px; margin: 10px 0;">
+                                {{ campaign.description[:80] }}{% if campaign.description|length > 80 %}...{% endif %}
+                            </p>
+                        {% endif %}
+
+                        <div style="margin: 15px 0;">
+                            <span style="color: #999; font-size: 12px;">👑 MJ :</span>
+                            <span style="font-weight: bold;">{{ campaign.mj.username }}</span>
+                        </div>
+
+                        <div class="template-card-actions">
+                            <form method="POST" action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" style="display: inline; width: 100%;">
+                                <input type="hidden" name="message" value="Je souhaite rejoindre votre campagne.">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    🙋 Demander à rejoindre
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Actions générales -->
+    <div class="card">
+        <h2>🎯 Actions</h2>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">
+                🧙 Gérer mes Personnages
+            </a>
+
+            {% if current_user.role in ['MJ', 'Admin'] %}
+                <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-primary">
+                    ➕ Nouvelle Campagne
+                </a>
+            {% endif %}
+
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                📊 Tableau de bord général
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

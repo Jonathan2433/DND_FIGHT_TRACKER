@@ -30,11 +30,10 @@ def create_app(config_name='default'):
     socketio.init_app(app, cors_allowed_origins="*")
     mail.init_app(app)
 
-
     # Importer les modèles pour que SQLAlchemy les connaisse
     from app import models
 
-    # ✅ AJOUT : Context processor pour current_user
+    # Context processor pour current_user
     @app.before_request
     def load_logged_in_user():
         """Charger l'utilisateur connecté dans g avant chaque requête"""
@@ -46,7 +45,7 @@ def create_app(config_name='default'):
             from app.services.auth_service import AuthService
             g.current_user = AuthService.get_user_by_id(user_id)
 
-    # ✅ AJOUT : Context processor pour les templates
+    # Context processor pour les templates
     @app.context_processor
     def inject_user():
         """Rendre current_user disponible dans tous les templates"""
@@ -68,7 +67,7 @@ def create_app(config_name='default'):
 def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
     from app.routes import main, combat, combatant, group, template, summary, xp
-    from app.routes import auth, campaign, story_arc
+    from app.routes import auth, campaign, story_arc, pnj  # ✅ AJOUTER pnj
 
     app.register_blueprint(main.bp)
     app.register_blueprint(combat.bp)
@@ -77,9 +76,11 @@ def register_blueprints(app):
     app.register_blueprint(template.bp)
     app.register_blueprint(summary.bp)
     app.register_blueprint(xp.bp)
-    app.register_blueprint(auth.bp)  # ✅ AJOUT LOT 1
-    app.register_blueprint(campaign.bp)  # ✅ AJOUT LOT 2
-    app.register_blueprint(story_arc.bp) # ✅ AJOUT LOT 3
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(campaign.bp)
+    app.register_blueprint(story_arc.bp)
+    app.register_blueprint(pnj.bp)  # ✅ CRITIQUE : Cette ligne
+
 
 def register_socketio_events():
     """Enregistrement des événements SocketIO"""

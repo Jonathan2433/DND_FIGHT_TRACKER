@@ -2,23 +2,36 @@
 from datetime import datetime
 from app.extensions import db
 
+# Table d'association many-to-many personnage-campagne
+character_campaign_association = db.Table(
+    'character_campaign_association',
+    db.Column('character_id', db.Integer, db.ForeignKey('character_template.id')),
+    db.Column('campaign_id', db.Integer, db.ForeignKey('campaign.id'))
+)
 
 class CharacterTemplate(db.Model):
     """Template de personnage réutilisable"""
     id = db.Column(db.Integer, primary_key=True)
 
+    # Sécurité et associations
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=True)
     character_type = db.Column(db.String(20), default='PJ')  # PJ, PNJ, Boss
     is_shared = db.Column(db.Boolean, default=False)  # Pour les PNJ partagés par le MJ
-    is_public = db.Column(db.Boolean, default=False)# ✅ NOUVEAU : Visible par tous
-    is_active = db.Column(db.Boolean, default=False)
+    is_public = db.Column(db.Boolean, default=False)  # Visible par tous
+    visibility_level = db.Column(db.String(20), default='private')  # private, reduced, semi_complete, complete
+    is_active = db.Column(db.Boolean, default=True)
 
     # Identité
     name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(50))  # Prénom
+    age = db.Column(db.Integer)  # Âge
+    background_story = db.Column(db.Text)  # Histoire/background
     character_class = db.Column(db.String(50))
+    race = db.Column(db.String(50))
     level = db.Column(db.Integer, default=1)
     notes = db.Column(db.Text)
+    private_notes = db.Column(db.Text)
 
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)
@@ -41,7 +54,7 @@ class CharacterTemplate(db.Model):
     maitrise_sagesse = db.Column(db.Boolean, default=False)
     maitrise_charisme = db.Column(db.Boolean, default=False)
 
-    # ✅ AJOUT : XP et progression
+    # XP et progression
     current_xp = db.Column(db.Integer, default=0)
 
     # Fichiers
@@ -51,7 +64,13 @@ class CharacterTemplate(db.Model):
     # Métadonnées
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Propriétés calculées - Modificateurs
+    # Relations
+    owner = db.relationship('User', foreign_keys=[owner_id], backref=db.backref('owned_characters', lazy=True))
+    campaigns = db.relationship('Campaign', secondary='character_campaign_association', backref='campaign_characters')
+
+    # ========== PROPRIÉTÉS CALCULÉES (UNE SEULE FOIS) ==========
+
+    # Modificateurs
     @property
     def mod_force(self):
         """Modificateur de Force"""
@@ -82,7 +101,7 @@ class CharacterTemplate(db.Model):
         """Modificateur de Charisme"""
         return (self.charisme - 10) // 2
 
-    # Propriétés calculées - Bonus de maîtrise
+    # Bonus de maîtrise
     @property
     def bonus_maitrise(self):
         """Bonus de maîtrise basé sur le niveau"""
@@ -97,7 +116,7 @@ class CharacterTemplate(db.Model):
         else:
             return 6
 
-    # Propriétés calculées - Jets de sauvegarde
+    # Jets de sauvegarde
     @property
     def sauvegarde_force(self):
         """Jet de sauvegarde de Force"""
@@ -134,7 +153,7 @@ class CharacterTemplate(db.Model):
         bonus = self.bonus_maitrise if self.maitrise_charisme else 0
         return self.mod_charisme + bonus
 
-    # ✅ AJOUT : Propriétés XP
+    # Propriétés XP
     @property
     def xp_for_next_level(self):
         """XP nécessaire pour le niveau suivant"""
@@ -144,7 +163,6 @@ class CharacterTemplate(db.Model):
             11: 85000, 12: 100000, 13: 120000, 14: 140000, 15: 165000,
             16: 195000, 17: 225000, 18: 265000, 19: 305000, 20: 355000
         }
-
         if self.level >= 20:
             return XP_TABLE[20]
         return XP_TABLE.get(self.level + 1, 355000)
@@ -165,13 +183,10 @@ class CharacterTemplate(db.Model):
         """Pourcentage de progression vers le niveau suivant"""
         if self.level >= 20:
             return 100
-
         xp_needed_for_next = self.xp_for_next_level - self.xp_for_current_level
         xp_current_progress = self.current_xp - self.xp_for_current_level
-
         if xp_needed_for_next <= 0:
             return 100
-
         return min(100, (xp_current_progress / xp_needed_for_next) * 100)
 
     @property
@@ -179,24 +194,176 @@ class CharacterTemplate(db.Model):
         """Vérifier si le personnage peut monter de niveau"""
         return self.current_xp >= self.xp_for_next_level and self.level < 20
 
+    # ========== MÉTHODES DE PERMISSIONS ==========
+
+    def can_be_viewed_by(self, user, campaign=None):
+        """Vérifier si un utilisateur peut voir ce personnage selon le niveau de visibilité"""
+        if not user:
+            return self.visibility_level == 'complete' and self.is_public
+
+        # Admin voit tout
+        if user.role == 'Admin':
+            return True
+
+        # Propriétaire voit tout
+        if self.owner_id == user.id:
+            return True
+
+        # MJ de campagne voit tout dans sa campagne
+        if campaign and user.is_mj_of(campaign):
+            return True
+
+        # Autres joueurs selon niveau de visibilité
+        if self.visibility_level == 'private':
+            return False
+        elif self.visibility_level in ['reduced', 'semi_complete', 'complete']:
+            # Doit être dans la même campagne
+            if campaign:
+                return user.is_member_of(campaign) and self in campaign.campaign_characters
+            return False
+
+        return False
+
     def can_be_edited_by(self, user):
         """Vérifier si un utilisateur peut modifier ce personnage"""
         if not user:
             return False
 
-        # Admin : peut tout modifier
         if user.role == 'Admin':
             return True
 
-        # Propriétaire : peut toujours modifier ses personnages (même publics)
         if self.owner_id == user.id:
             return True
 
-        # MJ de la campagne : peut modifier les personnages de sa campagne
         if self.campaign and user.is_mj_of(self.campaign):
             return True
 
-        # ✅ CORRECTION : Un personnage public ne peut PAS être modifié par n'importe qui
-        # La visibilité publique ne donne que le droit de VOIR, pas de MODIFIER
-
         return False
+
+    # ========== PROPRIÉTÉS DE TYPE ==========
+
+    @property
+    def is_pj(self):
+        return self.character_type == 'PJ'
+
+    @property
+    def is_pnj(self):
+        return self.character_type == 'PNJ'
+
+    # ========== MÉTHODES DE VISIBILITÉ ==========
+
+    def get_visible_data(self, user, campaign=None):
+        """Retourner les données visibles selon les permissions"""
+        if not self.can_be_viewed_by(user, campaign):
+            return None
+
+        # Propriétaire ou MJ : données complètes
+        if (user and (self.owner_id == user.id or user.role == 'Admin' or
+                     (campaign and user.is_mj_of(campaign)))):
+            return {
+                'level': 'complete',
+                'data': self._get_complete_data()
+            }
+
+        # Selon niveau de visibilité
+        if self.visibility_level == 'reduced':
+            return {
+                'level': 'reduced',
+                'data': self._get_reduced_data()
+            }
+        elif self.visibility_level == 'semi_complete':
+            return {
+                'level': 'semi_complete',
+                'data': self._get_semi_complete_data()
+            }
+        elif self.visibility_level == 'complete':
+            return {
+                'level': 'complete',
+                'data': self._get_complete_data()
+            }
+
+        return None
+
+    def _get_reduced_data(self):
+        """Fiche réduite : nom, prénom, âge, photo"""
+        return {
+            'name': self.name,
+            'first_name': self.first_name,
+            'age': self.age,
+            'image_filename': self.image_filename
+        }
+
+    def _get_semi_complete_data(self):
+        """Fiche semi-complète : réduite + caractéristiques"""
+        data = self._get_reduced_data()
+        data.update({
+            'character_class': self.character_class,
+            'race': self.race,
+            'level': self.level,
+            'force': self.force,
+            'dexterite': self.dexterite,
+            'constitution': self.constitution,
+            'intelligence': self.intelligence,
+            'sagesse': self.sagesse,
+            'charisme': self.charisme,
+            'mod_force': self.mod_force,
+            'mod_dexterite': self.mod_dexterite,
+            'mod_constitution': self.mod_constitution,
+            'mod_intelligence': self.mod_intelligence,
+            'mod_sagesse': self.mod_sagesse,
+            'mod_charisme': self.mod_charisme
+        })
+        return data
+
+    def _get_complete_data(self):
+        """Fiche complète : tout visible"""
+        data = self._get_semi_complete_data()
+        data.update({
+            # Statistiques de combat
+            'hp_max': self.hp_max,
+            'ac_base': self.ac_base,
+            'initiative_bonus': self.initiative_bonus,
+
+            # Maîtrises de sauvegarde
+            'maitrise_force': self.maitrise_force,
+            'maitrise_dexterite': self.maitrise_dexterite,
+            'maitrise_constitution': self.maitrise_constitution,
+            'maitrise_intelligence': self.maitrise_intelligence,
+            'maitrise_sagesse': self.maitrise_sagesse,
+            'maitrise_charisme': self.maitrise_charisme,
+
+            # Sauvegardes calculées
+            'sauvegarde_force': self.sauvegarde_force,
+            'sauvegarde_dexterite': self.sauvegarde_dexterite,
+            'sauvegarde_constitution': self.sauvegarde_constitution,
+            'sauvegarde_intelligence': self.sauvegarde_intelligence,
+            'sauvegarde_sagesse': self.sauvegarde_sagesse,
+            'sauvegarde_charisme': self.sauvegarde_charisme,
+
+            # Progression et notes
+            'current_xp': self.current_xp,
+            'xp_for_next_level': self.xp_for_next_level,
+            'xp_for_current_level': self.xp_for_current_level,
+            'xp_progress_percentage': self.xp_progress_percentage,
+            'can_level_up': self.can_level_up,
+            'bonus_maitrise': self.bonus_maitrise,
+
+            # Histoire et notes (complètes pour le propriétaire/MJ)
+            'notes': self.notes,
+            'private_notes': self.private_notes,
+            'background_story': self.background_story,
+
+            # Fichiers
+            'pdf_filename': self.pdf_filename,
+
+            # Métadonnées
+            'created_at': self.created_at,
+            'character_type': self.character_type,
+            'is_shared': self.is_shared,
+            'is_public': self.is_public,
+            'visibility_level': self.visibility_level
+        })
+        return data
+
+    def __repr__(self):
+        return f'<CharacterTemplate {self.name} ({self.character_type})>'

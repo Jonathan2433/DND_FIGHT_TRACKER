@@ -18,14 +18,11 @@
 </head>
 <body>
     <header>
-        <h1><a href="{{ url_for('main.index') }}" style="color: #4caf50; text-decoration: none;">⚔️ D&D Exalt Combat Tracker</a></h1>
-
-        <!-- ✅ NAVIGATION CORRIGÉE AVEC GESTION DES ERREURS -->
-        <nav style="display: flex; gap: 15px; align-items: center;">
+        <h1>⚔️ D&D Exalt Combat Tracker</h1>
+        <nav>
             <a href="{{ url_for('main.index') }}">🏠 Accueil</a>
 
             {% if session.user_id %}
-                <!-- Utilisateur connecté -->
                 <a href="{{ url_for('campaign.list_campaigns') }}">🎲 Mes Campagnes</a>
                 <a href="{{ url_for('template.manage_templates') }}">🛠 Mes Personnages</a>
 
@@ -33,13 +30,15 @@
                     <a href="{{ url_for('campaign.create_campaign') }}">➕ Nouvelle Campagne</a>
                 {% endif %}
 
-                <a href="{{ url_for('auth.profile') }}">👤 {{ current_user.username if current_user else 'Utilisateur' }}</a>
-                <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
+                <div class="user-menu">
+                    <span>👤 {{ current_user.username if current_user else 'Utilisateur' }}</span>
+                    <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
+                </div>
             {% else %}
-                <!-- Utilisateur non connecté -->
-                <!-- ✅ SUPPRESSION : Lien "Gérer les Profils" pour les non-connectés -->
-                <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
-                <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
+                <div class="auth-links">
+                    <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
+                    <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
+                </div>
             {% endif %}
         </nav>
     </header>
