@@ -2,14 +2,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
 from app.services import TemplateService
 from app.models import CharacterTemplate, EncounterTemplate
-from app.utils.decorators import login_required  # ✅ AJOUT
+from app.utils.decorators import login_required
+from app.models.campaign import Campaign
+from app.extensions import db
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
 
 
 @bp.route('/manage')
-@login_required  # ✅ AJOUT : Protection obligatoire
+@login_required
 def manage_templates():
     """Gestion des templates"""
     # ✅ MODIFICATION : Ne montrer que les personnages de l'utilisateur connecté
@@ -148,3 +150,50 @@ def export_templates():
     """Exporter tous les templates en JSON"""
     export_data = TemplateService.export_templates()
     return jsonify(export_data)
+
+
+@bp.route('/character/<int:character_id>/join_campaign', methods=['GET', 'POST'])
+@login_required
+def join_campaign(character_id):
+    """Interface pour associer un PJ à une campagne"""
+    character = CharacterTemplate.query.get_or_404(character_id)
+
+    # Vérifier que c'est bien le propriétaire du PJ
+    if character.owner_id != g.current_user.id:
+        flash('Vous ne pouvez pas modifier ce personnage.', 'error')
+        return redirect(url_for('template.character_profile', id=character_id))
+
+    # Vérifier que c'est un PJ
+    if character.character_type != 'PJ':
+        flash('Seuls les PJ peuvent rejoindre des campagnes.', 'error')
+        return redirect(url_for('template.character_profile', id=character_id))
+
+    # Récupérer les campagnes où l'utilisateur est membre
+    available_campaigns = []
+    for campaign in g.current_user.get_campaigns():
+        # PJ peut rejoindre les campagnes où il est membre (pas MJ)
+        if not g.current_user.is_mj_of(campaign):
+            available_campaigns.append(campaign)
+
+    if request.method == 'POST':
+        campaign_id = request.form.get('campaign_id')
+
+        if not campaign_id:
+            flash('Veuillez sélectionner une campagne.', 'error')
+        else:
+            campaign = Campaign.query.get(campaign_id)
+
+            # Vérifier que l'utilisateur a accès à cette campagne
+            if campaign and g.current_user.can_access_campaign(campaign):
+                # ✅ SIMPLE : Utiliser le champ campaign_id existant
+                character.campaign_id = campaign_id
+                db.session.commit()
+
+                flash(f'🎉 {character.name} a rejoint la campagne "{campaign.name}" !', 'success')
+                return redirect(url_for('template.character_profile', id=character_id))
+            else:
+                flash('Campagne invalide ou accès interdit.', 'error')
+
+    return render_template('template/join_campaign.html',
+                           character=character,
+                           campaigns=available_campaigns)

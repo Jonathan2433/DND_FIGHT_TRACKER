@@ -9,25 +9,27 @@ bp = Blueprint('xp', __name__, url_prefix='/xp')
 
 
 @bp.route('/character/<int:character_id>/award', methods=['POST'])
-@login_required  # ✅ AJOUT : Protection obligatoire
+@login_required
 def award_manual_xp(character_id):
     """Attribuer manuellement de l'XP à un personnage"""
     character = CharacterTemplate.query.get_or_404(character_id)
 
-    # ✅ SÉCURITÉ : Vérifier les permissions
+    # ✅ SÉCURITÉ RENFORCÉE avec contexte MJ
     can_award = False
+    is_mj_context = False
 
     # Admin peut tout faire
     if g.current_user.role == 'Admin':
         can_award = True
 
-    # Propriétaire du personnage peut s'attribuer de l'XP (optionnel)
+    # Propriétaire du personnage peut s'attribuer de l'XP
     elif character.owner_id == g.current_user.id:
         can_award = True
 
-    # MJ de la campagne peut donner XP aux personnages de sa campagne
+    # ✅ NOUVEAU : MJ de la campagne peut donner XP + a accès aux notes privées
     elif character.campaign and g.current_user.is_mj_of(character.campaign):
         can_award = True
+        is_mj_context = True
 
     if not can_award:
         flash('Vous n\'êtes pas autorisé à attribuer de l\'XP à ce personnage.', 'error')
@@ -36,16 +38,26 @@ def award_manual_xp(character_id):
     xp_amount = int(request.form['xp_amount'])
     description = request.form.get('description', 'XP manuelle')
 
+    # ✅ NOUVEAU : Si MJ, peut ajouter contexte dans description
+    if is_mj_context:
+        mj_context = request.form.get('mj_context', '')
+        if mj_context:
+            description += f" (MJ: {mj_context})"
+
     result = XPService.award_xp(
         character_id,
         xp_amount,
         source="manual",
         description=description,
-        awarded_by=g.current_user.username  # ✅ AJOUT : Tracer qui donne l'XP
+        awarded_by=g.current_user.username
     )
 
     if result['leveled_up']:
         flash(f'{character.name} est passé niveau {result["new_level"]} !', 'success')
+
+        # ✅ NOUVEAU : Si MJ, suggérer d'ajouter note privée sur la montée de niveau
+        if is_mj_context:
+            flash(f'💡 Pensez à ajouter une note privée sur cette montée de niveau !', 'info')
     else:
         flash(f'{xp_amount} XP attribués à {character.name}', 'success')
 

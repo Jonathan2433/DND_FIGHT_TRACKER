@@ -98,6 +98,53 @@
             </div>
         {% endif %}
     </div>
+    {% if is_mj %}
+    <!-- ✅ NOUVELLE SECTION : Gestion des PJ par le MJ -->
+    <div class="card">
+        <h3>🧙 Personnages Joueurs de la campagne</h3>
+
+        {% if campaign_pjs %}
+            <div class="pj-notes-grid">
+                {% for pj in campaign_pjs %}
+                    <div class="pj-note-card">
+                        <div class="pj-note-header">
+                            <div class="pj-info">
+                                {% if pj.image_filename %}
+                                    <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                                         class="pj-mini-avatar" alt="{{ pj.name }}">
+                                {% else %}
+                                    <div class="pj-mini-avatar-placeholder">
+                                        {{ pj.name[:2]|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ pj.name }}</strong>
+                                    <div class="pj-meta">
+                                        {{ pj.character_class }} {{ pj.level }} •
+                                        Propriétaire: {{ pj.owner.username }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pj-actions">
+                                <a href="{{ url_for('template.character_profile', id=pj.id) }}"
+                                   class="btn btn-primary">
+                                    👁️ Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>🧙 Aucun PJ dans cette campagne</p>
+                <p>Les joueurs doivent créer leurs personnages et les associer à cette campagne.</p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
     <div class="card">
     <h2>🎭 PNJ de la Campagne</h2>
@@ -274,4 +321,97 @@
     </div>
     
 </div>
+<script>
+function togglePrivateNotes(pjId) {
+    const notesSection = document.getElementById(`private-notes-${pjId}`);
+
+    if (notesSection.style.display === 'none') {
+        notesSection.style.display = 'block';
+        // Focus sur le textarea
+        const textarea = document.getElementById(`notes-textarea-${pjId}`);
+        if (textarea) {
+            textarea.focus();
+        }
+    } else {
+        notesSection.style.display = 'none';
+    }
+}
+
+function savePrivateNotes(event, pjId) {
+    event.preventDefault();
+
+    const textarea = document.getElementById(`notes-textarea-${pjId}`);
+    const notes = textarea.value;
+
+    // Envoi AJAX pour mise à jour rapide
+    fetch(`{{ url_for('pnj.quick_private_notes', campaign_id=campaign.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            pj_id: pjId,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Animation de succès
+            const card = document.querySelector(`#private-notes-${pjId}`);
+            card.style.background = 'rgba(76, 175, 80, 0.2)';
+
+            setTimeout(() => {
+                card.style.background = 'rgba(255, 193, 7, 0.05)';
+                togglePrivateNotes(pjId); // Fermer automatiquement
+            }, 1000);
+
+            // Flash message simulé
+            showFlashMessage(data.message, 'success');
+        } else {
+            showFlashMessage(data.error || 'Erreur inconnue', 'error');
+        }
+    })
+    .catch(error => {
+        showFlashMessage('Erreur de connexion', 'error');
+    });
+}
+
+function showFlashMessage(message, category) {
+    // Créer un message flash temporaire
+    const flashDiv = document.createElement('div');
+    flashDiv.className = `flash-message flash-${category}`;
+    flashDiv.textContent = message;
+    flashDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        animation: slideInRight 0.3s ease;
+    `;
+
+    if (category === 'success') {
+        flashDiv.style.background = '#4caf50';
+    } else {
+        flashDiv.style.background = '#e53935';
+    }
+
+    document.body.appendChild(flashDiv);
+
+    setTimeout(() => {
+        flashDiv.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+</style>
 {% endblock %}

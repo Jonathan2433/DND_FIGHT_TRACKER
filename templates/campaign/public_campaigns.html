@@ -1,0 +1,144 @@
+<!-- templates/campaign/public_campaigns.html - NOUVEAU FICHIER -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <h1>🌐 Campagnes Publiques</h1>
+    <p>Découvrez les campagnes ouvertes aux nouveaux joueurs !</p>
+
+    {% if public_campaigns %}
+        <div class="campaigns-grid">
+            {% for campaign in public_campaigns %}
+            <div class="campaign-card public-campaign">
+                <div class="campaign-header">
+                    <h3>{{ campaign.name }}</h3>
+                    <span class="public-badge">🌐 Publique</span>
+                </div>
+
+                {% if campaign.description %}
+                <div class="campaign-description">
+                    {{ campaign.description[:150] }}
+                    {% if campaign.description|length > 150 %}...{% endif %}
+                </div>
+                {% endif %}
+
+                <div class="campaign-info">
+                    <div class="info-item">
+                        <strong>👑 MJ :</strong> {{ campaign.mj.username }}
+                    </div>
+                    <div class="info-item">
+                        <strong>👥 Membres :</strong> {{ campaign.members|length + 1 }}
+                    </div>
+                    <div class="info-item">
+                        <strong>📅 Créée :</strong> {{ campaign.created_at.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+
+                <div class="campaign-actions">
+                    {% if session.user_id %}
+                        <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="message" value="Je souhaite rejoindre votre campagne !">
+                            <button type="submit" class="btn btn-primary">
+                                🙋 Demander à rejoindre
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                            📝 S'inscrire pour rejoindre
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-campaigns">
+            <h3>🎲 Aucune campagne publique disponible</h3>
+            <p>Il n'y a pas de campagnes publiques en cours actuellement.</p>
+
+            {% if not session.user_id %}
+                <p>
+                    <a href="{{ url_for('auth.register') }}">Créez un compte</a>
+                    pour être notifié des nouvelles campagnes !
+                </p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="navigation">
+        {% if session.user_id %}
+            <a href="{{ url_for('campaign.list') }}" class="btn btn-secondary">
+                🎯 Mes Campagnes
+            </a>
+        {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                📝 Créer un compte
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                🔐 Se connecter
+            </a>
+        {% endif %}
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+            🏠 Accueil
+        </a>
+    </div>
+</div>
+
+<style>
+.campaigns-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.campaign-card {
+    background: #2a2c36;
+    border-radius: 12px;
+    padding: 25px;
+    border: 2px solid rgba(76, 175, 80, 0.3);
+    transition: all 0.3s ease;
+}
+
+.campaign-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
+}
+
+.public-badge {
+    background: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.campaign-description {
+    margin: 15px 0;
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.campaign-info {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.info-item {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.no-campaigns {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin: 40px 0;
+}
+</style>
+
+{% endblock %}

@@ -1,6 +1,7 @@
 """Routes principales - Version finale avec vrais templates"""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.models import Combat, CharacterTemplate, CombatLog
+from app.services.campaign_service import CampaignService
 from app.utils import format_duration
 
 # Créer le blueprint
@@ -79,3 +80,9 @@ def index():
         public_campaigns=public_campaigns,  # ✅ AJOUT
         user_is_connected=user_is_connected  # ✅ AJOUT
     )
+
+@bp.route('/public_campaigns')
+def public_campaigns():
+    """Lister les campagnes publiques (accessible sans connexion)"""
+    campaigns = CampaignService.get_public_campaigns()
+    return render_template('public_campaigns.html', campaigns=campaigns)

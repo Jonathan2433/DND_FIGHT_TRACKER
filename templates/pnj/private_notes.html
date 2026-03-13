@@ -1,0 +1,68 @@
+<!-- app/templates/pnj/private_notes.html - NOUVEAU FICHIER -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="edit-character-container">
+    <div class="edit-header">
+        <h2>📝 Notes Privées MJ - {{ pj.name }}</h2>
+        <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}"
+           class="btn btn-secondary">← Retour à la campagne</a>
+    </div>
+
+    <div class="private-notes-warning">
+        <h3>⚠️ Notes Privées du Maître du Jeu</h3>
+        <p>Ces notes sont <strong>strictement privées</strong> et ne seront jamais visibles par
+           <strong>{{ pj.owner.username }}</strong> (propriétaire du personnage).</p>
+        <p>Utilisez cet espace pour vos observations, secrets de l'histoire, ou informations
+           que les joueurs ne doivent pas connaître.</p>
+    </div>
+
+    <form method="POST">
+        <div class="edit-section">
+            <h4>📋 Informations du PJ (lecture seule)</h4>
+
+            <div class="readonly-info">
+                <p><strong>Nom :</strong> {{ pj.name }}</p>
+                <p><strong>Classe :</strong> {{ pj.character_class }} {{ pj.level }}</p>
+                <p><strong>Propriétaire :</strong> {{ pj.owner.username }}</p>
+                {% if pj.notes %}
+                    <p><strong>Notes publiques :</strong> {{ pj.notes[:100] }}{% if pj.notes|length > 100 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="edit-section">
+            <label for="private_notes">📝 Notes Privées du MJ :</label>
+            <textarea id="private_notes"
+                      name="private_notes"
+                      rows="10"
+                      placeholder="Vos observations privées sur {{ pj.name }}...
+
+Exemples :
+- Secrets de son histoire que le joueur ignore
+- Connexions avec l'intrigue principale
+- Faiblesses ou motivations cachées
+- Notes pour futurs développements narratifs
+- Informations données en aparté">{{ current_notes }}</textarea>
+
+            <div class="notes-help">
+                <h5>💡 Suggestions d'utilisation :</h5>
+                <ul>
+                    <li><strong>Secrets narratifs</strong> : Ce que le PJ ignore sur son propre passé</li>
+                    <li><strong>Motivations cachées</strong> : Vrais objectifs vs objectifs affichés</li>
+                    <li><strong>Connexions intrigue</strong> : Liens avec l'arc principal</li>
+                    <li><strong>Développement futur</strong> : Pistes pour évolution du personnage</li>
+                    <li><strong>Notes de jeu</strong> : Observations sur le style de jeu du joueur</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">💾 Sauvegarder les Notes</button>
+            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}"
+               class="btn btn-secondary">❌ Annuler</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

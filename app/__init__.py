@@ -67,8 +67,7 @@ def create_app(config_name='default'):
 def register_blueprints(app):
     """Enregistrement de tous les blueprints"""
     from app.routes import main, combat, combatant, group, template, summary, xp
-    from app.routes import auth, campaign, story_arc, pnj  # ✅ AJOUTER pnj
-
+    from app.routes import auth, campaign, story_arc, pnj
     app.register_blueprint(main.bp)
     app.register_blueprint(combat.bp)
     app.register_blueprint(combatant.bp)
@@ -79,7 +78,7 @@ def register_blueprints(app):
     app.register_blueprint(auth.bp)
     app.register_blueprint(campaign.bp)
     app.register_blueprint(story_arc.bp)
-    app.register_blueprint(pnj.bp)  # ✅ CRITIQUE : Cette ligne
+    app.register_blueprint(pnj.bp)
 
 
 def register_socketio_events():

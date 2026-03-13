@@ -13,25 +13,25 @@ bp = Blueprint('campaign', __name__, url_prefix='/campaign')
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_campaign():
-    """Créer une nouvelle campagne"""
+    """Créer une nouvelle campagne AVEC gestion public/privé"""
     if request.method == 'POST':
         name = request.form['name']
         description = request.form.get('description', '')
-        is_public = bool(int(request.form.get('is_public', '0')))  # ✅ AJOUT
+        is_public = bool(request.form.get('is_public', False))  # ✅ AJOUT
 
+        # Seuls les MJ et Admin peuvent créer des campagnes
         if g.current_user.role not in ['MJ', 'Admin']:
             flash('Seuls les MJ et Administrateurs peuvent créer des campagnes.', 'error')
             return redirect(url_for('main.index'))
 
-        campaign = CampaignService.create_campaign(
-            name, description, g.current_user.id, is_public  # ✅ AJOUT
-        )
-
+        campaign = CampaignService.create_campaign(name, description, g.current_user.id, is_public)
         flash(f'Campagne "{campaign.name}" créée avec succès !', 'success')
         return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
 
     return render_template('campaign/create_campaign.html')
 
+
+# app/routes/campaign.py - MODIFIER cette méthode view_campaign
 
 @bp.route('/<int:campaign_id>')
 @login_required
@@ -45,6 +45,14 @@ def view_campaign(campaign_id):
 
     # Récupérer les membres
     members = CampaignMember.query.filter_by(campaign_id=campaign_id).all()
+
+    # ✅ NOUVEAU : Récupérer les PJ de la campagne
+    from app.models import CharacterTemplate
+    campaign_pjs = CharacterTemplate.query.filter_by(
+        campaign_id=campaign_id,
+        character_type='PJ',
+        is_active=True
+    ).all()
 
     # Récupérer les invitations en attente (si MJ)
     invitations = []
@@ -65,6 +73,7 @@ def view_campaign(campaign_id):
         'campaign/dashboard.html',
         campaign=campaign,
         members=members,
+        campaign_pjs=campaign_pjs,  # ✅ NOUVEAU
         invitations=invitations,
         join_requests=join_requests,
         is_mj=g.current_user.is_mj_of(campaign)
@@ -109,7 +118,7 @@ def accept_invitation(token):
 @bp.route('/<int:campaign_id>/request_join', methods=['POST'])
 @login_required
 def request_join(campaign_id):
-    """Demander à rejoindre une campagne"""
+    """Demander à rejoindre une campagne - AVEC VÉRIFICATION PUBLIC/PRIVÉ"""
     message = request.form.get('message', '')
     result = CampaignService.request_to_join(campaign_id, g.current_user.id, message)
 
@@ -156,24 +165,30 @@ def leave_campaign(campaign_id):
 
 
 @bp.route('/list')
-@login_required
 def list_campaigns():
-    """Lister toutes les campagnes accessibles"""
-    user_campaigns = g.current_user.get_campaigns()
+    """Lister toutes les campagnes - Accessible à tous"""
+    from flask import session
 
-    # Campagnes publiques pour demander à rejoindre (optionnel)
-    public_campaigns = []
-    if g.current_user.role == 'Joueur':
-        public_campaigns = Campaign.query.filter(
-            Campaign.is_active == True,
-            Campaign.id.notin_([c.id for c in user_campaigns])
-        ).limit(10).all()
+    # Si connecté : ses campagnes + campagnes publiques disponibles
+    if 'user_id' in session:
+        user_campaigns = g.current_user.get_campaigns()
 
-    return render_template(
-        'campaign/list_campaigns.html',
-        user_campaigns=user_campaigns,
-        public_campaigns=public_campaigns
-    )
+        # Campagnes publiques où il peut demander à rejoindre
+        available_campaigns = CampaignService.get_public_campaigns_for_user(g.current_user.id)
+
+        return render_template(
+            'campaign/list_campaigns.html',
+            user_campaigns=user_campaigns,
+            public_campaigns=available_campaigns
+        )
+
+    # Si non connecté : seulement campagnes publiques
+    else:
+        public_campaigns = CampaignService.get_public_campaigns()
+        return render_template(
+            'campaign/public_campaigns.html',
+            public_campaigns=public_campaigns
+        )
 
 
 @bp.route('/<int:campaign_id>/settings')

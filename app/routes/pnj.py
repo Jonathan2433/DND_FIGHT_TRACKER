@@ -1,6 +1,6 @@
 # app/routes/pnj.py - VERSION COMPLÈTE CORRIGÉE
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, g
+from flask import Blueprint, render_template, request, redirect, url_for, flash, g, jsonify
 from app.utils.decorators import login_required
 from app.services.campaign_service import CampaignService
 from app.models import CharacterTemplate
@@ -260,3 +260,75 @@ def change_pnj_visibility(pnj_id):
     except Exception as e:
         flash(f'Erreur lors de la modification : {str(e)}', 'error')
         return redirect(url_for('template.character_profile', id=pnj_id))
+
+@bp.route('/campaign/<int:campaign_id>/pj/<int:pj_id>/private_notes', methods=['GET', 'POST'])
+@login_required
+def manage_private_notes(campaign_id, pj_id):
+    """Gérer les notes privées MJ sur un PJ"""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut gérer les notes privées.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    # Récupérer le PJ (doit être dans cette campagne)
+    pj = CharacterTemplate.query.filter_by(
+        id=pj_id,
+        campaign_id=campaign_id,
+        character_type='PJ'
+    ).first_or_404()
+
+    if not pj.can_add_private_notes(g.current_user):
+        flash('Vous ne pouvez pas ajouter de notes privées à ce personnage.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    if request.method == 'POST':
+        try:
+            new_notes = request.form.get('private_notes', '')
+            pj.private_notes = new_notes
+
+            db.session.commit()
+
+            flash(f'Notes privées sur {pj.name} mises à jour !', 'success')
+            return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+        except Exception as e:
+            flash(f'Erreur lors de la sauvegarde : {str(e)}', 'error')
+
+    return render_template('pnj/private_notes.html',
+                           campaign=campaign,
+                           pj=pj,
+                           current_notes=pj.private_notes or '')
+
+@bp.route('/campaign/<int:campaign_id>/pj/quick_notes', methods=['POST'])
+@login_required
+def quick_private_notes(campaign_id):
+    """Mise à jour rapide des notes privées via AJAX"""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        return jsonify({'error': 'Permission refusée'}), 403
+
+    pj_id = request.json.get('pj_id')
+    notes = request.json.get('notes', '')
+
+    pj = CharacterTemplate.query.filter_by(
+        id=pj_id,
+        campaign_id=campaign_id,
+        character_type='PJ'
+    ).first()
+
+    if not pj or not pj.can_add_private_notes(g.current_user):
+        return jsonify({'error': 'PJ non trouvé ou permission refusée'}), 404
+
+    try:
+        pj.private_notes = notes
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'Notes privées sur {pj.name} mises à jour'
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

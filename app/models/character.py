@@ -224,7 +224,7 @@ class CharacterTemplate(db.Model):
 
         return False
 
-    def can_be_edited_by(self, user):
+    def can_be_edited_by(self, user, context='full'):
         """Vérifier si un utilisateur peut modifier ce personnage"""
         if not user:
             return False
@@ -232,10 +232,13 @@ class CharacterTemplate(db.Model):
         if user.role == 'Admin':
             return True
 
+        # Propriétaire peut toujours tout modifier
         if self.owner_id == user.id:
             return True
 
+        # ✅ NOUVEAU : MJ de campagne peut modifier les PJ de sa campagne
         if self.campaign and user.is_mj_of(self.campaign):
+            # Si contexte précisé, on peut limiter ce que le MJ peut modifier
             return True
 
         return False
@@ -367,3 +370,27 @@ class CharacterTemplate(db.Model):
 
     def __repr__(self):
         return f'<CharacterTemplate {self.name} ({self.character_type})>'
+
+    def can_add_private_notes(self, user):
+        """Vérifier si un utilisateur peut ajouter des notes privées"""
+        if not user:
+            return False
+
+        # Admin peut tout faire
+        if user.role == 'Admin':
+            return True
+
+        # ✅ NOUVEAU : MJ peut ajouter notes privées sur PJ de sa campagne
+        if self.is_pj and self.campaign and user.is_mj_of(self.campaign):
+            return True
+
+        return False
+
+    def get_private_notes_for_mj(self, mj_user):
+        """Récupérer les notes privées du MJ pour ce pj"""
+        if not self.can_add_private_notes(mj_user):
+            return None
+
+        # Pour l'instant, on utilise le champ private_notes existant
+        # Plus tard, on pourrait créer une table séparée pour plusieurs MJ
+        return self.private_notes

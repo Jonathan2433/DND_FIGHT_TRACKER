@@ -16,30 +16,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/summary.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exp_history.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/campaign.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/note_mj_pj.css') }}">
 </head>
 <body>
     <header>
         <h1>⚔️ D&D Exalt Combat Tracker</h1>
-        <nav>
+        <nav class="main-nav">
             <a href="{{ url_for('main.index') }}">🏠 Accueil</a>
 
+            <!-- ✅ AJOUT : Lien campagnes publiques pour tous -->
+            <a href="{{ url_for('campaign.list_campaigns') }}">🌐 Campagnes</a>
+
             {% if session.user_id %}
-                <a href="{{ url_for('campaign.list_campaigns') }}">🎲 Mes Campagnes</a>
                 <a href="{{ url_for('template.manage_templates') }}">🛠 Mes Personnages</a>
 
                 {% if current_user and current_user.role in ['MJ', 'Admin'] %}
                     <a href="{{ url_for('campaign.create_campaign') }}">➕ Nouvelle Campagne</a>
                 {% endif %}
 
-                <div class="user-menu">
+                <div class="nav-user">
                     <span>👤 {{ current_user.username if current_user else 'Utilisateur' }}</span>
                     <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
                 </div>
             {% else %}
-                <div class="auth-links">
-                    <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
-                    <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
-                </div>
+                <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
+                <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
             {% endif %}
         </nav>
     </header>

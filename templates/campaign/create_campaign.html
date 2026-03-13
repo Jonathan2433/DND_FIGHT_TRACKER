@@ -1,69 +1,39 @@
-<!-- templates/campaign/create_campaign.html - NOUVEAU FICHIER COMPLET -->
+<!-- templates/campaign/create_campaign.html - AJOUT CHECKBOX -->
 {% extends "base.html" %}
 {% block content %}
 
-<div class="create-campaign-container">
-    <div class="create-header">
-        <h1>🎲 Créer une Campagne</h1>
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">← Retour à l'accueil</a>
-    </div>
+<div class="container">
+    <h1>🎲 Créer une Campagne</h1>
 
-    <div class="create-form-card">
-        <form method="POST">
-            <div class="form-section">
-                <h3>📋 Informations de base</h3>
+    <form method="POST" class="campaign-form">
+        <div class="form-section">
+            <h4>📝 Informations de base</h4>
+            <label for="name">Nom de la campagne :</label>
+            <input type="text" name="name" id="name" required>
 
-                <div class="form-group">
-                    <label for="name">Nom de la campagne * :</label>
-                    <input type="text" id="name" name="name" required
-                           placeholder="Ex: Les Mines de Phandalin">
-                </div>
+            <label for="description">Description :</label>
+            <textarea name="description" id="description" rows="4"></textarea>
+        </div>
 
-                <div class="form-group">
-                    <label for="description">Description :</label>
-                    <textarea id="description" name="description" rows="4"
-                              placeholder="Décrivez votre campagne, son univers, ses enjeux..."></textarea>
-                </div>
-            </div>
+        <!-- ✅ AJOUT SECTION VISIBILITÉ -->
+        <div class="form-section">
+            <h4>🔓 Visibilité de la campagne</h4>
+            <label class="checkbox-label">
+                <input type="checkbox" name="is_public" value="true">
+                <span class="checkmark"></span>
+                Campagne publique (les joueurs peuvent demander à rejoindre)
+            </label>
+            <p class="help-text">
+                ⚠️ Si non cochée, seul le MJ peut inviter des joueurs directement.
+            </p>
+        </div>
 
-            <div class="form-section">
-                <h3>🔒 Visibilité</h3>
-
-                <div class="visibility-options">
-                    <label class="radio-option">
-                        <input type="radio" name="is_public" value="0" checked>
-                        <div class="radio-content">
-                            <span class="radio-icon">🔒</span>
-                            <div>
-                                <strong>Privée</strong>
-                                <p>Seules vos invitations permettent de rejoindre. Invisible du public.</p>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="radio-option">
-                        <input type="radio" name="is_public" value="1">
-                        <div class="radio-content">
-                            <span class="radio-icon">🌐</span>
-                            <div>
-                                <strong>Publique</strong>
-                                <p>Visible sur la page d'accueil. Les joueurs peuvent demander à rejoindre.</p>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-large">
-                    ✨ Créer la Campagne
-                </button>
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-                    Annuler
-                </a>
-            </div>
-        </form>
-    </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">🎲 Créer la Campagne</button>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">← Annuler</a>
+        </div>
+    </form>
 </div>
+
 
 {% endblock %}

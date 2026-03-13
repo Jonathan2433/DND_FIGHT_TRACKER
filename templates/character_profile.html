@@ -36,6 +36,41 @@
                 <div class="stat-box">⚡ +{{ character.initiative_bonus }}</div>
                 <div class="stat-box">⚔ {{ combats_played }} combats</div>
             </div>
+            {% if current_user and character.can_be_edited_by(current_user) %}
+            <div class="profile-actions">
+                <h3>🎯 Actions</h3>
+
+                <!-- ✅ NOUVEAU : Bouton association campagne -->
+                {% if character.character_type == 'PJ' and character.owner_id == current_user.id %}
+                    <a href="{{ url_for('template.join_campaign', character_id=character.id) }}"
+                       class="btn btn-primary">
+                        {% if character.campaign %}
+                            🔄 Changer de campagne
+                        {% else %}
+                            🎲 Rejoindre une campagne
+                        {% endif %}
+                    </a>
+                {% endif %}
+
+                <!-- Boutons existants -->
+                <a href="{{ url_for('template.edit_character_template', id=character.id) }}"
+                   class="btn btn-primary">✏️ Modifier</a>
+
+                {% if current_user and character.owner_id == current_user.id %}
+                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                          style="display: inline;"
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');">
+                        <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
+                    </form>
+                {% endif %}
+            </div>
+            {% else %}
+                {% if current_user %}
+                    <div class="no-edit-permission">
+                        <p>Vous ne pouvez que consulter ce personnage</p>
+                    </div>
+                {% endif %}
+            {% endif %}
 
             <!-- ✅ NOUVEAU : Caractéristiques en 2 lignes de 3 colonnes -->
             <div class="char-details">
@@ -140,10 +175,22 @@
                 {% endif %}
 
             <!-- ✅ NOUVEAU : Notes déplacées sous les caractéristiques -->
-            {% if character.notes %}
+            {% if character.notes or (current_user and character.can_be_edited_by(current_user)) %}
             <div class="char-notes">
                 <h3>📝 Notes</h3>
-                <p>{{ character.notes }}</p>
+                {% if character.notes %}
+                    <p>{{ character.notes }}</p>
+                {% endif %}
+
+                <!-- ✅ NOUVEAU : Affichage conditionnel des notes privées -->
+                {% if current_user and character.private_notes and character.can_add_private_notes(current_user) %}
+                    <div class="mj-private-notes">
+                        <h4>🔒 Notes Privées MJ</h4>
+                        <div class="mj-notes-content">
+                            {{ character.private_notes }}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
             {% endif %}
 

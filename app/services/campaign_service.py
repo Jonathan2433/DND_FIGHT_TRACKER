@@ -1,3 +1,5 @@
+# app/services/campaign_service.py - VERSION COMPLÈTE CORRIGÉE
+
 """Service métier pour la gestion des campagnes"""
 from datetime import datetime, timedelta
 from flask import url_for
@@ -11,19 +13,42 @@ class CampaignService:
     """Service principal pour la gestion des campagnes"""
 
     @staticmethod
-    def create_campaign(name, description, mj_id, is_public=False):  # ✅ AJOUT paramètre
-        """Créer une nouvelle campagne"""
+    def create_campaign(name, description, mj_id, is_public=False):
+        """Créer une nouvelle campagne AVEC gestion du statut public/privé"""
         campaign = Campaign(
             name=name,
             description=description,
             mj_id=mj_id,
-            is_public=bool(is_public)  # ✅ AJOUT
+            is_public=is_public  # ✅ AJOUT CRITIQUE
         )
 
         db.session.add(campaign)
         db.session.commit()
 
         return campaign
+
+    # ✅ AJOUT : Méthodes pour campagnes publiques
+    @staticmethod
+    def get_public_campaigns():
+        """Récupérer les campagnes publiques pour les non-connectés"""
+        return Campaign.query.filter_by(
+            is_public=True, 
+            is_active=True
+        ).order_by(Campaign.created_at.desc()).all()
+
+    @staticmethod
+    def get_public_campaigns_for_user(user_id):
+        """Campagnes publiques où l'utilisateur peut demander à rejoindre"""
+        from app.models.user import User
+        
+        user = User.query.get_or_404(user_id)
+        user_campaign_ids = [c.id for c in user.get_campaigns()]
+        
+        return Campaign.query.filter(
+            Campaign.is_public == True,
+            Campaign.is_active == True,
+            Campaign.id.notin_(user_campaign_ids)  # Exclure ses campagnes
+        ).limit(10).all()
 
     @staticmethod
     def invite_user(campaign_id, email_or_username, inviter_id):
@@ -107,7 +132,13 @@ class CampaignService:
 
     @staticmethod
     def request_to_join(campaign_id, user_id, message=""):
-        """Demander à rejoindre une campagne"""
+        """Demander à rejoindre une campagne - AVEC VÉRIFICATION PUBLIC/PRIVÉ"""
+        campaign = Campaign.query.get_or_404(campaign_id)
+        
+        # ✅ AJOUT CRITIQUE : Vérification campagne publique
+        if not campaign.is_public:
+            return {"error": "Cette campagne est privée. Seul le MJ peut vous inviter."}
+        
         # Vérifier si déjà membre
         if CampaignMember.query.filter_by(campaign_id=campaign_id, user_id=user_id).first():
             return {"error": "Vous êtes déjà membre de cette campagne"}
@@ -183,3 +214,13 @@ class CampaignService:
         db.session.commit()
 
         return {"success": True, "message": "Vous avez quitté la campagne"}
+
+    @staticmethod
+    def get_campaign_pjs(campaign_id):
+        """Récupérer tous les PJ d'une campagne"""
+        from app.models import CharacterTemplate
+        return CharacterTemplate.query.filter_by(
+            campaign_id=campaign_id,
+            character_type='PJ',
+            is_active=True
+        ).all()

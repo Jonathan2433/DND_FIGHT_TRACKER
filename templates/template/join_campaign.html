@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="edit-character-container">
+    <div class="edit-header">
+        <h2>🎲 Associer {{ character.name }} à une campagne</h2>
+        <a href="{{ url_for('template.character_profile', id=character.id) }}" 
+           class="btn btn-secondary">← Retour au profil</a>
+    </div>
+
+    {% if campaigns %}
+        <form method="POST">
+            <div class="edit-section">
+                <h4>📋 Informations du PJ</h4>
+                <p><strong>Nom :</strong> {{ character.name }}</p>
+                <p><strong>Classe :</strong> {{ character.character_class }} {{ character.level }}</p>
+                
+                {% if character.campaign %}
+                    <div class="current-campaign">
+                        <p><strong>🎲 Campagne actuelle :</strong> {{ character.campaign.name }}</p>
+                        <p class="help-text">⚠️ Changer de campagne remplacera l'association actuelle.</p>
+                    </div>
+                {% else %}
+                    <div class="no-campaign">
+                        <p><strong>🎲 Campagne :</strong> <span class="text-warning">Aucune</span></p>
+                        <p class="help-text">Ce PJ n'est associé à aucune campagne.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="edit-section">
+                <h4>🎯 Choisir une campagne</h4>
+                
+                <label for="campaign_id">📍 Campagne à rejoindre :</label>
+                <select id="campaign_id" name="campaign_id" required>
+                    <option value="">-- Sélectionner une campagne --</option>
+                    {% for campaign in campaigns %}
+                        <option value="{{ campaign.id }}" 
+                                {% if character.campaign_id == campaign.id %}selected{% endif %}>
+                            🎲 {{ campaign.name }} 
+                            (MJ : {{ campaign.mj.username }})
+                            {% if campaign.members|length > 0 %}
+                                - {{ campaign.members|length + 1 }} membres
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <div class="help-section">
+                    <h5>💡 Information :</h5>
+                    <ul>
+                        <li>Vous ne pouvez associer vos PJ qu'aux campagnes où vous êtes <strong>joueur</strong></li>
+                        <li>Pour rejoindre une nouvelle campagne, demandez une invitation au MJ</li>
+                        <li>Un PJ ne peut être que dans <strong>une seule campagne à la fois</strong> actuellement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="edit-actions">
+                <button type="submit" class="btn btn-primary">🎯 Associer à la campagne</button>
+                <a href="{{ url_for('template.character_profile', id=character.id) }}" 
+                   class="btn btn-secondary">❌ Annuler</a>
+            </div>
+        </form>
+        
+    {% else %}
+        <div class="no-campaigns-available">
+            <h3>😕 Aucune campagne disponible</h3>
+            <div class="help-section">
+                <p>Pour associer ce PJ à une campagne, vous devez d'abord :</p>
+                <ul>
+                    <li><strong>Être invité</strong> par un MJ à rejoindre sa campagne</li>
+                    <li><strong>Ou demander à rejoindre</strong> une campagne publique</li>
+                </ul>
+                
+                <div class="actions">
+                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-primary">
+                        🎲 Voir les campagnes disponibles
+                    </a>
+                    <a href="{{ url_for('template.character_profile', id=character.id) }}" 
+                       class="btn btn-secondary">← Retour au profil</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
