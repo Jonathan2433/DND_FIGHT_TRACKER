@@ -1,0 +1,20 @@
+# Environment variables
+.env
+.env.*
+
+# Ignore migrations folder
+migrations/
+
+# Python cache (optionnel mais conseillé)
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments (souvent présents en Python)
+.venv/
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db

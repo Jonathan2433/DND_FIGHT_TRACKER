@@ -55,7 +55,7 @@ def migrate_template_urls():
         r"url_for\('combat_summary'": "url_for('summary.combat_summary'",
     }
 
-    templates_dir = "templates"
+    templates_dir = "../templates"
 
     if not os.path.exists(templates_dir):
         print(f"❌ Dossier {templates_dir} non trouvé")
@@ -109,7 +109,7 @@ def migrate_template_urls():
 
 def analyze_templates():
     """Analyser les templates pour voir quelles URLs sont utilisées"""
-    templates_dir = "templates"
+    templates_dir = "../templates"
 
     if not os.path.exists(templates_dir):
         print(f"❌ Dossier {templates_dir} non trouvé")
