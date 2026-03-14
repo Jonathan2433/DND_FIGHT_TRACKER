@@ -2,6 +2,7 @@
 """Routes pour la gestion des templates et personnages"""
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
 from app.application.use_cases import TemplateService
+from app.application.use_cases.campaign_service import CampaignService
 from app.models import CharacterTemplate, EncounterTemplate
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
@@ -19,10 +20,19 @@ def manage_templates():
     characters = CharacterTemplate.query.filter_by(owner_id=g.current_user.id, is_active=True).all()
     encounters = EncounterTemplate.query.all()
 
+    campaign_context = None
+    campaign_id = request.args.get('campaign_id', type=int)
+    if campaign_id:
+        campaign_context = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+        if not campaign_context:
+            flash('Campagne invalide ou accès interdit.', 'error')
+            return redirect(url_for('template.manage_templates'))
+
     return render_template(
         'templates_manager.html',
         characters=characters,
-        encounters=encounters
+        encounters=encounters,
+        campaign_context=campaign_context
     )
 
 
@@ -30,11 +40,26 @@ def manage_templates():
 @login_required  # ✅ AJOUT : Protection obligatoire
 def create_character_template():
     """Créer un template de personnage"""
-    template = TemplateService.create_character_template(
+    campaign_id = request.form.get('campaign_id', type=int)
+
+    if campaign_id:
+        campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+        if not campaign:
+            flash('Campagne invalide ou accès interdit.', 'error')
+            return redirect(url_for('template.manage_templates'))
+
+    TemplateService.create_character_template(
         request.form,
         request.files,
-        current_app.config['UPLOAD_FOLDER']
+        current_app.config['UPLOAD_FOLDER'],
+        current_user_id=g.current_user.id,
+        campaign_id=campaign_id
     )
+
+    if campaign_id:
+        flash('PJ créé et automatiquement associé à la campagne.', 'success')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
     return redirect(url_for('template.manage_templates'))
 
 

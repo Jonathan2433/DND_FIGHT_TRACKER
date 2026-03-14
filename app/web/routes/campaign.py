@@ -7,6 +7,8 @@ from app.utils.decorators import login_required, mj_or_admin_required
 from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 from app.models.combat import Combat
 from app.models.user import User
+from app.models import CharacterTemplate
+from app.extensions import db
 
 # Créer le blueprint
 bp = Blueprint('campaign', __name__, url_prefix='/campaign')
@@ -44,7 +46,6 @@ def view_campaign(campaign_id):
     members = CampaignMember.query.filter_by(campaign_id=campaign_id).all()
 
     # ✅ NOUVEAU : Récupérer les PJ de la campagne
-    from app.models import CharacterTemplate
     campaign_pjs = CharacterTemplate.query.filter_by(
         campaign_id=campaign_id,
         character_type='PJ',
@@ -53,6 +54,18 @@ def view_campaign(campaign_id):
 
     combats_count = Combat.query.filter_by(campaign_id=campaign_id).count()
     current_arc = next((arc for arc in campaign.story_arcs if arc.status == 'en_cours'), None)
+
+    # PJ du joueur courant pouvant être ajoutés à cette campagne
+    available_player_pjs = []
+    if not g.current_user.is_mj_of(campaign):
+        available_player_pjs = CharacterTemplate.query.filter_by(
+            owner_id=g.current_user.id,
+            character_type='PJ',
+            is_active=True
+        ).filter(
+            (CharacterTemplate.campaign_id.is_(None)) |
+            (CharacterTemplate.campaign_id != campaign_id)
+        ).order_by(CharacterTemplate.name.asc()).all()
 
     # Récupérer les invitations en attente (si MJ)
     invitations = []
@@ -78,7 +91,8 @@ def view_campaign(campaign_id):
         join_requests=join_requests,
         is_mj=g.current_user.is_mj_of(campaign),
         combats_count=combats_count,
-        current_arc=current_arc
+        current_arc=current_arc,
+        available_player_pjs=available_player_pjs
     )
 
 
@@ -178,6 +192,43 @@ def reject_join_request(request_id):
     else:
         flash(result['message'], 'success')
 
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/add_pj', methods=['POST'])
+@login_required
+def add_player_character(campaign_id):
+    """Associer un PJ du joueur connecté à la campagne."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Campagne non trouvée ou accès interdit.', 'error')
+        return redirect(url_for('main.index'))
+
+    if g.current_user.is_mj_of(campaign):
+        flash('Cette action est réservée aux joueurs de la campagne.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character_id = request.form.get('character_id', type=int)
+    if not character_id:
+        flash('Veuillez sélectionner un PJ.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character = CharacterTemplate.query.filter_by(
+        id=character_id,
+        owner_id=g.current_user.id,
+        character_type='PJ',
+        is_active=True
+    ).first()
+
+    if not character:
+        flash('PJ introuvable ou non autorisé.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character.campaign_id = campaign_id
+    db.session.commit()
+
+    flash(f'🎉 {character.name} est maintenant associé à cette campagne !', 'success')
     return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
 
@@ -296,7 +347,6 @@ def remove_member(campaign_id, user_id):
     ).first()
 
     if member:
-        from app.extensions import db
         db.session.delete(member)
         db.session.commit()
         flash('Membre retiré de la campagne.', 'success')
