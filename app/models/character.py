@@ -16,6 +16,7 @@ class CharacterTemplate(db.Model):
     # Sécurité et associations
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=True)
+    story_arc_id = db.Column(db.Integer, db.ForeignKey('story_arc.id'), nullable=True)
     character_type = db.Column(db.String(20), default='PJ')  # PJ, PNJ, Boss
     is_shared = db.Column(db.Boolean, default=False)  # Pour les PNJ partagés par le MJ
     is_public = db.Column(db.Boolean, default=False)  # Visible par tous
@@ -66,6 +67,8 @@ class CharacterTemplate(db.Model):
 
     # Relations
     owner = db.relationship('User', foreign_keys=[owner_id], backref=db.backref('owned_characters', lazy=True))
+    campaign = db.relationship('Campaign', backref=db.backref('characters', lazy=True))
+    story_arc = db.relationship('StoryArc', backref=db.backref('characters', lazy=True))
     campaigns = db.relationship('Campaign', secondary='character_campaign_association', backref='campaign_characters')
 
     # ========== PROPRIÉTÉS CALCULÉES (UNE SEULE FOIS) ==========

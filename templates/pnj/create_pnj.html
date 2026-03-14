@@ -43,6 +43,17 @@
 
                 <label>Niveau :</label>
                 <input type="number" name="level" value="1" min="1" max="20">
+
+                <label>Arc narratif d'intervention :</label>
+                <select name="story_arc_id" class="pnj-arc-select">
+                    <option value="">Aucun arc (global campagne)</option>
+                    {% for arc in arcs %}
+                        <option value="{{ arc.id }}">{{ arc.name }} ({{ arc.status }})</option>
+                    {% endfor %}
+                </select>
+                <small class="inl-pnj-003">
+                    Associez ce PNJ à un arc pour suivre quand il intervient dans l'histoire.
+                </small>
             </div>
 
             <!-- Combat & Statistiques -->

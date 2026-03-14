@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.utils.decorators import login_required
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import CharacterTemplate
+from app.models.story_arc import StoryArc
 from app.extensions import db
 
 bp = Blueprint('pnj', __name__, url_prefix='/pnj')
@@ -20,8 +21,18 @@ def create_pnj(campaign_id):
         flash('Seul le MJ peut créer des PNJ.', 'error')
         return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
+    arcs = StoryArc.query.filter_by(campaign_id=campaign_id).order_by(StoryArc.order_index.asc()).all()
+
     if request.method == 'POST':
         try:
+            story_arc_id = request.form.get('story_arc_id')
+            story_arc = None
+            if story_arc_id:
+                story_arc = StoryArc.query.filter_by(id=story_arc_id, campaign_id=campaign_id).first()
+                if not story_arc:
+                    flash("L'arc narratif sélectionné n'existe pas dans cette campagne.", 'error')
+                    return render_template('pnj/create_pnj.html', campaign=campaign, arcs=arcs)
+
             # ✅ CORRECTION : Créer directement le PNJ avec CharacterTemplate
             pnj = CharacterTemplate(
                 # Identification
@@ -47,6 +58,7 @@ def create_pnj(campaign_id):
                 # Sécurité et visibilité
                 owner_id=g.current_user.id,
                 campaign_id=campaign_id,
+                story_arc_id=story_arc.id if story_arc else None,
                 character_type='PNJ',
                 visibility_level=request.form.get('visibility_level', 'private'),
                 is_shared=bool(request.form.get('is_shared', False)),
@@ -67,7 +79,7 @@ def create_pnj(campaign_id):
         except Exception as e:
             flash(f'Erreur lors de la création : {str(e)}', 'error')
 
-    return render_template('pnj/create_pnj.html', campaign=campaign)
+    return render_template('pnj/create_pnj.html', campaign=campaign, arcs=arcs)
 
 
 @bp.route('/<int:pnj_id>/toggle_share', methods=['POST'])
@@ -113,11 +125,17 @@ def list_campaign_pnjs(campaign_id):
         return redirect(url_for('main.index'))
 
     # Récupérer tous les PNJ de la campagne
-    all_pnjs = CharacterTemplate.query.filter_by(
+    selected_arc_id = request.args.get('arc_id', type=int)
+    query = CharacterTemplate.query.filter_by(
         campaign_id=campaign_id,
         character_type='PNJ',
         is_active=True
-    ).all()
+    )
+
+    if selected_arc_id:
+        query = query.filter_by(story_arc_id=selected_arc_id)
+
+    all_pnjs = query.order_by(CharacterTemplate.name.asc()).all()
 
     # Filtrer selon les permissions
     pnjs = []
@@ -131,6 +149,8 @@ def list_campaign_pnjs(campaign_id):
 
     return render_template('pnj/list_pnjs.html',
                            campaign=campaign,
+                           arcs=campaign.story_arcs,
+                           selected_arc_id=selected_arc_id,
                            pnjs=pnjs,
                            is_mj=g.current_user.is_mj_of(campaign))
 

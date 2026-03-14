@@ -17,6 +17,20 @@
         </div>
     </div>
 
+    {% if arcs %}
+        <form method="GET" class="pnj-filters">
+            <label for="arc-filter"><strong>Filtrer par arc :</strong></label>
+            <select id="arc-filter" name="arc_id" onchange="this.form.submit()">
+                <option value="">Tous les arcs</option>
+                {% for arc in arcs %}
+                    <option value="{{ arc.id }}" {% if selected_arc_id == arc.id %}selected{% endif %}>
+                        {{ arc.name }} ({{ arc.status }})
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    {% endif %}
+
     {% if pnjs %}
         <div class="template-grid">
             {% for pnj in pnjs %}
@@ -47,6 +61,14 @@
 
                         <p><strong>Type :</strong> {{ pnj.character_class }}</p>
                         <p><strong>Niveau :</strong> {{ pnj.level }}</p>
+                        <p>
+                            <strong>Arc :</strong>
+                            {% if pnj.story_arc %}
+                                {{ pnj.story_arc.name }}
+                            {% else %}
+                                Global campagne
+                            {% endif %}
+                        </p>
 
                         {% if is_mj %}
                             <!-- Infos complètes pour le MJ -->
