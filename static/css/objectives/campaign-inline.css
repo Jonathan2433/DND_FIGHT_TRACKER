@@ -198,4 +198,24 @@
     .inl-campaign-001 { padding: 0; }
     .inl-campaign-013,
     .inl-campaign-022 { align-items: flex-start; }
+
+    .inl-campaign-004,
+    .inl-campaign-018,
+    .inl-campaign-051 {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .inl-campaign-004 .btn,
+    .inl-campaign-018 .btn,
+    .inl-campaign-051 .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .inl-campaign-055 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }

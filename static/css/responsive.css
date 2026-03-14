@@ -192,6 +192,19 @@
         width: 100%;
     }
 
+    .edit-header > div,
+    .inl-campaign-022 > div {
+        display: grid;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .template-card-actions {
+        flex-direction: column;
+        justify-content: stretch;
+        gap: 12px;
+    }
+
     .site-brand__title {
         font-size: 24px;
     }
@@ -282,6 +295,32 @@
         gap: 8px;
     }
 
+    .combat-main > .combat-control-hud {
+        position: static;
+        z-index: auto;
+        max-width: 100%;
+        width: 100%;
+        margin-bottom: 16px;
+        order: -1;
+    }
+
+    .combat-main > .combat-control-hud .hud-chronos,
+    .combat-main > .combat-control-hud .hud-buttons {
+        width: 100%;
+    }
+
+    .combat-main > .combat-control-hud .hud-buttons {
+        gap: 10px;
+    }
+
+    .combat-main > .combat-control-hud .btn,
+    .combat-main > .combat-control-hud .btn-primary,
+    .combat-main > .combat-control-hud .btn-secondary,
+    .combat-main > .combat-control-hud .btn-warning,
+    .combat-main > .combat-control-hud .btn-danger {
+        justify-content: center;
+    }
+
     .live-chrono-bar {
         font-size: 13px;
     }
@@ -342,6 +381,14 @@
     .combatant {
         padding: 14px;
         border-radius: 16px;
+    }
+
+    .conditions {
+        gap: 10px;
+    }
+
+    .condition-badge {
+        padding: 6px 10px;
     }
 
     .section-title {
