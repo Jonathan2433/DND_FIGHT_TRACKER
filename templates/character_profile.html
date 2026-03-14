@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% set profile = visible_character if visible_character else {} %}
 
 <div class="character-profile">
     <section class="character-hero card">
@@ -7,9 +8,9 @@
             <div class="character-avatar__frame {% if character.image_filename %}has-image{% endif %}">
                 {% if character.image_filename %}
                     <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
-                         alt="{{ character.name }}" class="character-avatar__image">
+                         alt="{{ profile.name or character.name }}" class="character-avatar__image">
                 {% endif %}
-                <div class="character-avatar__placeholder">{{ character.name[:2]|upper }}</div>
+                <div class="character-avatar__placeholder">{{ (profile.name or character.name)[:2]|upper }}</div>
             </div>
 
             <span class="character-visibility {% if character.is_public %}character-visibility--public{% else %}character-visibility--private{% endif %}">
@@ -20,8 +21,8 @@
         <div class="character-summary">
             <div class="character-summary__title">
                 <span class="section-eyebrow">{{ character.character_type }}</span>
-                <h1>{{ character.name }}</h1>
-                <p class="character-summary__meta">{{ character.character_class }} - Niveau {{ character.level }}</p>
+                <h1>{{ profile.name or character.name }}</h1>
+                <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
                 {% if character.campaign %}
                     <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
                 {% endif %}
@@ -30,15 +31,15 @@
             <div class="profile-stats">
                 <div class="stat-box">
                     <strong>Points de vie</strong>
-                    <span>{{ character.hp_max }}</span>
+                    <span>{{ profile.hp_max if profile.hp_max is defined else '—' }}</span>
                 </div>
                 <div class="stat-box">
                     <strong>Classe d'armure</strong>
-                    <span>{{ character.ac_base }}</span>
+                    <span>{{ profile.ac_base if profile.ac_base is defined else '—' }}</span>
                 </div>
                 <div class="stat-box">
                     <strong>Initiative</strong>
-                    <span>{% if character.initiative_bonus >= 0 %}+{% endif %}{{ character.initiative_bonus }}</span>
+                    <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
                 </div>
                 <div class="stat-box">
                     <strong>Combats joues</strong>
@@ -90,37 +91,38 @@
                 <div class="char-stats-compact">
                     <div class="char-stat">
                         <span class="stat-name">Force</span>
-                        <span class="stat-value">{{ character.force }} ({{ character.mod_force }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_force }}{% if character.maitrise_force %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.force if profile.force is defined else '—' }}{% if profile.mod_force is defined %} ({{ profile.mod_force }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_force }}{% if character.maitrise_force %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Dexterite</span>
-                        <span class="stat-value">{{ character.dexterite }} ({{ character.mod_dexterite }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.dexterite if profile.dexterite is defined else '—' }}{% if profile.mod_dexterite is defined %} ({{ profile.mod_dexterite }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Constitution</span>
-                        <span class="stat-value">{{ character.constitution }} ({{ character.mod_constitution }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_constitution }}{% if character.maitrise_constitution %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.constitution if profile.constitution is defined else '—' }}{% if profile.mod_constitution is defined %} ({{ profile.mod_constitution }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_constitution }}{% if character.maitrise_constitution %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Intelligence</span>
-                        <span class="stat-value">{{ character.intelligence }} ({{ character.mod_intelligence }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.intelligence if profile.intelligence is defined else '—' }}{% if profile.mod_intelligence is defined %} ({{ profile.mod_intelligence }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Sagesse</span>
-                        <span class="stat-value">{{ character.sagesse }} ({{ character.mod_sagesse }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.sagesse if profile.sagesse is defined else '—' }}{% if profile.mod_sagesse is defined %} ({{ profile.mod_sagesse }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Charisme</span>
-                        <span class="stat-value">{{ character.charisme }} ({{ character.mod_charisme }})</span>
-                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}</span>
+                        <span class="stat-value">{{ profile.charisme if profile.charisme is defined else '—' }}{% if profile.mod_charisme is defined %} ({{ profile.mod_charisme }}){% endif %}</span>
+                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                 </div>
             </section>
 
+            {% if not limited_profile %}
             <section class="xp-section">
                 <div class="section-head">
                     <div class="section-head__content">
@@ -178,8 +180,18 @@
                     <p class="section-head__copy">Connectez-vous pour acceder a l'historique XP.</p>
                 {% endif %}
             </section>
+            {% else %}
+                <section class="xp-section">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Visibilite restreinte</h2>
+                            <p class="section-head__copy">Ce PNJ est partage avec une fiche {{ visibility_mode }}. Les informations sensibles de combat et de progression sont masquées.</p>
+                        </div>
+                    </div>
+                </section>
+            {% endif %}
 
-            {% if character.notes or (current_user and character.private_notes and character.can_add_private_notes(current_user)) %}
+            {% if not limited_profile and (character.notes or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
                 <section class="char-notes">
                     <div class="section-head">
                         <div class="section-head__content">
@@ -202,7 +214,7 @@
             {% endif %}
         </div>
 
-        {% if character.pdf_filename %}
+        {% if not limited_profile and character.pdf_filename %}
             <aside class="profile-pdf-preview">
                 <h2>Fiche officielle</h2>
                 <div class="pdf-preview-container">
