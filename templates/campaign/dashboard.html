@@ -115,7 +115,7 @@
         {% if campaign_pjs %}
             <div class="pj-notes-grid">
                 {% for pj in campaign_pjs %}
-                    <div class="pj-note-card">
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-note-card pj-note-card--link">
                         <div class="pj-note-header">
                             <div class="pj-info">
                                 {% if pj.image_filename %}
@@ -137,13 +137,10 @@
                             </div>
 
                             <div class="pj-actions">
-                                <a href="{{ url_for('template.character_profile', id=pj.id) }}"
-                                   class="btn btn-primary">
-                                    👁️ Voir
-                                </a>
+                                <span class="btn btn-primary">👁️ Voir</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}
@@ -432,4 +429,3 @@ function showFlashMessage(message, category) {
 
 
 {% endblock %}
-

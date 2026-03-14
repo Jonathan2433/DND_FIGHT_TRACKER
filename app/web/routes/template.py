@@ -132,6 +132,23 @@ def character_profile(id):
         flash('Vous n\'êtes pas autorisé à voir ce personnage.', 'error')
         return redirect(url_for('main.index'))
 
+    visible_payload = character.get_visible_data(current_user, character.campaign)
+    visibility_mode = visible_payload['level'] if visible_payload else 'private'
+
+    is_full_view = bool(current_user and (
+        character.owner_id == current_user.id
+        or current_user.role == 'Admin'
+        or (character.campaign and current_user.is_mj_of(character.campaign))
+        or any(current_user.is_mj_of(c) for c in character.campaigns)
+    ))
+
+    limited_profile = bool(
+        character.character_type == 'PNJ'
+        and visible_payload
+        and visibility_mode in ['reduced', 'semi_complete']
+        and not is_full_view
+    )
+
     combats_played = TemplateService.get_character_combat_count(character.name)
     can_award_xp = False
     is_campaign_mj = False
@@ -149,6 +166,9 @@ def character_profile(id):
     return render_template(
         'character_profile.html',
         character=character,
+        visible_character=visible_payload['data'] if visible_payload else None,
+        visibility_mode=visibility_mode,
+        limited_profile=limited_profile,
         combats_played=combats_played,
         can_edit=character.can_be_edited_by(current_user) if current_user else False,
         can_award_xp=can_award_xp,
