@@ -33,19 +33,6 @@
     </div>
 
     <!-- ===================== -->
-    <!-- ACTIONS RAPIDES -->
-    <!-- ===================== -->
-    <div class="card">
-        <h2>?? Nouveau Combat</h2>
-        <p>Les combats doivent ?tre cr??s depuis un arc narratif de campagne.</p>
-        {% if user_is_connected %}
-            <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-primary">Voir mes campagnes</a>
-        {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Se connecter</a>
-        {% endif %}
-    </div>
-
-    <!-- ===================== -->
     <!-- CAMPAGNES PUBLIQUES POUR NON-CONNECTÉS -->
     <!-- ===================== -->
     {% if public_campaigns %}
@@ -120,7 +107,7 @@
     <!-- FICHES PERSONNAGES -->
     <!-- ===================== -->
     <div class="card">
-        <h2>🧙 Fiches Personnages</h2>
+        <h2>🧙 Fiches Personnages public </h2>
 
         {% if user_is_connected %}
             <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">🛠️ Gérer mes Personnages</a>
@@ -144,9 +131,9 @@
         </div>
     </div>
 
-    <!-- ===================== -->
-    <!-- DERNIERS COMBATS -->
-    <!-- ===================== -->
+   <!-- &lt;!&ndash; ===================== &ndash;&gt;
+    &lt;!&ndash; DERNIERS COMBATS &ndash;&gt;
+    &lt;!&ndash; ===================== &ndash;&gt;
     <div class="card">
         <h2>📜 Derniers combats</h2>
 
@@ -196,7 +183,7 @@
             </div>
             {% endfor %}
         </div>
-    </div>
+    </div>-->
 
     <!-- ===================== -->
     <!-- ACTIONS POUR UTILISATEURS CONNECTÉS -->
