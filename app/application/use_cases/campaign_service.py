@@ -9,6 +9,7 @@ from app.extensions import db
 from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 from app.models.user import User
 from app.application.use_cases.email_service import EmailService
+from app.application.use_cases.notification_service import NotificationService
 
 
 class CampaignService:
@@ -86,6 +87,15 @@ class CampaignService:
         db.session.add(invitation)
         db.session.commit()
 
+        if user:
+            NotificationService.create_notification(
+                user.id,
+                "Invitation de campagne",
+                f'Le MJ vous a invité à rejoindre la campagne "{campaign.name}".',
+                kind='campaign_invitation',
+                campaign_id=campaign.id,
+            )
+
         # Envoyer email d'invitation
         invitation_url = url_for('campaign.accept_invitation', token=token, _external=True)
 
@@ -130,6 +140,14 @@ class CampaignService:
         db.session.add(member)
         db.session.commit()
 
+        NotificationService.create_notification(
+            invitation.campaign.mj_id,
+            "Invitation acceptée",
+            f"Un joueur a accepté l'invitation pour la campagne \"{invitation.campaign.name}\".",
+            kind='campaign_invitation_accepted',
+            campaign_id=invitation.campaign_id,
+        )
+
         return {"success": True, "campaign": invitation.campaign}
 
     @staticmethod
@@ -158,6 +176,14 @@ class CampaignService:
         db.session.add(request)
         db.session.commit()
 
+        NotificationService.create_notification(
+            campaign.mj_id,
+            "Demande de rejoindre",
+            f'{request.user.username} a demandé à rejoindre la campagne "{campaign.name}".',
+            kind='join_request',
+            campaign_id=campaign.id,
+        )
+
         return {"success": True, "message": "Demande envoyée au MJ"}
 
     @staticmethod
@@ -181,6 +207,14 @@ class CampaignService:
 
         db.session.add(member)
         db.session.commit()
+
+        NotificationService.create_notification(
+            request.user_id,
+            "Demande acceptée",
+            f'Le MJ a accepté votre demande pour rejoindre la campagne "{campaign.name}".',
+            kind='join_request_approved',
+            campaign_id=campaign.id,
+        )
 
         return {"success": True, "message": "Demande approuvée"}
 
@@ -214,6 +248,15 @@ class CampaignService:
 
         db.session.delete(member)
         db.session.commit()
+
+        user = User.query.get_or_404(user_id)
+        NotificationService.create_notification(
+            campaign.mj_id,
+            "Départ d'un joueur",
+            f'{user.username} a quitté la campagne "{campaign.name}".',
+            kind='campaign_member_left',
+            campaign_id=campaign.id,
+        )
 
         return {"success": True, "message": "Vous avez quitté la campagne"}
 
@@ -253,6 +296,17 @@ class CampaignService:
         if campaign.mj_id != user_id:
             return {"error": "Seul le MJ proprietaire peut supprimer cette campagne"}
 
+        member_ids = [m.user_id for m in campaign.members]
+        for member_id in member_ids:
+            NotificationService.create_notification(
+                member_id,
+                "Campagne fermée",
+                f'Le MJ a fermé la campagne "{campaign.name}".',
+                kind='campaign_closed',
+                campaign_id=campaign.id,
+                auto_commit=False,
+            )
+
         db.session.delete(campaign)
         db.session.commit()
         return {"success": True}
@@ -277,6 +331,14 @@ class CampaignService:
 
         invitation.is_declined = True
         db.session.commit()
+
+        NotificationService.create_notification(
+            invitation.campaign.mj_id,
+            "Invitation refusée",
+            f"Un joueur a refusé l'invitation pour la campagne \"{invitation.campaign.name}\".",
+            kind='campaign_invitation_declined',
+            campaign_id=invitation.campaign_id,
+        )
         return {"success": True}
 
     @staticmethod
@@ -291,4 +353,12 @@ class CampaignService:
         join_request.is_pending = False
         join_request.is_rejected = True
         db.session.commit()
+
+        NotificationService.create_notification(
+            join_request.user_id,
+            "Demande refusée",
+            f'Le MJ a refusé votre demande pour la campagne "{campaign.name}".',
+            kind='join_request_rejected',
+            campaign_id=campaign.id,
+        )
         return {"success": True, "message": "Demande refusee"}

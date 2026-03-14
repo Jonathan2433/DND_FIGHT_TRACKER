@@ -70,6 +70,7 @@
                     <div class="site-nav__user">
                         {% if session.user_id %}
                             <span class="site-nav__welcome">{{ current_user.username if current_user else 'Utilisateur' }}</span>
+                            <a href="{{ url_for('notification.index') }}" class="site-nav__link">Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
                             <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
                             <a href="{{ url_for('auth.logout') }}" class="site-nav__link">Deconnexion</a>
                         {% else %}

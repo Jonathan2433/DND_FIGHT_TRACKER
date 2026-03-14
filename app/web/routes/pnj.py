@@ -4,6 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, g, jsonify
 from app.utils.decorators import login_required
 from app.application.use_cases.campaign_service import CampaignService
+from app.application.use_cases.notification_service import NotificationService
 from app.models import CharacterTemplate
 from app.models.story_arc import StoryArc
 from app.extensions import db
@@ -73,6 +74,14 @@ def create_pnj(campaign_id):
             db.session.add(pnj)
             db.session.commit()
 
+            if pnj.is_shared:
+                NotificationService.create_campaign_notification(
+                    campaign,
+                    "Nouveau PNJ partagé",
+                    f'Le MJ a ajouté le PNJ "{pnj.name}" à la campagne "{campaign.name}".',
+                    kind='shared_npc_added',
+                )
+
             flash(f'PNJ "{pnj.name}" créé avec succès !', 'success')
             return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
@@ -101,6 +110,14 @@ def toggle_share_pnj(pnj_id):
         # Basculer le partage
         pnj.is_shared = not pnj.is_shared
         db.session.commit()
+
+        if pnj.is_shared:
+            NotificationService.create_campaign_notification(
+                pnj.campaign,
+                "PNJ partagé",
+                f'Le MJ a partagé le PNJ "{pnj.name}" dans la campagne "{pnj.campaign.name}".',
+                kind='shared_npc_added',
+            )
 
         status = "partagé" if pnj.is_shared else "masqué"
         flash(f'PNJ "{pnj.name}" {status} avec succès !', 'success')
@@ -200,6 +217,14 @@ def edit_pnj(pnj_id):
 
             db.session.commit()
 
+            if pnj.is_shared:
+                NotificationService.create_campaign_notification(
+                    pnj.campaign,
+                    "PNJ partagé mis à jour",
+                    f'Le MJ a modifié le PNJ partagé "{pnj.name}" dans la campagne "{pnj.campaign.name}".',
+                    kind='shared_npc_updated',
+                )
+
             flash(f'PNJ "{pnj.name}" modifié avec succès !', 'success')
             return redirect(url_for('template.character_profile', id=pnj_id))
 
@@ -227,12 +252,14 @@ def delete_pnj(pnj_id):
 
     try:
         campaign_id = pnj.campaign_id
+        campaign = pnj.campaign
         pnj_name = pnj.name
 
         # Vérifier s'il est utilisé dans des combats
         from app.models import Combatant
         combat_usage = Combatant.query.filter_by(name=pnj.name).first()
 
+        should_notify = pnj.is_shared
         if combat_usage:
             # Ne pas supprimer, juste désactiver
             pnj.is_active = False
@@ -243,6 +270,14 @@ def delete_pnj(pnj_id):
             db.session.delete(pnj)
             db.session.commit()
             flash(f'PNJ "{pnj_name}" supprimé définitivement.', 'success')
+
+        if should_notify and campaign:
+            NotificationService.create_campaign_notification(
+                campaign=campaign,
+                title="PNJ partagé supprimé",
+                message=f'Le MJ a supprimé le PNJ partagé "{pnj_name}" dans la campagne "{campaign.name}".',
+                kind='shared_npc_deleted',
+            )
 
         return redirect(url_for('pnj.list_campaign_pnjs', campaign_id=campaign_id))
 

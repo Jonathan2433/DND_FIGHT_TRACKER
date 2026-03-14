@@ -3,6 +3,7 @@
 from flask import Blueprint, request, redirect, url_for, render_template, flash, g
 
 from app.application.use_cases.xp_service import XPService
+from app.application.use_cases.notification_service import NotificationService
 from app.models import CharacterTemplate
 from app.utils.decorators import login_required
 
@@ -46,6 +47,15 @@ def award_manual_xp(character_id):
         description=description,
         awarded_by=g.current_user.username,
     )
+
+    if is_mj_context and character.owner_id != g.current_user.id:
+        NotificationService.create_notification(
+            character.owner_id,
+            "XP accordée",
+            f'Le MJ a accordé {xp_amount} XP à votre PJ "{character.name}".',
+            kind='xp_awarded',
+            campaign_id=character.campaign_id,
+        )
 
     if result['leveled_up']:
         flash(f"{character.name} est passe niveau {result['new_level']} !", 'success')
