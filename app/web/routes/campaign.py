@@ -46,10 +46,13 @@ def view_campaign(campaign_id):
     members = CampaignMember.query.filter_by(campaign_id=campaign_id).all()
 
     # ✅ NOUVEAU : Récupérer les PJ de la campagne
-    campaign_pjs = CharacterTemplate.query.filter_by(
-        campaign_id=campaign_id,
-        character_type='PJ',
-        is_active=True
+    campaign_pjs = CharacterTemplate.query.filter(
+        CharacterTemplate.character_type == 'PJ',
+        CharacterTemplate.is_active.is_(True),
+        (
+            (CharacterTemplate.campaign_id == campaign_id) |
+            CharacterTemplate.campaigns.any(id=campaign_id)
+        )
     ).all()
 
     combats_count = Combat.query.filter_by(campaign_id=campaign_id).count()
@@ -63,8 +66,7 @@ def view_campaign(campaign_id):
             character_type='PJ',
             is_active=True
         ).filter(
-            (CharacterTemplate.campaign_id.is_(None)) |
-            (CharacterTemplate.campaign_id != campaign_id)
+            ~CharacterTemplate.campaigns.any(id=campaign_id)
         ).order_by(CharacterTemplate.name.asc()).all()
 
     # Récupérer les invitations en attente (si MJ)
@@ -225,6 +227,8 @@ def add_player_character(campaign_id):
         flash('PJ introuvable ou non autorisé.', 'error')
         return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
+    if campaign not in character.campaigns:
+        character.campaigns.append(campaign)
     character.campaign_id = campaign_id
     db.session.commit()
 

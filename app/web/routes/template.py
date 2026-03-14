@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, curren
 from app.application.use_cases import TemplateService
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import CharacterTemplate, EncounterTemplate
+from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
 from app.extensions import db
@@ -22,7 +23,7 @@ def manage_templates():
         .order_by(CharacterTemplate.character_type.asc(), CharacterTemplate.name.asc())
         .all()
     )
-    encounters = EncounterTemplate.query.all()
+    encounters = EncounterTemplate.query.filter_by(owner_id=g.current_user.id).all()
     pj_characters = [character for character in characters if character.character_type == 'PJ']
     other_characters = [character for character in characters if character.character_type != 'PJ']
 
@@ -137,7 +138,9 @@ def character_profile(id):
 
     if current_user:
         can_award_xp = current_user.role == 'Admin'
-        if character.campaign and current_user.is_mj_of(character.campaign):
+        can_manage_from_campaigns = any(current_user.is_mj_of(c) for c in character.campaigns)
+
+        if (character.campaign and current_user.is_mj_of(character.campaign)) or can_manage_from_campaigns:
             can_award_xp = True
             is_campaign_mj = True
         elif not character.campaign and character.owner_id == current_user.id:
@@ -159,7 +162,7 @@ def character_profile(id):
 @login_required  # ✅ AJOUT
 def create_encounter_template():
     """Créer un template de rencontre"""
-    TemplateService.create_encounter_template(request.form)
+    TemplateService.create_encounter_template(request.form, owner_id=g.current_user.id)
     return redirect(url_for('template.manage_templates'))
 
 
@@ -168,6 +171,10 @@ def create_encounter_template():
 def edit_encounter_template(id):
     """Modifier un template de rencontre"""
     template = EncounterTemplate.query.get_or_404(id)
+
+    if not EncounterTemplatePolicy.can_manage(g.current_user, template):
+        flash('Vous n\'êtes pas autorisé à modifier ce template.', 'error')
+        return redirect(url_for('template.manage_templates'))
 
     if request.method == 'POST':
         template.name = request.form['name']
@@ -186,6 +193,11 @@ def edit_encounter_template(id):
 @login_required  # ✅ AJOUT
 def delete_encounter_template(id):
     """Supprimer un template de rencontre"""
+    template = EncounterTemplate.query.get_or_404(id)
+    if not EncounterTemplatePolicy.can_manage(g.current_user, template):
+        flash('Vous n\'êtes pas autorisé à supprimer ce template.', 'error')
+        return redirect(url_for('template.manage_templates'))
+
     TemplateService.delete_encounter_template(id)
     return redirect(url_for('template.manage_templates'))
 
@@ -194,7 +206,7 @@ def delete_encounter_template(id):
 @login_required  # ✅ AJOUT
 def export_templates():
     """Exporter tous les templates en JSON"""
-    export_data = TemplateService.export_templates()
+    export_data = TemplateService.export_templates(owner_id=g.current_user.id)
     return jsonify(export_data)
 
 
@@ -231,8 +243,9 @@ def join_campaign(character_id):
 
             # Vérifier que l'utilisateur a accès à cette campagne
             if campaign and g.current_user.can_access_campaign(campaign):
-                # ✅ SIMPLE : Utiliser le champ campaign_id existant
-                character.campaign_id = campaign_id
+                if campaign not in character.campaigns:
+                    character.campaigns.append(campaign)
+                character.campaign_id = int(campaign_id)
                 db.session.commit()
 
                 flash(f'🎉 {character.name} a rejoint la campagne "{campaign.name}" !', 'success')

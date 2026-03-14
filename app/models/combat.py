@@ -13,8 +13,8 @@ class Combat(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_closed = db.Column(db.Boolean, default=False)
 
-    campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=True)
-    story_arc_id = db.Column(db.Integer, db.ForeignKey('story_arc.id'), nullable=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+    story_arc_id = db.Column(db.Integer, db.ForeignKey('story_arc.id'), nullable=False)
 
     # Relations
     combatants = db.relationship('Combatant', backref='combat', cascade="all, delete")

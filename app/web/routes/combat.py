@@ -3,57 +3,41 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 
 from app.application.use_cases import CombatService, CombatantService, GroupService, TemplateService
 from app.models import Combat, CharacterTemplate, EncounterTemplate
+from app.domain.policies import CombatPolicy, EncounterTemplatePolicy
 from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order
 from app.utils.decorators import login_required
-from app.extensions import socketio, db
+from app.extensions import socketio
 
 
 bp = Blueprint('combat', __name__, url_prefix='/combat')
 
 
 def _can_manage_combat(combat):
-    if not g.current_user:
-        return False
-    if g.current_user.role == 'Admin':
-        return True
-    if combat.campaign:
-        return g.current_user.is_mj_of(combat.campaign)
-    return g.current_user.has_mj_capability()
+    return CombatPolicy.can_manage(g.current_user, combat)
 
 
 def _can_view_player_combat(combat):
-    if not g.current_user:
-        return False
-    if _can_manage_combat(combat):
-        return True
-    if combat.campaign:
-        return g.current_user.is_member_of(combat.campaign)
-    return g.current_user.has_player_capability() or g.current_user.has_mj_capability()
+    return CombatPolicy.can_view_player(g.current_user, combat)
 
 
 @bp.route('/create', methods=['POST'])
 @login_required
 def create_combat():
-    """Creer un nouveau combat, avec rattachement optionnel a un arc narratif."""
+    """Creer un nouveau combat rattache a un arc narratif."""
     story_arc_id = request.form.get('story_arc_id')
 
-    if story_arc_id:
-        from app.models.story_arc import StoryArc
-        arc = StoryArc.query.get_or_404(int(story_arc_id))
-        if not (g.current_user.role == 'Admin' or g.current_user.is_mj_of(arc.campaign)):
-            flash("Seul le MJ proprietaire peut creer un combat sur cet arc.", "error")
-            return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
-    elif not g.current_user.has_mj_capability():
-        flash("Seul un MJ peut creer un combat.", "error")
+    if not story_arc_id:
+        flash("Un combat doit obligatoirement etre rattache a un arc narratif.", "error")
         return redirect(url_for('main.index'))
 
-    name = request.form['name']
-    combat = CombatService.create_combat(name)
+    from app.models.story_arc import StoryArc
+    arc = StoryArc.query.get_or_404(int(story_arc_id))
+    if not (g.current_user.role == 'Admin' or g.current_user.is_mj_of(arc.campaign)):
+        flash("Seul le MJ proprietaire peut creer un combat sur cet arc.", "error")
+        return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
 
-    if story_arc_id:
-        combat.story_arc_id = arc.id
-        combat.campaign_id = arc.campaign_id
-        db.session.commit()
+    name = request.form['name']
+    combat = CombatService.create_combat(name=name, story_arc_id=arc.id, campaign_id=arc.campaign_id)
 
     return redirect(url_for('combat.view_combat', combat_id=combat.id))
 
@@ -69,7 +53,10 @@ def view_combat(combat_id):
 
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     character_templates = CharacterTemplate.query.all()
-    encounter_templates = EncounterTemplate.query.all()
+    if g.current_user.role == 'Admin':
+        encounter_templates = EncounterTemplate.query.all()
+    else:
+        encounter_templates = EncounterTemplate.query.filter_by(owner_id=g.current_user.id).all()
 
     return render_template(
         'combat.html',
@@ -205,6 +192,11 @@ def load_encounter(combat_id):
         return redirect_response
 
     encounter_id = int(request.form['encounter_id'])
+    encounter = EncounterTemplate.query.get_or_404(encounter_id)
+    if not EncounterTemplatePolicy.can_manage(g.current_user, encounter):
+        flash('Template de rencontre non autorise.', 'error')
+        return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
     TemplateService.load_encounter_template(combat_id, encounter_id)
     broadcast_combat_update(combat_id)
     return redirect(url_for('combat.view_combat', combat_id=combat_id))

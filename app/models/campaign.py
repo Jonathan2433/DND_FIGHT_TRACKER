@@ -78,7 +78,6 @@ class JoinRequest(db.Model):
     is_approved = db.Column(db.Boolean, default=False)
     is_rejected = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
-    is_public = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

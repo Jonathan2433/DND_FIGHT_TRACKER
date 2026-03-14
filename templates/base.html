@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}ExalQuest{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,5 +131,25 @@
     </div>
     <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = tokenMeta ? tokenMeta.getAttribute('content') : null;
+
+            if (!csrfToken) {
+                return;
+            }
+
+            document.querySelectorAll('form[method="post"], form[method="POST"]').forEach((form) => {
+                if (!form.querySelector('input[name="csrf_token"]')) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrf_token';
+                    input.value = csrfToken;
+                    form.prepend(input);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

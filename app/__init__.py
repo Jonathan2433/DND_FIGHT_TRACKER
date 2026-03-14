@@ -30,11 +30,12 @@ def create_app(config_name='default'):
     app.config['UPLOAD_FOLDER'] = upload_folder
 
     # Initialiser les extensions
-    from app.extensions import db, socketio, mail, migrate
+    from app.extensions import db, socketio, mail, migrate, csrf
     db.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
     mail.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
 
     # Importer les modèles pour que SQLAlchemy les connaisse
     from app import models
