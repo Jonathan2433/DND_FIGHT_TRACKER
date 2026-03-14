@@ -2,11 +2,48 @@
 """Service pour l'envoi d'emails"""
 from flask import current_app
 from flask_mail import Message
+
 from app.extensions import mail
 
 
 class EmailService:
     """Service pour l'envoi d'emails"""
+
+    @staticmethod
+    def _validate_email_configuration():
+        """Valider que la configuration SMTP minimale est bien présente."""
+        missing = []
+        if not current_app.config.get("MAIL_USERNAME"):
+            missing.append("MAIL_USERNAME")
+        if not current_app.config.get("MAIL_PASSWORD"):
+            missing.append("MAIL_PASSWORD")
+        if not current_app.config.get("MAIL_DEFAULT_SENDER"):
+            missing.append("MAIL_DEFAULT_SENDER")
+
+        if missing:
+            return {
+                "error": (
+                    "Configuration email incomplète. Variables manquantes: "
+                    + ", ".join(missing)
+                )
+            }
+
+        return None
+
+    @staticmethod
+    def _send_message(msg, log_context="email"):
+        """Envoyer un message avec logs homogènes."""
+        config_error = EmailService._validate_email_configuration()
+        if config_error:
+            current_app.logger.error(config_error["error"])
+            return config_error
+
+        try:
+            mail.send(msg)
+            return {"success": True}
+        except Exception as e:
+            current_app.logger.error(f"Erreur envoi {log_context}: {e}")
+            return {"error": f"Erreur lors de l'envoi: {e}"}
 
     @staticmethod
     def send_verification_email(user_email, username, verification_url):
@@ -18,25 +55,25 @@ class EmailService:
         <body style="font-family: Arial, sans-serif; background-color: #1e1f26; color: #f0f0f0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #2a2c36; padding: 30px; border-radius: 12px; border: 2px solid #4caf50;">
                 <h1 style="color: #4caf50; text-align: center;">🎲 DND Combat Tracker</h1>
-                
+
                 <h2 style="color: #f0f0f0;">Bienvenue, {username} !</h2>
-                
+
                 <p>Merci de vous être inscrit sur DND Combat Tracker !</p>
-                
+
                 <p>Pour activer votre compte et commencer à gérer vos campagnes, veuillez cliquer sur le lien ci-dessous :</p>
-                
+
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}" 
+                    <a href="{verification_url}"
                        style="background-color: #4caf50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
                         ✅ Vérifier mon compte
                     </a>
                 </div>
-                
+
                 <p style="color: #ccc; font-size: 14px;">
                     Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
                     <a href="{verification_url}" style="color: #4caf50;">{verification_url}</a>
                 </p>
-                
+
                 <p style="color: #ccc; font-size: 12px; margin-top: 30px;">
                     Ce lien expire dans 24 heures. Si vous n'avez pas demandé cette inscription, ignorez cet email.
                 </p>
@@ -47,12 +84,12 @@ class EmailService:
 
         text_body = f"""
         DND Combat Tracker - Vérification de compte
-        
+
         Bienvenue, {username} !
-        
+
         Pour activer votre compte, cliquez sur ce lien :
         {verification_url}
-        
+
         Ce lien expire dans 24 heures.
         """
 
@@ -60,15 +97,11 @@ class EmailService:
             subject=subject,
             recipients=[user_email],
             html=html_body,
-            body=text_body
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
         )
 
-        try:
-            mail.send(msg)
-            return {"success": True}
-        except Exception as e:
-            current_app.logger.error(f"Erreur envoi email: {e}")
-            return {"error": f"Erreur lors de l'envoi: {e}"}
+        return EmailService._send_message(msg, "email de vérification")
 
     @staticmethod
     def send_password_reset_email(user_email, username, reset_url):
@@ -86,25 +119,25 @@ class EmailService:
         <body style="font-family: Arial, sans-serif; background-color: #1e1f26; color: #f0f0f0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #2a2c36; padding: 30px; border-radius: 12px; border: 2px solid #4caf50;">
                 <h1 style="color: #4caf50; text-align: center;">🎲 DND Combat Tracker</h1>
-    
+
                 <h2 style="color: #f0f0f0;">Vous êtes invité(e) !</h2>
-    
+
                 <p>Salut {username} !</p>
-    
+
                 <p>Vous avez été invité(e) à rejoindre la campagne <strong style="color: #4caf50;">"{campaign_name}"</strong> sur DND Combat Tracker !</p>
-    
+
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{invitation_url}" 
+                    <a href="{invitation_url}"
                        style="background-color: #4caf50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
                         🎯 Rejoindre la Campagne
                     </a>
                 </div>
-    
+
                 <p style="color: #ccc; font-size: 14px;">
                     Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
                     <a href="{invitation_url}" style="color: #4caf50;">{invitation_url}</a>
                 </p>
-    
+
                 <p style="color: #ccc; font-size: 12px; margin-top: 30px;">
                     Cette invitation expire dans 7 jours. Si vous n'avez pas demandé à rejoindre cette campagne, ignorez cet email.
                 </p>
@@ -115,12 +148,12 @@ class EmailService:
 
         text_body = f"""
         DND Combat Tracker - Invitation à rejoindre une campagne
-    
+
         Vous avez été invité(e) à rejoindre la campagne "{campaign_name}" !
-    
+
         Cliquez sur ce lien pour rejoindre :
         {invitation_url}
-    
+
         Cette invitation expire dans 7 jours.
         """
 
@@ -128,12 +161,8 @@ class EmailService:
             subject=subject,
             recipients=[user_email],
             html=html_body,
-            body=text_body
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
         )
 
-        try:
-            mail.send(msg)
-            return {"success": True}
-        except Exception as e:
-            current_app.logger.error(f"Erreur envoi email campagne: {e}")
-            return {"error": f"Erreur lors de l'envoi: {e}"}
+        return EmailService._send_message(msg, "email campagne")

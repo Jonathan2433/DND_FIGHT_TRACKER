@@ -124,3 +124,32 @@ Pour contribuer ou modifier :
 - Créer une branche
 - Faire les modifications
 - Soumettre une pull request
+---
+
+## 📧 Configuration email (Hostinger)
+
+Créez un fichier `.env` à la racine avec au minimum :
+
+```env
+MAIL_SERVER=smtp.hostinger.com
+MAIL_PORT=587
+MAIL_USE_TLS=true
+MAIL_USE_SSL=false
+MAIL_USERNAME=no-reply@jonathan-dupau.com
+MAIL_PASSWORD=VOTRE_MOT_DE_PASSE_EMAIL
+MAIL_DEFAULT_SENDER=no-reply@jonathan-dupau.com
+```
+
+Notes importantes :
+- `MAIL_USERNAME` doit être la boîte email complète Hostinger.
+- `MAIL_DEFAULT_SENDER` doit généralement être la même adresse (ou un alias autorisé par Hostinger).
+- Utilisez `MAIL_PORT=465`, `MAIL_USE_TLS=false`, `MAIL_USE_SSL=true` si vous préférez SSL implicite.
+
+Variables utiles en complément :
+
+```env
+SECRET_KEY=change-me
+FLASK_CONFIG=development
+DATABASE_URL=sqlite:///tracker.db
+SESSION_COOKIE_SECURE=false
+```
