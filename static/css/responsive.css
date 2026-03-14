@@ -41,6 +41,10 @@
 }
 
 @media (max-width: 900px) {
+
+    .mobile-hidden {
+        display: none !important;
+    }
     .site-header__inner {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
