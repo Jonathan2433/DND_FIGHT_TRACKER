@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>D&D Exalt Combat Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ExalQuest{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -28,52 +29,93 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/combat-inline.css') }}">
 </head>
 <body>
-    <header>
-        <h1><a href="{{ url_for('main.index') }}">⚔️ ExalQuest</a></h1>
-        <nav class="main-nav">
-            <a href="{{ url_for('main.index') }}">🏠 Accueil</a>
+    <div class="site-shell">
+        <header class="site-header">
+            <div class="shell-container site-header__inner">
+                <a href="{{ url_for('main.index') }}" class="site-brand" aria-label="ExalQuest">
+                    <span class="site-brand__mark">EQ</span>
+                    <span class="site-brand__copy">
+                        <span class="site-brand__title">ExalQuest</span>
+                        <span class="site-brand__subtitle">Suivi de campagnes et combats pour JDR</span>
+                    </span>
+                </a>
 
-            <!-- ✅ AJOUT : Lien campagnes publiques pour tous -->
-            <a href="{{ url_for('campaign.list_campaigns') }}">🌐 Campagnes</a>
+                <nav class="site-nav" aria-label="Navigation principale">
+                    <div class="site-nav__links">
+                        <a href="{{ url_for('main.index') }}" class="site-nav__link">Accueil</a>
+                        <a href="{{ url_for('campaign.list_campaigns') }}" class="site-nav__link">Campagnes</a>
 
-            {% if session.user_id %}
-                <a href="{{ url_for('template.manage_templates') }}">🛠 Mes Personnages</a>
+                        {% if session.user_id %}
+                            <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
 
-                {% if current_user and current_user.role in ['MJ', 'Admin'] %}
-                    <a href="{{ url_for('campaign.create_campaign') }}">➕ Nouvelle Campagne</a>
-                {% endif %}
-
-                <div class="nav-user">
-                    <span>👤 {{ current_user.username if current_user else 'Utilisateur' }}</span>
-                    <a href="{{ url_for('auth.logout') }}">🚪 Déconnexion</a>
-                </div>
-            {% else %}
-                <a href="{{ url_for('auth.login') }}">🔐 Connexion</a>
-                <a href="{{ url_for('auth.register') }}">📝 Inscription</a>
-            {% endif %}
-        </nav>
-    </header>
-
-    <!-- ✅ MESSAGES FLASH -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="inl-core-001">
-                {% for category, message in messages %}
-                    <div class="flash-alert
-                        {% if category == 'error' %}flash-alert-error
-                        {% elif category == 'success' %}flash-alert-success
-                        {% elif category == 'info' %}flash-alert-info
-                        {% else %}flash-alert-warning{% endif %}">
-                        {{ message }}
+                            {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                                <a href="{{ url_for('campaign.create_campaign') }}" class="site-nav__link site-nav__link--accent">Nouvelle campagne</a>
+                            {% endif %}
+                        {% endif %}
                     </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+                    <div class="site-nav__user">
+                        {% if session.user_id %}
+                            <span class="site-nav__welcome">{{ current_user.username if current_user else 'Utilisateur' }}</span>
+                            <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
+                            <a href="{{ url_for('auth.logout') }}" class="site-nav__link">Deconnexion</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="site-nav__link">Connexion</a>
+                            <a href="{{ url_for('auth.register') }}" class="site-nav__link site-nav__link--accent">Inscription</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="shell-container flash-stack inl-core-001">
+                    {% for category, message in messages %}
+                        <div class="flash-alert
+                            {% if category == 'error' %}flash-alert-error
+                            {% elif category == 'success' %}flash-alert-success
+                            {% elif category == 'info' %}flash-alert-info
+                            {% else %}flash-alert-warning{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main class="site-main">
+            <div class="shell-container">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="shell-container site-footer__inner">
+                <div class="site-footer__brand">
+                    <p class="site-footer__title">ExalQuest</p>
+                    <p class="site-footer__text">Une interface plus claire pour suivre vos campagnes, personnages et combats.</p>
+                </div>
+
+                <div class="site-footer__links">
+                    <a href="{{ url_for('main.index') }}">Accueil</a>
+                    <a href="{{ url_for('campaign.list_campaigns') }}">Campagnes</a>
+                    {% if session.user_id %}
+                        <a href="{{ url_for('template.manage_templates') }}">Personnages</a>
+                        <a href="{{ url_for('auth.profile') }}">Profil</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}">Connexion</a>
+                        <a href="{{ url_for('auth.register') }}">Inscription</a>
+                    {% endif %}
+                </div>
+
+                <div class="site-footer__meta">
+                    <span>Interface DnD / JDR</span>
+                    <span>Design optimise pour desktop et mobile</span>
+                </div>
+            </div>
+        </footer>
+    </div>
     <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
 </body>
 </html>

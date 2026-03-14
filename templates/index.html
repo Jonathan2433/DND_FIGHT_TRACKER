@@ -2,250 +2,196 @@
 {% block content %}
 
 <div class="dashboard">
-    <!-- ===================== -->
-    <!-- STATISTIQUES GÉNÉRALES -->
-    <!-- ===================== -->
+    <section class="home-hero page-hero">
+        <div class="home-hero__content">
+            <span class="section-eyebrow">ExalQuest</span>
+            <h1 class="section-title">Pilotez vos campagnes et suivez vos personnages dans une interface plus nette.</h1>
+            <p class="section-copy">
+                Centralisez vos combats, vos fiches et vos campagnes publiques dans un espace plus lisible,
+                plus stable sur mobile et plus simple a utiliser au quotidien.
+            </p>
+
+            <div class="home-hero__actions">
+                {% if user_is_connected %}
+                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-primary">Mes campagnes</a>
+                    <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">Mes personnages</a>
+                    {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                        <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-secondary">Creer une campagne</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Creer un compte</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Se connecter</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="home-hero__panel">
+            <div class="hero-panel-card">
+                <strong>{{ total_combats }} combats suivis</strong>
+                <p>Suivez les rounds, les degats, les soins et les statistiques clefs sans perdre le fil.</p>
+            </div>
+            <div class="hero-panel-card">
+                <strong>{{ total_pj }} fiches actives</strong>
+                <p>Retrouvez rapidement vos personnages publics, vos progressions et vos feuilles officielles.</p>
+            </div>
+            <div class="hero-panel-card">
+                <strong>{{ public_campaigns|length if public_campaigns else 0 }} campagnes visibles</strong>
+                <p>Les campagnes publiques sont mises en avant avec un acces plus clair depuis l'accueil.</p>
+            </div>
+        </div>
+    </section>
+
     <div class="dashboard-stats">
         <div class="stat-card">
-            <h3>⚔️ Combats totaux</h3>
+            <h3>Combats totaux</h3>
             <p>{{ total_combats }}</p>
         </div>
         <div class="stat-card">
-            <h3>✅ Combats terminés</h3>
+            <h3>Combats termines</h3>
             <p>{{ total_closed }}</p>
         </div>
         <div class="stat-card">
-            <h3>🧙 PJ enregistrés</h3>
+            <h3>PJ enregistres</h3>
             <p>{{ total_pj }}</p>
         </div>
         <div class="stat-card">
-            <h3>🔁 Rounds joués</h3>
+            <h3>Rounds joues</h3>
             <p>{{ total_rounds }}</p>
         </div>
         <div class="stat-card">
-            <h3>💥 Dégâts infligés</h3>
+            <h3>Degats infliges</h3>
             <p>{{ total_damage }}</p>
         </div>
         <div class="stat-card">
-            <h3>✨ Soins donnés</h3>
+            <h3>Soins donnes</h3>
             <p>{{ total_heal }}</p>
         </div>
     </div>
 
-    <!-- ===================== -->
-    <!-- CAMPAGNES PUBLIQUES POUR NON-CONNECTÉS -->
-    <!-- ===================== -->
     {% if public_campaigns %}
-    <div class="card">
-        <h2>🌐 Campagnes Publiques</h2>
-
-        {% if not user_is_connected %}
-            <p>Découvrez les campagnes en cours et créez un compte pour les rejoindre !</p>
-        {% else %}
-            <p>Campagnes ouvertes auxquelles vous pouvez demander à participer :</p>
-        {% endif %}
-
-        <div class="public-campaigns-grid">
-            {% for campaign in public_campaigns %}
-                <div class="public-campaign-card">
-                    <div class="campaign-header">
-                        <h3>{{ campaign.name }}</h3>
-                        <div class="campaign-badge public">🌐 Public</div>
-                    </div>
-
-                    {% if campaign.description %}
-                        <p class="campaign-description">
-                            {{ campaign.description[:120] }}{% if campaign.description|length > 120 %}...{% endif %}
-                        </p>
-                    {% endif %}
-
-                    <div class="campaign-info">
-                        <span>👑 MJ : {{ campaign.mj.username }}</span>
-                        <span>👥 {{ campaign.members|length + 1 }} membres</span>
-                    </div>
-
-                    <div class="campaign-actions">
+        <section class="card">
+            <div class="section-head">
+                <div class="section-head__content">
+                    <h2 class="section-head__title">Campagnes publiques</h2>
+                    <p class="section-head__copy">
                         {% if not user_is_connected %}
-                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                                📝 S'inscrire pour rejoindre
-                            </a>
+                            Decouvrez les campagnes ouvertes et inscrivez-vous pour les rejoindre.
                         {% else %}
-                            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">
-                                👁️ Voir la campagne
-                            </a>
-                            {% if current_user and not current_user.is_member_of(campaign) and not current_user.is_mj_of(campaign) %}
-                                <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" class="inl-core-003">
-                                    <input type="hidden" name="message" value="Demande automatique depuis la page d'accueil">
-                                    <button type="submit" class="btn btn-secondary">
-                                        🙋 Demander à rejoindre
-                                    </button>
-                                </form>
-                            {% endif %}
+                            Parcourez les campagnes disponibles et envoyez une demande en quelques clics.
                         {% endif %}
-                    </div>
+                    </p>
                 </div>
-            {% endfor %}
-        </div>
 
-        {% if public_campaigns|length == 6 %}
-            <div class="text-center">
-                {% if not user_is_connected %}
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
-                        Voir toutes les campagnes publiques
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">
-                        Voir toutes mes campagnes
-                    </a>
-                {% endif %}
+                <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Voir toutes les campagnes</a>
             </div>
-        {% endif %}
-    </div>
-{% endif %}
 
-    <!-- ===================== -->
-    <!-- FICHES PERSONNAGES -->
-    <!-- ===================== -->
-    <div class="card">
-        <h2>🧙 Fiches Personnages public </h2>
+            <div class="public-campaigns-grid">
+                {% for campaign in public_campaigns %}
+                    <div class="public-campaign-card">
+                        <div class="campaign-header">
+                            <h3>{{ campaign.name }}</h3>
+                            <div class="campaign-badge public">Publique</div>
+                        </div>
 
-        {% if user_is_connected %}
-            <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">🛠️ Gérer mes Personnages</a>
-        {% endif %}
+                        {% if campaign.description %}
+                            <p class="campaign-description">
+                                {{ campaign.description[:140] }}{% if campaign.description|length > 140 %}...{% endif %}
+                            </p>
+                        {% else %}
+                            <p class="campaign-description">Aucune description n'a encore ete ajoutee pour cette campagne.</p>
+                        {% endif %}
 
-        <div class="pj-dashboard-grid">
-            {% for pj in characters %}
-            <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card">
-                <div class="template-avatar-container {% if pj.image_filename %}has-image{% else %}no-image{% endif %}">
-                    {% if pj.image_filename %}
-                        <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
-                             class="pj-dashboard-img" alt="{{ pj.name }}">
-                    {% endif %}
-                    <div class="pj-avatar-large">
-                        {{ pj.name[:2]|upper }}
+                        <div class="campaign-info">
+                            <span>MJ : {{ campaign.mj.username }}</span>
+                            <span>Membres : {{ campaign.members|length + 1 }}</span>
+                        </div>
+
+                        <div class="campaign-actions">
+                            {% if not user_is_connected %}
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">S'inscrire pour rejoindre</a>
+                            {% else %}
+                                <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">Voir la campagne</a>
+                                {% if current_user and not current_user.is_member_of(campaign) and not current_user.is_mj_of(campaign) %}
+                                    <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" class="inl-core-003">
+                                        <input type="hidden" name="message" value="Demande automatique depuis la page d'accueil">
+                                        <button type="submit" class="btn btn-secondary">Demander a rejoindre</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <span>{{ pj.name }}</span>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-
-   <!-- &lt;!&ndash; ===================== &ndash;&gt;
-    &lt;!&ndash; DERNIERS COMBATS &ndash;&gt;
-    &lt;!&ndash; ===================== &ndash;&gt;
-    <div class="card">
-        <h2>📜 Derniers combats</h2>
-
-        <div class="combat-card-grid">
-            {% for combat in combat_cards %}
-            <div class="combat-card">
-                <div class="combat-card-header">
-                    <h3>{{ combat.name }}</h3>
-                    {% if combat.is_closed %}
-                        <div class="combat-badge closed">✅ Terminé</div>
-                    {% else %}
-                        <div class="combat-badge active">🟢 En cours</div>
-                    {% endif %}
-                </div>
-
-                <div class="combat-card-body">
-                    <div class="combat-stat">
-                        <strong>🔁 Rounds</strong>
-                        <span>{{ combat.rounds }}</span>
-                    </div>
-
-                    <div class="combat-stat">
-                        <strong>💀 Morts</strong>
-                        <span>{{ combat.deaths }}</span>
-                    </div>
-                    {% if combat.duration %}
-                    <div class="combat-stat">
-                        <strong>⏱ Durée</strong>
-                        <span>{{ combat.duration }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="combat-card-actions">
-                    <a href="{{ url_for('combat.view_combat', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
-                    {% if combat.is_closed %}
-                        <a href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}" class="btn btn-secondary">Résumé</a>
-                    {% endif %}
-
-                    {% if user_is_connected %}
-                        <form action="{{ url_for('combat.delete_combat', combat_id=combat.id) }}" method="post" class="inl-core-003">
-                            <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('Supprimer ce combat ?')">🗑 Supprimer</button>
-                        </form>
-                    {% endif %}
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </div>-->
+        </section>
+    {% endif %}
 
-    <!-- ===================== -->
-    <!-- ACTIONS POUR UTILISATEURS CONNECTÉS -->
-    <!-- ===================== -->
+    <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <h2 class="section-head__title">Fiches personnages publiques</h2>
+                <p class="section-head__copy">Retrouvez rapidement les personnages visibles et ouvrez leur fiche complete.</p>
+            </div>
+
+            {% if user_is_connected %}
+                <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">Gerer mes personnages</a>
+            {% endif %}
+        </div>
+
+        {% if characters %}
+            <div class="pj-dashboard-grid">
+                {% for pj in characters %}
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card">
+                        <div class="template-avatar-container {% if pj.image_filename %}has-image{% else %}no-image{% endif %}">
+                            {% if pj.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                                     class="pj-dashboard-img" alt="{{ pj.name }}">
+                            {% endif %}
+                            <div class="pj-avatar-large">
+                                {{ pj.name[:2]|upper }}
+                            </div>
+                        </div>
+                        <span>{{ pj.name }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="section-head__copy">Aucune fiche publique n'est disponible pour le moment.</p>
+        {% endif %}
+    </section>
+
     {% if user_is_connected %}
-        <div class="card">
-            <h2>🎯 Mes Actions</h2>
-
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">
-                        🧙 Gérer mes Personnages
-                    </a>
+        <section class="card">
+            <div class="section-head">
+                <div class="section-head__content">
+                    <h2 class="section-head__title">Mes actions</h2>
+                    <p class="section-head__copy">Accedez rapidement aux ecrans principaux de votre espace.</p>
                 </div>
+            </div>
 
+            <div class="dashboard-actions">
+                <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">Gerer mes personnages</a>
                 {% if current_user and current_user.role in ['MJ', 'Admin'] %}
-                    <div class="stat-card">
-                        <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-primary">
-                            ➕ Nouvelle Campagne
-                        </a>
-                    </div>
+                    <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-secondary">Nouvelle campagne</a>
                 {% endif %}
-
-                <div class="stat-card">
-                    <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">
-                        🎲 Mes Campagnes
-                    </a>
-                </div>
-
-                <div class="stat-card">
-                    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
-                        👤 Mon Profil
-                    </a>
+                <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Mes campagnes</a>
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Mon profil</a>
+            </div>
+        </section>
+    {% else %}
+        <section class="card">
+            <div class="section-head">
+                <div class="section-head__content">
+                    <h2 class="section-head__title">Rejoignez ExalQuest</h2>
+                    <p class="section-head__copy">Creez un compte pour gerer vos campagnes D&D, suivre vos combats et publier vos fiches.</p>
                 </div>
             </div>
-        </div>
-    {% endif %}
 
-    <!-- ===================== -->
-    <!-- ACTIONS POUR NON-CONNECTÉS -->
-    <!-- ===================== -->
-    {% if not user_is_connected %}
-        <div class="card">
-            <h2>🚀 Rejoignez-nous !</h2>
-            <p>Créez un compte pour gérer vos campagnes D&D et suivre vos combats !</p>
-
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                        📝 Créer un compte
-                    </a>
-                </div>
-
-                <div class="stat-card">
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
-                        🔐 Se connecter
-                    </a>
-                </div>
+            <div class="dashboard-actions">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Creer un compte</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Se connecter</a>
             </div>
-        </div>
+        </section>
     {% endif %}
-
 </div>
 
 {% endblock %}

@@ -1,89 +1,84 @@
-<!-- templates/campaign/public_campaigns.html - NOUVEAU FICHIER -->
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container">
-    <h1>🌐 Campagnes Publiques</h1>
-    <p>Découvrez les campagnes ouvertes aux nouveaux joueurs !</p>
+<div class="campaign-page">
+    <section class="campaign-page__hero page-hero">
+        <div class="campaign-page__hero-copy">
+            <span class="section-eyebrow">Campagnes publiques</span>
+            <h1 class="section-title">Trouvez une table ouverte et rejoignez une campagne qui vous correspond.</h1>
+            <p class="section-copy">
+                Parcourez les campagnes visibles par tous, consultez leur maitre du jeu et envoyez une demande
+                ou creez votre compte pour rejoindre l'aventure.
+            </p>
+        </div>
+
+        <div class="campaign-page__hero-meta">
+            <strong>{{ public_campaigns|length }} campagnes disponibles</strong>
+            <p>Les cartes ont ete simplifiees pour mieux respirer sur desktop et pour eviter les boutons qui se chevauchent sur mobile.</p>
+        </div>
+    </section>
 
     {% if public_campaigns %}
-        <div class="campaigns-grid">
-            {% for campaign in public_campaigns %}
-            <div class="campaign-card public-campaign">
-                <div class="campaign-header">
-                    <h3>{{ campaign.name }}</h3>
-                    <span class="public-badge">🌐 Publique</span>
-                </div>
+        <section class="card">
+            <div class="public-campaigns-grid">
+                {% for campaign in public_campaigns %}
+                    <div class="public-campaign-card">
+                        <div class="campaign-header">
+                            <h3>{{ campaign.name }}</h3>
+                            <span class="campaign-badge public">Publique</span>
+                        </div>
 
-                {% if campaign.description %}
-                <div class="campaign-description">
-                    {{ campaign.description[:150] }}
-                    {% if campaign.description|length > 150 %}...{% endif %}
-                </div>
-                {% endif %}
+                        {% if campaign.description %}
+                            <p class="campaign-description">
+                                {{ campaign.description[:150] }}{% if campaign.description|length > 150 %}...{% endif %}
+                            </p>
+                        {% else %}
+                            <p class="campaign-description">Cette campagne n'a pas encore de description publique.</p>
+                        {% endif %}
 
-                <div class="campaign-info">
-                    <div class="info-item">
-                        <strong>👑 MJ :</strong> {{ campaign.mj.username }}
-                    </div>
-                    <div class="info-item">
-                        <strong>👥 Membres :</strong> {{ campaign.members|length + 1 }}
-                    </div>
-                    <div class="info-item">
-                        <strong>📅 Créée :</strong> {{ campaign.created_at.strftime('%d/%m/%Y') }}
-                    </div>
-                </div>
+                        <div class="campaign-info">
+                            <div class="info-item"><strong>MJ :</strong> {{ campaign.mj.username }}</div>
+                            <div class="info-item"><strong>Membres :</strong> {{ campaign.members|length + 1 }}</div>
+                            <div class="info-item"><strong>Creee :</strong> {{ campaign.created_at.strftime('%d/%m/%Y') }}</div>
+                        </div>
 
-                <div class="campaign-actions">
-                    {% if session.user_id %}
-                        <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="POST" class="inl-campaign-020">
-                            <input type="hidden" name="message" value="Je souhaite rejoindre votre campagne !">
-                            <button type="submit" class="btn btn-primary">
-                                🙋 Demander à rejoindre
-                            </button>
-                        </form>
-                    {% else %}
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                            📝 S'inscrire pour rejoindre
-                        </a>
-                    {% endif %}
-                </div>
+                        <div class="campaign-actions">
+                            {% if session.user_id %}
+                                <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="POST" class="inl-campaign-020">
+                                    <input type="hidden" name="message" value="Je souhaite rejoindre votre campagne !">
+                                    <button type="submit" class="btn btn-primary">Demander a rejoindre</button>
+                                </form>
+                            {% else %}
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">S'inscrire pour rejoindre</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
+        </section>
     {% else %}
-        <div class="no-campaigns">
-            <h3>🎲 Aucune campagne publique disponible</h3>
+        <section class="card no-campaigns">
+            <h3>Aucune campagne publique disponible</h3>
             <p>Il n'y a pas de campagnes publiques en cours actuellement.</p>
 
             {% if not session.user_id %}
                 <p>
-                    <a href="{{ url_for('auth.register') }}">Créez un compte</a>
-                    pour être notifié des nouvelles campagnes !
+                    <a href="{{ url_for('auth.register') }}">Creez un compte</a>
+                    pour etre prevenu des prochaines ouvertures.
                 </p>
             {% endif %}
-        </div>
+        </section>
     {% endif %}
 
     <div class="navigation">
         {% if session.user_id %}
-            <a href="{{ url_for('campaign.list') }}" class="btn btn-secondary">
-                🎯 Mes Campagnes
-            </a>
+            <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Mes campagnes</a>
         {% else %}
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                📝 Créer un compte
-            </a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
-                🔐 Se connecter
-            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Creer un compte</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Se connecter</a>
         {% endif %}
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-            🏠 Accueil
-        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Retour a l'accueil</a>
     </div>
 </div>
-
-
 
 {% endblock %}

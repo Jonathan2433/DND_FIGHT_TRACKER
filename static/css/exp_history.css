@@ -43,7 +43,7 @@
     gap: 8px;
 }
 
-.level-badge {
+.xp-summary-card .level-badge {
     background: var(--color-warning-bright);
     color: var(--color-black);
     padding: 10px 20px;
@@ -53,35 +53,35 @@
     text-align: center;
 }
 
-.xp-total {
+.xp-summary-card .xp-total {
     font-size: 16px;
     font-weight: bold;
     color: var(--color-warning-bright);
     text-align: center;
 }
 
-.xp-progress {
+.xp-summary-card .xp-progress {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.xp-bar-container {
+.xp-summary-card .xp-bar-container {
     background: var(--color-border);
     height: 15px;
     border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
-.xp-bar {
+.xp-summary-card .xp-bar {
     background: linear-gradient(90deg, var(--color-warning-bright), var(--color-warning-dark));
     height: 100%;
     transition: width 0.3s ease;
     border-radius: var(--radius-lg);
 }
 
-.xp-progress-text {
+.xp-summary-card .xp-progress-text {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -89,7 +89,7 @@
     color: var(--color-text-secondary);
 }
 
-.level-up-notification {
+.xp-summary-card .level-up-notification {
     background: var(--color-primary);
     color: var(--color-white);
     padding: 4px 8px;
@@ -228,7 +228,7 @@
     gap: 20px;
 }
 
-.stat-card {
+.xp-stats-grid .stat-card {
     background: var(--color-surface);
     padding: 20px;
     border-radius: var(--radius-2xl);
@@ -239,12 +239,12 @@
     transition: all var(--transition-default);
 }
 
-.stat-card:hover {
+.xp-stats-grid .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px var(--warning-bright-a30);
 }
 
-.stat-icon {
+.xp-stats-grid .stat-icon {
     width: 46px;
     height: 46px;
     display: flex;
@@ -255,20 +255,20 @@
     font-size: 22px;
 }
 
-.stat-content {
+.xp-stats-grid .stat-content {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-.stat-value {
+.xp-stats-grid .stat-value {
     font-size: 22px;
     font-weight: bold;
     color: var(--color-warning-bright);
     line-height: 1;
 }
 
-.stat-label {
+.xp-stats-grid .stat-label {
     font-size: 13px;
     color: var(--color-text-secondary);
 }
@@ -279,7 +279,7 @@
         align-items: stretch;
     }
 
-    .xp-progress-text {
+    .xp-summary-card .xp-progress-text {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;

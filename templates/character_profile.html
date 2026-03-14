@@ -2,120 +2,140 @@
 {% block content %}
 
 <div class="character-profile">
-    <div class="profile-header">
-        <div class="profile-left">
-            <div class="template-avatar-container {% if character.image_filename %}has-image{% endif %}">
+    <section class="character-hero card">
+        <div class="character-avatar">
+            <div class="character-avatar__frame {% if character.image_filename %}has-image{% endif %}">
                 {% if character.image_filename %}
                     <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
-                         alt="{{ character.name }}" class="profile-avatar">
+                         alt="{{ character.name }}" class="character-avatar__image">
                 {% endif %}
-                <div class="avatar-placeholder-large">
+                <div class="character-avatar__placeholder">
                     {{ character.name[:2]|upper }}
                 </div>
-                <div class="inl-character-001">
-                    {% if character.is_public %}
-                        <span class="inl-character-002">
-                            🌐 Public
-                        </span>
-                    {% else %}
-                        <span class="inl-character-003">
-                            🔒 Privé
-                        </span>
-                    {% endif %}
-                </div>
             </div>
+
+            {% if character.is_public %}
+                <span class="character-visibility character-visibility--public">Public</span>
+            {% else %}
+                <span class="character-visibility character-visibility--private">Prive</span>
+            {% endif %}
         </div>
 
-        <div class="profile-center">
-            <h1>{{ character.name }}</h1>
-            <p><strong>{{ character.character_class }} • Niveau {{ character.level }}</strong></p>
+        <div class="character-summary">
+            <div class="character-summary__title">
+                <span class="section-eyebrow">{{ character.character_type }}</span>
+                <h1>{{ character.name }}</h1>
+                <p class="character-summary__meta">{{ character.character_class }} - Niveau {{ character.level }}</p>
+                {% if character.campaign %}
+                    <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
+                {% endif %}
+            </div>
 
             <div class="profile-stats">
-                <div class="stat-box">❤️ {{ character.hp_max }}</div>
-                <div class="stat-box">🛡 {{ character.ac_base }}</div>
-                <div class="stat-box">⚡ +{{ character.initiative_bonus }}</div>
-                <div class="stat-box">⚔ {{ combats_played }} combats</div>
-            </div>
-            {% if current_user and character.can_be_edited_by(current_user) %}
-            <div class="profile-actions">
-                <h3>🎯 Actions</h3>
-
-                <!-- ✅ NOUVEAU : Bouton association campagne -->
-                {% if character.character_type == 'PJ' and character.owner_id == current_user.id %}
-                    <a href="{{ url_for('template.join_campaign', character_id=character.id) }}"
-                       class="btn btn-primary">
-                        {% if character.campaign %}
-                            🔄 Changer de campagne
-                        {% else %}
-                            🎲 Rejoindre une campagne
-                        {% endif %}
-                    </a>
-                {% endif %}
-
-                <!-- Boutons existants -->
-                <a href="{{ url_for('template.edit_character_template', id=character.id) }}"
-                   class="btn btn-primary">✏️ Modifier</a>
-
-                {% if current_user and character.owner_id == current_user.id %}
-                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');" class="inl-character-004">
-                        <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
-                    </form>
-                {% endif %}
-            </div>
-            {% else %}
-                {% if current_user %}
-                    <div class="no-edit-permission">
-                        <p>Vous ne pouvez que consulter ce personnage</p>
-                    </div>
-                {% endif %}
-            {% endif %}
-
-            <!-- ✅ NOUVEAU : Caractéristiques en 2 lignes de 3 colonnes -->
-            <div class="char-details">
-                <h3>📊 Caractéristiques</h3>
-                <div class="char-stats-compact">
-                    <!-- Première ligne -->
-                    <div class="char-stat">
-                        <span class="stat-name">💪 Force</span>
-                        <span class="stat-value">{{ character.force }} ({{ character.mod_force|abs if character.mod_force >= 0 else character.mod_force }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_force|abs if character.sauvegarde_force >= 0 else character.sauvegarde_force }}{% if character.maitrise_force %} ✓{% endif %}</span>
-                    </div>
-
-                    <div class="char-stat">
-                        <span class="stat-name">🏃 Dextérité</span>
-                        <span class="stat-value">{{ character.dexterite }} ({{ character.mod_dexterite|abs if character.mod_dexterite >= 0 else character.mod_dexterite }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_dexterite|abs if character.sauvegarde_dexterite >= 0 else character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} ✓{% endif %}</span>
-                    </div>
-
-                    <div class="char-stat">
-                        <span class="stat-name">💚 Constitution</span>
-                        <span class="stat-value">{{ character.constitution }} ({{ character.mod_constitution|abs if character.mod_constitution >= 0 else character.mod_constitution }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_constitution|abs if character.sauvegarde_constitution >= 0 else character.sauvegarde_constitution }}{% if character.maitrise_constitution %} ✓{% endif %}</span>
-                    </div>
-
-                    <!-- Deuxième ligne -->
-                    <div class="char-stat">
-                        <span class="stat-name">🧠 Intelligence</span>
-                        <span class="stat-value">{{ character.intelligence }} ({{ character.mod_intelligence|abs if character.mod_intelligence >= 0 else character.mod_intelligence }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_intelligence|abs if character.sauvegarde_intelligence >= 0 else character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} ✓{% endif %}</span>
-                    </div>
-
-                    <div class="char-stat">
-                        <span class="stat-name">🦉 Sagesse</span>
-                        <span class="stat-value">{{ character.sagesse }} ({{ character.mod_sagesse|abs if character.mod_sagesse >= 0 else character.mod_sagesse }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_sagesse|abs if character.sauvegarde_sagesse >= 0 else character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} ✓{% endif %}</span>
-                    </div>
-
-                    <div class="char-stat">
-                        <span class="stat-name">✨ Charisme</span>
-                        <span class="stat-value">{{ character.charisme }} ({{ character.mod_charisme|abs if character.mod_charisme >= 0 else character.mod_charisme }})</span>
-                        <span class="stat-save">Sauvegarde: {{ character.sauvegarde_charisme|abs if character.sauvegarde_charisme >= 0 else character.sauvegarde_charisme }}{% if character.maitrise_charisme %} ✓{% endif %}</span>
-                    </div>
+                <div class="stat-box">
+                    <strong>Points de vie</strong>
+                    <span>{{ character.hp_max }}</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Classe d'armure</strong>
+                    <span>{{ character.ac_base }}</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Initiative</strong>
+                    <span>+{{ character.initiative_bonus }}</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Combats joues</strong>
+                    <span>{{ combats_played }}</span>
                 </div>
             </div>
 
-            <div class="xp-section">
-                <h2>📈 Progression</h2>
+            {% if can_edit %}
+                <div class="profile-actions">
+                    <h3>Actions rapides</h3>
+                    <div class="profile-actions__buttons">
+                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                {% if character.campaign %}
+                                    Changer de campagne
+                                {% else %}
+                                    Rejoindre une campagne
+                                {% endif %}
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
+
+                        {% if current_user and character.owner_id == current_user.id %}
+                            <form method="POST"
+                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                  class="inl-character-004">
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elif current_user %}
+                <div class="profile-actions">
+                    <h3>Consultation</h3>
+                    <p class="section-head__copy">Vous pouvez consulter cette fiche mais vous n'avez pas l'autorisation de la modifier.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="character-layout">
+        <div class="character-main">
+            <section class="char-details">
+                <div class="section-head">
+                    <div class="section-head__content">
+                        <h2 class="section-head__title">Caracteristiques</h2>
+                        <p class="section-head__copy">Vue compacte des statistiques, modificateurs et sauvegardes.</p>
+                    </div>
+                </div>
+
+                <div class="char-stats-compact">
+                    <div class="char-stat">
+                        <span class="stat-name">Force</span>
+                        <span class="stat-value">{{ character.force }} ({{ character.mod_force|abs if character.mod_force >= 0 else character.mod_force }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_force|abs if character.sauvegarde_force >= 0 else character.sauvegarde_force }}{% if character.maitrise_force %} - maitrise{% endif %}</span>
+                    </div>
+                    <div class="char-stat">
+                        <span class="stat-name">Dexterite</span>
+                        <span class="stat-value">{{ character.dexterite }} ({{ character.mod_dexterite|abs if character.mod_dexterite >= 0 else character.mod_dexterite }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_dexterite|abs if character.sauvegarde_dexterite >= 0 else character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} - maitrise{% endif %}</span>
+                    </div>
+                    <div class="char-stat">
+                        <span class="stat-name">Constitution</span>
+                        <span class="stat-value">{{ character.constitution }} ({{ character.mod_constitution|abs if character.mod_constitution >= 0 else character.mod_constitution }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_constitution|abs if character.sauvegarde_constitution >= 0 else character.sauvegarde_constitution }}{% if character.maitrise_constitution %} - maitrise{% endif %}</span>
+                    </div>
+                    <div class="char-stat">
+                        <span class="stat-name">Intelligence</span>
+                        <span class="stat-value">{{ character.intelligence }} ({{ character.mod_intelligence|abs if character.mod_intelligence >= 0 else character.mod_intelligence }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_intelligence|abs if character.sauvegarde_intelligence >= 0 else character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} - maitrise{% endif %}</span>
+                    </div>
+                    <div class="char-stat">
+                        <span class="stat-name">Sagesse</span>
+                        <span class="stat-value">{{ character.sagesse }} ({{ character.mod_sagesse|abs if character.mod_sagesse >= 0 else character.mod_sagesse }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_sagesse|abs if character.sauvegarde_sagesse >= 0 else character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} - maitrise{% endif %}</span>
+                    </div>
+                    <div class="char-stat">
+                        <span class="stat-name">Charisme</span>
+                        <span class="stat-value">{{ character.charisme }} ({{ character.mod_charisme|abs if character.mod_charisme >= 0 else character.mod_charisme }})</span>
+                        <span class="stat-save">Sauvegarde : {{ character.sauvegarde_charisme|abs if character.sauvegarde_charisme >= 0 else character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="xp-section">
+                <div class="section-head">
+                    <div class="section-head__content">
+                        <h2 class="section-head__title">Progression</h2>
+                        <p class="section-head__copy">Niveau actuel, avancee sur la barre d'XP et attribution manuelle si autorisee.</p>
+                    </div>
+                </div>
 
                 <div class="xp-container">
                     <div class="xp-info">
@@ -130,12 +150,11 @@
                     <div class="xp-details">
                         <span>{{ character.current_xp - character.xp_for_current_level }} / {{ character.xp_for_next_level - character.xp_for_current_level }}</span>
                         {% if character.can_level_up %}
-                            <span class="level-up-alert">🎉 PEUT MONTER DE NIVEAU !</span>
+                            <span class="level-up-alert">Pret a monter de niveau</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Formulaire d'attribution manuelle d'XP -->
                 {% if current_user %}
                     {% set can_award_xp = false %}
 
@@ -149,86 +168,62 @@
 
                     {% if can_award_xp %}
                         <div class="award-xp-form">
-                            <h4>➕ Attribuer XP</h4>
-
+                            <h4>Attribuer de l'XP</h4>
                             <form method="POST" action="{{ url_for('xp.award_manual_xp', character_id=character.id) }}">
                                 <input type="number" name="xp_amount" placeholder="Montant XP" required min="1">
                                 <input type="text" name="description" placeholder="Raison (optionnel)">
                                 <input type="text" name="awarded_by" value="{{ current_user.username }}" readonly>
-                                <button type="submit" class="btn-primary">✨ Attribuer XP</button>
+                                <button type="submit" class="btn btn-primary">Attribuer</button>
                             </form>
                         </div>
                     {% endif %}
 
-                    <div class="inl-character-005">
-                        <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">
-                            📊 Historique XP
-                        </a>
+                    <div class="profile-actions__buttons">
+                        <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">Historique XP</a>
                     </div>
                 {% else %}
-                    <!-- Utilisateur non connecté -->
-                    <div class="inl-character-005">
-                        <p class="inl-character-006">Connectez-vous pour voir l'historique XP</p>
-                    </div>
+                    <p class="section-head__copy">Connectez-vous pour acceder a l'historique XP.</p>
                 {% endif %}
+            </section>
 
-            <!-- ✅ NOUVEAU : Notes déplacées sous les caractéristiques -->
-            {% if character.notes or (current_user and character.can_be_edited_by(current_user)) %}
-            <div class="char-notes">
-                <h3>📝 Notes</h3>
-                {% if character.notes %}
-                    <p>{{ character.notes }}</p>
-                {% endif %}
-
-                <!-- ✅ NOUVEAU : Affichage conditionnel des notes privées -->
-                {% if current_user and character.private_notes and character.can_add_private_notes(current_user) %}
-                    <div class="mj-private-notes">
-                        <h4>🔒 Notes Privées MJ</h4>
-                        <div class="mj-notes-content">
-                            {{ character.private_notes }}
+            {% if character.notes or (current_user and character.private_notes and character.can_add_private_notes(current_user)) %}
+                <section class="char-notes">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Notes</h2>
+                            <p class="section-head__copy">Notes publiques et informations privees du MJ si vous y avez acces.</p>
                         </div>
                     </div>
-                {% endif %}
-            </div>
-            {% endif %}
 
-            <!-- ✅ MODIFICATION : Afficher les actions de modification uniquement si autorisé -->
-            {% if can_edit %}
-            <div class="inl-character-007">
-                <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn-primary inl-character-008">✏️ Modifier</a>
+                    {% if character.notes %}
+                        <p>{{ character.notes }}</p>
+                    {% endif %}
 
-                <!-- Seul le propriétaire peut supprimer -->
-                {% if current_user and character.owner_id == current_user.id %}
-                    <form method="POST" action="{{ url_for('template.delete_character_template', id=character.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')" class="inl-character-004">
-                        <button type="submit" class="btn-danger">🗑️ Supprimer</button>
-                    </form>
-                {% endif %}
-            </div>
-            {% else %}
-                {% if current_user %}
-                    <div class="inl-character-009">
-                        <p class="inl-character-010">Vous ne pouvez que consulter ce personnage</p>
-                    </div>
-                {% endif %}
+                    {% if current_user and character.private_notes and character.can_add_private_notes(current_user) %}
+                        <div class="mj-private-notes">
+                            <h4>Notes privees MJ</h4>
+                            <div class="mj-notes-content">{{ character.private_notes }}</div>
+                        </div>
+                    {% endif %}
+                </section>
             {% endif %}
         </div>
 
-        <!-- ✅ NOUVEAU : Aperçu PDF élargi à droite -->
         {% if character.pdf_filename %}
-        <div class="profile-pdf-preview">
-            <h3>📜 Fiche Officielle</h3>
-            <div class="pdf-preview-container">
-                <embed src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                       type="application/pdf"
-                       class="pdf-preview">
-                <div class="pdf-controls">
-                    <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                       target="_blank" class="btn btn-primary btn-pdf">
-                        📄 Ouvrir le PDF complet
-                    </a>
+            <aside class="profile-pdf-preview">
+                <h3>Fiche officielle</h3>
+                <div class="pdf-preview-container">
+                    <embed src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                           type="application/pdf"
+                           class="pdf-preview">
+                    <div class="pdf-controls">
+                        <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                           target="_blank" class="btn btn-primary btn-pdf">
+                            Ouvrir le PDF complet
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </aside>
         {% endif %}
     </div>
 </div>
