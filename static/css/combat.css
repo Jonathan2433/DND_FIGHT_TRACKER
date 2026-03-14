@@ -689,6 +689,14 @@
     gap: 8px;
 }
 
+.combat-actions,
+.admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
 .capture-container {
     margin-top: 15px;
     text-align: center;
