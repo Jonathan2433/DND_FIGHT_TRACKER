@@ -26,4 +26,34 @@ class CharacterPolicy:
             return False
         return character.can_be_viewed_by(user, character.campaign)
 
-__all__ = ["CampaignPolicy", "CharacterPolicy"]
+
+class CombatPolicy:
+    @staticmethod
+    def can_manage(user, combat):
+        if not user or not combat:
+            return False
+        if user.role == "Admin":
+            return True
+        if combat.campaign:
+            return user.is_mj_of(combat.campaign)
+        return False
+
+    @staticmethod
+    def can_view_player(user, combat):
+        if not user or not combat:
+            return False
+        if CombatPolicy.can_manage(user, combat):
+            return True
+        if combat.campaign:
+            return user.is_member_of(combat.campaign)
+        return False
+
+
+class EncounterTemplatePolicy:
+    @staticmethod
+    def can_manage(user, template):
+        if not user or not template:
+            return False
+        return user.role == "Admin" or template.owner_id == user.id
+
+__all__ = ["CampaignPolicy", "CharacterPolicy", "CombatPolicy", "EncounterTemplatePolicy"]

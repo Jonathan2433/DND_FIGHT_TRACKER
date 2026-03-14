@@ -218,6 +218,9 @@ class CharacterTemplate(db.Model):
         if campaign and user.is_mj_of(campaign):
             return True
 
+        if any(user.is_mj_of(c) for c in self.campaigns):
+            return True
+
         if self.is_public:
             return True
 
@@ -230,6 +233,8 @@ class CharacterTemplate(db.Model):
                 return user.is_member_of(campaign) and (
                     self.campaign_id == campaign.id or self in campaign.campaign_characters
                 )
+            if self.campaigns:
+                return any(user.is_member_of(c) for c in self.campaigns)
             return False
 
         return False
@@ -248,6 +253,10 @@ class CharacterTemplate(db.Model):
 
         # ✅ NOUVEAU : MJ de campagne peut modifier les PJ de sa campagne
         if self.campaign and user.is_mj_of(self.campaign):
+            # Si contexte précisé, on peut limiter ce que le MJ peut modifier
+            return True
+
+        if any(user.is_mj_of(c) for c in self.campaigns):
             # Si contexte précisé, on peut limiter ce que le MJ peut modifier
             return True
 

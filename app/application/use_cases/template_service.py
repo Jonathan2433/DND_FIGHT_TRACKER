@@ -76,6 +76,14 @@ class TemplateService:
         )
 
         db.session.add(template)
+        db.session.flush()
+
+        if resolved_campaign_id:
+            from app.models.campaign import Campaign
+            campaign = Campaign.query.get(int(resolved_campaign_id))
+            if campaign and campaign not in template.campaigns:
+                template.campaigns.append(campaign)
+
         db.session.commit()
 
         return template
@@ -131,7 +139,7 @@ class TemplateService:
         return template
 
     @staticmethod
-    def create_encounter_template(form_data):
+    def create_encounter_template(form_data, owner_id):
         """Créer un nouveau template de rencontre"""
         combatants_data = []
 
@@ -153,6 +161,7 @@ class TemplateService:
                 })
 
         template = EncounterTemplate(
+            owner_id=owner_id,
             name=form_data['name'],
             description=form_data.get('description', ''),
             difficulty=form_data['difficulty'],
@@ -271,10 +280,17 @@ class TemplateService:
         return Combatant.query.filter_by(name=character_name).count()
 
     @staticmethod
-    def export_templates():
+    def export_templates(owner_id=None):
         """Exporter tous les templates en JSON"""
-        characters = CharacterTemplate.query.all()
-        encounters = EncounterTemplate.query.all()
+        characters_query = CharacterTemplate.query
+        encounters_query = EncounterTemplate.query
+
+        if owner_id is not None:
+            characters_query = characters_query.filter_by(owner_id=owner_id)
+            encounters_query = encounters_query.filter_by(owner_id=owner_id)
+
+        characters = characters_query.all()
+        encounters = encounters_query.all()
 
         export_data = {
             'characters': [{
