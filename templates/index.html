@@ -5,17 +5,19 @@
     <section class="home-hero page-hero">
         <div class="home-hero__content">
             <span class="section-eyebrow">ExalQuest</span>
-            <h1 class="section-title">Pilotez vos campagnes et suivez vos personnages dans une interface plus nette.</h1>
+            <h1 class="section-title">
+                Centralisez vos campagnes, vos personnages et vos combats dans un espace plus clair.
+            </h1>
             <p class="section-copy">
-                Centralisez vos combats, vos fiches et vos campagnes publiques dans un espace plus lisible,
-                plus stable sur mobile et plus simple a utiliser au quotidien.
+                L'accueil reste une porte d'entree simple. Une fois connecte, vous retrouvez directement vos campagnes
+                et vos personnages sans exposer de contenus prives aux visiteurs.
             </p>
 
             <div class="home-hero__actions">
                 {% if user_is_connected %}
                     <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-primary">Mes campagnes</a>
                     <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">Mes personnages</a>
-                    {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                    {% if current_user and current_user.has_mj_capability() %}
                         <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-secondary">Creer une campagne</a>
                     {% endif %}
                 {% else %}
@@ -28,15 +30,15 @@
         <div class="home-hero__panel">
             <div class="hero-panel-card">
                 <strong>{{ total_combats }} combats suivis</strong>
-                <p>Suivez les rounds, les degats, les soins et les statistiques clefs sans perdre le fil.</p>
+                <p>Un historique global pour garder une vue d'ensemble sur les affrontements termines ou en cours.</p>
             </div>
             <div class="hero-panel-card">
-                <strong>{{ total_pj }} fiches actives</strong>
-                <p>Retrouvez rapidement vos personnages publics, vos progressions et vos feuilles officielles.</p>
+                <strong>{{ total_pj }} personnages joueurs</strong>
+                <p>Retrouvez vos fiches, vos progres d'XP et vos medias sans melanger l'accueil et les contenus prives.</p>
             </div>
             <div class="hero-panel-card">
-                <strong>{{ public_campaigns|length if public_campaigns else 0 }} campagnes visibles</strong>
-                <p>Les campagnes publiques sont mises en avant avec un acces plus clair depuis l'accueil.</p>
+                <strong>{{ total_closed }} combats termines</strong>
+                <p>Les resumes et statistiques restent accessibles depuis vos campagnes, pas depuis une vitrine publique.</p>
             </div>
         </div>
     </section>
@@ -68,121 +70,90 @@
         </div>
     </div>
 
-    {% if public_campaigns %}
-        <section class="card">
-            <div class="section-head">
-                <div class="section-head__content">
-                    <h2 class="section-head__title">Campagnes publiques</h2>
-                    <p class="section-head__copy">
-                        {% if not user_is_connected %}
-                            Decouvrez les campagnes ouvertes et inscrivez-vous pour les rejoindre.
-                        {% else %}
-                            Parcourez les campagnes disponibles et envoyez une demande en quelques clics.
-                        {% endif %}
-                    </p>
-                </div>
-
-                <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Voir toutes les campagnes</a>
-            </div>
-
-            <div class="public-campaigns-grid">
-                {% for campaign in public_campaigns %}
-                    <div class="public-campaign-card">
-                        <div class="campaign-header">
-                            <h3>{{ campaign.name }}</h3>
-                            <div class="campaign-badge public">Publique</div>
-                        </div>
-
-                        {% if campaign.description %}
-                            <p class="campaign-description">
-                                {{ campaign.description[:140] }}{% if campaign.description|length > 140 %}...{% endif %}
-                            </p>
-                        {% else %}
-                            <p class="campaign-description">Aucune description n'a encore ete ajoutee pour cette campagne.</p>
-                        {% endif %}
-
-                        <div class="campaign-info">
-                            <span>MJ : {{ campaign.mj.username }}</span>
-                            <span>Membres : {{ campaign.members|length + 1 }}</span>
-                        </div>
-
-                        <div class="campaign-actions">
-                            {% if not user_is_connected %}
-                                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">S'inscrire pour rejoindre</a>
-                            {% else %}
-                                <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">Voir la campagne</a>
-                                {% if current_user and not current_user.is_member_of(campaign) and not current_user.is_mj_of(campaign) %}
-                                    <form action="{{ url_for('campaign.request_join', campaign_id=campaign.id) }}" method="post" class="inl-core-003">
-                                        <input type="hidden" name="message" value="Demande automatique depuis la page d'accueil">
-                                        <button type="submit" class="btn btn-secondary">Demander a rejoindre</button>
-                                    </form>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
-    {% endif %}
-
-    <section class="card">
-        <div class="section-head">
-            <div class="section-head__content">
-                <h2 class="section-head__title">Fiches personnages publiques</h2>
-                <p class="section-head__copy">Retrouvez rapidement les personnages visibles et ouvrez leur fiche complete.</p>
-            </div>
-
-            {% if user_is_connected %}
-                <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">Gerer mes personnages</a>
-            {% endif %}
-        </div>
-
-        {% if characters %}
-            <div class="pj-dashboard-grid">
-                {% for pj in characters %}
-                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card">
-                        <div class="template-avatar-container {% if pj.image_filename %}has-image{% else %}no-image{% endif %}">
-                            {% if pj.image_filename %}
-                                <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
-                                     class="pj-dashboard-img" alt="{{ pj.name }}">
-                            {% endif %}
-                            <div class="pj-avatar-large">
-                                {{ pj.name[:2]|upper }}
-                            </div>
-                        </div>
-                        <span>{{ pj.name }}</span>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="section-head__copy">Aucune fiche publique n'est disponible pour le moment.</p>
-        {% endif %}
-    </section>
-
     {% if user_is_connected %}
         <section class="card">
             <div class="section-head">
                 <div class="section-head__content">
-                    <h2 class="section-head__title">Mes actions</h2>
-                    <p class="section-head__copy">Accedez rapidement aux ecrans principaux de votre espace.</p>
+                    <h2 class="section-head__title">Mes campagnes</h2>
+                    <p class="section-head__copy">Acces rapide a vos campagnes actives et a leurs ecrans de gestion.</p>
                 </div>
+
+                <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Tout voir</a>
             </div>
 
-            <div class="dashboard-actions">
-                <a href="{{ url_for('template.manage_templates') }}" class="btn btn-primary">Gerer mes personnages</a>
-                {% if current_user and current_user.role in ['MJ', 'Admin'] %}
-                    <a href="{{ url_for('campaign.create_campaign') }}" class="btn btn-secondary">Nouvelle campagne</a>
-                {% endif %}
-                <a href="{{ url_for('campaign.list_campaigns') }}" class="btn btn-secondary">Mes campagnes</a>
-                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Mon profil</a>
+            {% if user_campaigns %}
+                <div class="public-campaigns-grid">
+                    {% for campaign in user_campaigns[:6] %}
+                        <div class="public-campaign-card">
+                            <div class="campaign-header">
+                                <h3>{{ campaign.name }}</h3>
+                                <div class="campaign-badge {% if campaign.mj_id == current_user.id %}public{% endif %}">
+                                    {% if campaign.mj_id == current_user.id %}MJ{% else %}Joueur{% endif %}
+                                </div>
+                            </div>
+
+                            <p class="campaign-description">
+                                {{ campaign.description[:140] if campaign.description else "Aucune description pour le moment." }}
+                                {% if campaign.description and campaign.description|length > 140 %}...{% endif %}
+                            </p>
+
+                            <div class="campaign-info">
+                                <span>MJ : {{ campaign.mj.username }}</span>
+                                <span>Membres : {{ campaign.members|length + 1 }}</span>
+                                <span>Arcs : {{ campaign.story_arcs|length }}</span>
+                            </div>
+
+                            <div class="campaign-actions">
+                                <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">Ouvrir</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="section-head__copy">Vous n'avez encore aucune campagne. Creez-en une ou rejoignez-en une existante.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <div class="section-head">
+                <div class="section-head__content">
+                    <h2 class="section-head__title">Mes personnages</h2>
+                    <p class="section-head__copy">Vos PJ et PNJ restent visibles ici seulement quand vous etes connecte.</p>
+                </div>
+
+                <a href="{{ url_for('template.manage_templates') }}" class="btn btn-secondary">Gerer mes personnages</a>
             </div>
+
+            {% if user_characters %}
+                <div class="pj-dashboard-grid">
+                    {% for character in user_characters %}
+                        <a href="{{ url_for('template.character_profile', id=character.id) }}" class="pj-dashboard-card">
+                            <div class="template-avatar-container {% if character.image_filename %}has-image{% else %}no-image{% endif %}">
+                                {% if character.image_filename %}
+                                    <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
+                                         class="pj-dashboard-img" alt="{{ character.name }}">
+                                {% endif %}
+                                <div class="pj-avatar-large">
+                                    {{ character.name[:2]|upper }}
+                                </div>
+                            </div>
+                            <span>{{ character.name }}</span>
+                            <small>{{ character.character_type }}{% if character.campaign %} - {{ character.campaign.name }}{% endif %}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="section-head__copy">Aucun personnage pour l'instant. Creez votre premier PJ depuis l'espace personnages.</p>
+            {% endif %}
         </section>
     {% else %}
         <section class="card">
             <div class="section-head">
                 <div class="section-head__content">
-                    <h2 class="section-head__title">Rejoignez ExalQuest</h2>
-                    <p class="section-head__copy">Creez un compte pour gerer vos campagnes D&D, suivre vos combats et publier vos fiches.</p>
+                    <h2 class="section-head__title">Commencer</h2>
+                    <p class="section-head__copy">
+                        Creez un compte ou connectez-vous pour acceder a vos campagnes, vos fiches et vos vues de combat.
+                    </p>
                 </div>
             </div>
 

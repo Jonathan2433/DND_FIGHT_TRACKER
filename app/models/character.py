@@ -201,8 +201,10 @@ class CharacterTemplate(db.Model):
 
     def can_be_viewed_by(self, user, campaign=None):
         """Vérifier si un utilisateur peut voir ce personnage selon le niveau de visibilité"""
+        campaign = campaign or self.campaign
+
         if not user:
-            return self.visibility_level == 'complete' and self.is_public
+            return bool(self.is_public)
 
         # Admin voit tout
         if user.role == 'Admin':
@@ -216,13 +218,18 @@ class CharacterTemplate(db.Model):
         if campaign and user.is_mj_of(campaign):
             return True
 
+        if self.is_public:
+            return True
+
         # Autres joueurs selon niveau de visibilité
         if self.visibility_level == 'private':
             return False
         elif self.visibility_level in ['reduced', 'semi_complete', 'complete']:
             # Doit être dans la même campagne
             if campaign:
-                return user.is_member_of(campaign) and self in campaign.campaign_characters
+                return user.is_member_of(campaign) and (
+                    self.campaign_id == campaign.id or self in campaign.campaign_characters
+                )
             return False
 
         return False

@@ -132,6 +132,82 @@
 .campaign-actions form {
     display: inline-flex;
 }
+
+.campaign-settings-page {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.campaign-settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.campaign-settings-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.campaign-settings-side {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.campaign-settings-card {
+    margin-bottom: 0;
+}
+
+.campaign-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.campaign-settings-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.campaign-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.campaign-member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(11, 13, 29, 0.32);
+    border: 1px solid var(--overlay-white-10);
+}
+
+.campaign-member-item--mj {
+    border-color: var(--primary-a40);
+    background: var(--primary-a10);
+}
+
+.campaign-member-item small {
+    display: block;
+    margin-top: 4px;
+    color: var(--color-text-secondary);
+}
+
+.campaign-settings-card--danger {
+    border-color: var(--danger-a30);
+}
 /* ===================== */
 /* CRÉATION DE CAMPAGNE */
 /* ===================== */
@@ -430,6 +506,10 @@
         padding: 24px;
     }
 
+    .campaign-settings-layout {
+        grid-template-columns: 1fr;
+    }
+
     .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -447,8 +527,14 @@
     }
 
     .campaign-actions,
-    .navigation {
+    .navigation,
+    .campaign-settings-actions,
+    .campaign-member-item {
         flex-direction: column;
+    }
+
+    .campaign-member-item {
+        align-items: stretch;
     }
 }
 

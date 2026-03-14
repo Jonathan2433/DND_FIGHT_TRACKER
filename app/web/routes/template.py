@@ -17,8 +17,14 @@ bp = Blueprint('template', __name__, url_prefix='/template')
 def manage_templates():
     """Gestion des templates"""
     # ✅ MODIFICATION : Ne montrer que les personnages de l'utilisateur connecté
-    characters = CharacterTemplate.query.filter_by(owner_id=g.current_user.id, is_active=True).all()
+    characters = (
+        CharacterTemplate.query.filter_by(owner_id=g.current_user.id, is_active=True)
+        .order_by(CharacterTemplate.character_type.asc(), CharacterTemplate.name.asc())
+        .all()
+    )
     encounters = EncounterTemplate.query.all()
+    pj_characters = [character for character in characters if character.character_type == 'PJ']
+    other_characters = [character for character in characters if character.character_type != 'PJ']
 
     campaign_context = None
     campaign_id = request.args.get('campaign_id', type=int)
@@ -31,6 +37,8 @@ def manage_templates():
     return render_template(
         'templates_manager.html',
         characters=characters,
+        pj_characters=pj_characters,
+        other_characters=other_characters,
         encounters=encounters,
         campaign_context=campaign_context
     )
@@ -124,12 +132,24 @@ def character_profile(id):
         return redirect(url_for('main.index'))
 
     combats_played = TemplateService.get_character_combat_count(character.name)
+    can_award_xp = False
+    is_campaign_mj = False
+
+    if current_user:
+        can_award_xp = current_user.role == 'Admin'
+        if character.campaign and current_user.is_mj_of(character.campaign):
+            can_award_xp = True
+            is_campaign_mj = True
+        elif not character.campaign and character.owner_id == current_user.id:
+            can_award_xp = True
 
     return render_template(
         'character_profile.html',
         character=character,
         combats_played=combats_played,
-        can_edit=character.can_be_edited_by(current_user) if current_user else False
+        can_edit=character.can_be_edited_by(current_user) if current_user else False,
+        can_award_xp=can_award_xp,
+        is_campaign_mj=is_campaign_mj
     )
 
 

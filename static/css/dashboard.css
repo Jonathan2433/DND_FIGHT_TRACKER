@@ -157,6 +157,12 @@
     line-height: 1.4;
 }
 
+.pj-dashboard-card small {
+    color: var(--color-text-secondary);
+    text-align: center;
+    line-height: 1.5;
+}
+
 .pj-dashboard-card .template-avatar-container {
     position: relative;
     width: 84px;

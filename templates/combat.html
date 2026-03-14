@@ -271,8 +271,9 @@
             </form>
 
             <div class="hp-bar-container">
-                <div class="hp-bar js-width"
-                     data-width="{{ (c.hp_current / c.hp_max) * 100 }}%">
+                {% set hp_ratio = (c.hp_current / c.hp_max) if c.hp_max else 0 %}
+                <div class="hp-bar js-width {% if hp_ratio > 0.6 %}hp-green{% elif hp_ratio > 0.3 %}hp-yellow{% elif hp_ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                     data-width="{{ hp_ratio * 100 }}%">
                 </div>
             </div>
 

@@ -174,11 +174,10 @@ class XPService:
             return True
 
         # Propriétaire du personnage
-        if character.owner_id == user.id:
+        if character.campaign and user.is_mj_of(character.campaign):
             return True
 
-        # MJ de la campagne
-        if character.campaign and user.is_mj_of(character.campaign):
+        if not character.campaign and character.owner_id == user.id:
             return True
 
         return False
