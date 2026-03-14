@@ -21,3 +21,5 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+# Keep tracked env examples
+!.env.*.example

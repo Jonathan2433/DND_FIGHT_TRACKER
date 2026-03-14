@@ -124,6 +124,18 @@ Pour contribuer ou modifier :
 - Créer une branche
 - Faire les modifications
 - Soumettre une pull request
+
+### Workflow dev / preprod / prod
+
+Un guide complet est disponible ici :
+
+- `docs/deployment/git-flow-preprod-prod.md`
+
+Résumé rapide:
+
+- `develop` pour le dev local
+- `preprod` pour déployer sur la préprod VPS privée
+- `master` pour déployer la production VPS
 ---
 
 ## 📧 Configuration email (Hostinger)
