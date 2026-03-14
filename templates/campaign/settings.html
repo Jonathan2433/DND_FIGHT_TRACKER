@@ -1,54 +1,96 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="inl-campaign-004">
-    <h1 class="inl-campaign-002">Parametres de la campagne</h1>
-    <h2 class="inl-campaign-033">{{ campaign.name }}</h2>
 
-    <form method="POST" action="{{ url_for('campaign.update_campaign', campaign_id=campaign.id) }}" class="inl-campaign-042">
-        <div class="inl-campaign-043">
-            <label class="inl-campaign-044">Nom</label>
-            <input class="inl-campaign-078" type="text" name="name" value="{{ campaign.name }}" required>
+<div class="campaign-settings-page">
+    <div class="campaign-settings-header">
+        <div>
+            <span class="section-eyebrow">Campagne</span>
+            <h1 class="section-title campaign-settings-title">Parametres de la campagne</h1>
+            <p class="section-copy">{{ campaign.name }}</p>
         </div>
-
-        <div class="inl-campaign-043">
-            <label class="inl-campaign-044">Description</label>
-            <textarea class="inl-campaign-078" name="description" rows="4">{{ campaign.description or '' }}</textarea>
-        </div>
-
-        <div class="inl-campaign-043">
-            <label class="inl-campaign-044">
-                <input type="checkbox" name="is_public" {% if campaign.is_public %}checked{% endif %}>
-                Campagne publique
-            </label>
-        </div>
-
-        <div class="inl-campaign-020">
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-            <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">Retour</a>
-        </div>
-    </form>
-
-    <div class="inl-campaign-041">
-        <h3 class="inl-campaign-033">Membres</h3>
-        {% for member in members %}
-            <div class="inl-campaign-047">
-                <span>{{ member.user.username }}</span>
-                {% if member.user_id != campaign.mj_id %}
-                    <form method="POST" action="{{ url_for('campaign.remove_member', campaign_id=campaign.id, user_id=member.user_id) }}">
-                        <button class="btn btn-danger" type="submit">Retirer</button>
-                    </form>
-                {% else %}
-                    <span class="inl-campaign-044">MJ</span>
-                {% endif %}
-            </div>
-        {% endfor %}
+        <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">Retour a la campagne</a>
     </div>
 
-    <div class="inl-campaign-041">
-        <h3 class="inl-campaign-033">Zone dangereuse</h3>
-        <form method="POST" action="{{ url_for('campaign.delete_campaign', campaign_id=campaign.id) }}" onsubmit="return confirm('Supprimer definitivement cette campagne ?');">
-            <button class="btn btn-danger" type="submit">Supprimer la campagne</button>
-        </form>
+    <div class="campaign-settings-layout">
+        <section class="card campaign-settings-card">
+            <div class="section-head">
+                <div class="section-head__content">
+                    <h2 class="section-head__title">Informations generales</h2>
+                    <p class="section-head__copy">Mettez a jour le nom, la description et le statut public de la campagne.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('campaign.update_campaign', campaign_id=campaign.id) }}" class="campaign-settings-form">
+                <label for="campaign-name">Nom</label>
+                <input id="campaign-name" type="text" name="name" value="{{ campaign.name }}" required>
+
+                <label for="campaign-description">Description</label>
+                <textarea id="campaign-description" name="description" rows="5">{{ campaign.description or '' }}</textarea>
+
+                <label class="visibility-toggle" for="campaign-public">
+                    <input type="checkbox" id="campaign-public" name="is_public" {% if campaign.is_public %}checked{% endif %}>
+                    <span>
+                        <strong>Campagne publique</strong>
+                        <small>Activez cette option uniquement si vous voulez accepter des demandes de joueurs depuis la liste des campagnes.</small>
+                    </span>
+                </label>
+
+                <div class="campaign-settings-actions">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </section>
+
+        <aside class="campaign-settings-side">
+            <section class="card campaign-settings-card">
+                <div class="section-head">
+                    <div class="section-head__content">
+                        <h2 class="section-head__title">Membres</h2>
+                        <p class="section-head__copy">Le MJ apparait toujours ici, puis les joueurs associes a la campagne.</p>
+                    </div>
+                </div>
+
+                <div class="campaign-member-list">
+                    <div class="campaign-member-item campaign-member-item--mj">
+                        <div>
+                            <strong>{{ campaign.mj.username }}</strong>
+                            <small>MJ proprietaire</small>
+                        </div>
+                    </div>
+
+                    {% for member in members %}
+                        <div class="campaign-member-item">
+                            <div>
+                                <strong>{{ member.user.username }}</strong>
+                                <small>Joueur</small>
+                            </div>
+                            {% if member.user_id != campaign.mj_id %}
+                                <form method="POST" action="{{ url_for('campaign.remove_member', campaign_id=campaign.id, user_id=member.user_id) }}">
+                                    <button class="btn btn-danger" type="submit">Retirer</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="card campaign-settings-card campaign-settings-card--danger">
+                <div class="section-head">
+                    <div class="section-head__content">
+                        <h2 class="section-head__title">Zone dangereuse</h2>
+                        <p class="section-head__copy">La suppression est definitive et retire la campagne de toutes les vues.</p>
+                    </div>
+                </div>
+
+                <form method="POST"
+                      action="{{ url_for('campaign.delete_campaign', campaign_id=campaign.id) }}"
+                      onsubmit="return confirm('Supprimer definitivement cette campagne ?');">
+                    <button class="btn btn-danger" type="submit">Supprimer la campagne</button>
+                </form>
+            </section>
+        </aside>
     </div>
 </div>
+
 {% endblock %}

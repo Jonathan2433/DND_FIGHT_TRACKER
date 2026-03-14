@@ -275,9 +275,13 @@
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 <script>
 // Initialisation WebSocket
-const socket = io();
+const socket = window.io ? io() : null;
 const combatId = {{ combat.id }};
-socket.emit('join_combat', { combat_id: combatId });
+if (socket) {
+    socket.emit('join_combat', { combat_id: combatId });
+} else {
+    console.warn('Socket.IO indisponible, fallback en rafraichissement periodique.');
+}
 
 // Variables pour gérer la capture
 let captureStream = null;
@@ -288,6 +292,11 @@ function startCapture() {
     console.log('Tentative de démarrage de capture...');
     if (isCapturing) {
         console.log('Capture déjà en cours');
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert("Le partage d'ecran n'est pas disponible ici. Utilisez HTTPS ou localhost pour l'activer.");
         return;
     }
 
@@ -892,6 +901,7 @@ function createHudPjPortrait(combatant, currentActorId) {
 }
 
 // ✅ Écouter les mises à jour du combat via WebSocket
+if (socket) {
 socket.on('combat_update', (data) => {
     if (data.combat_id === combatId) {
         console.log('🔄 Mise à jour WebSocket reçue pour combat:', data.combat_id);
@@ -908,6 +918,8 @@ socket.on('disconnect', () => {
 });
 
 // ✅ CORRECTION : Séparer l'initialisation des événements et des chronos
+}
+
 function initializeEvents() {
     console.log('🎮 Initialisation des événements...');
 

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="campaign-page">
+    <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <span class="section-eyebrow">Arc narratif</span>
+                <h1 class="section-title">{{ arc.name }}</h1>
+                <p class="section-head__copy">
+                    Campagne : {{ campaign.name }}{% if arc.description %} - {{ arc.description }}{% endif %}
+                </p>
+            </div>
+
+            <div class="campaign-actions">
+                <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-secondary">Retour campagne</a>
+                <a href="{{ url_for('summary.arc_stats', arc_id=arc.id) }}" class="btn btn-secondary">Stats</a>
+                {% if is_mj %}
+                    <a href="{{ url_for('story_arc.edit_arc', arc_id=arc.id) }}" class="btn btn-primary">Modifier</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <h3>Statut</h3>
+                <p>{% if arc.is_current %}En cours{% elif arc.is_completed %}Termine{% else %}A venir{% endif %}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Sessions estimees</h3>
+                <p>{{ stats.estimated_sessions }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Combats lies</h3>
+                <p>{{ stats.total_combats }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Combats termines</h3>
+                <p>{{ stats.completed_combats }}</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <h2 class="section-head__title">Suivi de l'arc</h2>
+                <p class="section-head__copy">Consultez les notes, le rythme de campagne et les combats deja rattaches.</p>
+            </div>
+        </div>
+
+        {% if arc.notes %}
+            <p class="section-copy">{{ arc.notes }}</p>
+        {% else %}
+            <p class="section-head__copy">Aucune note de suivi pour le moment.</p>
+        {% endif %}
+
+        {% if arc.combats %}
+            <div class="public-campaigns-grid">
+                {% for combat in arc.combats %}
+                    <article class="public-campaign-card">
+                        <div class="campaign-header">
+                            <h3>{{ combat.name }}</h3>
+                            <div class="campaign-badge {% if combat.is_closed %}public{% endif %}">
+                                {% if combat.is_closed %}Termine{% else %}En cours{% endif %}
+                            </div>
+                        </div>
+                        <div class="campaign-info">
+                            <span>Round : {{ combat.round }}</span>
+                            <span>Combattants : {{ combat.combatants|length }}</span>
+                        </div>
+                        <div class="campaign-actions">
+                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.view_combat_player', combat_id=combat.id) }}"
+                               class="btn btn-primary">
+                                Ouvrir le combat
+                            </a>
+                            {% if combat.is_closed %}
+                                <a href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}" class="btn btn-secondary">Resume</a>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="section-head__copy">Aucun combat n'est encore rattache a cet arc.</p>
+        {% endif %}
+    </section>
+</div>
+
+{% endblock %}

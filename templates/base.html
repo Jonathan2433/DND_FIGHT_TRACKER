@@ -48,7 +48,7 @@
                         {% if session.user_id %}
                             <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
 
-                            {% if current_user and current_user.role in ['MJ', 'Admin'] %}
+                            {% if current_user and current_user.has_mj_capability() %}
                                 <a href="{{ url_for('campaign.create_campaign') }}" class="site-nav__link site-nav__link--accent">Nouvelle campagne</a>
                             {% endif %}
                         {% endif %}

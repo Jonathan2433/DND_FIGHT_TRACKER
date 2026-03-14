@@ -158,6 +158,10 @@
     align-items: start;
 }
 
+.character-layout--full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .character-main {
     display: flex;
     flex-direction: column;
@@ -374,6 +378,10 @@
     gap: 30px;
 }
 
+.edit-grid--spaced {
+    margin-bottom: 28px;
+}
+
 .edit-section {
     background: var(--color-surface);
     padding: 20px;
@@ -381,6 +389,12 @@
     border: 1px solid var(--primary-a20);
 }
 
+.edit-section--separator {
+    margin-top: 24px;
+}
+
+.edit-section h2,
+.edit-section h3,
 .edit-section h4 {
     margin-bottom: 15px;
     color: var(--color-primary);
@@ -419,6 +433,15 @@
     color: var(--color-primary);
 }
 
+.checkbox-row {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    color: var(--color-text-primary) !important;
+    font-weight: 600 !important;
+}
+
 .stat-input small {
     display: block;
     color: var(--color-text-muted);
@@ -427,8 +450,8 @@
 }
 
 .stat-input input[type="checkbox"] {
-    margin-right: 5px;
     width: auto;
+    margin: 0;
 }
 
 .stat-input input[type="number"] {
@@ -481,6 +504,46 @@
     margin-top: 20px;
 }
 
+.visibility-panel {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 34%),
+        var(--surface-a95);
+}
+
+.visibility-toggle {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    padding: 18px;
+    border-radius: 20px;
+    background: rgba(11, 13, 29, 0.32);
+    border: 1px solid var(--overlay-white-10);
+    cursor: pointer;
+}
+
+.visibility-toggle input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin: 2px 0 0;
+    accent-color: var(--color-primary);
+}
+
+.visibility-toggle span {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.visibility-toggle strong {
+    color: var(--color-text-primary);
+}
+
+.visibility-toggle small {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
 /* ===================== */
 /* RESPONSIVE DESIGN */
 /* ===================== */
@@ -507,6 +570,10 @@
 
     .char-stats-compact {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .visibility-toggle {
+        grid-template-columns: 1fr;
     }
 }
 

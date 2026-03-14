@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="campaign-page">
+    <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <span class="section-eyebrow">Arc narratif</span>
+                <h1 class="section-title">Modifier {{ arc.name }}</h1>
+                <p class="section-head__copy">Mettez a jour le contenu de l'arc sans repasser par les anciens ecrans casses.</p>
+            </div>
+
+            <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary">Retour a l'arc</a>
+        </div>
+
+        <form method="POST" class="campaign-settings-form">
+            <label for="arc-name">Nom</label>
+            <input id="arc-name" type="text" name="name" value="{{ arc.name }}" required>
+
+            <label for="arc-description">Description</label>
+            <textarea id="arc-description" name="description" rows="4">{{ arc.description or '' }}</textarea>
+
+            <label for="arc-estimated-sessions">Sessions estimees</label>
+            <input id="arc-estimated-sessions" type="number" name="estimated_sessions" value="{{ arc.estimated_sessions or 1 }}" min="1">
+
+            <label for="arc-notes">Notes</label>
+            <textarea id="arc-notes" name="notes" rows="6">{{ arc.notes or '' }}</textarea>
+
+            <div class="campaign-settings-actions">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+{% endblock %}

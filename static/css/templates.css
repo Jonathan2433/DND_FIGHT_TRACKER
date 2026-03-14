@@ -5,6 +5,9 @@
     border: 2px solid var(--primary-a20);
     box-shadow: 0 0 15px var(--overlay-black-40);
     transition: 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .template-card:hover {
@@ -32,6 +35,13 @@
 
 .template-card-body {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-card-body h3 {
+    margin: 0;
 }
 
 .template-avatar-container {
@@ -70,10 +80,28 @@
 }
 
 .template-card-actions {
-    margin-top: 15px;
     display: flex;
     justify-content: space-between;
     gap: 10px;
+    margin-top: auto;
+}
+
+.template-card-tag {
+    display: inline-flex;
+    align-self: center;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--primary-a20);
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.template-card-meta {
+    color: var(--color-text-secondary);
+    font-size: 13px;
 }
 
 
@@ -93,4 +121,18 @@
 
 .hidden {
     display: none;
+}
+
+.template-create-form {
+    display: none;
+}
+
+.templates-title {
+    max-width: none;
+}
+
+.char-stats-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
