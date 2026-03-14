@@ -10,7 +10,13 @@
     <!-- ✅ FORMULAIRE ÉTENDU -->
     <div id="create-form" class="card inl-core-004">
         <h3>Créer un Template PJ</h3>
+        {% if campaign_context %}
+            <p>Ce PJ sera automatiquement associé à la campagne <strong>{{ campaign_context.name }}</strong>.</p>
+        {% endif %}
         <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data">
+            {% if campaign_context %}
+                <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
+            {% endif %}
 
             <div class="edit-grid">
                 <!-- Colonne 1 : Identité -->

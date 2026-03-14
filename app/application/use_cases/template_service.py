@@ -12,7 +12,7 @@ class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
 
     @staticmethod
-    def create_character_template(form_data, files, upload_folder):
+    def create_character_template(form_data, files, upload_folder, current_user_id=None, campaign_id=None):
         """Créer un nouveau template de personnage"""
         image = files.get("image")
         pdf = files.get("pdf")
@@ -31,14 +31,16 @@ class TemplateService:
 
         # ✅ CORRECTION : Récupérer l'utilisateur connecté
         from flask import session
-        current_user_id = session.get('user_id')
+        current_user_id = current_user_id or session.get('user_id')
         if not current_user_id:
             raise ValueError("Aucun utilisateur connecté")
+
+        resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
         template = CharacterTemplate(
             # ✅ AJOUT : Champs de sécurité
             owner_id=current_user_id,
-            campaign_id=form_data.get('campaign_id'),
+            campaign_id=resolved_campaign_id,
             character_type=form_data.get('character_type', 'PJ'),
             is_shared=form_data.get('is_shared', False),
             is_public=bool(form_data.get('is_public', False)),  # ✅ CORRECTION : Forcer le booléen
