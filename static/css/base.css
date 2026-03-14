@@ -165,6 +165,42 @@ body {
     border-color: transparent;
 }
 
+.site-nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 12px;
+    background: var(--overlay-white-05);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    gap: 5px;
+}
+
+.site-nav-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.site-header.is-nav-open .site-nav-toggle span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.site-header.is-nav-open .site-nav-toggle span:nth-child(2) {
+    opacity: 0;
+}
+
+.site-header.is-nav-open .site-nav-toggle span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
 .flash-stack {
     display: grid;
     gap: 12px;
@@ -218,9 +254,17 @@ h2,
 h3,
 h4,
 p,
-a,
-span {
+li {
     overflow-wrap: anywhere;
+}
+
+a,
+button,
+.btn,
+.site-nav__link,
+.site-nav__welcome {
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 hr {
