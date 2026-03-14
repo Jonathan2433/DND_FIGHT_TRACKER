@@ -41,6 +41,85 @@
 }
 
 @media (max-width: 900px) {
+    .site-header__inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .site-brand {
+        min-width: 0;
+    }
+
+    .site-nav-toggle {
+        display: inline-flex;
+        justify-self: end;
+    }
+
+    .site-nav {
+        grid-column: 1 / -1;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+        margin-top: 4px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(12, 14, 34, 0.95);
+        border: 1px solid var(--overlay-white-10);
+    }
+
+    .site-header.is-nav-open .site-nav {
+        display: flex;
+    }
+
+    .site-nav__links,
+    .site-nav__user {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .site-nav__user {
+        border-left: 0;
+        border-top: 1px solid var(--overlay-white-10);
+        padding-left: 0;
+        padding-top: 12px;
+    }
+
+    .site-nav__link,
+    .site-nav__welcome {
+        width: 100%;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .home-hero,
+    .campaign-page__hero {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 22px;
+    }
+
+    .home-hero__actions,
+    .dashboard-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .home-hero__actions .btn,
+    .dashboard-actions .btn {
+        width: 100%;
+    }
+
+    .hero-panel-card,
+    .stat-card {
+        min-width: 0;
+    }
+
     .edit-grid,
     .grid-form,
     .encounter-row,
@@ -104,32 +183,12 @@
         border-radius: 20px;
     }
 
-    .site-nav,
-    .site-nav__links,
-    .site-nav__user {
-        width: 100%;
-    }
-
-    .site-nav__links,
-    .site-nav__user {
-        justify-content: flex-start;
-    }
-
-    .site-nav__user {
-        padding-left: 0;
-        border-left: 0;
-    }
-
     .site-nav__link,
     .btn,
     .btn-primary,
     .btn-secondary,
     .btn-warning,
     .btn-danger {
-        width: 100%;
-    }
-
-    .site-brand {
         width: 100%;
     }
 
@@ -252,6 +311,10 @@
         padding: 12px 0;
     }
 
+    .site-brand__copy {
+        min-width: 0;
+    }
+
     .site-brand__mark {
         width: 40px;
         height: 40px;
@@ -260,7 +323,11 @@
     }
 
     .site-brand__title {
-        font-size: 21px;
+        font-size: 19px;
+    }
+
+    .site-brand__subtitle {
+        font-size: 10px;
     }
 
     .site-nav__link,
