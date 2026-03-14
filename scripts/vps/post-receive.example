@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Hook Git bare-repo: déploie automatiquement selon la branche poussée.
+# Variables attendues (définies dans l'environnement du VPS) :
+# - PROD_WORK_TREE: dossier de checkout production
+# - PREPROD_WORK_TREE: dossier de checkout préproduction
+# - PROD_COMPOSE_FILE: docker-compose prod
+# - PREPROD_COMPOSE_FILE: docker-compose preprod
+
+while read -r oldrev newrev refname; do
+  branch="${refname#refs/heads/}"
+
+  case "$branch" in
+    master)
+      echo "[deploy] Branche master détectée -> production"
+      git --work-tree="$PROD_WORK_TREE" --git-dir="$(pwd)" checkout -f master
+      cd "$PROD_WORK_TREE"
+      docker compose -f "$PROD_COMPOSE_FILE" pull
+      docker compose -f "$PROD_COMPOSE_FILE" up -d --build
+      ;;
+
+    preprod)
+      echo "[deploy] Branche preprod détectée -> préproduction"
+      git --work-tree="$PREPROD_WORK_TREE" --git-dir="$(pwd)" checkout -f preprod
+      cd "$PREPROD_WORK_TREE"
+      docker compose -f "$PREPROD_COMPOSE_FILE" pull
+      docker compose -f "$PREPROD_COMPOSE_FILE" up -d --build
+      ;;
+
+    *)
+      echo "[deploy] Branche $branch ignorée (pas de déploiement)."
+      ;;
+  esac
+
+done

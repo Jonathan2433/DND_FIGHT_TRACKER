@@ -51,8 +51,15 @@ class ProductionConfig(Config):
     SQLALCHEMY_ECHO = False
 
 
+class PreprodConfig(ProductionConfig):
+    """Préproduction: mêmes garanties que prod avec un nom d'environnement explicite."""
+    DEBUG = False
+    TESTING = False
+
+
 config = {
     'development': DevelopmentConfig,
+    'preprod': PreprodConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
