@@ -197,6 +197,32 @@ a:hover {
     text-decoration: underline;
 }
 
+
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.site-shell,
+.site-main,
+.card,
+.page-hero {
+    min-width: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+a,
+span {
+    overflow-wrap: anywhere;
+}
+
 hr {
     border: none;
     border-top: 1px solid var(--color-border);
