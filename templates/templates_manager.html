@@ -105,6 +105,14 @@
                         <small>Si active, la fiche peut etre consultee hors campagne. Sinon elle reste reservee au proprietaire et au MJ de campagne.</small>
                     </span>
                 </label>
+
+                <label for="visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
+                <select id="visibility-level" name="visibility_level">
+                    <option value="private" selected>🔒 Prive (MJ uniquement)</option>
+                    <option value="reduced">👁️ Fiche reduite (nom, prenom, age, photo)</option>
+                    <option value="semi_complete">📊 Fiche semi-complete (+ caracteristiques)</option>
+                    <option value="complete">📜 Fiche complete (tout sauf notes privees)</option>
+                </select>
             </section>
 
             <section class="edit-section edit-section--separator">

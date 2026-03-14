@@ -44,6 +44,7 @@ class TemplateService:
             character_type=form_data.get('character_type', 'PJ'),
             is_shared=form_data.get('is_shared', False),
             is_public=bool(form_data.get('is_public', False)),  # ✅ CORRECTION : Forcer le booléen
+            visibility_level=form_data.get('visibility_level', 'private'),
 
             # Données existantes
             name=form_data['name'],
@@ -104,6 +105,7 @@ class TemplateService:
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
+        template.visibility_level = form_data.get('visibility_level', 'private')
 
         # Mise à jour des caractéristiques
         template.force = int(form_data.get('force', 10))

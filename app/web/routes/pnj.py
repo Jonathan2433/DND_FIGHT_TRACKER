@@ -25,7 +25,7 @@ def create_pnj(campaign_id):
 
     if request.method == 'POST':
         try:
-            story_arc_id = request.form.get('story_arc_id')
+            story_arc_id = request.form.get('story_arc_id', type=int)
             story_arc = None
             if story_arc_id:
                 story_arc = StoryArc.query.filter_by(id=story_arc_id, campaign_id=campaign_id).first()

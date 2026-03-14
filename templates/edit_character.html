@@ -143,6 +143,14 @@
                     <small>Decoche pour garder la fiche privee. Les MJ proprietaires de campagne conservent tout de meme l'acces aux PJ rattaches.</small>
                 </span>
             </label>
+
+            <label for="edit-visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
+            <select id="edit-visibility-level" name="visibility_level">
+                <option value="private" {% if character.visibility_level == 'private' %}selected{% endif %}>🔒 Prive (MJ uniquement)</option>
+                <option value="reduced" {% if character.visibility_level == 'reduced' %}selected{% endif %}>👁️ Fiche reduite (nom, prenom, age, photo)</option>
+                <option value="semi_complete" {% if character.visibility_level == 'semi_complete' %}selected{% endif %}>📊 Fiche semi-complete (+ caracteristiques)</option>
+                <option value="complete" {% if character.visibility_level == 'complete' %}selected{% endif %}>📜 Fiche complete (tout sauf notes privees)</option>
+            </select>
         </section>
 
         <div class="edit-actions">

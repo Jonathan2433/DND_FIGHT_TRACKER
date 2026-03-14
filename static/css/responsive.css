@@ -282,13 +282,16 @@
     }
 
     .form-grid,
-    .dashboard-stats,
     .template-grid,
     .public-campaigns-grid,
     .combat-card-grid,
     .combatants-grid,
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .file-row,
@@ -350,6 +353,10 @@
 }
 
 @media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .site-header__inner {
         padding: 12px 0;
     }
