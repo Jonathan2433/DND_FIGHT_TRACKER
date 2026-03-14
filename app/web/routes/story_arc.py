@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.application.use_cases.story_arc_service import StoryArcService
 from app.application.use_cases.campaign_service import CampaignService
+from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required
 from app.models.story_arc import StoryArc
 from flask import g
@@ -27,6 +28,14 @@ def create_arc(campaign_id):
         estimated_sessions = int(request.form.get('estimated_sessions', 1))
 
         arc = StoryArcService.create_story_arc(campaign_id, name, description, estimated_sessions)
+
+        NotificationService.create_campaign_notification(
+            campaign,
+            "Nouvel arc narratif",
+            f'Le MJ a créé un nouvel arc : "{arc.name}" dans la campagne "{campaign.name}".',
+            kind='story_arc_created',
+        )
+
         flash(f'Arc narratif "{arc.name}" créé avec succès !', 'success')
         return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 

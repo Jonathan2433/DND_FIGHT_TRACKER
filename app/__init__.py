@@ -53,8 +53,18 @@ def create_app(config_name='default'):
 
     @app.context_processor
     def inject_user():
-        """Rendre current_user disponible dans tous les templates"""
-        return dict(current_user=g.get('current_user', None))
+        """Rendre current_user et ses notifications disponibles dans tous les templates"""
+        current_user = g.get('current_user', None)
+        unread_notifications_count = 0
+
+        if current_user:
+            from app.application.use_cases.notification_service import NotificationService
+            unread_notifications_count = NotificationService.unread_count(current_user.id)
+
+        return dict(
+            current_user=current_user,
+            unread_notifications_count=unread_notifications_count,
+        )
 
     register_blueprints(app)
     register_socketio_events()

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - ExalQuest{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>🔔 Notifications</h1>
+    <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="inl-campaign-030">
+        <button type="submit" class="btn btn-secondary">Marquer tout comme lu</button>
+    </form>
+
+    {% if notifications %}
+        <div class="pj-dashboard-grid inl-campaign-023">
+            {% for notif in notifications %}
+                <article class="pj-dashboard-card inl-campaign-024">
+                    <div class="inl-campaign-027">{{ notif.title }}</div>
+                    <p>{{ notif.message }}</p>
+                    <small>
+                        {{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}
+                        {% if not notif.is_read %}- <strong>Non lue</strong>{% endif %}
+                    </small>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucune notification pour le moment.</p>
+    {% endif %}
+</div>
+{% endblock %}

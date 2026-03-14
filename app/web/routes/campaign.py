@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
+from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required, mj_or_admin_required
 from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 from app.models.combat import Combat
@@ -56,6 +57,12 @@ def view_campaign(campaign_id):
     ).all()
 
     combats_count = Combat.query.filter_by(campaign_id=campaign_id).count()
+
+    visible_campaign_pnjs = [
+        pnj for pnj in campaign.characters
+        if pnj.character_type == 'PNJ' and pnj.is_active and (g.current_user.is_mj_of(campaign) or pnj.is_shared)
+    ]
+
     current_arc = next((arc for arc in campaign.story_arcs if arc.status == 'en_cours'), None)
 
     # PJ du joueur courant pouvant être ajoutés à cette campagne
@@ -94,7 +101,8 @@ def view_campaign(campaign_id):
         is_mj=g.current_user.is_mj_of(campaign),
         combats_count=combats_count,
         current_arc=current_arc,
-        available_player_pjs=available_player_pjs
+        available_player_pjs=available_player_pjs,
+        visible_campaign_pnjs=visible_campaign_pnjs
     )
 
 
@@ -232,6 +240,14 @@ def add_player_character(campaign_id):
     character.campaign_id = campaign_id
     db.session.commit()
 
+    NotificationService.create_notification(
+        campaign.mj_id,
+        "Nouveau PJ dans la campagne",
+        f'{g.current_user.username} a ajouté son PJ "{character.name}" à la campagne "{campaign.name}".',
+        kind='player_pj_added',
+        campaign_id=campaign.id,
+    )
+
     flash(f'🎉 {character.name} est maintenant associé à cette campagne !', 'success')
     return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
@@ -351,8 +367,17 @@ def remove_member(campaign_id, user_id):
     ).first()
 
     if member:
+        removed_username = member.user.username
         db.session.delete(member)
         db.session.commit()
-        flash('Membre retiré de la campagne.', 'success')
+
+        NotificationService.create_notification(
+            user_id=user_id,
+            title="Retrait de campagne",
+            message=f'Le MJ vous a retiré de la campagne "{campaign.name}".',
+            kind='campaign_member_removed',
+            campaign_id=campaign.id,
+        )
+        flash(f'Membre {removed_username} retiré de la campagne.', 'success')
 
     return redirect(url_for('campaign.campaign_settings', campaign_id=campaign_id))

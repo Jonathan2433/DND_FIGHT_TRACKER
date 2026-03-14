@@ -202,7 +202,7 @@
     {% endif %}
 
     <!-- Aperçu des PNJ récents -->
-    {% set recent_pnjs = campaign.characters|selectattr("character_type", "equalto", "PNJ")|list %}
+    {% set recent_pnjs = visible_campaign_pnjs %}
     {% if recent_pnjs %}
         <div class="pj-dashboard-grid inl-campaign-023">
             {% for pnj in recent_pnjs[:6] %}

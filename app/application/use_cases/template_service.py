@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
 from app.utils import MONSTER_TEMPLATES, allowed_file
+from app.application.use_cases.notification_service import NotificationService
 
 
 class TemplateService:
@@ -87,6 +88,23 @@ class TemplateService:
 
         db.session.commit()
 
+        if template.character_type == "PJ" and template.campaign:
+            if template.owner_id == template.campaign.mj_id:
+                NotificationService.create_campaign_notification(
+                    template.campaign,
+                    "Nouveau PJ du MJ",
+                    f'Le MJ a ajouté le PJ "{template.name}" à la campagne "{template.campaign.name}".',
+                    kind='shared_pj_added',
+                )
+            else:
+                NotificationService.create_notification(
+                    template.campaign.mj_id,
+                    "Nouveau PJ ajouté",
+                    f'Un joueur a ajouté le PJ "{template.name}" à la campagne "{template.campaign.name}".',
+                    kind='player_pj_added',
+                    campaign_id=template.campaign_id,
+                )
+
         return template
 
     @staticmethod
@@ -137,6 +155,15 @@ class TemplateService:
             template.pdf_filename = pdf_filename
 
         db.session.commit()
+
+        if template.character_type == "PJ" and template.campaign and template.owner_id != template.campaign.mj_id:
+            NotificationService.create_notification(
+                template.campaign.mj_id,
+                "PJ modifié",
+                f'Un joueur a modifié son PJ "{template.name}" dans la campagne "{template.campaign.name}".',
+                kind='player_pj_updated',
+                campaign_id=template.campaign_id,
+            )
 
         return template
 
@@ -262,8 +289,21 @@ class TemplateService:
     def delete_character_template(template_id):
         """Supprimer un template de personnage"""
         template = CharacterTemplate.query.get_or_404(template_id)
+        campaign = template.campaign
+        template_name = template.name
+        character_type = template.character_type
+
         db.session.delete(template)
         db.session.commit()
+
+        if character_type == "PJ" and campaign:
+            NotificationService.create_notification(
+                campaign.mj_id,
+                "PJ supprimé",
+                f'Un joueur a supprimé son PJ "{template_name}" de la campagne "{campaign.name}".',
+                kind='player_pj_deleted',
+                campaign_id=campaign.id,
+            )
 
         return True
 
