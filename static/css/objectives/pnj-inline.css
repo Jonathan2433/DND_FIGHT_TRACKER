@@ -13,3 +13,30 @@
 .inl-pnj-011 { background: var(--primary-a20); color: var(--color-primary); margin-left: 5px; }
 .inl-pnj-012 { background: var(--danger-a20); color: var(--color-danger); margin-left: 5px; }
 .inl-pnj-013 { display: inline; }
+
+.pnj-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 20px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: var(--overlay-white-05);
+}
+
+.pnj-filters select,
+.pnj-arc-select {
+    min-height: 40px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    background: var(--overlay-white-10);
+    color: var(--color-text-primary);
+    padding: 8px 12px;
+}
+
+@media (max-width: 768px) {
+    .pnj-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
