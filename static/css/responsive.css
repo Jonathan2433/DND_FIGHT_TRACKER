@@ -1,19 +1,8 @@
-@media (max-width: 1100px) {
-    .site-header__inner {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .site-nav {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .site-footer__inner {
-        grid-template-columns: 1fr;
-    }
-
-    .combat-layout {
+@media (max-width: 1200px) {
+    .campaign-page__hero,
+    .campaign-settings-layout,
+    .combat-layout,
+    .player-layout {
         grid-template-columns: 1fr;
     }
 
@@ -21,6 +10,27 @@
     .initiative-panel-enhanced {
         position: relative;
         top: 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        max-height: none;
+    }
+}
+
+@media (max-width: 1100px) {
+    .site-header__inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .site-nav {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .site-footer__inner {
+        grid-template-columns: 1fr;
     }
 
     .sticky-turn-bar {
@@ -31,8 +41,49 @@
 }
 
 @media (max-width: 900px) {
-    .edit-grid {
+    .edit-grid,
+    .grid-form,
+    .encounter-row,
+    .campaign-page__hero,
+    .campaign-settings-layout {
         grid-template-columns: 1fr;
+    }
+
+    .profile-header,
+    .create-header,
+    .campaign-settings-header,
+    .combatant-header,
+    .combat-card-header,
+    .combat-card-body,
+    .template-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .combat-card-actions,
+    .campaign-actions,
+    .campaign-settings-actions,
+    .group-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .create-campaign-container,
+    .create-form-card {
+        padding: 20px;
+    }
+
+    .campaign-member-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .campaign-member-item form {
+        width: 100%;
+    }
+
+    .campaign-member-item .btn {
+        width: 100%;
     }
 }
 
@@ -43,6 +94,14 @@
 
     .site-main {
         padding: 22px 0 36px;
+    }
+
+    .card,
+    .campaign-page__hero,
+    .public-campaign-card,
+    .create-form-card {
+        padding: 18px;
+        border-radius: 20px;
     }
 
     .site-nav,
@@ -61,8 +120,25 @@
         border-left: 0;
     }
 
+    .site-nav__link,
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-warning,
+    .btn-danger {
+        width: 100%;
+    }
+
+    .site-brand {
+        width: 100%;
+    }
+
     .site-brand__title {
-        font-size: 26px;
+        font-size: 24px;
+    }
+
+    .site-brand__subtitle {
+        font-size: 11px;
     }
 
     .section-head {
@@ -71,7 +147,7 @@
     }
 
     .initiative-panel-enhanced {
-        min-width: 300px;
+        min-width: 0;
     }
 
     .enhanced-initiative-card {
@@ -129,22 +205,87 @@
         min-width: 200px;
     }
 
-    .form-grid {
+    .form-grid,
+    .dashboard-stats,
+    .template-grid,
+    .public-campaigns-grid,
+    .combat-card-grid,
+    .combatants-grid,
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 
-    .file-row {
+    .file-row,
+    .damage-form,
+    .live-chrono-bar {
         flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .live-chrono-bar {
+        font-size: 13px;
+    }
+
+    .pj-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pj-dashboard-card {
+        width: 100%;
+    }
+
+    .campaign-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .campaign-actions form,
+    .campaign-actions form .btn {
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     .site-header__inner {
-        padding: 14px 0;
+        padding: 12px 0;
+    }
+
+    .site-brand__mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        font-size: 15px;
+    }
+
+    .site-brand__title {
+        font-size: 21px;
     }
 
     .site-nav__link,
     .site-nav__welcome {
         width: 100%;
+    }
+
+    .card,
+    .campaign-page__hero,
+    .public-campaign-card,
+    .create-form-card,
+    .combatant {
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .section-title {
+        font-size: clamp(24px, 8vw, 30px);
+    }
+
+    .campaign-header h3 {
+        font-size: 18px;
+    }
+
+    .site-footer__inner {
+        padding: 20px 0 24px;
     }
 }
