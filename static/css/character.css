@@ -561,7 +561,18 @@
 @media (max-width: 900px) {
     .character-hero {
         grid-template-columns: 1fr;
-        justify-items: start;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .character-summary,
+    .character-summary__title {
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-actions__buttons {
+        justify-content: center;
     }
 
     .award-xp-form form {
@@ -615,5 +626,24 @@
     .character-avatar__frame {
         width: 132px;
         height: 132px;
+    }
+
+    .profile-actions__buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-actions__buttons .btn,
+    .profile-actions__buttons form {
+        width: min(100%, 420px);
+    }
+
+    .profile-actions__buttons form .btn {
+        width: 100%;
+    }
+
+    .stat-box {
+        align-items: center;
+        text-align: center;
     }
 }
