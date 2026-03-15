@@ -52,7 +52,7 @@ class EpisodeService:
 
     @staticmethod
     def update_user_note(episode_id, user_id, notes):
-        """Mettre a jour la note personnelle d'un utilisateur."""
+        """Mettre a jour la note partagee d'un utilisateur pour un episode."""
         note = EpisodeUserNote.query.filter_by(episode_id=episode_id, user_id=user_id).first()
         if not note:
             note = EpisodeUserNote(episode_id=episode_id, user_id=user_id)
@@ -61,3 +61,17 @@ class EpisodeService:
         note.notes = notes
         db.session.commit()
         return note
+
+    @staticmethod
+    def list_shared_notes(episode_id):
+        """Lister les notes d'episode renseignees par les participants."""
+        return (
+            EpisodeUserNote.query
+            .filter(
+                EpisodeUserNote.episode_id == episode_id,
+                EpisodeUserNote.notes.isnot(None),
+                EpisodeUserNote.notes != '',
+            )
+            .order_by(EpisodeUserNote.updated_at.desc())
+            .all()
+        )

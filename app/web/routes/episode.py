@@ -47,6 +47,7 @@ def view_episode(episode_id):
         return redirect(url_for('main.index'))
 
     my_note = EpisodeService.get_or_create_user_note(episode.id, g.current_user.id)
+    shared_notes = EpisodeService.list_shared_notes(episode.id)
 
     return render_template(
         'episode/view_episode.html',
@@ -54,6 +55,7 @@ def view_episode(episode_id):
         arc=arc,
         campaign=campaign,
         my_note=my_note,
+        shared_notes=shared_notes,
         is_mj=g.current_user.is_mj_of(campaign),
     )
 
@@ -78,7 +80,7 @@ def update_shared_summary(episode_id):
 @bp.route('/<int:episode_id>/my_notes', methods=['POST'])
 @login_required
 def update_my_notes(episode_id):
-    """Modifier les notes personnelles de l'utilisateur courant."""
+    """Modifier la note partagee de l'utilisateur courant."""
     episode = Episode.query.get_or_404(episode_id)
     campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
 
@@ -88,5 +90,5 @@ def update_my_notes(episode_id):
 
     notes = request.form.get('notes', '').strip()
     EpisodeService.update_user_note(episode_id, g.current_user.id, notes)
-    flash('Vos notes personnelles ont ete enregistrees.', 'success')
+    flash('Votre note partagee a ete enregistree.', 'success')
     return redirect(url_for('episode.view_episode', episode_id=episode_id))
