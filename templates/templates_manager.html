@@ -176,9 +176,6 @@
                         <div class="template-card-actions">
                             <a href="{{ url_for('template.character_profile', id=char.id) }}" class="btn btn-secondary">Voir</a>
                             <a href="{{ url_for('template.edit_character_template', id=char.id) }}" class="btn btn-primary">Modifier</a>
-                            <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" class="inl-core-003">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer ce personnage ?')">Supprimer</button>
-                            </form>
                         </div>
                     </article>
                 {% endfor %}
@@ -223,9 +220,6 @@
                         <div class="template-card-actions">
                             <a href="{{ url_for('template.character_profile', id=char.id) }}" class="btn btn-secondary">Voir</a>
                             <a href="{{ url_for('template.edit_character_template', id=char.id) }}" class="btn btn-primary">Modifier</a>
-                            <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" class="inl-core-003">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer ce personnage ?')">Supprimer</button>
-                            </form>
                         </div>
                     </article>
                 {% endfor %}
