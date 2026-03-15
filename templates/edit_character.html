@@ -157,6 +157,13 @@
             <button type="submit" class="btn btn-primary btn-large">Enregistrer les modifications</button>
         </div>
     </form>
+
+    <section class="edit-section edit-section--separator">
+        <h2>Zone dangereuse</h2>
+        <form action="{{ url_for('template.delete_character_template', id=character.id) }}" method="POST" onsubmit="return confirm('Supprimer définitivement ce personnage ?');">
+            <button type="submit" class="btn btn-danger">Supprimer ce personnage</button>
+        </form>
+    </section>
 </div>
 
 {% endblock %}

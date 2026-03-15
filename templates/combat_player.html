@@ -29,12 +29,14 @@
                     <div class="initiative">Init {{ c.initiative }}</div>
                 </div>
 
+                {% if c.type == "PJ" %}
                 <div class="ac-info">
                     CA : {{ c.ac_total }}
                     {% if c.ac_bonus != 0 %}
                         (Base {{ c.ac_base }} + {{ c.ac_bonus }})
                     {% endif %}
                 </div>
+                {% endif %}
 
                 {% if c.type == "PJ" %}
                     {% set ratio = c.hp_current / c.hp_max %}
@@ -387,6 +389,9 @@ function enterHudMode() {
 
     // ✅ Initialiser les chronos HUD
     initializeHudChronos();
+
+    // Synchroniser immédiatement les états avant affichage HUD
+    updateCombatDisplay();
 
     // Passer en plein écran
     if (hudContainer.requestFullscreen) {
@@ -745,10 +750,10 @@ function createCombatantElement(combatant, currentActorId) {
             </h3>
             <div class="initiative">Init ${combatant.initiative}</div>
         </div>
-        <div class="ac-info">
-            CA : ${combatant.ac_total}
-        </div>
         ${combatant.type === 'PJ' ? `
+            <div class="ac-info">
+                CA : ${combatant.ac_total}
+            </div>
             <div class="hp-container">
                 <div class="hp-bar-container">
                     <div class="hp-bar js-width ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"

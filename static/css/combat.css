@@ -66,8 +66,20 @@
     align-items: center;
 }
 
+
+.combatant-header h3 {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .initiative {
     font-weight: bold;
+    flex-shrink: 0;
+    margin-left: 12px;
 }
 
 /* ===================== */
@@ -434,12 +446,18 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .init-name {
     font-size: 14px;
     font-weight: bold;
     color: var(--color-text-primary);
+    display: block;
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .simple-initiative-card.active-init .init-name {
