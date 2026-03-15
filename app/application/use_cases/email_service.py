@@ -46,44 +46,86 @@ class EmailService:
             return {"error": f"Erreur lors de l'envoi: {e}"}
 
     @staticmethod
-    def send_verification_email(user_email, username, verification_url):
-        """Envoyer un email de vérification"""
-        subject = "🎲 Vérification de votre compte DND Combat Tracker"
-
-        html_body = f"""
+    def _build_email_shell(title, intro, cta_label, cta_url, body_content, footer_content):
+        """Construire un template email aligné sur la DA ExalQuest."""
+        app_name = "ExalQuest"
+        return f"""
         <html>
-        <body style="font-family: Arial, sans-serif; background-color: #1e1f26; color: #f0f0f0; padding: 20px;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #2a2c36; padding: 30px; border-radius: 12px; border: 2px solid #4caf50;">
-                <h1 style="color: #4caf50; text-align: center;">🎲 DND Combat Tracker</h1>
+        <body style="margin: 0; padding: 0; background-color: #0b0d1d; font-family: 'Poppins', 'Segoe UI', Arial, sans-serif; color: #f4f4ff;">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: radial-gradient(circle at 0% 0%, rgba(88, 83, 255, 0.2), transparent 45%), radial-gradient(circle at 100% 0%, rgba(254, 44, 155, 0.18), transparent 40%), linear-gradient(180deg, #0f1127 0%, #0b0d1d 100%); padding: 24px 12px;">
+                <tr>
+                    <td align="center">
+                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 640px; background: #1d2250; border: 1px solid #3f468f; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 24px rgba(8, 10, 26, 0.5);">
+                            <tr>
+                                <td style="padding: 28px 28px 20px 28px; border-bottom: 1px solid #32396f;">
+                                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td>
+                                                <div style="display: inline-block; background: #fe2c9b; color: #ffffff; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;">EQ</div>
+                                                <h1 style="margin: 12px 0 4px 0; font-size: 26px; line-height: 1.2; color: #ffffff;">{app_name}</h1>
+                                                <p style="margin: 0; color: #d5d5eb; font-size: 14px;">Suivi de campagnes et combats pour JDR</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 28px;">
+                                    <h2 style="margin: 0 0 14px 0; font-size: 24px; color: #ffffff;">{title}</h2>
+                                    <p style="margin: 0 0 18px 0; color: #deddff; font-size: 15px; line-height: 1.6;">{intro}</p>
+                                    <div style="margin-bottom: 22px; color: #f4f4ff; font-size: 15px; line-height: 1.7;">{body_content}</div>
 
-                <h2 style="color: #f0f0f0;">Bienvenue, {username} !</h2>
+                                    <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 28px 0 22px 0;">
+                                        <tr>
+                                            <td align="center" style="border-radius: 10px; background: linear-gradient(135deg, #fe2c9b 0%, #5853ff 100%);">
+                                                <a href="{cta_url}" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px;">{cta_label}</a>
+                                            </td>
+                                        </tr>
+                                    </table>
 
-                <p>Merci de vous être inscrit sur DND Combat Tracker !</p>
-
-                <p>Pour activer votre compte et commencer à gérer vos campagnes, veuillez cliquer sur le lien ci-dessous :</p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}"
-                       style="background-color: #4caf50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                        ✅ Vérifier mon compte
-                    </a>
-                </div>
-
-                <p style="color: #ccc; font-size: 14px;">
-                    Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
-                    <a href="{verification_url}" style="color: #4caf50;">{verification_url}</a>
-                </p>
-
-                <p style="color: #ccc; font-size: 12px; margin-top: 30px;">
-                    Ce lien expire dans 24 heures. Si vous n'avez pas demandé cette inscription, ignorez cet email.
-                </p>
-            </div>
+                                    <p style="margin: 0 0 8px 0; color: #b9bbe4; font-size: 13px; line-height: 1.5;">
+                                        Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
+                                    </p>
+                                    <p style="margin: 0; word-break: break-all;">
+                                        <a href="{cta_url}" style="color: #ffda3e; font-size: 13px;">{cta_url}</a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 18px 28px 24px 28px; border-top: 1px solid #32396f; background: #161a3a;">
+                                    <p style="margin: 0; color: #9797cd; font-size: 12px; line-height: 1.6;">{footer_content}</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </body>
         </html>
         """
 
+    @staticmethod
+    def send_verification_email(user_email, username, verification_url):
+        """Envoyer un email de vérification"""
+        subject = "🎲 Vérification de votre compte DND Combat Tracker"
+
+        html_body = EmailService._build_email_shell(
+            title=f"Bienvenue, {username} !",
+            intro="Merci d'avoir créé votre compte sur ExalQuest.",
+            cta_label="✅ Vérifier mon compte",
+            cta_url=verification_url,
+            body_content=(
+                "Pour activer votre compte et accéder à vos campagnes, "
+                "merci de confirmer votre adresse email en cliquant sur le bouton ci-dessous."
+            ),
+            footer_content=(
+                "Ce lien expire dans 24 heures. Si vous n'êtes pas à l'origine de cette inscription, "
+                "vous pouvez ignorer cet email."
+            ),
+        )
+
         text_body = f"""
-        DND Combat Tracker - Vérification de compte
+        ExalQuest - Vérification de compte
 
         Bienvenue, {username} !
 
@@ -114,40 +156,23 @@ class EmailService:
         """Envoyer un email d'invitation à une campagne"""
         subject = f"🎲 Invitation à rejoindre la campagne : {campaign_name}"
 
-        html_body = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; background-color: #1e1f26; color: #f0f0f0; padding: 20px;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #2a2c36; padding: 30px; border-radius: 12px; border: 2px solid #4caf50;">
-                <h1 style="color: #4caf50; text-align: center;">🎲 DND Combat Tracker</h1>
-
-                <h2 style="color: #f0f0f0;">Vous êtes invité(e) !</h2>
-
-                <p>Salut {username} !</p>
-
-                <p>Vous avez été invité(e) à rejoindre la campagne <strong style="color: #4caf50;">"{campaign_name}"</strong> sur DND Combat Tracker !</p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{invitation_url}"
-                       style="background-color: #4caf50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                        🎯 Rejoindre la Campagne
-                    </a>
-                </div>
-
-                <p style="color: #ccc; font-size: 14px;">
-                    Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
-                    <a href="{invitation_url}" style="color: #4caf50;">{invitation_url}</a>
-                </p>
-
-                <p style="color: #ccc; font-size: 12px; margin-top: 30px;">
-                    Cette invitation expire dans 7 jours. Si vous n'avez pas demandé à rejoindre cette campagne, ignorez cet email.
-                </p>
-            </div>
-        </body>
-        </html>
-        """
+        html_body = EmailService._build_email_shell(
+            title="Vous êtes invité(e) !",
+            intro=f"Salut {username}, une place vous attend dans l'aventure.",
+            cta_label="🎯 Rejoindre la campagne",
+            cta_url=invitation_url,
+            body_content=(
+                "Vous avez été invité(e) à rejoindre la campagne "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{campaign_name}&nbsp;&raquo;</strong> sur ExalQuest."
+            ),
+            footer_content=(
+                "Cette invitation expire dans 7 jours. Si vous n'êtes pas concerné(e), "
+                "vous pouvez ignorer cet email."
+            ),
+        )
 
         text_body = f"""
-        DND Combat Tracker - Invitation à rejoindre une campagne
+        ExalQuest - Invitation à rejoindre une campagne
 
         Vous avez été invité(e) à rejoindre la campagne "{campaign_name}" !
 
