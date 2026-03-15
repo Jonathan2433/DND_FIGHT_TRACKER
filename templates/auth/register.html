@@ -11,6 +11,9 @@
         {% if invitation_token %}
             <input type="hidden" name="invitation_token" value="{{ invitation_token }}">
         {% endif %}
+        {% if next_url %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
         <div class="inl-auth-003">
             <label for="username" class="inl-auth-004">Nom d'utilisateur :</label>
             <input type="text" id="username" name="username" required class="inl-auth-005">
@@ -43,7 +46,8 @@
     </form>
     
     <p class="inl-auth-007">
-        Déjà un compte ? <a href="{{ url_for('auth.login') }}" class="inl-auth-008">Se connecter</a>
+        Déjà un compte ?
+        <a href="{{ url_for('auth.login', next=next_url) if next_url else url_for('auth.login') }}" class="inl-auth-008">Se connecter</a>
     </p>
 </div>
 {% endblock %}
