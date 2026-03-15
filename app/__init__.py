@@ -56,14 +56,17 @@ def create_app(config_name='default'):
         """Rendre current_user et ses notifications disponibles dans tous les templates"""
         current_user = g.get('current_user', None)
         unread_notifications_count = 0
+        header_notifications = []
 
         if current_user:
             from app.application.use_cases.notification_service import NotificationService
             unread_notifications_count = NotificationService.unread_count(current_user.id)
+            header_notifications = NotificationService.list_user_notifications(current_user.id, limit=6)
 
         return dict(
             current_user=current_user,
             unread_notifications_count=unread_notifications_count,
+            header_notifications=header_notifications,
         )
 
     register_blueprints(app)

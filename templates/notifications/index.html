@@ -3,27 +3,34 @@
 {% block title %}Notifications - ExalQuest{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1>🔔 Notifications</h1>
-    <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="inl-campaign-030">
-        <button type="submit" class="btn btn-secondary">Marquer tout comme lu</button>
-    </form>
+<div class="card notifications-page">
+    <div class="notifications-page__header">
+        <h1 aria-label="Notifications">🔔</h1>
+        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="notifications-page__mark-all">
+            <button type="submit" class="btn btn-secondary">Marquer tout comme lu</button>
+        </form>
+    </div>
 
     {% if notifications %}
-        <div class="pj-dashboard-grid inl-campaign-023">
+        <div class="notifications-grid">
             {% for notif in notifications %}
-                <article class="pj-dashboard-card inl-campaign-024">
-                    <div class="inl-campaign-027">{{ notif.title }}</div>
-                    <p>{{ notif.message }}</p>
-                    <small>
-                        {{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}
-                        {% if not notif.is_read %}- <strong>Non lue</strong>{% endif %}
-                    </small>
-                </article>
+                <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="notification-card-form">
+                    <button type="submit" class="notification-card {% if not notif.is_read %}is-unread{% endif %}">
+                        <span class="notification-card__title">{{ notif.title }}</span>
+                        <span class="notification-card__message">{{ notif.message }}</span>
+                        <span class="notification-card__meta">
+                            {{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            {% if not notif.is_read %}
+                                · <strong>Non lue</strong>
+                            {% endif %}
+                        </span>
+                        <span class="notification-card__cta">Voir la source →</span>
+                    </button>
+                </form>
             {% endfor %}
         </div>
     {% else %}
-        <p>Aucune notification pour le moment.</p>
+        <p class="notifications-page__empty">Aucune notification pour le moment.</p>
     {% endif %}
 </div>
 {% endblock %}
