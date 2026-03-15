@@ -9,6 +9,7 @@ from .user import User, EmailVerification
 from .campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 from .story_arc import StoryArc
 from .notification import Notification
+from .episode import Episode, EpisodeUserNote
 
 # Exposition des modèles
 __all__ = [
@@ -25,5 +26,7 @@ __all__ = [
     'CampaignInvitation',
     'JoinRequest',
     'StoryArc',
-    'Notification'
+    'Notification',
+    'Episode',
+    'EpisodeUserNote'
 ]

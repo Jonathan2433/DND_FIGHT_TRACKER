@@ -10,9 +10,9 @@ class CombatService:
     """Service principal pour la gestion des combats"""
 
     @staticmethod
-    def create_combat(name, story_arc_id, campaign_id):
+    def create_combat(name, story_arc_id, campaign_id, episode_id):
         """Créer un nouveau combat"""
-        combat = Combat(name=name, story_arc_id=story_arc_id, campaign_id=campaign_id)
+        combat = Combat(name=name, story_arc_id=story_arc_id, campaign_id=campaign_id, episode_id=episode_id)
         db.session.add(combat)
         db.session.commit()
         return combat

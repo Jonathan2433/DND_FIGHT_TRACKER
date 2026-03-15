@@ -31,12 +31,12 @@
                 <p>{{ stats.estimated_sessions }}</p>
             </div>
             <div class="stat-card">
-                <h3>Combats lies</h3>
-                <p>{{ stats.total_combats }}</p>
+                <h3>Episodes</h3>
+                <p>{{ episodes|length }}</p>
             </div>
             <div class="stat-card">
-                <h3>Combats termines</h3>
-                <p>{{ stats.completed_combats }}</p>
+                <h3>Combats lies</h3>
+                <p>{{ stats.total_combats }}</p>
             </div>
         </div>
     </section>
@@ -44,45 +44,44 @@
     <section class="card">
         <div class="section-head">
             <div class="section-head__content">
-                <h2 class="section-head__title">Suivi de l'arc</h2>
-                <p class="section-head__copy">Consultez les notes, le rythme de campagne et les combats deja rattaches.</p>
+                <h2 class="section-head__title">Episodes</h2>
+                <p class="section-head__copy">Un arc contient un ou plusieurs episodes. Les combats sont rattaches aux episodes.</p>
             </div>
         </div>
 
-        {% if arc.notes %}
-            <p class="section-copy">{{ arc.notes }}</p>
-        {% else %}
-            <p class="section-head__copy">Aucune note de suivi pour le moment.</p>
+        {% if is_mj %}
+            <form method="POST" action="{{ url_for('episode.create_episode', arc_id=arc.id) }}" class="form-grid" style="margin-bottom: 1rem;">
+                <input type="text" name="title" class="form-control" placeholder="Titre de l'episode" required>
+                <textarea name="summary_shared" class="form-control" rows="3" placeholder="Resume partage initial (optionnel)"></textarea>
+                <button type="submit" class="btn btn-primary">➕ Creer un episode</button>
+            </form>
         {% endif %}
 
-        {% if arc.combats %}
+        {% if episodes %}
             <div class="public-campaigns-grid">
-                {% for combat in arc.combats %}
+                {% for episode in episodes %}
                     <article class="public-campaign-card">
                         <div class="campaign-header">
-                            <h3>{{ combat.name }}</h3>
-                            <div class="campaign-badge {% if combat.is_closed %}public{% endif %}">
-                                {% if combat.is_closed %}Termine{% else %}En cours{% endif %}
-                            </div>
+                            <h3>{{ loop.index }}. {{ episode.title }}</h3>
+                            <div class="campaign-badge public">{{ episode.combats|length }} combat(s)</div>
                         </div>
-                        <div class="campaign-info">
-                            <span>Round : {{ combat.round }}</span>
-                            <span>Combattants : {{ combat.combatants|length }}</span>
-                        </div>
+                        <p class="section-head__copy">{{ episode.summary_shared or "Aucun resume partage pour le moment." }}</p>
                         <div class="campaign-actions">
-                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.view_combat_player', combat_id=combat.id) }}"
-                               class="btn btn-primary">
-                                Ouvrir le combat
-                            </a>
-                            {% if combat.is_closed %}
-                                <a href="{{ url_for('summary.combat_summary', combat_id=combat.id) }}" class="btn btn-secondary">Resume</a>
+                            <a href="{{ url_for('episode.view_episode', episode_id=episode.id) }}" class="btn btn-secondary">Voir l'episode</a>
+                            {% if is_mj %}
+                                <form method="POST" action="{{ url_for('combat.create_combat') }}" class="inl-campaign-020">
+                                    <input type="hidden" name="name" value="Combat - {{ episode.title }}">
+                                    <input type="hidden" name="story_arc_id" value="{{ arc.id }}">
+                                    <input type="hidden" name="episode_id" value="{{ episode.id }}">
+                                    <button type="submit" class="btn btn-primary">⚔️ Nouveau combat</button>
+                                </form>
                             {% endif %}
                         </div>
                     </article>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="section-head__copy">Aucun combat n'est encore rattache a cet arc.</p>
+            <p class="section-head__copy">Aucun episode pour cet arc.</p>
         {% endif %}
     </section>
 </div>

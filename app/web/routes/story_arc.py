@@ -2,6 +2,7 @@
 """Routes pour la gestion des arcs narratifs"""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.application.use_cases.story_arc_service import StoryArcService
+from app.application.use_cases.episode_service import EpisodeService
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required
@@ -56,10 +57,13 @@ def view_arc(arc_id):
 
     stats = StoryArcService.get_arc_statistics(arc_id)
 
+    episodes = EpisodeService.list_arc_episodes(arc.id)
+
     return render_template('story_arc/view_arc.html',
                            arc=arc,
                            campaign=campaign,
                            stats=stats,
+                           episodes=episodes,
                            is_mj=g.current_user.is_mj_of(campaign))
 
 

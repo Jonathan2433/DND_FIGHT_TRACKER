@@ -25,19 +25,31 @@ def _can_view_player_combat(combat):
 def create_combat():
     """Creer un nouveau combat rattache a un arc narratif."""
     story_arc_id = request.form.get('story_arc_id')
+    episode_id = request.form.get('episode_id')
 
-    if not story_arc_id:
-        flash("Un combat doit obligatoirement etre rattache a un arc narratif.", "error")
+    if not story_arc_id or not episode_id:
+        flash("Un combat doit obligatoirement etre rattache a un arc et un episode.", "error")
         return redirect(url_for('main.index'))
 
     from app.models.story_arc import StoryArc
+    from app.models.episode import Episode
+
     arc = StoryArc.query.get_or_404(int(story_arc_id))
+    episode = Episode.query.get_or_404(int(episode_id))
+    if episode.story_arc_id != arc.id:
+        flash("Episode invalide pour cet arc narratif.", "error")
+        return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
     if not (g.current_user.role == 'Admin' or g.current_user.is_mj_of(arc.campaign)):
         flash("Seul le MJ proprietaire peut creer un combat sur cet arc.", "error")
         return redirect(url_for('campaign.view_campaign', campaign_id=arc.campaign_id))
 
     name = request.form['name']
-    combat = CombatService.create_combat(name=name, story_arc_id=arc.id, campaign_id=arc.campaign_id)
+    combat = CombatService.create_combat(
+        name=name,
+        story_arc_id=arc.id,
+        campaign_id=arc.campaign_id,
+        episode_id=episode.id,
+    )
 
     return redirect(url_for('combat.view_combat', combat_id=combat.id))
 

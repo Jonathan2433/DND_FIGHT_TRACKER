@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="campaign-page">
+    <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <span class="section-eyebrow">Episode</span>
+                <h1 class="section-title">{{ episode.title }}</h1>
+                <p class="section-head__copy">Arc : {{ arc.name }} · Campagne : {{ campaign.name }}</p>
+            </div>
+            <div class="campaign-actions">
+                <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary">Retour arc</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="section-head__title">Resume partage (MJ + joueurs)</h2>
+        {% if is_mj %}
+            <form method="POST" action="{{ url_for('episode.update_shared_summary', episode_id=episode.id) }}">
+                <textarea name="summary_shared" class="form-control" rows="6" placeholder="Resume visible par tous">{{ episode.summary_shared or '' }}</textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top: 0.75rem;">Enregistrer le resume partage</button>
+            </form>
+        {% else %}
+            <p class="section-copy">{{ episode.summary_shared or "Aucun resume partage pour le moment." }}</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2 class="section-head__title">Mes notes personnelles</h2>
+        <p class="section-head__copy">Ces notes ne sont visibles que par vous.</p>
+        <form method="POST" action="{{ url_for('episode.update_my_notes', episode_id=episode.id) }}">
+            <textarea name="notes" class="form-control" rows="8" placeholder="Vos notes personnelles...">{{ my_note.notes or '' }}</textarea>
+            <button type="submit" class="btn btn-secondary" style="margin-top: 0.75rem;">Sauvegarder mes notes</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2 class="section-head__title">Combats de l'episode</h2>
+        {% if episode.combats %}
+            <div class="public-campaigns-grid">
+                {% for combat in episode.combats %}
+                    <article class="public-campaign-card">
+                        <div class="campaign-header">
+                            <h3>{{ combat.name }}</h3>
+                            <div class="campaign-badge {% if combat.is_closed %}public{% endif %}">
+                                {% if combat.is_closed %}Termine{% else %}En cours{% endif %}
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.view_combat_player', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="section-head__copy">Aucun combat rattache a cet episode.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
