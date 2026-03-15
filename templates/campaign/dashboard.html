@@ -164,6 +164,25 @@
             </div>
         </div>
 
+        {% if player_campaign_pjs %}
+            <div class="pj-dashboard-grid inl-campaign-023">
+                {% for pj in player_campaign_pjs %}
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card inl-campaign-024">
+                        <div class="template-avatar-container {% if pj.image_filename %}has-image{% endif %}">
+                            {% if pj.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}" class="pj-dashboard-img inl-campaign-025" alt="{{ pj.name }}">
+                            {% endif %}
+                            <div class="pj-avatar-large inl-campaign-026">{{ pj.name[:2]|upper }}</div>
+                        </div>
+                        <div class="inl-campaign-027">{{ pj.name }}</div>
+                        <div class="pj-meta">{{ pj.character_class }} {{ pj.level }}</div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Vous n'avez pas encore de PJ associé à cette campagne.</p>
+        {% endif %}
+
         {% if available_player_pjs %}
             <form method="POST" action="{{ url_for('campaign.add_player_character', campaign_id=campaign.id) }}" class="inl-campaign-020">
                 <label for="character_id">Ajouter un de vos PJ existants :</label>

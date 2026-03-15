@@ -67,6 +67,7 @@ def view_campaign(campaign_id):
 
     # PJ du joueur courant pouvant être ajoutés à cette campagne
     available_player_pjs = []
+    player_campaign_pjs = []
     if not g.current_user.is_mj_of(campaign):
         available_player_pjs = CharacterTemplate.query.filter_by(
             owner_id=g.current_user.id,
@@ -75,6 +76,12 @@ def view_campaign(campaign_id):
         ).filter(
             ~CharacterTemplate.campaigns.any(id=campaign_id)
         ).order_by(CharacterTemplate.name.asc()).all()
+
+        # Les PJ du joueur dans cette campagne doivent toujours rester visibles pour leur propriétaire
+        player_campaign_pjs = [
+            pj for pj in campaign_pjs
+            if pj.owner_id == g.current_user.id
+        ]
 
     # Récupérer les invitations en attente (si MJ)
     invitations = []
@@ -102,6 +109,7 @@ def view_campaign(campaign_id):
         combats_count=combats_count,
         current_arc=current_arc,
         available_player_pjs=available_player_pjs,
+        player_campaign_pjs=player_campaign_pjs,
         visible_campaign_pnjs=visible_campaign_pnjs
     )
 
