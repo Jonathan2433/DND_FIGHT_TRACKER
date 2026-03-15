@@ -82,8 +82,23 @@
 .template-card-actions {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 10px;
     margin-top: auto;
+}
+
+.template-card-actions > a,
+.template-card-actions > form {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.template-card-actions > form {
+    display: flex;
+}
+
+.template-card-actions .btn {
+    width: 100%;
 }
 
 .template-card-tag {
