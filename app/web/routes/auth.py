@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.application.use_cases.auth_service import AuthService
+from app.application.use_cases.campaign_service import CampaignService
 from app.utils.decorators import anonymous_required, login_required
 
 # Créer le blueprint
@@ -43,7 +44,20 @@ def register():
         else:
             flash(result['message'], 'success')
             if invitation_token:
-                return redirect(url_for('campaign.accept_invitation', token=invitation_token))
+                accept_result = CampaignService.accept_invitation(invitation_token, result['user'].id)
+                if 'error' in accept_result:
+                    flash(
+                        "Compte créé, mais l'invitation n'a pas pu être acceptée automatiquement : "
+                        f"{accept_result['error']}",
+                        'warning'
+                    )
+                    return redirect(url_for('auth.login'))
+
+                flash(
+                    f'Invitation acceptée ! Votre compte est maintenant lié à la campagne "{accept_result["campaign"].name}".',
+                    'success'
+                )
+                return redirect(url_for('auth.login'))
             if next_url:
                 return redirect(next_url)
             return redirect(url_for('auth.login'))
