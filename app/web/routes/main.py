@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, session, g
 
 from app.application.use_cases.campaign_service import CampaignService
-from app.models import Combat, CharacterTemplate, CombatLog
+from app.models import Combat, CharacterTemplate, Campaign
 from app.utils import format_duration
 
 
@@ -16,18 +16,8 @@ def index():
     combats = Combat.query.order_by(Combat.created_at.desc()).all()
 
     total_combats = Combat.query.count()
-    total_closed = Combat.query.filter_by(is_closed=True).count()
+    total_campaigns = Campaign.query.count()
     total_pj = CharacterTemplate.query.filter_by(character_type='PJ', is_active=True).count()
-    total_rounds = sum(c.round for c in combats if c.is_closed)
-
-    total_damage = sum(
-        log.value or 0
-        for log in CombatLog.query.filter_by(action_type="damage").all()
-    )
-    total_heal = sum(
-        log.value or 0
-        for log in CombatLog.query.filter_by(action_type="heal").all()
-    )
 
     combat_cards = []
     for combat in combats:
@@ -60,12 +50,9 @@ def index():
 
     return render_template(
         'index.html',
+        total_campaigns=total_campaigns,
         total_combats=total_combats,
-        total_closed=total_closed,
         total_pj=total_pj,
-        total_rounds=total_rounds,
-        total_damage=total_damage,
-        total_heal=total_heal,
         combat_cards=combat_cards,
         user_is_connected=user_is_connected,
         user_campaigns=user_campaigns,
