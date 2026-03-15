@@ -56,6 +56,11 @@ def view_campaign(campaign_id):
         )
     ).all()
 
+    visible_campaign_pjs = [
+        pj for pj in campaign_pjs
+        if pj.can_be_viewed_by(g.current_user, campaign)
+    ]
+
     combats_count = Combat.query.filter_by(campaign_id=campaign_id).count()
 
     visible_campaign_pnjs = [
@@ -96,6 +101,7 @@ def view_campaign(campaign_id):
         campaign=campaign,
         members=members,
         campaign_pjs=campaign_pjs,  # ✅ NOUVEAU
+        visible_campaign_pjs=visible_campaign_pjs,
         invitations=invitations,
         join_requests=join_requests,
         is_mj=g.current_user.is_mj_of(campaign),

@@ -279,12 +279,26 @@ class CharacterTemplate(db.Model):
         if not self.can_be_viewed_by(user, campaign):
             return None
 
-        # Propriétaire ou MJ : données complètes
-        if (user and (self.owner_id == user.id or user.role == 'Admin' or
-                     (campaign and user.is_mj_of(campaign)))):
+        # Propriétaire, Admin ou MJ : données complètes
+        if user and self.owner_id == user.id:
             return {
                 'level': 'complete',
-                'data': self._get_complete_data()
+                'data': self._get_complete_data(include_private_notes=True)
+            }
+
+        if user and user.role == 'Admin':
+            return {
+                'level': 'complete',
+                'data': self._get_complete_data(include_private_notes=True)
+            }
+
+        if user and (
+            (campaign and user.is_mj_of(campaign))
+            or any(user.is_mj_of(c) for c in self.campaigns)
+        ):
+            return {
+                'level': 'complete',
+                'data': self._get_complete_data(include_private_notes=True)
             }
 
         # Selon niveau de visibilité
@@ -301,7 +315,7 @@ class CharacterTemplate(db.Model):
         elif self.visibility_level == 'complete':
             return {
                 'level': 'complete',
-                'data': self._get_complete_data()
+                'data': self._get_complete_data(include_private_notes=False)
             }
 
         return None
@@ -337,8 +351,8 @@ class CharacterTemplate(db.Model):
         })
         return data
 
-    def _get_complete_data(self):
-        """Fiche complète : tout visible"""
+    def _get_complete_data(self, include_private_notes=True):
+        """Fiche complète : tout visible sauf notes privées selon contexte."""
         data = self._get_semi_complete_data()
         data.update({
             # Statistiques de combat
@@ -372,7 +386,6 @@ class CharacterTemplate(db.Model):
 
             # Histoire et notes (complètes pour le propriétaire/MJ)
             'notes': self.notes,
-            'private_notes': self.private_notes,
             'background_story': self.background_story,
 
             # Fichiers
@@ -385,6 +398,8 @@ class CharacterTemplate(db.Model):
             'is_public': self.is_public,
             'visibility_level': self.visibility_level
         })
+        if include_private_notes:
+            data['private_notes'] = self.private_notes
         return data
 
     def __repr__(self):

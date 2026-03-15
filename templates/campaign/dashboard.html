@@ -178,6 +178,45 @@
         {% else %}
             <p>Vous n'avez pas de PJ disponible à associer.</p>
         {% endif %}
+
+        {% set shared_pjs = visible_campaign_pjs|selectattr('owner_id', 'ne', g.current_user.id)|list %}
+        {% if shared_pjs %}
+            <div class="inl-campaign-022">
+                <span>👥 PJ partagés par les autres joueurs</span>
+            </div>
+            <div class="pj-notes-grid">
+                {% for pj in shared_pjs %}
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-note-card pj-note-card--link">
+                        <div class="pj-note-header">
+                            <div class="pj-info">
+                                {% if pj.image_filename %}
+                                    <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                                         class="pj-mini-avatar" alt="{{ pj.name }}">
+                                {% else %}
+                                    <div class="pj-mini-avatar-placeholder">
+                                        {{ pj.name[:2]|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ pj.name }}</strong>
+                                    <div class="pj-meta">
+                                        {{ pj.character_class }} {{ pj.level }} •
+                                        Propriétaire: {{ pj.owner.username }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pj-actions">
+                                <span class="btn btn-primary">👁️ Voir</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>👥 Aucun PJ partagé par les autres joueurs pour le moment.</p>
+        {% endif %}
     </div>
     {% endif %}
 
