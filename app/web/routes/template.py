@@ -147,8 +147,7 @@ def character_profile(id):
     ))
 
     limited_profile = bool(
-        character.character_type == 'PNJ'
-        and visible_payload
+        visible_payload
         and visibility_mode in ['reduced', 'semi_complete']
         and not is_full_view
     )
