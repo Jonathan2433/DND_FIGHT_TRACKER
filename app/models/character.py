@@ -33,6 +33,7 @@ class CharacterTemplate(db.Model):
     level = db.Column(db.Integer, default=1)
     notes = db.Column(db.Text)
     private_notes = db.Column(db.Text)
+    player_private_notes = db.Column(db.Text)
 
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)
@@ -283,13 +284,13 @@ class CharacterTemplate(db.Model):
         if user and self.owner_id == user.id:
             return {
                 'level': 'complete',
-                'data': self._get_complete_data(include_private_notes=True)
+                'data': self._get_complete_data(include_private_notes=True, include_player_private_notes=True)
             }
 
         if user and user.role == 'Admin':
             return {
                 'level': 'complete',
-                'data': self._get_complete_data(include_private_notes=True)
+                'data': self._get_complete_data(include_private_notes=True, include_player_private_notes=False)
             }
 
         if user and (
@@ -298,7 +299,7 @@ class CharacterTemplate(db.Model):
         ):
             return {
                 'level': 'complete',
-                'data': self._get_complete_data(include_private_notes=True)
+                'data': self._get_complete_data(include_private_notes=True, include_player_private_notes=False)
             }
 
         # Selon niveau de visibilité
@@ -315,7 +316,7 @@ class CharacterTemplate(db.Model):
         elif self.visibility_level == 'complete':
             return {
                 'level': 'complete',
-                'data': self._get_complete_data(include_private_notes=False)
+                'data': self._get_complete_data(include_private_notes=False, include_player_private_notes=False)
             }
 
         return None
@@ -351,7 +352,7 @@ class CharacterTemplate(db.Model):
         })
         return data
 
-    def _get_complete_data(self, include_private_notes=True):
+    def _get_complete_data(self, include_private_notes=True, include_player_private_notes=False):
         """Fiche complète : tout visible sauf notes privées selon contexte."""
         data = self._get_semi_complete_data()
         data.update({
@@ -400,6 +401,10 @@ class CharacterTemplate(db.Model):
         })
         if include_private_notes:
             data['private_notes'] = self.private_notes
+
+        if include_player_private_notes:
+            data['player_private_notes'] = self.player_private_notes
+
         return data
 
     def __repr__(self):

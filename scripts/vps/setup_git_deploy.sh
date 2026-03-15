@@ -32,6 +32,10 @@ while read -r _oldrev _newrev refname; do
       echo "[deploy] master -> production"
       git --work-tree="__PROD_WORK_TREE__" --git-dir="__BARE_REPO__" checkout -f master
       cd "__PROD_WORK_TREE__"
+      # Évite les migrations Alembic orphelines (fichiers supprimés dans Git
+      # mais encore présents sur le serveur), source fréquente de
+      # "Multiple head revisions".
+      git clean -fd migrations/versions
       docker compose -f docker-compose.prod.yml pull
       docker compose -f docker-compose.prod.yml up -d --build
       ;;
@@ -39,6 +43,10 @@ while read -r _oldrev _newrev refname; do
       echo "[deploy] preprod -> préproduction"
       git --work-tree="__PREPROD_WORK_TREE__" --git-dir="__BARE_REPO__" checkout -f preprod
       cd "__PREPROD_WORK_TREE__"
+      # Évite les migrations Alembic orphelines (fichiers supprimés dans Git
+      # mais encore présents sur le serveur), source fréquente de
+      # "Multiple head revisions".
+      git clean -fd migrations/versions
       docker compose -f docker-compose.preprod.yml pull
       docker compose -f docker-compose.preprod.yml up -d --build
       ;;

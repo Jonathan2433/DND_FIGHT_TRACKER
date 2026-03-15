@@ -191,17 +191,24 @@
                 </section>
             {% endif %}
 
-            {% if not limited_profile and (character.notes or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
+            {% if not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
                 <section class="char-notes">
                     <div class="section-head">
                         <div class="section-head__content">
                             <h2 class="section-head__title">Notes</h2>
-                            <p class="section-head__copy">Notes visibles sur la fiche et notes privees accessibles au MJ de campagne.</p>
+                            <p class="section-head__copy">Notes partagees, notes privees joueur (proprietaire uniquement) et notes privees MJ.</p>
                         </div>
                     </div>
 
                     {% if character.notes %}
                         <p>{{ character.notes }}</p>
+                    {% endif %}
+
+                    {% if current_user and character.player_private_notes and character.owner_id == current_user.id %}
+                        <div class="mj-private-notes">
+                            <h3>Notes privees joueur</h3>
+                            <div class="mj-notes-content">{{ character.player_private_notes }}</div>
+                        </div>
                     {% endif %}
 
                     {% if current_user and character.private_notes and character.can_add_private_notes(current_user) %}

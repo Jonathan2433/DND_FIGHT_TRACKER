@@ -24,8 +24,11 @@
                 <label for="character-level">Niveau</label>
                 <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
 
-                <label for="character-notes">Notes</label>
+                <label for="character-notes">Notes partagees</label>
                 <textarea id="character-notes" name="notes" rows="5">{{ character.notes }}</textarea>
+
+                <label for="character-player-private-notes">Notes privees joueur</label>
+                <textarea id="character-player-private-notes" name="player_private_notes" rows="4" placeholder="Visible uniquement par le proprietaire du PJ">{{ character.player_private_notes or '' }}</textarea>
             </section>
 
             <section class="edit-section">

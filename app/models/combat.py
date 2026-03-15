@@ -15,11 +15,13 @@ class Combat(db.Model):
 
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
     story_arc_id = db.Column(db.Integer, db.ForeignKey('story_arc.id'), nullable=False)
+    episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'), nullable=False)
 
     # Relations
     combatants = db.relationship('Combatant', backref='combat', cascade="all, delete")
     campaign = db.relationship('Campaign', backref=db.backref('combats', lazy=True))
     story_arc = db.relationship('StoryArc', backref=db.backref('combats', lazy=True))
+    episode = db.relationship('Episode', backref=db.backref('combats', lazy=True))
 
 
     # Gestion du temps
