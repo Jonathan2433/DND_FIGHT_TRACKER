@@ -78,6 +78,7 @@ class TemplateService:
             image_filename=filename,
             pdf_filename=pdf_filename,
             notes=form_data.get('notes', ''),
+            player_private_notes=form_data.get('player_private_notes', ''),
             current_xp=int(form_data.get('current_xp', 0))
         )
 
@@ -124,6 +125,7 @@ class TemplateService:
         template.ac_base = int(form_data['ac_base'])
         template.initiative_bonus = int(form_data['initiative_bonus'])
         template.notes = form_data.get('notes', '')
+        template.player_private_notes = form_data.get('player_private_notes', '')
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
