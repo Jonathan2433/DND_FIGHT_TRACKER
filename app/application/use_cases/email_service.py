@@ -191,3 +191,45 @@ class EmailService:
         )
 
         return EmailService._send_message(msg, "email campagne")
+
+    @staticmethod
+    def send_campaign_signup_invitation(user_email, campaign_name, signup_url):
+        """Envoyer un email d'invitation pour creer un compte puis rejoindre une campagne."""
+        subject = f"🎲 Invitation à rejoindre la campagne : {campaign_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Vous êtes invité(e) à l'aventure !",
+            intro="Un MJ vous invite à créer votre compte pour rejoindre sa campagne.",
+            cta_label="🛡️ Créer mon compte",
+            cta_url=signup_url,
+            body_content=(
+                "Vous avez été invité(e) à rejoindre la campagne "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{campaign_name}&nbsp;&raquo;</strong> sur ExalQuest.<br><br>"
+                "Créez votre compte avec cette adresse email, puis l'invitation sera utilisable pour rejoindre automatiquement la campagne."
+            ),
+            footer_content=(
+                "Cette invitation expire dans 7 jours. Si vous n'êtes pas concerné(e), "
+                "vous pouvez ignorer cet email."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Invitation a rejoindre une campagne
+
+        Vous avez ete invite(e) a rejoindre la campagne "{campaign_name}".
+
+        Creez votre compte puis rejoignez la campagne via ce lien :
+        {signup_url}
+
+        Cette invitation expire dans 7 jours.
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email invitation inscription campagne")

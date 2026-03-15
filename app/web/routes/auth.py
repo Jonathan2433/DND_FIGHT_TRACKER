@@ -12,6 +12,9 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 @anonymous_required
 def register():
     """Inscription utilisateur"""
+    invitation_token = request.values.get('invitation_token', '').strip()
+    invited_email = request.values.get('invited_email', '').strip()
+
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
@@ -24,9 +27,15 @@ def register():
             flash(result['error'], 'error')
         else:
             flash(result['message'], 'success')
+            if invitation_token:
+                return redirect(url_for('campaign.accept_invitation', token=invitation_token))
             return redirect(url_for('auth.login'))
 
-    return render_template('auth/register.html')
+    return render_template(
+        'auth/register.html',
+        invitation_token=invitation_token,
+        invited_email=invited_email,
+    )
 
 
 @bp.route('/login', methods=['GET', 'POST'])

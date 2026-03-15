@@ -62,15 +62,20 @@ class CampaignService:
         if campaign.mj_id != inviter_id:
             return {"error": "Seul le MJ peut inviter des joueurs"}
 
+        normalized_input = email_or_username.strip()
+
         # Chercher l'utilisateur
         user = User.query.filter(
-            (User.email == email_or_username) |
-            (User.username == email_or_username)
+            (User.email == normalized_input) |
+            (User.username == normalized_input)
         ).first()
 
         # Vérifier si déjà membre
         if user and CampaignMember.query.filter_by(campaign_id=campaign_id, user_id=user.id).first():
             return {"error": "Cet utilisateur est déjà membre de la campagne"}
+
+        if not user and '@' not in normalized_input:
+            return {"error": "Utilisateur introuvable. Utilisez une adresse email valide pour inviter un nouveau joueur"}
 
         # Générer token d'invitation
         token = CampaignInvitation.generate_token()
@@ -79,7 +84,7 @@ class CampaignService:
         invitation = CampaignInvitation(
             campaign_id=campaign_id,
             invited_user_id=user.id if user else None,
-            invited_email=email_or_username if not user else user.email,
+            invited_email=normalized_input if not user else user.email,
             token=token,
             expires_at=expires_at
         )
@@ -96,15 +101,27 @@ class CampaignService:
                 campaign_id=campaign.id,
             )
 
-        # Envoyer email d'invitation
-        invitation_url = url_for('campaign.accept_invitation', token=token, _external=True)
-
-        EmailService.send_campaign_invitation(
-            invitation.invited_email,
-            campaign.name,
-            invitation_url,
-            user.username if user else email_or_username
-        )
+        # Envoyer email d'invitation (inscription si compte inexistant)
+        if user:
+            invitation_url = url_for('campaign.accept_invitation', token=token, _external=True)
+            EmailService.send_campaign_invitation(
+                invitation.invited_email,
+                campaign.name,
+                invitation_url,
+                user.username,
+            )
+        else:
+            signup_url = url_for(
+                'auth.register',
+                invitation_token=token,
+                invited_email=invitation.invited_email,
+                _external=True,
+            )
+            EmailService.send_campaign_signup_invitation(
+                invitation.invited_email,
+                campaign.name,
+                signup_url,
+            )
 
         return {"success": True, "message": "Invitation envoyée avec succès"}
 
@@ -128,6 +145,11 @@ class CampaignService:
         # Vérifier que l'utilisateur correspond
         if invitation.invited_user_id and invitation.invited_user_id != user_id:
             return {"error": "Cette invitation n'est pas pour vous"}
+
+        if not invitation.invited_user_id and invitation.invited_email:
+            user = User.query.get_or_404(user_id)
+            if user.email.lower() != invitation.invited_email.lower():
+                return {"error": "Cette invitation est liee a un autre email"}
 
         # Ajouter comme membre
         member = CampaignMember(
