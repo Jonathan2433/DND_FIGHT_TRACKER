@@ -24,6 +24,7 @@ class EpisodeUserNote(db.Model):
     episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     notes = db.Column(db.Text)
+    private_notes = db.Column(db.Text)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     episode = db.relationship('Episode', backref=db.backref('user_notes', lazy=True, cascade='all, delete-orphan'))

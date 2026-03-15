@@ -45,7 +45,7 @@ class EpisodeService:
         if note:
             return note
 
-        note = EpisodeUserNote(episode_id=episode_id, user_id=user_id, notes='')
+        note = EpisodeUserNote(episode_id=episode_id, user_id=user_id, notes='', private_notes='')
         db.session.add(note)
         db.session.commit()
         return note
@@ -59,6 +59,18 @@ class EpisodeService:
             db.session.add(note)
 
         note.notes = notes
+        db.session.commit()
+        return note
+
+    @staticmethod
+    def update_user_private_note(episode_id, user_id, private_notes):
+        """Mettre a jour la note privee d'un utilisateur pour un episode."""
+        note = EpisodeUserNote.query.filter_by(episode_id=episode_id, user_id=user_id).first()
+        if not note:
+            note = EpisodeUserNote(episode_id=episode_id, user_id=user_id)
+            db.session.add(note)
+
+        note.private_notes = private_notes
         db.session.commit()
         return note
 

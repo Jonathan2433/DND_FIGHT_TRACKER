@@ -37,6 +37,17 @@
 
 
 
+
+
+    <section class="card">
+        <h2 class="section-head__title">Ma note privee</h2>
+        <p class="section-head__copy">Cette note est visible uniquement par vous.</p>
+        <form method="POST" action="{{ url_for('episode.update_my_private_notes', episode_id=episode.id) }}">
+            <textarea name="private_notes" class="form-control" rows="8" placeholder="Votre note privee...">{{ my_note.private_notes or '' }}</textarea>
+            <button type="submit" class="btn btn-secondary" style="margin-top: 0.75rem;">Sauvegarder ma note privee</button>
+        </form>
+    </section>
+
     <section class="card">
         <h2 class="section-head__title">Notes des participants</h2>
         {% if shared_notes %}

@@ -92,3 +92,20 @@ def update_my_notes(episode_id):
     EpisodeService.update_user_note(episode_id, g.current_user.id, notes)
     flash('Votre note partagee a ete enregistree.', 'success')
     return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+
+@bp.route('/<int:episode_id>/my_private_notes', methods=['POST'])
+@login_required
+def update_my_private_notes(episode_id):
+    """Modifier la note privee de l'utilisateur courant."""
+    episode = Episode.query.get_or_404(episode_id)
+    campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Acces interdit a cet episode.', 'error')
+        return redirect(url_for('main.index'))
+
+    private_notes = request.form.get('private_notes', '').strip()
+    EpisodeService.update_user_private_note(episode_id, g.current_user.id, private_notes)
+    flash('Votre note privee a ete enregistree.', 'success')
+    return redirect(url_for('episode.view_episode', episode_id=episode_id))
