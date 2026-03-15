@@ -8,10 +8,6 @@
             <h1 class="section-title">
                 Centralisez vos campagnes, vos personnages et vos combats dans un espace plus clair.
             </h1>
-            <p class="section-copy">
-                L'accueil reste une porte d'entree simple. Une fois connecte, vous retrouvez directement vos campagnes
-                et vos personnages sans exposer de contenus prives aux visiteurs.
-            </p>
 
             <div class="home-hero__actions">
                 {% if user_is_connected %}
@@ -29,46 +25,16 @@
 
         <div class="home-hero__panel">
             <div class="hero-panel-card">
-                <strong>{{ total_combats }} combats suivis</strong>
-                <p>Un historique global pour garder une vue d'ensemble sur les affrontements termines ou en cours.</p>
+                <strong>{{ total_campaigns }} campagnes au total</strong>
             </div>
             <div class="hero-panel-card">
-                <strong>{{ total_pj }} personnages joueurs</strong>
-                <p>Retrouvez vos fiches, vos progres d'XP et vos medias sans melanger l'accueil et les contenus prives.</p>
+                <strong>{{ total_pj }} joueurs</strong>
             </div>
             <div class="hero-panel-card">
-                <strong>{{ total_closed }} combats termines</strong>
-                <p>Les resumes et statistiques restent accessibles depuis vos campagnes, pas depuis une vitrine publique.</p>
+                <strong>{{ total_combats }} combats</strong>
             </div>
         </div>
     </section>
-
-    <div class="dashboard-stats">
-        <div class="stat-card">
-            <h3>Combats totaux</h3>
-            <p>{{ total_combats }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Combats termines</h3>
-            <p>{{ total_closed }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>PJ enregistres</h3>
-            <p>{{ total_pj }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Rounds joues</h3>
-            <p>{{ total_rounds }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Degats infliges</h3>
-            <p>{{ total_damage }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Soins donnes</h3>
-            <p>{{ total_heal }}</p>
-        </div>
-    </div>
 
     {% if user_is_connected %}
         <section class="card">
