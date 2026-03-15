@@ -1,17 +1,36 @@
 # Migrated to app.web.routes
 """Routes d'authentification"""
+from urllib.parse import urlparse
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.application.use_cases.auth_service import AuthService
+from app.application.use_cases.campaign_service import CampaignService
 from app.utils.decorators import anonymous_required, login_required
 
 # Créer le blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
+def _get_safe_next_url(raw_next_url):
+    """Retourner une URL locale sûre pour la redirection post-auth."""
+    if not raw_next_url:
+        return ''
+
+    parsed_url = urlparse(raw_next_url)
+    if parsed_url.netloc or not parsed_url.path.startswith('/'):
+        return ''
+
+    return raw_next_url
+
+
 @bp.route('/register', methods=['GET', 'POST'])
 @anonymous_required
 def register():
     """Inscription utilisateur"""
+    invitation_token = request.values.get('invitation_token', '').strip()
+    invited_email = request.values.get('invited_email', '').strip()
+    next_url = _get_safe_next_url(request.values.get('next', '').strip())
+
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
@@ -24,15 +43,39 @@ def register():
             flash(result['error'], 'error')
         else:
             flash(result['message'], 'success')
+            if invitation_token:
+                accept_result = CampaignService.accept_invitation(invitation_token, result['user'].id)
+                if 'error' in accept_result:
+                    flash(
+                        "Compte créé, mais l'invitation n'a pas pu être acceptée automatiquement : "
+                        f"{accept_result['error']}",
+                        'warning'
+                    )
+                    return redirect(url_for('auth.login'))
+
+                flash(
+                    f'Invitation acceptée ! Votre compte est maintenant lié à la campagne "{accept_result["campaign"].name}".',
+                    'success'
+                )
+                return redirect(url_for('auth.login'))
+            if next_url:
+                return redirect(next_url)
             return redirect(url_for('auth.login'))
 
-    return render_template('auth/register.html')
+    return render_template(
+        'auth/register.html',
+        invitation_token=invitation_token,
+        invited_email=invited_email,
+        next_url=next_url,
+    )
 
 
 @bp.route('/login', methods=['GET', 'POST'])
 @anonymous_required
 def login():
     """Connexion utilisateur"""
+    next_url = _get_safe_next_url(request.values.get('next', '').strip())
+
     if request.method == 'POST':
         username_or_email = request.form['username_or_email']
         password = request.form['password']
@@ -44,9 +87,11 @@ def login():
         else:
             session['user_id'] = result['user'].id
             flash(f'Bienvenue, {result["user"].username} !', 'success')
+            if next_url:
+                return redirect(next_url)
             return redirect(url_for('main.index'))
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', next_url=next_url)
 
 
 @bp.route('/logout')

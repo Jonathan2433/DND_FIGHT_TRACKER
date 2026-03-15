@@ -116,9 +116,12 @@ class StoryArcService:
         """Supprimer un arc narratif"""
         arc = StoryArc.query.get_or_404(arc_id)
 
-        # Vérifier qu'il n'y a pas de combats liés
-        if arc.combats:
+        # Vérifier qu'il n'y a pas de combats liés (directement ou via episodes)
+        if arc.combats or any(episode.combats for episode in arc.episodes):
             return {"error": "Impossible de supprimer un arc qui contient des combats"}
+
+        if arc.episodes:
+            return {"error": "Impossible de supprimer un arc qui contient des episodes"}
 
         # Réorganiser les index des arcs suivants
         following_arcs = StoryArc.query.filter(
@@ -154,5 +157,6 @@ class StoryArcService:
             "total_combats": total_combats,
             "completed_combats": completed_combats,
             "duration_days": duration_days,
-            "estimated_sessions": arc.estimated_sessions
+            "estimated_sessions": arc.estimated_sessions,
+            "total_episodes": len(arc.episodes)
         }

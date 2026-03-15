@@ -6,6 +6,7 @@ from .character_service import CharacterService
 from .combat_service import CombatService
 from .combatant_service import CombatantService
 from .email_service import EmailService
+from .episode_service import EpisodeService
 from .group_service import GroupService
 from .story_arc_service import StoryArcService
 from .template_service import TemplateService
@@ -18,6 +19,7 @@ __all__ = [
     "CombatService",
     "CombatantService",
     "EmailService",
+    "EpisodeService",
     "GroupService",
     "StoryArcService",
     "TemplateService",

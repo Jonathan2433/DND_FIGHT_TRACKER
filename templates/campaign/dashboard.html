@@ -78,11 +78,7 @@
                                 <a href="{{ url_for('summary.arc_stats', arc_id=arc.id) }}" class="btn btn-secondary inl-campaign-019">Stats</a>
 
                                 {% if is_mj %}
-                                    <form method="POST" action="{{ url_for('combat.create_combat') }}" class="inl-campaign-020">
-                                        <input type="hidden" name="name" value="Combat - {{ arc.name }}">
-                                        <input type="hidden" name="story_arc_id" value="{{ arc.id }}">
-                                        <button type="submit" class="btn btn-primary inl-campaign-019">⚔️ Nouveau combat</button>
-                                    </form>
+                                    <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-primary inl-campaign-019">🎬 Gerer episodes</a>
                                     {% if arc.can_be_started %}
                                         <form method="POST" action="{{ url_for('story_arc.start_arc', arc_id=arc.id) }}" class="inl-campaign-020">
                                             <button type="submit" class="btn btn-primary inl-campaign-019">▶️ Démarrer</button>
