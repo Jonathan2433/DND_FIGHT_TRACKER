@@ -1,7 +1,7 @@
 """Decorateurs pour la securite et l'authentification."""
 from functools import wraps
 
-from flask import session, redirect, url_for, flash, g
+from flask import session, redirect, url_for, flash, g, request
 
 from app.application.use_cases.auth_service import AuthService
 
@@ -13,7 +13,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Vous devez etre connecte pour acceder a cette page.', 'error')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', next=request.url))
 
         g.current_user = AuthService.get_user_by_id(session['user_id'])
         if not g.current_user or not g.current_user.is_active:
