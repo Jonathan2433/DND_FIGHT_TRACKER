@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
 from app.utils import MONSTER_TEMPLATES, allowed_file
+from app.utils.dnd5_rules import resolve_character_creation
 from app.application.use_cases.notification_service import NotificationService
 
 
@@ -38,6 +39,8 @@ class TemplateService:
 
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
+        resolved_character = resolve_character_creation(form_data)
+
         template = CharacterTemplate(
             # ✅ AJOUT : Champs de sécurité
             owner_id=current_user_id,
@@ -49,27 +52,28 @@ class TemplateService:
 
             # Données existantes
             name=form_data['name'],
-            character_class=form_data['character_class'],
-            level=int(form_data['level']),
-            hp_max=int(form_data['hp_max']),
-            ac_base=int(form_data['ac_base']),
-            initiative_bonus=int(form_data['initiative_bonus']),
+            race=resolved_character['race'],
+            character_class=resolved_character['character_class'],
+            level=resolved_character['level'],
+            hp_max=resolved_character['hp_max'],
+            ac_base=resolved_character['ac_base'],
+            initiative_bonus=resolved_character['initiative_bonus'],
 
             # Caractéristiques
-            force=int(form_data.get('force', 10)),
-            dexterite=int(form_data.get('dexterite', 10)),
-            constitution=int(form_data.get('constitution', 10)),
-            intelligence=int(form_data.get('intelligence', 10)),
-            sagesse=int(form_data.get('sagesse', 10)),
-            charisme=int(form_data.get('charisme', 10)),
+            force=resolved_character['force'],
+            dexterite=resolved_character['dexterite'],
+            constitution=resolved_character['constitution'],
+            intelligence=resolved_character['intelligence'],
+            sagesse=resolved_character['sagesse'],
+            charisme=resolved_character['charisme'],
 
             # Maîtrises de sauvegarde
-            maitrise_force='maitrise_force' in form_data,
-            maitrise_dexterite='maitrise_dexterite' in form_data,
-            maitrise_constitution='maitrise_constitution' in form_data,
-            maitrise_intelligence='maitrise_intelligence' in form_data,
-            maitrise_sagesse='maitrise_sagesse' in form_data,
-            maitrise_charisme='maitrise_charisme' in form_data,
+            maitrise_force=resolved_character['maitrise_force'],
+            maitrise_dexterite=resolved_character['maitrise_dexterite'],
+            maitrise_constitution=resolved_character['maitrise_constitution'],
+            maitrise_intelligence=resolved_character['maitrise_intelligence'],
+            maitrise_sagesse=resolved_character['maitrise_sagesse'],
+            maitrise_charisme=resolved_character['maitrise_charisme'],
 
             image_filename=filename,
             pdf_filename=pdf_filename,

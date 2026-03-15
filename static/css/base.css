@@ -381,3 +381,113 @@ hr {
 .site-footer__links a {
     color: var(--color-text-primary);
 }
+
+.site-notification {
+    position: relative;
+}
+
+.site-notification__toggle {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-05);
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.site-notification__badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-danger);
+    color: var(--color-white);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.site-notification__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: min(380px, 90vw);
+    max-height: 460px;
+    overflow: auto;
+    border-radius: 18px;
+    padding: 14px;
+    background: var(--surface-a95);
+    border: 1px solid var(--overlay-white-10);
+    box-shadow: 0 16px 36px var(--overlay-black-30);
+    display: none;
+    z-index: 130;
+}
+
+.site-notification.is-open .site-notification__panel {
+    display: block;
+}
+
+.site-notification__panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.site-notification__all {
+    font-size: 13px;
+}
+
+.site-notification__list {
+    display: grid;
+    gap: 8px;
+}
+
+.site-notification__item-form {
+    margin: 0;
+}
+
+.site-notification__item {
+    width: 100%;
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 12px;
+    background: var(--overlay-white-02);
+    color: inherit;
+    text-align: left;
+    padding: 10px;
+    display: grid;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.site-notification__item.is-unread {
+    border-color: var(--primary-a50);
+    background: var(--primary-a10);
+}
+
+.site-notification__item-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.site-notification__item-message,
+.site-notification__item-date,
+.site-notification__empty {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.site-notification__mark-all {
+    margin-top: 10px;
+}
+
+.site-notification__mark-all .btn {
+    width: 100%;
+}

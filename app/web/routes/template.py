@@ -8,6 +8,7 @@ from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
 from app.extensions import db
+from app.utils.dnd5_rules import RACE_BONUSES, CLASS_RULES, STANDARD_ARRAY
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
@@ -41,7 +42,10 @@ def manage_templates():
         pj_characters=pj_characters,
         other_characters=other_characters,
         encounters=encounters,
-        campaign_context=campaign_context
+        campaign_context=campaign_context,
+        dnd_races=sorted(RACE_BONUSES.keys()),
+        dnd_classes=sorted(CLASS_RULES.keys()),
+        standard_array=STANDARD_ARRAY
     )
 
 
@@ -143,8 +147,7 @@ def character_profile(id):
     ))
 
     limited_profile = bool(
-        character.character_type == 'PNJ'
-        and visible_payload
+        visible_payload
         and visibility_mode in ['reduced', 'semi_complete']
         and not is_full_view
     )

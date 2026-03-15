@@ -70,7 +70,47 @@
                     <div class="site-nav__user">
                         {% if session.user_id %}
                             <span class="site-nav__welcome">{{ current_user.username if current_user else 'Utilisateur' }}</span>
-                            <a href="{{ url_for('notification.index') }}" class="site-nav__link">Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
+                            <div class="site-notification" data-notification-center>
+                                <button
+                                    type="button"
+                                    class="site-notification__toggle"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    aria-label="Ouvrir les notifications"
+                                    data-notification-toggle
+                                >
+                                    <span class="site-notification__icon" aria-hidden="true">🔔</span>
+                                    {% if unread_notifications_count %}
+                                        <span class="site-notification__badge">{{ unread_notifications_count }}</span>
+                                    {% endif %}
+                                </button>
+                                <div class="site-notification__panel" data-notification-panel>
+                                    <div class="site-notification__panel-header">
+                                        <strong>Notifications</strong>
+                                        <a href="{{ url_for('notification.index') }}" class="site-notification__all">Voir tout</a>
+                                    </div>
+
+                                    {% if header_notifications %}
+                                        <div class="site-notification__list">
+                                            {% for notif in header_notifications %}
+                                                <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="site-notification__item-form">
+                                                    <button type="submit" class="site-notification__item {% if not notif.is_read %}is-unread{% endif %}">
+                                                        <span class="site-notification__item-title">{{ notif.title }}</span>
+                                                        <span class="site-notification__item-message">{{ notif.message }}</span>
+                                                        <span class="site-notification__item-date">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                                    </button>
+                                                </form>
+                                            {% endfor %}
+                                        </div>
+
+                                        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all">
+                                            <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
+                                        </form>
+                                    {% else %}
+                                        <p class="site-notification__empty">Aucune notification pour le moment.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                             <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
                             <a href="{{ url_for('auth.logout') }}" class="site-nav__link">Deconnexion</a>
                         {% else %}
@@ -125,13 +165,13 @@
 
                 <div class="site-footer__meta">
                     <span>Interface DnD / JDR</span>
-                    <span>Design optimise pour desktop et mobile</span>
                 </div>
             </div>
         </footer>
     </div>
     <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification_center.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const tokenMeta = document.querySelector('meta[name="csrf-token"]');

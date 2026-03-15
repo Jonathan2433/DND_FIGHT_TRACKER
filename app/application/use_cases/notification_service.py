@@ -45,6 +45,10 @@ class NotificationService:
         return Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(limit).all()
 
     @staticmethod
+    def get_user_notification(user_id, notification_id):
+        return Notification.query.filter_by(id=notification_id, user_id=user_id).first()
+
+    @staticmethod
     def unread_count(user_id):
         return Notification.query.filter_by(user_id=user_id, is_read=False).count()
 
@@ -52,3 +56,15 @@ class NotificationService:
     def mark_all_as_read(user_id):
         Notification.query.filter_by(user_id=user_id, is_read=False).update({'is_read': True})
         db.session.commit()
+
+    @staticmethod
+    def mark_as_read(user_id, notification_id):
+        notification = NotificationService.get_user_notification(user_id, notification_id)
+        if not notification:
+            return None
+
+        if not notification.is_read:
+            notification.is_read = True
+            db.session.commit()
+
+        return notification

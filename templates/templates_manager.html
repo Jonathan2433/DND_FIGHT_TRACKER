@@ -36,8 +36,19 @@
                     <label for="create-name">Nom</label>
                     <input id="create-name" type="text" name="name" required>
 
-                    <label for="create-class">Classe</label>
-                    <input id="create-class" type="text" name="character_class" required>
+                    <label for="create-race">Race DnD 5e</label>
+                    <select id="create-race" name="race" required>
+                        {% for race in dnd_races %}
+                            <option value="{{ race }}" {% if race == 'Humain' %}selected{% endif %}>{{ race }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="create-class">Classe DnD 5e</label>
+                    <select id="create-class" name="character_class" required>
+                        {% for klass in dnd_classes %}
+                            <option value="{{ klass }}" {% if klass == 'Guerrier' %}selected{% endif %}>{{ klass }}</option>
+                        {% endfor %}
+                    </select>
 
                     <label for="create-level">Niveau</label>
                     <input id="create-level" type="number" name="level" value="1" min="1" max="20" required>
@@ -47,54 +58,37 @@
                 </section>
 
                 <section class="edit-section">
-                    <h3>Combat</h3>
+                    <h3>Funnel creation DnD 5e</h3>
+                    <p class="section-head__copy">Tableau standard: {{ standard_array|join(', ') }}. Les bonus raciaux, les jets de sauvegarde de classe, les PV, la CA et l'initiative sont calcules automatiquement.</p>
+                    <div class="stats-grid stats-grid--funnel">
+                        {% set abilities = [
+                            ('force', 'Force'),
+                            ('dexterite', 'Dexterite'),
+                            ('constitution', 'Constitution'),
+                            ('intelligence', 'Intelligence'),
+                            ('sagesse', 'Sagesse'),
+                            ('charisme', 'Charisme')
+                        ] %}
+                        {% for ability_key, ability_label in abilities %}
+                            <div class="stat-input">
+                                <label for="create-{{ ability_key }}">{{ ability_label }} (base)</label>
+                                <select id="create-{{ ability_key }}" name="{{ ability_key }}_base" class="ability-base" required>
+                                    {% for value in standard_array %}
+                                        <option value="{{ value }}" {% if (ability_key == 'force' and value == 15) or (ability_key == 'dexterite' and value == 14) or (ability_key == 'constitution' and value == 13) or (ability_key == 'intelligence' and value == 12) or (ability_key == 'sagesse' and value == 10) or (ability_key == 'charisme' and value == 8) %}selected{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small id="preview-{{ ability_key }}" class="funnel-preview">Final: -</small>
+                            </div>
+                        {% endfor %}
+                    </div>
 
-                    <label for="create-hp">PV max</label>
-                    <input id="create-hp" type="number" name="hp_max" required>
-
-                    <label for="create-ac">CA</label>
-                    <input id="create-ac" type="number" name="ac_base" required>
-
-                    <label for="create-init">Bonus initiative</label>
-                    <input id="create-init" type="number" name="initiative_bonus" value="0">
+                    <div class="funnel-summary">
+                        <p id="race-bonus-summary">Bonus raciaux: +1 partout</p>
+                        <p id="saving-throws-summary">Maitrises de sauvegarde: Force, Constitution</p>
+                        <p id="derived-stats-summary">PV, CA et initiative calcules automatiquement a la creation.</p>
+                    </div>
                 </section>
             </div>
-
-            <section class="edit-section edit-section--separator">
-                <h3>Caracteristiques</h3>
-                <div class="stats-grid">
-                    <div class="stat-input">
-                        <label for="create-force">Force</label>
-                        <input id="create-force" type="number" name="force" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_force"> Maitrise sauvegarde</label>
-                    </div>
-                    <div class="stat-input">
-                        <label for="create-dex">Dexterite</label>
-                        <input id="create-dex" type="number" name="dexterite" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_dexterite"> Maitrise sauvegarde</label>
-                    </div>
-                    <div class="stat-input">
-                        <label for="create-con">Constitution</label>
-                        <input id="create-con" type="number" name="constitution" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_constitution"> Maitrise sauvegarde</label>
-                    </div>
-                    <div class="stat-input">
-                        <label for="create-int">Intelligence</label>
-                        <input id="create-int" type="number" name="intelligence" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_intelligence"> Maitrise sauvegarde</label>
-                    </div>
-                    <div class="stat-input">
-                        <label for="create-wis">Sagesse</label>
-                        <input id="create-wis" type="number" name="sagesse" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_sagesse"> Maitrise sauvegarde</label>
-                    </div>
-                    <div class="stat-input">
-                        <label for="create-cha">Charisme</label>
-                        <input id="create-cha" type="number" name="charisme" value="10" min="1" max="30">
-                        <label class="checkbox-row"><input type="checkbox" name="maitrise_charisme"> Maitrise sauvegarde</label>
-                    </div>
-                </div>
-            </section>
 
             <section class="edit-section edit-section--separator visibility-panel">
                 <h3>Visibilite</h3>
@@ -182,9 +176,6 @@
                         <div class="template-card-actions">
                             <a href="{{ url_for('template.character_profile', id=char.id) }}" class="btn btn-secondary">Voir</a>
                             <a href="{{ url_for('template.edit_character_template', id=char.id) }}" class="btn btn-primary">Modifier</a>
-                            <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" class="inl-core-003">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer ce personnage ?')">Supprimer</button>
-                            </form>
                         </div>
                     </article>
                 {% endfor %}
@@ -229,9 +220,6 @@
                         <div class="template-card-actions">
                             <a href="{{ url_for('template.character_profile', id=char.id) }}" class="btn btn-secondary">Voir</a>
                             <a href="{{ url_for('template.edit_character_template', id=char.id) }}" class="btn btn-primary">Modifier</a>
-                            <form action="{{ url_for('template.delete_character_template', id=char.id) }}" method="POST" class="inl-core-003">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer ce personnage ?')">Supprimer</button>
-                            </form>
                         </div>
                     </article>
                 {% endfor %}
@@ -242,4 +230,5 @@
     </section>
 </div>
 
+<script src="{{ url_for('static', filename='js/template_creation_funnel.js') }}"></script>
 {% endblock %}

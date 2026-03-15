@@ -164,6 +164,25 @@
             </div>
         </div>
 
+        {% if player_campaign_pjs %}
+            <div class="pj-dashboard-grid inl-campaign-023">
+                {% for pj in player_campaign_pjs %}
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-dashboard-card inl-campaign-024">
+                        <div class="template-avatar-container {% if pj.image_filename %}has-image{% endif %}">
+                            {% if pj.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}" class="pj-dashboard-img inl-campaign-025" alt="{{ pj.name }}">
+                            {% endif %}
+                            <div class="pj-avatar-large inl-campaign-026">{{ pj.name[:2]|upper }}</div>
+                        </div>
+                        <div class="inl-campaign-027">{{ pj.name }}</div>
+                        <div class="pj-meta">{{ pj.character_class }} {{ pj.level }}</div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Vous n'avez pas encore de PJ associé à cette campagne.</p>
+        {% endif %}
+
         {% if available_player_pjs %}
             <form method="POST" action="{{ url_for('campaign.add_player_character', campaign_id=campaign.id) }}" class="inl-campaign-020">
                 <label for="character_id">Ajouter un de vos PJ existants :</label>
@@ -177,6 +196,45 @@
             </form>
         {% else %}
             <p>Vous n'avez pas de PJ disponible à associer.</p>
+        {% endif %}
+
+        {% set shared_pjs = visible_campaign_pjs|selectattr('owner_id', 'ne', g.current_user.id)|list %}
+        {% if shared_pjs %}
+            <div class="inl-campaign-022">
+                <span>👥 PJ partagés par les autres joueurs</span>
+            </div>
+            <div class="pj-notes-grid">
+                {% for pj in shared_pjs %}
+                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-note-card pj-note-card--link">
+                        <div class="pj-note-header">
+                            <div class="pj-info">
+                                {% if pj.image_filename %}
+                                    <img src="{{ url_for('static', filename='uploads/' + pj.image_filename) }}"
+                                         class="pj-mini-avatar" alt="{{ pj.name }}">
+                                {% else %}
+                                    <div class="pj-mini-avatar-placeholder">
+                                        {{ pj.name[:2]|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ pj.name }}</strong>
+                                    <div class="pj-meta">
+                                        {{ pj.character_class }} {{ pj.level }} •
+                                        Propriétaire: {{ pj.owner.username }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pj-actions">
+                                <span class="btn btn-primary">👁️ Voir</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>👥 Aucun PJ partagé par les autres joueurs pour le moment.</p>
         {% endif %}
     </div>
     {% endif %}
