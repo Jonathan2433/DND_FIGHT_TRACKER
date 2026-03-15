@@ -136,3 +136,29 @@
     flex-direction: column;
     gap: 4px;
 }
+
+.stats-grid--funnel {
+    margin-top: 10px;
+}
+
+.funnel-preview {
+    display: block;
+    margin-top: 6px;
+    color: #6b7280;
+}
+
+.funnel-summary {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+
+.funnel-summary p {
+    margin: 0 0 6px;
+}
+
+.funnel-summary p:last-child {
+    margin-bottom: 0;
+}
