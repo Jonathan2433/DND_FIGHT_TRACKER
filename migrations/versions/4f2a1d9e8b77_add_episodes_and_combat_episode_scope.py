@@ -17,16 +17,6 @@ depends_on = None
 
 def upgrade():
     conn = op.get_bind()
-    episode_table = sa.table(
-        'episode',
-        sa.column('id', sa.Integer()),
-        sa.column('story_arc_id', sa.Integer()),
-        sa.column('title', sa.String(length=120)),
-        sa.column('summary_shared', sa.Text()),
-        sa.column('order_index', sa.Integer()),
-        sa.column('created_at', sa.DateTime()),
-    )
-
     op.create_table(
         'episode',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -57,14 +47,18 @@ def upgrade():
     arc_rows = conn.execute(sa.text('SELECT id, name FROM story_arc ORDER BY id')).fetchall()
     for arc_id, arc_name in arc_rows:
         episode_id = conn.execute(
-            episode_table.insert().values(
-                story_arc_id=arc_id,
-                title=f'Episode 1 - {arc_name}',
-                summary_shared=None,
-                order_index=0,
-                created_at=sa.func.current_timestamp(),
-            )
-        ).inserted_primary_key[0]
+            sa.text(
+                '''
+                INSERT INTO episode (story_arc_id, title, summary_shared, order_index, created_at)
+                VALUES (:story_arc_id, :title, NULL, 0, CURRENT_TIMESTAMP)
+                RETURNING id
+                '''
+            ),
+            {
+                'story_arc_id': arc_id,
+                'title': f'Episode 1 - {arc_name}',
+            }
+        ).scalar_one()
 
         conn.execute(
             sa.text('UPDATE combat SET episode_id = :episode_id WHERE story_arc_id = :story_arc_id'),
