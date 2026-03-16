@@ -1,8 +1,8 @@
 """Routes pour la gestion des combats"""
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, g, flash, current_app
 
-from app.application.use_cases import CombatService, CombatantService, GroupService, TemplateService
-from app.models import Combat, CharacterTemplate, EncounterTemplate
+from app.application.use_cases import CombatService, CombatantService, GroupService, TemplateService, NotificationService, EmailService
+from app.models import Combat, CharacterTemplate, EncounterTemplate, CampaignMember, User
 from app.domain.policies import CombatPolicy, EncounterTemplatePolicy
 from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order, get_current_actor
 from werkzeug.utils import secure_filename
@@ -44,6 +44,18 @@ def _save_uploaded_media(file_storage, allowed_extensions):
     file_storage.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
     return filename
 
+
+
+
+def _campaign_players(combat):
+    """Lister les joueurs de la campagne (hors MJ) pour invitation de combat."""
+    memberships = CampaignMember.query.filter_by(campaign_id=combat.campaign_id).all()
+    user_ids = [member.user_id for member in memberships if member.user_id != combat.campaign.mj_id]
+    if not user_ids:
+        return []
+
+    users = User.query.filter(User.id.in_(user_ids), User.is_active.is_(True)).order_by(User.username.asc()).all()
+    return users
 
 def _get_player_controlled_combatant_ids(combat, user):
     """Retourne les IDs des tokens PJ contrôlés par l'utilisateur courant."""
@@ -135,7 +147,8 @@ def view_combat(combat_id):
         round_start=combat_data['combat'].current_round_start,
         turn_start=combat_data['combat'].current_turn_start,
         initiative_order=combat_data['initiative_order'],
-        battlemap_tokens=_parse_battlemap_tokens(combat_data['combat'].battlemap_tokens_json)
+        battlemap_tokens=_parse_battlemap_tokens(combat_data['combat'].battlemap_tokens_json),
+        campaign_players=_campaign_players(combat_data['combat'])
     )
 
 
@@ -167,6 +180,60 @@ def view_combat_player(combat_id):
         battlemap_tokens=_parse_battlemap_tokens(combat.battlemap_tokens_json),
         player_controlled_ids=player_controlled_ids
     )
+
+
+
+
+@bp.route('/<int:combat_id>/invite_players', methods=['POST'])
+@login_required
+def invite_players_to_combat(combat_id):
+    """Envoyer des invitations de combat aux joueurs sélectionnés."""
+    redirect_response = _require_manage_or_redirect(combat_id)
+    if redirect_response:
+        return redirect_response
+
+    combat = Combat.query.get_or_404(combat_id)
+    selected_ids = request.form.getlist('player_ids')
+    if not selected_ids:
+        flash('Selectionnez au moins un joueur a inviter.', 'warning')
+        return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
+    campaign_user_ids = {member.user_id for member in CampaignMember.query.filter_by(campaign_id=combat.campaign_id).all()}
+    invited_users = User.query.filter(User.id.in_(selected_ids), User.is_active.is_(True)).all()
+
+    invitation_url = url_for('combat.join_combat', combat_id=combat_id, _external=True)
+    invited_count = 0
+
+    for user in invited_users:
+        if user.id not in campaign_user_ids or user.id == combat.campaign.mj_id:
+            continue
+
+        NotificationService.create_notification(
+            user_id=user.id,
+            title='Invitation au combat',
+            message=f'Le MJ vous invite au combat "{combat.name}". Cliquez pour rejoindre la vue joueur.',
+            kind=f'combat_invitation:{combat.id}',
+            campaign_id=combat.campaign_id,
+            auto_commit=False,
+        )
+        EmailService.send_combat_invitation(
+            user_email=user.email,
+            username=user.username,
+            campaign_name=combat.campaign.name,
+            combat_name=combat.name,
+            invitation_url=invitation_url,
+        )
+        invited_count += 1
+
+    from app.extensions import db
+    db.session.commit()
+
+    if invited_count:
+        flash(f'{invited_count} invitation(s) envoyee(s) (notification + email).', 'success')
+    else:
+        flash('Aucun joueur valide a inviter.', 'warning')
+
+    return redirect(url_for('combat.view_combat', combat_id=combat_id))
 
 
 @bp.route('/<int:combat_id>/join')

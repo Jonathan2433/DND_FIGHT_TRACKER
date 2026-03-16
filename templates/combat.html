@@ -55,7 +55,22 @@
 
         <section class="card combat-invite-card">
             <h3>📨 Inviter des joueurs au combat</h3>
-            <p>Partagez ce lien : en cliquant sur "Rejoindre", ils arrivent directement sur la vue joueur.</p>
+            <p>Sélectionnez des joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
+
+            <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
+                <select name="player_ids" multiple size="6" class="combat-invite-select">
+                    {% if campaign_players %}
+                    {% for player in campaign_players %}
+                        <option value="{{ player.id }}">{{ player.username }} — {{ player.email }}</option>
+                    {% endfor %}
+                    {% else %}
+                        <option value="" disabled>Aucun joueur dans la campagne</option>
+                    {% endif %}
+                </select>
+                <button type="submit" class="btn-primary">Envoyer invitation au combat</button>
+            </form>
+
+            <p>Ou partagez ce lien direct :</p>
             <div class="combat-invite-row">
                 <input type="text" value="{{ url_for('combat.join_combat', combat_id=combat.id, _external=True) }}" readonly data-combat-invite-link>
                 <button type="button" class="btn-secondary" data-copy-combat-link>Copier</button>
