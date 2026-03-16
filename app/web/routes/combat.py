@@ -297,6 +297,7 @@ def upload_battlemap_media(combat_id):
 
     from app.extensions import db
     db.session.commit()
+    broadcast_combat_update(combat_id)
     return redirect(url_for('combat.view_combat', combat_id=combat_id))
 
 
@@ -317,6 +318,7 @@ def save_battlemap_tokens(combat_id):
 
     from app.extensions import db
     db.session.commit()
+    broadcast_combat_update(combat_id)
     return jsonify({'status': 'ok'})
 
 
@@ -336,6 +338,9 @@ def combat_state(combat_id):
     return jsonify({
         'round': combat.round,
         'current_actor_id': current_actor.id if current_actor else None,
+        'battlemap_media_filename': combat.battlemap_media_filename,
+        'battlemap_media_type': combat.battlemap_media_type,
+        'battlemap_tokens': _parse_battlemap_tokens(combat.battlemap_tokens_json),
         'combatants': [
             {
                 'id': c.id,
