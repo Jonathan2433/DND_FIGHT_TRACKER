@@ -213,3 +213,33 @@
 .combat-card-actions .btn-danger:hover {
     background: var(--color-danger-dark);
 }
+
+.home-quick-access__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.home-quick-access__item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 20px;
+    background: var(--surface-alt-a80);
+    border: 1px solid var(--overlay-white-10);
+}
+
+.home-quick-access__label {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.home-quick-access__item strong {
+    min-height: 44px;
+}
+
+.home-quick-access__empty {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}

@@ -169,6 +169,18 @@ def view_combat_player(combat_id):
     )
 
 
+@bp.route('/<int:combat_id>/join')
+@login_required
+def join_combat(combat_id):
+    """Lien d'invitation vers la vue joueur d'un combat."""
+    combat = Combat.query.get_or_404(combat_id)
+    if not _can_view_player_combat(combat):
+        flash('Acces non autorise a ce combat.', 'error')
+        return redirect(url_for('main.index'))
+
+    return redirect(url_for('combat.view_combat_player', combat_id=combat_id))
+
+
 def _require_manage_or_redirect(combat_id):
     combat = Combat.query.get_or_404(combat_id)
     if _can_manage_combat(combat):

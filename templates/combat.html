@@ -53,6 +53,16 @@
 
         </div>
 
+        <section class="card combat-invite-card">
+            <h3>📨 Inviter des joueurs au combat</h3>
+            <p>Partagez ce lien : en cliquant sur "Rejoindre", ils arrivent directement sur la vue joueur.</p>
+            <div class="combat-invite-row">
+                <input type="text" value="{{ url_for('combat.join_combat', combat_id=combat.id, _external=True) }}" readonly data-combat-invite-link>
+                <button type="button" class="btn-secondary" data-copy-combat-link>Copier</button>
+                <a href="{{ url_for('combat.join_combat', combat_id=combat.id) }}" class="btn-primary" target="_blank">Tester rejoindre</a>
+            </div>
+        </section>
+
         <hr>
 
         <section class="card">
@@ -469,6 +479,24 @@
 document.addEventListener("DOMContentLoaded", function() {
     const combatId = {{ combat.id }};
     const socket = window.io ? io() : null;
+    const copyButton = document.querySelector('[data-copy-combat-link]');
+    const linkInput = document.querySelector('[data-combat-invite-link]');
+
+    if (copyButton && linkInput) {
+        copyButton.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(linkInput.value);
+            } catch (error) {
+                linkInput.select();
+                document.execCommand('copy');
+            }
+
+            copyButton.textContent = 'Copie !';
+            window.setTimeout(() => {
+                copyButton.textContent = 'Copier';
+            }, 1400);
+        });
+    }
 
     /* AUTO SCROLL TOUR ACTIF */
     const active = document.getElementById("current-turn");

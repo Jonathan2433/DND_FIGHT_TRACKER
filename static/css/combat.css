@@ -892,3 +892,28 @@
     height: calc(100vh - 40px);
     border-width: 3px;
 }
+
+.combat-invite-card {
+    margin-top: 18px;
+}
+
+.combat-invite-card p {
+    margin-top: 8px;
+    color: var(--color-text-secondary);
+}
+
+.combat-invite-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.combat-invite-row input {
+    min-height: 40px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-05);
+    color: var(--color-text-primary);
+    padding: 0 12px;
+}
