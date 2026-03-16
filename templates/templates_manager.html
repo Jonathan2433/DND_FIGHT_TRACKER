@@ -7,6 +7,34 @@
         <button class="btn btn-primary" onclick="document.getElementById('create-form').style.display='block'">+ Nouveau PJ</button>
     </div>
 
+
+    <div class="card">
+        <h3>👹 Images de profils monstres (MJ)</h3>
+        <div class="template-grid">
+            {% for name in monster_templates.keys() %}
+            <div class="template-card">
+                <div class="template-card-header">
+                    <div class="template-avatar-container {% if monster_profiles.get(name) %}has-image{% endif %}">
+                        {% if monster_profiles.get(name) %}
+                            <img src="{{ url_for('static', filename='uploads/' + monster_profiles.get(name)) }}"
+                                 alt="{{ name }}" class="template-avatar-img">
+                        {% endif %}
+                        <div class="avatar-placeholder">{{ name[:2]|upper }}</div>
+                    </div>
+                    <div>
+                        <strong>{{ name }}</strong>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('template.upsert_monster_profile') }}" enctype="multipart/form-data" class="damage-form">
+                    <input type="hidden" name="monster_name" value="{{ name }}">
+                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required>
+                    <button type="submit" class="btn btn-secondary">Sauver</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
     <!-- ✅ FORMULAIRE ÉTENDU -->
     <div id="create-form" style="display: none;" class="card">
         <h3>Créer un Template PJ</h3>

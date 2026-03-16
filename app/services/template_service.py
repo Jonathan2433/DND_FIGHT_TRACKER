@@ -1,9 +1,10 @@
 """Service métier pour la gestion des templates"""
 import json
 import os
+from uuid import uuid4
 from werkzeug.utils import secure_filename
 from app.extensions import db
-from app.models import CharacterTemplate, EncounterTemplate, Combatant
+from app.models import CharacterTemplate, EncounterTemplate, Combatant, MonsterProfile
 from app.utils import MONSTER_TEMPLATES, allowed_file
 
 
@@ -156,7 +157,8 @@ class TemplateService:
             hp_current=template.hp_max,
             ac_base=template.ac_base,
             initiative=initiative,
-            notes=template.image_filename  # Pour stocker le nom de l'image
+            notes=template.image_filename,  # rétro-compatibilité
+            token_image_filename=template.image_filename
         )
 
         db.session.add(combatant)
@@ -200,6 +202,9 @@ class TemplateService:
             return []
 
         created_combatants = []
+        monster_profile = MonsterProfile.query.filter_by(monster_name=template_name).first()
+        monster_image = monster_profile.image_filename if monster_profile else None
+
         for i in range(quantity):
             # Initiative manuelle ou celle du template
             if manual_initiative and manual_initiative.strip() != "":
@@ -216,7 +221,8 @@ class TemplateService:
                 ac_base=template["ac"],
                 ac_bonus=0,
                 conditions="",
-                combat_id=combat_id
+                combat_id=combat_id,
+                token_image_filename=monster_image
             )
 
             db.session.add(combatant)
@@ -275,3 +281,30 @@ class TemplateService:
         }
 
         return export_data
+
+    @staticmethod
+    def save_monster_profile(monster_name, image, upload_folder):
+        """Créer ou mettre à jour l'image de profil d'un monstre."""
+        if not monster_name:
+            return {'error': 'Monstre invalide.'}
+
+        if not image or image.filename == '':
+            return {'error': 'Aucune image fournie.'}
+
+        extension = image.filename.rsplit('.', 1)[1].lower() if '.' in image.filename else ''
+        if extension not in {'png', 'jpg', 'jpeg', 'webp'}:
+            return {"error": "Format d'image non supporté."}
+
+        filename = secure_filename(image.filename)
+        unique_name = f"monster_{uuid4().hex}_{filename}"
+        image.save(os.path.join(upload_folder, unique_name))
+
+        profile = MonsterProfile.query.filter_by(monster_name=monster_name).first()
+        if not profile:
+            profile = MonsterProfile(monster_name=monster_name, image_filename=unique_name)
+            db.session.add(profile)
+        else:
+            profile.image_filename = unique_name
+
+        db.session.commit()
+        return {'message': f'Image enregistrée pour {monster_name}.'}

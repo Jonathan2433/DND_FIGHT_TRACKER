@@ -10,7 +10,40 @@
 
         <h2>{{ combat.name }} — Round {{ combat.round }}</h2>
 
-        <!-- PANNEAU DE CONTRÔLE FLOTTANT -->
+
+        <section class="card">
+            <h3>🗺 Battle Map (MJ)</h3>
+            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" class="template-form">
+                <input type="file" name="battlemap_media" accept=".png,.jpg,.jpeg,.webp,.mp4,.webm" required>
+                <button type="submit" class="btn-primary">Mettre à jour le fond</button>
+            </form>
+
+            <div class="battlemap-stage" id="battlemap-stage">
+                {% if combat.battlemap_media_filename %}
+                    {% if combat.battlemap_media_type == 'video' %}
+                        <video class="battlemap-media" autoplay muted loop playsinline>
+                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                        </video>
+                    {% else %}
+                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
+                    {% endif %}
+                {% else %}
+                    <div class="battlemap-placeholder">Ajoute un fond (image/vidéo) pour activer la battle map.</div>
+                {% endif %}
+
+                {% for c in singles %}
+                    {% if c.token_image_filename %}
+                        <img src="{{ url_for('static', filename='uploads/' + c.token_image_filename) }}"
+                             class="battle-token"
+                             data-combatant-id="{{ c.id }}"
+                             style="left: {{ c.map_x or 50 }}%; top: {{ c.map_y or 50 }}%;"
+                             alt="{{ c.name }}">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+                <!-- PANNEAU DE CONTRÔLE FLOTTANT -->
         <div class="floating-hud">
 
             <!-- Chronos -->
@@ -256,6 +289,11 @@
                 <span class="initiative">Init {{ c.initiative }}</span>
             </div>
 
+            <form method="POST" action="{{ url_for('combat.set_combatant_token', combatant_id=c.id) }}" enctype="multipart/form-data" class="damage-form">
+                <input type="file" name="token_image" accept=".png,.jpg,.jpeg,.webp" required>
+                <button type="submit" class="btn-secondary">🖼 Token</button>
+            </form>
+
             <div>
                 CA : {{ c.ac_total }}
                 {% if c.ac_bonus != 0 %}
@@ -429,6 +467,48 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 1000);
 
     {% endif %}
+
+    const stage = document.getElementById("battlemap-stage");
+    if (stage) {
+        stage.querySelectorAll(".battle-token").forEach((token) => {
+            token.addEventListener("pointerdown", (event) => {
+                event.preventDefault();
+                const rect = stage.getBoundingClientRect();
+
+                const move = (e) => {
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    const clampedX = Math.max(0, Math.min(100, x));
+                    const clampedY = Math.max(0, Math.min(100, y));
+
+                    token.style.left = `${clampedX}%`;
+                    token.style.top = `${clampedY}%`;
+                };
+
+                const up = async (e) => {
+                    document.removeEventListener("pointermove", move);
+                    document.removeEventListener("pointerup", up);
+
+                    const x = parseFloat(token.style.left);
+                    const y = parseFloat(token.style.top);
+
+                    try {
+                        await fetch(`/combat/combatant/${token.dataset.combatantId}/position`, {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({x, y})
+                        });
+                    } catch (error) {
+                        console.error("Erreur position token", error);
+                    }
+                };
+
+                document.addEventListener("pointermove", move);
+                document.addEventListener("pointerup", up);
+            });
+        });
+    }
+
 
 });
 </script>

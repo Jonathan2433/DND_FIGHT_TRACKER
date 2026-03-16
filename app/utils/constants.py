@@ -114,7 +114,7 @@ COMBATANT_TYPES = [
 # UPLOAD ET FICHIERS
 # =====================
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf", "mp4", "webm"}
 
 # =====================
 # ACTIONS DE COMBAT

@@ -10,7 +10,7 @@ class Config:
 
     # Upload configuration
     UPLOAD_FOLDER = os.path.join("static", "uploads")
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf", "mp4", "webm"}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 
     # Email configuration

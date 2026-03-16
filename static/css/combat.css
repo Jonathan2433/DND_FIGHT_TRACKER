@@ -699,3 +699,46 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+/* ===================== */
+/* BATTLE MAP */
+/* ===================== */
+
+.battlemap-stage {
+    position: relative;
+    width: 100%;
+    min-height: 420px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #161922;
+    margin-top: 12px;
+}
+
+.battlemap-media {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.battlemap-placeholder {
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+}
+
+.battle-token {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 0 12px rgba(0,0,0,0.55);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 2;
+}

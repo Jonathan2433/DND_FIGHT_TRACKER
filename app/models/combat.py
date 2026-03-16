@@ -29,6 +29,10 @@ class Combat(db.Model):
     current_round_start = db.Column(db.DateTime, nullable=True)
     has_started = db.Column(db.Boolean, default=False)
 
+    # Battle map
+    battlemap_media_filename = db.Column(db.String(255), nullable=True)
+    battlemap_media_type = db.Column(db.String(20), nullable=True)  # image or video
+
 
 class Combatant(db.Model):
     """Modèle pour un combattant dans un combat"""
@@ -62,6 +66,9 @@ class Combatant(db.Model):
 
     # Divers
     notes = db.Column(db.Text)
+    token_image_filename = db.Column(db.String(255), nullable=True)
+    map_x = db.Column(db.Float, default=50.0)
+    map_y = db.Column(db.Float, default=50.0)
 
     @property
     def ac_total(self):
@@ -88,3 +95,10 @@ class CombatLog(db.Model):
     round_number = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     turn_duration = db.Column(db.Float, nullable=True)  # Durée en secondes
+
+
+class MonsterProfile(db.Model):
+    """Image de profil associée à un template de monstre."""
+    id = db.Column(db.Integer, primary_key=True)
+    monster_name = db.Column(db.String(100), unique=True, nullable=False)
+    image_filename = db.Column(db.String(255), nullable=False)
