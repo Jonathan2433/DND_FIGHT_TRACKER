@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const raceSelect = form.querySelector('#create-race');
     const classSelect = form.querySelector('#create-class');
     const levelInput = form.querySelector('#create-level');
+    const modeInputs = form.querySelectorAll('input[name="ability_mode"]');
 
     const raceBonuses = {
         'Humain': { force: 1, dexterite: 1, constitution: 1, intelligence: 1, sagesse: 1, charisme: 1 },
@@ -37,6 +38,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mod = (score) => Math.floor((score - 10) / 2);
 
+    const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
+
+    const syncAbilityMode = () => {
+        const mode = getMode();
+
+        abilities.forEach((ability) => {
+            const standardField = form.querySelector(`#create-${ability}`);
+            const customField = form.querySelector(`#create-custom-${ability}`);
+            if (!standardField || !customField) return;
+
+            if (mode === 'custom') {
+                customField.disabled = false;
+                customField.required = true;
+                customField.name = customField.dataset.baseName || '';
+                customField.value = standardField.value || customField.value || '10';
+
+                standardField.disabled = true;
+                standardField.required = false;
+                standardField.removeAttribute('name');
+            } else {
+                standardField.disabled = false;
+                standardField.required = true;
+                standardField.name = `${ability}_base`;
+
+                customField.disabled = true;
+                customField.required = false;
+                customField.removeAttribute('name');
+            }
+        });
+    };
+
     const render = () => {
         const selectedRace = raceSelect.value;
         const selectedClass = classSelect.value;
@@ -47,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const finalStats = {};
         abilities.forEach((ability) => {
-            const baseField = form.querySelector(`#create-${ability}`);
+            const baseField = getMode() === 'custom'
+                ? form.querySelector(`#create-custom-${ability}`)
+                : form.querySelector(`#create-${ability}`);
             const baseValue = parseInt(baseField.value || '10', 10);
             finalStats[ability] = Math.min(20, Math.max(1, baseValue + (bonuses[ability] || 0)));
 
@@ -77,13 +111,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     abilities.forEach((ability) => {
-        const field = form.querySelector(`#create-${ability}`);
-        if (field) field.addEventListener('change', render);
+        const standardField = form.querySelector(`#create-${ability}`);
+        const customField = form.querySelector(`#create-custom-${ability}`);
+        if (standardField) standardField.addEventListener('change', render);
+        if (customField) customField.addEventListener('input', render);
+    });
+
+    modeInputs.forEach((modeInput) => {
+        modeInput.addEventListener('change', () => {
+            syncAbilityMode();
+            render();
+        });
     });
 
     raceSelect.addEventListener('change', render);
     classSelect.addEventListener('change', render);
     levelInput.addEventListener('input', render);
 
+    syncAbilityMode();
     render();
 });
