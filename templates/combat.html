@@ -56,13 +56,19 @@
         <hr>
 
         <section class="card">
-            <h3>🗺️ Battle map (MJ)</h3>
+            <div class="battlemap-header-row">
+                <h3>🗺️ Battle map (MJ)</h3>
+                <button type="button" class="btn-secondary btn-battlemap-fullscreen" data-battlemap-fullscreen-toggle>
+                    ⛶ Plein écran battle map
+                </button>
+            </div>
             <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" class="template-form">
                 <input type="file" name="battlemap_media" accept="image/*,video/mp4,video/webm" required>
                 <button type="submit" class="btn-primary">Uploader le fond</button>
             </form>
 
             <p>Clique-glisse les tokens pour les déplacer. Position sauvegardée automatiquement.</p>
+            <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
             <div id="battlemap-board" class="battlemap-board">
                 {% if combat.battlemap_media_filename %}
                     {% if combat.battlemap_media_type == 'video' %}
@@ -86,6 +92,7 @@
                         {% endif %}
                     </div>
                 {% endfor %}
+            </div>
             </div>
         </section>
 
@@ -466,6 +473,38 @@ document.addEventListener("DOMContentLoaded", function() {
     {% endif %}
 
     const board = document.getElementById("battlemap-board");
+    const battlemapFullscreenTarget = document.getElementById("battlemap-fullscreen-target");
+    const battlemapFullscreenToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
+
+    const toggleBattlemapFullscreen = async () => {
+        if (!battlemapFullscreenTarget) {
+            return;
+        }
+
+        try {
+            if (document.fullscreenElement === battlemapFullscreenTarget) {
+                await document.exitFullscreen();
+            } else {
+                await battlemapFullscreenTarget.requestFullscreen();
+            }
+        } catch (error) {
+            console.error('Impossible de basculer le plein ecran de la battle map', error);
+        }
+    };
+
+    if (battlemapFullscreenToggle) {
+        battlemapFullscreenToggle.addEventListener('click', toggleBattlemapFullscreen);
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!battlemapFullscreenToggle || !battlemapFullscreenTarget) {
+            return;
+        }
+
+        const isFullscreen = document.fullscreenElement === battlemapFullscreenTarget;
+        battlemapFullscreenToggle.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Plein écran battle map';
+    });
+
     if (board) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const tokens = Array.from(board.querySelectorAll('.battlemap-token'));
