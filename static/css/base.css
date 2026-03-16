@@ -108,7 +108,7 @@ body {
     align-items: center;
     justify-content: flex-end;
     gap: 14px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .site-nav__links,
@@ -116,7 +116,32 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 1400px) {
+    .site-header__inner {
+        gap: 14px;
+    }
+
+    .site-brand__title {
+        font-size: 28px;
+    }
+
+    .site-brand__subtitle {
+        display: none;
+    }
+
+    .site-nav__link {
+        min-height: 36px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .site-nav__welcome {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
 }
 
 .site-nav__user {
