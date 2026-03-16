@@ -84,5 +84,5 @@ def register_blueprints(app):
 def register_socketio_events():
     """Enregistrement des événements SocketIO via le web layer."""
     from app.extensions import socketio
-    from app.web.sockets import register_socketio_events as register_web_socket_events
+    from app.web.sockets import register_all_socketio_events as register_web_socket_events
     register_web_socket_events(socketio)

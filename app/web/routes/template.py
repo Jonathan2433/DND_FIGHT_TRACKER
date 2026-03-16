@@ -8,7 +8,7 @@ from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
 from app.extensions import db
-from app.utils.dnd5_rules import RACE_BONUSES, CLASS_RULES, STANDARD_ARRAY
+from app.utils.dnd5_rules import RACE_BONUSES, CLASS_RULES, STANDARD_ARRAY, BACKGROUND_RULES
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
@@ -45,7 +45,9 @@ def manage_templates():
         campaign_context=campaign_context,
         dnd_races=sorted(RACE_BONUSES.keys()),
         dnd_classes=sorted(CLASS_RULES.keys()),
-        standard_array=STANDARD_ARRAY
+        dnd_class_descriptions={name: rule.get('description', '') for name, rule in CLASS_RULES.items()},
+        standard_array=STANDARD_ARRAY,
+        dnd_backgrounds=BACKGROUND_RULES
     )
 
 
