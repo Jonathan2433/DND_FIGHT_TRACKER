@@ -464,20 +464,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const board = document.getElementById("battlemap-board");
     if (board) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const tokens = Array.from(board.querySelectorAll('.battlemap-token'));
-        const savePositions = () => {
-            const boardRect = board.getBoundingClientRect();
+        const savePositions = async () => {
             const payload = {tokens: {}};
             tokens.forEach((token) => {
                 const left = parseFloat(token.style.left || '0');
                 const top = parseFloat(token.style.top || '0');
                 payload.tokens[token.dataset.tokenId] = {x: Math.max(0, Math.min(100, left)), y: Math.max(0, Math.min(100, top))};
             });
-            fetch("{{ url_for('combat.save_battlemap_tokens', combat_id=combat.id) }}", {
+            const headers = {'Content-Type': 'application/json'};
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+
+            const response = await fetch("{{ url_for('combat.save_battlemap_tokens', combat_id=combat.id) }}", {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers,
                 body: JSON.stringify(payload)
             });
+
+            if (!response.ok) {
+                console.error('Impossible de sauvegarder la position des tokens', response.status);
+            }
         };
 
         tokens.forEach((token) => {
