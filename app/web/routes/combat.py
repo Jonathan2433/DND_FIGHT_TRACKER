@@ -45,6 +45,28 @@ def _save_uploaded_media(file_storage, allowed_extensions):
     return filename
 
 
+def _get_player_controlled_combatant_ids(combat, user):
+    """Retourne les IDs des tokens PJ contrôlés par l'utilisateur courant."""
+    if not user:
+        return []
+
+    player_characters = CharacterTemplate.query.filter_by(
+        owner_id=user.id,
+        character_type='PJ',
+        is_active=True,
+    ).all()
+
+    owned_names = {character.name.strip().lower() for character in player_characters if character.name}
+    if not owned_names:
+        return []
+
+    return [
+        combatant.id
+        for combatant in combat.combatants
+        if combatant.type == 'PJ' and combatant.name and combatant.name.strip().lower() in owned_names
+    ]
+
+
 @bp.route('/create', methods=['POST'])
 @login_required
 def create_combat():
@@ -129,6 +151,7 @@ def view_combat_player(combat_id):
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     combatants_sorted = get_initiative_order(combat.combatants)
     current_actor = get_current_actor(combat)
+    player_controlled_ids = _get_player_controlled_combatant_ids(combat, g.current_user)
 
     return render_template(
         'combat_player.html',
@@ -141,7 +164,8 @@ def view_combat_player(combat_id):
         groups=combat_data['groups'],
         singles=combat_data['singles'],
         group_condition_states=combat_data['group_condition_states'],
-        battlemap_tokens=_parse_battlemap_tokens(combat.battlemap_tokens_json)
+        battlemap_tokens=_parse_battlemap_tokens(combat.battlemap_tokens_json),
+        player_controlled_ids=player_controlled_ids
     )
 
 
@@ -323,6 +347,48 @@ def save_battlemap_tokens(combat_id):
     return jsonify({'status': 'ok'})
 
 
+@bp.route('/<int:combat_id>/battlemap/player-token', methods=['POST'])
+@login_required
+def save_player_token_position(combat_id):
+    """Autorise un joueur à déplacer uniquement son token et uniquement pendant son tour."""
+    combat = Combat.query.get_or_404(combat_id)
+    if not _can_view_player_combat(combat):
+        return jsonify({'error': 'forbidden'}), 403
+
+    payload = request.get_json(silent=True) or {}
+    token_id = payload.get('token_id')
+    x = payload.get('x')
+    y = payload.get('y')
+
+    try:
+        token_id = int(token_id)
+        x = float(x)
+        y = float(y)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'invalid payload'}), 400
+
+    current_actor = get_current_actor(combat)
+    player_controlled_ids = _get_player_controlled_combatant_ids(combat, g.current_user)
+
+    if token_id not in player_controlled_ids:
+        return jsonify({'error': 'token_not_owned'}), 403
+
+    if not current_actor or current_actor.id != token_id:
+        return jsonify({'error': 'not_your_turn'}), 403
+
+    tokens = _parse_battlemap_tokens(combat.battlemap_tokens_json)
+    tokens[str(token_id)] = {
+        'x': max(0, min(100, x)),
+        'y': max(0, min(100, y)),
+    }
+    combat.battlemap_tokens_json = json.dumps(tokens)
+
+    from app.extensions import db
+    db.session.commit()
+    broadcast_combat_update(combat_id)
+    return jsonify({'status': 'ok'})
+
+
 @bp.route('/<int:combat_id>/state')
 @login_required
 def combat_state(combat_id):
@@ -335,6 +401,7 @@ def combat_state(combat_id):
 
     combatants = get_initiative_order(combat.combatants)
     current_actor = get_current_actor(combat)
+    player_controlled_ids = _get_player_controlled_combatant_ids(combat, g.current_user)
 
     return jsonify({
         'round': combat.round,
@@ -342,6 +409,7 @@ def combat_state(combat_id):
         'battlemap_media_filename': combat.battlemap_media_filename,
         'battlemap_media_type': combat.battlemap_media_type,
         'battlemap_tokens': _parse_battlemap_tokens(combat.battlemap_tokens_json),
+        'player_controlled_ids': player_controlled_ids,
         'combatants': [
             {
                 'id': c.id,
