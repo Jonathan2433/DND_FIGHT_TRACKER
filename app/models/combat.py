@@ -31,6 +31,11 @@ class Combat(db.Model):
     current_round_start = db.Column(db.DateTime, nullable=True)
     has_started = db.Column(db.Boolean, default=False)
 
+    # Battle map
+    battlemap_media_filename = db.Column(db.String(255), nullable=True)
+    battlemap_media_type = db.Column(db.String(20), nullable=True)  # image | video
+    battlemap_tokens_json = db.Column(db.Text, nullable=True)
+
 
 class Combatant(db.Model):
     """Modèle pour un combattant dans un combat"""

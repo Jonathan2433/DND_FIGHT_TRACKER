@@ -55,6 +55,40 @@
 
         <hr>
 
+        <section class="card">
+            <h3>🗺️ Battle map (MJ)</h3>
+            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" class="template-form">
+                <input type="file" name="battlemap_media" accept="image/*,video/mp4,video/webm" required>
+                <button type="submit" class="btn-primary">Uploader le fond</button>
+            </form>
+
+            <p>Clique-glisse les tokens pour les déplacer. Position sauvegardée automatiquement.</p>
+            <div id="battlemap-board" class="battlemap-board">
+                {% if combat.battlemap_media_filename %}
+                    {% if combat.battlemap_media_type == 'video' %}
+                        <video class="battlemap-media" autoplay muted loop playsinline>
+                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                        </video>
+                    {% else %}
+                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
+                    {% endif %}
+                {% else %}
+                    <div class="battlemap-empty">Upload une image ou vidéo pour démarrer la battle map.</div>
+                {% endif %}
+
+                {% for c in initiative_order %}
+                    {% set token_pos = battlemap_tokens.get(c.id|string) %}
+                    <div class="battlemap-token" data-token-id="{{ c.id }}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                        {% if c.notes %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                        {% else %}
+                            <span>{{ c.name[:2]|upper }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
         <!-- ========================= -->
         <!-- AJOUT MANUEL -->
         <!-- ========================= -->
@@ -138,6 +172,7 @@
 
             <form method="POST"
                   action="{{ url_for('combat.add_template', combat_id=combat.id) }}"
+                  enctype="multipart/form-data"
                   class="grid-form">
 
                 <select name="template">
@@ -148,6 +183,7 @@
 
                 <input type="number" name="quantity" value="1" min="1">
                 <input type="number" name="initiative" placeholder="Initiative (optionnel)">
+                <input type="file" name="monster_image" accept="image/*">
 
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
@@ -425,6 +461,44 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 1000);
 
     {% endif %}
+
+    const board = document.getElementById("battlemap-board");
+    if (board) {
+        const tokens = Array.from(board.querySelectorAll('.battlemap-token'));
+        const savePositions = () => {
+            const boardRect = board.getBoundingClientRect();
+            const payload = {tokens: {}};
+            tokens.forEach((token) => {
+                const left = parseFloat(token.style.left || '0');
+                const top = parseFloat(token.style.top || '0');
+                payload.tokens[token.dataset.tokenId] = {x: Math.max(0, Math.min(100, left)), y: Math.max(0, Math.min(100, top))};
+            });
+            fetch("{{ url_for('combat.save_battlemap_tokens', combat_id=combat.id) }}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+        };
+
+        tokens.forEach((token) => {
+            let drag = false;
+            token.addEventListener('mousedown', () => drag = true);
+            document.addEventListener('mouseup', () => {
+                if (drag) {
+                    drag = false;
+                    savePositions();
+                }
+            });
+            board.addEventListener('mousemove', (event) => {
+                if (!drag) return;
+                const rect = board.getBoundingClientRect();
+                const x = ((event.clientX - rect.left) / rect.width) * 100;
+                const y = ((event.clientY - rect.top) / rect.height) * 100;
+                token.style.left = `${Math.max(0, Math.min(100, x))}%`;
+                token.style.top = `${Math.max(0, Math.min(100, y))}%`;
+            });
+        });
+    }
 
 });
 </script>
