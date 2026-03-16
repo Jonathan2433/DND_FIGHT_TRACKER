@@ -776,6 +776,12 @@
     cursor: default;
 }
 
+
+.battlemap-token--inactive {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
 .battlemap-token img {
     width: 100%;
     height: 100%;
