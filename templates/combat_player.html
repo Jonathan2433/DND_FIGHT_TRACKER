@@ -16,6 +16,42 @@
             {% endif %}
         </div>
 
+        <div class="card">
+            <div class="battlemap-header-row">
+                <h3>🗺️ Battle map</h3>
+                <button type="button" class="btn-secondary btn-battlemap-fullscreen" data-battlemap-fullscreen-toggle>
+                    ⛶ Plein écran battle map
+                </button>
+            </div>
+            <div class="battlemap-board battlemap-board--readonly">
+                {% if combat.battlemap_media_filename %}
+                    {% if combat.battlemap_media_type == 'video' %}
+                        <video class="battlemap-media" autoplay muted loop playsinline>
+                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                        </video>
+                    {% else %}
+                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
+                    {% endif %}
+                {% else %}
+                    <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
+                {% endif %}
+
+                {% for c in combatants %}
+                    {% set token_pos = battlemap_tokens.get(c.id|string) %}
+                    <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}"
+                         data-token-id="{{ c.id }}"
+                         style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                        {% if c.notes %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                        {% else %}
+                            <span>{{ c.token_label }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
         <div class="combatants-grid">
             {% for c in combatants %}
             <div class="combatant {{ c.type.lower() }} {% if c == current_actor %}active-turn{% endif %}" data-combatant-id="{{ c.id }}">
@@ -268,6 +304,7 @@
 <div class="floating-hud">
     <button class="btn btn-capture btn-primary mobile-hidden" id="capture-button">🎥 Partager écran</button>
     <button class="btn btn-switch-display btn-primary inl-combat-002" onclick="enterHudMode()">🖥️ Switch Display</button>
+    <button class="btn btn-primary" id="battlemap-player-fullscreen">⛶ Battle map plein écran</button>
     <button class="btn btn-stop-capture btn-danger inl-combat-002">⏹️ Arrêter partage</button>
 
     <div class="capture-container inl-combat-002">
@@ -279,6 +316,8 @@
 // Initialisation WebSocket
 const socket = window.io ? io() : null;
 const combatId = {{ combat.id }};
+const playerControlledIds = {{ player_controlled_ids|tojson }};
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 if (socket) {
     socket.emit('join_combat', { combat_id: combatId });
 } else {
@@ -288,6 +327,7 @@ if (socket) {
 // Variables pour gérer la capture
 let captureStream = null;
 let isCapturing = false;
+let dragState = null;
 
 // ✅ CORRECTION : Fonction de capture d'écran
 function startCapture() {
@@ -538,6 +578,151 @@ function scrollToActiveInitiative(currentActorId) {
 // ✅ NOUVEAU : Variables pour gérer le cache des combattants
 let lastCombatantCount = {{ combatants|length }};
 
+function getBattlemapMediaUrl(filename) {
+    return filename ? `/static/uploads/${filename}` : '';
+}
+
+function updateBattlemap(combatState) {
+    const board = document.querySelector('.battlemap-board');
+    if (!board) return;
+
+    const mediaFilename = combatState.battlemap_media_filename;
+    const mediaType = combatState.battlemap_media_type;
+
+    if (!mediaFilename) {
+        if (!board.querySelector('.battlemap-empty')) {
+            board.innerHTML = '<div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>';
+        }
+        return;
+    }
+
+    const mediaUrl = getBattlemapMediaUrl(mediaFilename);
+    const existingMedia = board.querySelector('.battlemap-media');
+
+    if (mediaType === 'video') {
+        if (!(existingMedia && existingMedia.tagName === 'VIDEO' && existingMedia.querySelector('source')?.getAttribute('src') === mediaUrl)) {
+            board.innerHTML = `<video class="battlemap-media" autoplay muted loop playsinline><source src="${mediaUrl}"></video>`;
+        }
+    } else {
+        if (!(existingMedia && existingMedia.tagName === 'IMG' && existingMedia.getAttribute('src') === mediaUrl)) {
+            board.innerHTML = `<img class="battlemap-media" src="${mediaUrl}" alt="Battle map">`;
+        }
+    }
+
+    const defaultPosition = (index) => ({
+        x: 8 + index * 6,
+        y: 10 + (index % 5) * 15,
+    });
+
+    board.querySelectorAll('.battlemap-token').forEach((token) => token.remove());
+
+    combatState.combatants.forEach((combatant, index) => {
+        const token = document.createElement('div');
+        const tokenClasses = ['battlemap-token'];
+        if (combatant.id === combatState.current_actor_id) {
+            tokenClasses.push('battlemap-token--active');
+        }
+        if (combatant.is_dead || combatant.has_fled) {
+            tokenClasses.push('battlemap-token--inactive');
+        }
+        token.className = tokenClasses.join(' ');
+        token.dataset.tokenId = String(combatant.id);
+
+        const pos = combatState.battlemap_tokens[String(combatant.id)] || defaultPosition(index);
+        const x = Math.max(0, Math.min(100, Number(pos.x) || 0));
+        const y = Math.max(0, Math.min(100, Number(pos.y) || 0));
+        token.style.left = `${x}%`;
+        token.style.top = `${y}%`;
+
+        if (combatant.notes) {
+            token.innerHTML = `<img src="${getBattlemapMediaUrl(combatant.notes)}" alt="${combatant.name}">`;
+        } else {
+            token.innerHTML = `<span>${combatant.token_label || combatant.name.substring(0, 2).toUpperCase()}</span>`;
+        }
+
+        board.appendChild(token);
+    });
+
+    setupPlayerTokenDragging(combatState);
+}
+
+function canControlToken(combatState, combatantId) {
+    const controlledIds = combatState.player_controlled_ids || playerControlledIds;
+    return controlledIds.includes(combatantId) && combatState.current_actor_id === combatantId;
+}
+
+async function savePlayerTokenPosition(tokenId, x, y) {
+    const headers = {'Content-Type': 'application/json'};
+    if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+    }
+
+    const response = await fetch(`/combat/${combatId}/battlemap/player-token`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ token_id: tokenId, x, y }),
+    });
+
+    if (!response.ok) {
+        console.error('Impossible de sauvegarder la position du token joueur.', response.status);
+    }
+}
+
+function setupPlayerTokenDragging(combatState) {
+    const board = document.querySelector('.battlemap-board');
+    if (!board) return;
+
+    const tokens = board.querySelectorAll('.battlemap-token');
+    tokens.forEach((token) => {
+        const tokenId = Number(token.dataset.tokenId);
+        const isAllowed = canControlToken(combatState, tokenId);
+        token.classList.toggle('battlemap-token--player-draggable', isAllowed);
+
+        token.onmousedown = null;
+        token.ontouchstart = null;
+
+        if (!isAllowed) return;
+
+        token.onmousedown = (event) => {
+            event.preventDefault();
+            dragState = {token, tokenId};
+        };
+
+        token.ontouchstart = (event) => {
+            event.preventDefault();
+            dragState = {token, tokenId};
+        };
+    });
+
+    const updateDragPosition = (clientX, clientY) => {
+        if (!dragState) return;
+        const rect = board.getBoundingClientRect();
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+        dragState.token.style.left = `${Math.max(0, Math.min(100, x))}%`;
+        dragState.token.style.top = `${Math.max(0, Math.min(100, y))}%`;
+    };
+
+    board.onmousemove = (event) => updateDragPosition(event.clientX, event.clientY);
+    board.ontouchmove = (event) => {
+        if (!dragState || !event.touches[0]) return;
+        updateDragPosition(event.touches[0].clientX, event.touches[0].clientY);
+    };
+
+    const finishDrag = async () => {
+        if (!dragState) return;
+        const left = parseFloat(dragState.token.style.left || '0');
+        const top = parseFloat(dragState.token.style.top || '0');
+        const tokenId = dragState.tokenId;
+        dragState = null;
+        await savePlayerTokenPosition(tokenId, left, top);
+    };
+
+    board.onmouseup = finishDrag;
+    board.onmouseleave = finishDrag;
+    board.ontouchend = finishDrag;
+}
+
 // ✅ Fonction pour mettre à jour l'affichage avec synchronisation
 async function updateCombatDisplay() {
     try {
@@ -557,6 +742,9 @@ async function updateCombatDisplay() {
 
         // Mettre à jour le round dans le header
         updateRoundInfo(data);
+
+        // Synchroniser la battlemap (fond + tokens)
+        updateBattlemap(data);
 
         // Mettre à jour la barre PJ en bas
         updatePJBar(data);
@@ -925,6 +1113,44 @@ socket.on('disconnect', () => {
 // ✅ CORRECTION : Séparer l'initialisation des événements et des chronos
 }
 
+
+
+function initializeBattlemapFullscreen() {
+    const battlemapBoard = document.querySelector('.battlemap-board');
+    const mapCard = battlemapBoard ? battlemapBoard.closest('.card') : null;
+    const headerToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
+    const floatingToggle = document.getElementById('battlemap-player-fullscreen');
+
+    if (!battlemapBoard || !mapCard) {
+        return;
+    }
+
+    const toggleButtons = [headerToggle, floatingToggle].filter(Boolean);
+
+    const toggleBattlemapFullscreen = async () => {
+        try {
+            if (document.fullscreenElement === mapCard) {
+                await document.exitFullscreen();
+            } else {
+                await mapCard.requestFullscreen();
+            }
+        } catch (error) {
+            console.error('Impossible de basculer le plein ecran de la battle map', error);
+        }
+    };
+
+    toggleButtons.forEach((button) => {
+        button.addEventListener('click', toggleBattlemapFullscreen);
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        const isFullscreen = document.fullscreenElement === mapCard;
+        toggleButtons.forEach((button) => {
+            button.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
+        });
+    });
+}
+
 function initializeEvents() {
     console.log('🎮 Initialisation des événements...');
 
@@ -944,6 +1170,9 @@ function initializeEvents() {
 
     // ✅ Initialiser les chronos séparément
     initializeChronos();
+
+    // Plein écran battle map (indépendant du partage d'écran)
+    initializeBattlemapFullscreen();
 }
 
 // ✅ NOUVEAU : Auto-refresh périodique en fallback si WebSocket échoue
@@ -953,15 +1182,8 @@ function startAutoRefresh() {
     // Vérification périodique toutes les 3 secondes
     autoRefreshInterval = setInterval(async function() {
         try {
-            const response = await fetch(`/combat/${combatId}/state`);
-            const combatState = await response.json();
-
-            // Comparer avec l'état actuel et mettre à jour si nécessaire
-            const currentCount = combatState.combatants.length;
-            if (currentCount !== lastCombatantCount) {
-                console.log('🔄 Auto-refresh: Changement détecté, mise à jour...');
-                updateCombatDisplay();
-            }
+            // Mettre à jour régulièrement aussi les positions de tokens et le fond de battlemap
+            await updateCombatDisplay();
         } catch (error) {
             console.error('❌ Erreur de synchronisation auto-refresh:', error);
         }

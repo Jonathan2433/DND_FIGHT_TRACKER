@@ -725,3 +725,251 @@
     border-radius: var(--radius-lg);
     box-shadow: 0 4px 12px var(--overlay-black-30);
 }
+
+/* Battle map */
+.battlemap-board {
+    position: relative;
+    width: 100%;
+    max-width: 980px;
+    height: 560px;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.battlemap-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.battlemap-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+}
+
+.battlemap-token {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--color-white);
+    background: var(--overlay-black-60);
+    cursor: grab;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    font-weight: bold;
+    z-index: 3;
+}
+
+.battlemap-board--readonly .battlemap-token {
+    cursor: default;
+}
+
+.battlemap-board--readonly .battlemap-token.battlemap-token--player-draggable {
+    cursor: grab;
+    box-shadow: 0 0 0 2px var(--overlay-black-60), 0 0 10px var(--brand-blue-light);
+}
+
+.battlemap-token--active {
+    border-color: var(--brand-yellow-active);
+    box-shadow: 0 0 0 3px var(--overlay-black-60), 0 0 14px var(--brand-yellow-active);
+}
+
+.battlemap-token--inactive {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.battlemap-token img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+
+.battlemap-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-battlemap-fullscreen {
+    white-space: nowrap;
+}
+
+.battlemap-fullscreen-target:fullscreen,
+.battlemap-fullscreen-target:-webkit-full-screen,
+.card:fullscreen,
+.card:-webkit-full-screen {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 20px;
+    background: radial-gradient(circle at top, var(--bg-primary), var(--bg-dark));
+    border-radius: 0;
+}
+
+.battlemap-fullscreen-initiative,
+.battlemap-fullscreen-pj-bar {
+    display: none;
+}
+
+.battlemap-fullscreen-target:fullscreen,
+.battlemap-fullscreen-target:-webkit-full-screen {
+    position: relative;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-initiative,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-initiative {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: min(320px, 30vw);
+    max-height: calc(100vh - 180px);
+    overflow: hidden;
+    display: block;
+    background: var(--bg-alt-a95);
+    border: 2px solid var(--primary-a60);
+    border-radius: var(--radius-2xl);
+    padding: 12px;
+    z-index: 5;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-initiative-list,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-initiative-list {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-pj-bar,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-pj-bar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    z-index: 5;
+    display: block;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-pj-bar .pj-bottom-bar,
+.battlemap-fullscreen-target:fullscreen .pj-portraits-container,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-pj-bar .pj-bottom-bar,
+.battlemap-fullscreen-target:-webkit-full-screen .pj-portraits-container {
+    pointer-events: auto;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-pj-bar,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-pj-bar {
+    background: linear-gradient(135deg, var(--bg-alt-a95), var(--surface-a95));
+    border: 2px solid var(--primary-a60);
+    border-radius: 15px;
+    padding: 12px 16px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 25px var(--overlay-black-80);
+    max-width: 92vw;
+    overflow-x: auto;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-pj-bar h4,
+.battlemap-fullscreen-target:fullscreen .battlemap-fullscreen-initiative h4,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-pj-bar h4,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-fullscreen-initiative h4 {
+    margin: 0;
+    color: var(--color-primary);
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-board,
+.battlemap-fullscreen-target:-webkit-full-screen .battlemap-board,
+.card:fullscreen .battlemap-board,
+.card:-webkit-full-screen .battlemap-board {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 40px);
+    border-width: 3px;
+}
+
+.combat-invite-card {
+    margin-top: 18px;
+}
+
+.combat-invite-form {
+    display: grid;
+    gap: 10px;
+    margin: 10px 0 14px;
+}
+
+.combat-invite-list {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-05);
+    padding: 10px;
+}
+
+.combat-invite-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    cursor: pointer;
+    background: var(--overlay-black-20);
+    border: 1px solid transparent;
+}
+
+.combat-invite-option:hover {
+    border-color: var(--primary-a40);
+}
+
+.combat-invite-option input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+.combat-invite-empty {
+    margin: 0;
+    color: var(--color-text-secondary);
+}
+
+.combat-invite-card p {
+    margin-top: 8px;
+    color: var(--color-text-secondary);
+}
+
+.combat-invite-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.combat-invite-row input {
+    min-height: 40px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-05);
+    color: var(--color-text-primary);
+    padding: 0 12px;
+}

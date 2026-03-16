@@ -1,5 +1,6 @@
 """Modèles liés au combat"""
 from datetime import datetime
+import re
 from app.extensions import db
 
 
@@ -30,6 +31,11 @@ class Combat(db.Model):
     current_turn_start = db.Column(db.DateTime, nullable=True)
     current_round_start = db.Column(db.DateTime, nullable=True)
     has_started = db.Column(db.Boolean, default=False)
+
+    # Battle map
+    battlemap_media_filename = db.Column(db.String(255), nullable=True)
+    battlemap_media_type = db.Column(db.String(20), nullable=True)  # image | video
+    battlemap_tokens_json = db.Column(db.Text, nullable=True)
 
 
 class Combatant(db.Model):
@@ -69,6 +75,27 @@ class Combatant(db.Model):
     def ac_total(self):
         """Calcul de la CA totale (base + bonus)"""
         return self.ac_base + (self.ac_bonus or 0)
+
+    @property
+    def token_label(self):
+        """Libellé court affiché sur le token (ex: GO1, GO2)."""
+        raw_name = (self.name or '').strip()
+        if not raw_name:
+            return '??'
+
+        match = re.match(r'^(.*?)(?:\s+)?(\d+)$', raw_name)
+        if match:
+            base_name = match.group(1).strip()
+            suffix = match.group(2)
+        else:
+            base_name = raw_name
+            suffix = ''
+
+        letters = ''.join(char for char in base_name.upper() if char.isalpha())[:2]
+        if len(letters) < 2:
+            letters = ''.join(char for char in base_name.upper() if char.isalnum())[:2] or '??'
+
+        return f'{letters}{suffix}'
 
 
 class CombatLog(db.Model):

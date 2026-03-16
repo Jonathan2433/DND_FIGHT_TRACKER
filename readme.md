@@ -164,4 +164,7 @@ SECRET_KEY=change-me
 FLASK_CONFIG=development
 DATABASE_URL=sqlite:///tracker.db
 SESSION_COOKIE_SECURE=false
+UPLOAD_MAX_MB=64
 ```
+
+`UPLOAD_MAX_MB` définit la taille max acceptée côté Flask (en Mo). Pensez à aligner la limite Nginx (`client_max_body_size`) au même niveau ou au-dessus.

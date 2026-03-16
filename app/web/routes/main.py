@@ -4,6 +4,8 @@ from flask import Blueprint, render_template, session, g
 
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import Combat, CharacterTemplate, Campaign
+from app.models.story_arc import StoryArc
+from app.models.episode import Episode
 from app.utils import format_duration
 
 
@@ -38,6 +40,7 @@ def index():
     user_is_connected = 'user_id' in session and g.get('current_user') is not None
     user_campaigns = []
     user_characters = []
+    featured_campaign_summary = None
 
     if user_is_connected:
         user_campaigns = g.current_user.get_campaigns()
@@ -48,6 +51,33 @@ def index():
             .all()
         )
 
+        if user_campaigns:
+            featured_campaign = sorted(
+                user_campaigns,
+                key=lambda campaign: campaign.created_at,
+                reverse=True,
+            )[0]
+
+            arcs = sorted(featured_campaign.story_arcs, key=lambda arc: arc.order_index)
+            current_arc = next((arc for arc in arcs if arc.status == 'en_cours'), None)
+            if not current_arc:
+                current_arc = next((arc for arc in arcs if arc.status == 'à_venir'), None)
+            if not current_arc and arcs:
+                current_arc = arcs[-1]
+
+            latest_episode = (
+                Episode.query.join(StoryArc, Episode.story_arc_id == StoryArc.id)
+                .filter(StoryArc.campaign_id == featured_campaign.id)
+                .order_by(Episode.created_at.desc(), Episode.order_index.desc())
+                .first()
+            )
+
+            featured_campaign_summary = {
+                'campaign': featured_campaign,
+                'current_arc': current_arc,
+                'latest_episode': latest_episode,
+            }
+
     return render_template(
         'index.html',
         total_campaigns=total_campaigns,
@@ -57,6 +87,7 @@ def index():
         user_is_connected=user_is_connected,
         user_campaigns=user_campaigns,
         user_characters=user_characters,
+        featured_campaign_summary=featured_campaign_summary,
     )
 
 

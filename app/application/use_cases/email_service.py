@@ -233,3 +233,45 @@ class EmailService:
         )
 
         return EmailService._send_message(msg, "email invitation inscription campagne")
+
+    @staticmethod
+    def send_combat_invitation(user_email, username, campaign_name, combat_name, invitation_url):
+        """Envoyer un email d'invitation directe vers la vue joueur d'un combat."""
+        subject = f"⚔️ Invitation au combat : {combat_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Le combat commence !",
+            intro=f"Salut {username}, le MJ te convie immédiatement à la bataille.",
+            cta_label="⚔️ Rejoindre le combat",
+            cta_url=invitation_url,
+            body_content=(
+                "Tu es invité(e) à rejoindre le combat "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{combat_name}&nbsp;&raquo;</strong> "
+                f"de la campagne <strong>{campaign_name}</strong>."
+            ),
+            footer_content=(
+                "Clique sur le bouton pour arriver directement sur la vue joueur du combat. "
+                "Si tu n'es pas concerné(e), ignore simplement cet email."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Invitation au combat
+
+        Salut {username},
+
+        Tu es invité(e) au combat "{combat_name}" (campagne "{campaign_name}").
+
+        Rejoins directement la vue joueur ici :
+        {invitation_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email invitation combat")

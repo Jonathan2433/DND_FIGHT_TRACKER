@@ -22,8 +22,9 @@ class Config:
 
     # Upload configuration
     UPLOAD_FOLDER = os.path.join("static", "uploads")
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "mp4", "webm", "mov"}
+    UPLOAD_MAX_MB = int(os.environ.get("UPLOAD_MAX_MB", 64))
+    MAX_CONTENT_LENGTH = UPLOAD_MAX_MB * 1024 * 1024
 
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.hostinger.com')
