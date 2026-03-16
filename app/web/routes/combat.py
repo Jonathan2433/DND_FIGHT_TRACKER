@@ -1,10 +1,14 @@
 """Routes pour la gestion des combats"""
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, g, flash
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, g, flash, current_app
 
 from app.application.use_cases import CombatService, CombatantService, GroupService, TemplateService
 from app.models import Combat, CharacterTemplate, EncounterTemplate
 from app.domain.policies import CombatPolicy, EncounterTemplatePolicy
 from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order
+from werkzeug.utils import secure_filename
+from uuid import uuid4
+import os
+import json
 from app.utils.decorators import login_required
 from app.extensions import socketio
 
@@ -18,6 +22,27 @@ def _can_manage_combat(combat):
 
 def _can_view_player_combat(combat):
     return CombatPolicy.can_view_player(g.current_user, combat)
+
+
+def _parse_battlemap_tokens(raw_tokens):
+    if not raw_tokens:
+        return {}
+    try:
+        parsed = json.loads(raw_tokens)
+        return parsed if isinstance(parsed, dict) else {}
+    except (TypeError, ValueError):
+        return {}
+
+
+def _save_uploaded_media(file_storage, allowed_extensions):
+    if not file_storage or not file_storage.filename:
+        return None
+    extension = file_storage.filename.rsplit('.', 1)[-1].lower() if '.' in file_storage.filename else ''
+    if extension not in allowed_extensions:
+        return None
+    filename = f"{uuid4().hex}_{secure_filename(file_storage.filename)}"
+    file_storage.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    return filename
 
 
 @bp.route('/create', methods=['POST'])
@@ -84,7 +109,8 @@ def view_combat(combat_id):
         start_time=combat_data['combat'].start_time,
         round_start=combat_data['combat'].current_round_start,
         turn_start=combat_data['combat'].current_turn_start,
-        initiative_order=combat_data['initiative_order']
+        initiative_order=combat_data['initiative_order'],
+        battlemap_tokens=_parse_battlemap_tokens(combat_data['combat'].battlemap_tokens_json)
     )
 
 
@@ -113,7 +139,8 @@ def view_combat_player(combat_id):
         turn_start=combat.current_turn_start,
         groups=combat_data['groups'],
         singles=combat_data['singles'],
-        group_condition_states=combat_data['group_condition_states']
+        group_condition_states=combat_data['group_condition_states'],
+        battlemap_tokens=_parse_battlemap_tokens(combat.battlemap_tokens_json)
     )
 
 
@@ -224,12 +251,15 @@ def add_template(combat_id):
     template_name = request.form['template']
     quantity = int(request.form['quantity'])
     manual_initiative = request.form.get('initiative')
+    monster_image = request.files.get('monster_image')
+    monster_image_filename = _save_uploaded_media(monster_image, {'png', 'jpg', 'jpeg', 'webp'}) if monster_image else None
 
     TemplateService.add_monster_template_to_combat(
         combat_id,
         template_name,
         quantity,
-        manual_initiative
+        manual_initiative,
+        monster_image_filename=monster_image_filename
     )
     broadcast_combat_update(combat_id)
     return redirect(url_for('combat.view_combat', combat_id=combat_id))
@@ -245,6 +275,49 @@ def create_group(combat_id):
     ids = request.form.getlist('selected_combatants')
     GroupService.create_group([int(combatant_id) for combatant_id in ids])
     return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
+
+@bp.route('/<int:combat_id>/battlemap/media', methods=['POST'])
+@login_required
+def upload_battlemap_media(combat_id):
+    redirect_response = _require_manage_or_redirect(combat_id)
+    if redirect_response:
+        return redirect_response
+
+    combat = Combat.query.get_or_404(combat_id)
+    media = request.files.get('battlemap_media')
+    filename = _save_uploaded_media(media, {'png', 'jpg', 'jpeg', 'webp', 'mp4', 'webm'})
+    if not filename:
+        flash('Fichier invalide. Formats autorises: png, jpg, jpeg, webp, mp4, webm.', 'error')
+        return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
+    extension = filename.rsplit('.', 1)[-1].lower()
+    combat.battlemap_media_filename = filename
+    combat.battlemap_media_type = 'video' if extension in {'mp4', 'webm'} else 'image'
+
+    from app.extensions import db
+    db.session.commit()
+    return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
+
+@bp.route('/<int:combat_id>/battlemap/tokens', methods=['POST'])
+@login_required
+def save_battlemap_tokens(combat_id):
+    redirect_response = _require_manage_or_redirect(combat_id)
+    if redirect_response:
+        return redirect_response
+
+    combat = Combat.query.get_or_404(combat_id)
+    payload = request.get_json(silent=True) or {}
+    tokens = payload.get('tokens', {})
+    if not isinstance(tokens, dict):
+        return jsonify({'error': 'invalid tokens'}), 400
+
+    combat.battlemap_tokens_json = json.dumps(tokens)
+
+    from app.extensions import db
+    db.session.commit()
+    return jsonify({'status': 'ok'})
 
 
 @bp.route('/<int:combat_id>/state')

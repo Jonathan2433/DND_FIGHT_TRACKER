@@ -257,7 +257,7 @@ class TemplateService:
         return created_combatants
 
     @staticmethod
-    def add_monster_template_to_combat(combat_id, template_name, quantity, manual_initiative=None):
+    def add_monster_template_to_combat(combat_id, template_name, quantity, manual_initiative=None, monster_image_filename=None):
         """Ajouter des monstres depuis les templates prédéfinis"""
         template = MONSTER_TEMPLATES.get(template_name)
 
@@ -281,7 +281,8 @@ class TemplateService:
                 ac_base=template["ac"],
                 ac_bonus=0,
                 conditions="",
-                combat_id=combat_id
+                combat_id=combat_id,
+                notes=monster_image_filename
             )
 
             db.session.add(combatant)

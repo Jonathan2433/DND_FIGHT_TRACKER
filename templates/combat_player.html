@@ -16,6 +16,35 @@
             {% endif %}
         </div>
 
+        <div class="card">
+            <h3>🗺️ Battle map</h3>
+            <div class="battlemap-board battlemap-board--readonly">
+                {% if combat.battlemap_media_filename %}
+                    {% if combat.battlemap_media_type == 'video' %}
+                        <video class="battlemap-media" autoplay muted loop playsinline>
+                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                        </video>
+                    {% else %}
+                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
+                    {% endif %}
+                {% else %}
+                    <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
+                {% endif %}
+
+                {% for c in combatants %}
+                    {% set token_pos = battlemap_tokens.get(c.id|string) %}
+                    <div class="battlemap-token" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                        {% if c.notes %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                        {% else %}
+                            <span>{{ c.name[:2]|upper }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
         <div class="combatants-grid">
             {% for c in combatants %}
             <div class="combatant {{ c.type.lower() }} {% if c == current_actor %}active-turn{% endif %}" data-combatant-id="{{ c.id }}">

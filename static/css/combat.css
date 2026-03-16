@@ -725,3 +725,60 @@
     border-radius: var(--radius-lg);
     box-shadow: 0 4px 12px var(--overlay-black-30);
 }
+
+/* Battle map */
+.battlemap-board {
+    position: relative;
+    width: 100%;
+    max-width: 980px;
+    height: 560px;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.battlemap-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.battlemap-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+}
+
+.battlemap-token {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--color-white);
+    background: var(--overlay-black-60);
+    cursor: grab;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    font-weight: bold;
+    z-index: 3;
+}
+
+.battlemap-board--readonly .battlemap-token {
+    cursor: default;
+}
+
+.battlemap-token img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
