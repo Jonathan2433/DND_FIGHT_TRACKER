@@ -251,3 +251,35 @@
 .funnel-summary-inline {
     margin-top: 12px;
 }
+
+@media (max-width: 900px) {
+    .creation-steps-nav {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+    }
+
+    .creation-steps-nav li {
+        flex: 0 0 auto;
+        min-width: 140px;
+        white-space: nowrap;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 640px) {
+    .templates-title {
+        font-size: clamp(1.8rem, 8vw, 2.35rem);
+        line-height: 1.1;
+    }
+
+    .creation-steps-nav li {
+        min-width: 132px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+}
