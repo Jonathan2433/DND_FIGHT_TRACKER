@@ -79,13 +79,16 @@ def login():
     if request.method == 'POST':
         username_or_email = request.form['username_or_email']
         password = request.form['password']
+        remember_me = request.form.get('remember_me') == 'on'
 
         result = AuthService.login_user(username_or_email, password)
 
         if 'error' in result:
             flash(result['error'], 'error')
         else:
+            session.clear()
             session['user_id'] = result['user'].id
+            session.permanent = remember_me
             flash(f'Bienvenue, {result["user"].username} !', 'success')
             if next_url:
                 return redirect(next_url)
