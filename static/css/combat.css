@@ -797,3 +797,34 @@
     object-fit: cover;
     border-radius: 50%;
 }
+
+
+.battlemap-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-battlemap-fullscreen {
+    white-space: nowrap;
+}
+
+.battlemap-fullscreen-target:fullscreen,
+.card:fullscreen {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 20px;
+    background: radial-gradient(circle at top, var(--bg-primary), var(--bg-dark));
+    border-radius: 0;
+}
+
+.battlemap-fullscreen-target:fullscreen .battlemap-board,
+.card:fullscreen .battlemap-board {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 40px);
+    border-width: 3px;
+}

@@ -17,7 +17,12 @@
         </div>
 
         <div class="card">
-            <h3>🗺️ Battle map</h3>
+            <div class="battlemap-header-row">
+                <h3>🗺️ Battle map</h3>
+                <button type="button" class="btn-secondary btn-battlemap-fullscreen" data-battlemap-fullscreen-toggle>
+                    ⛶ Plein écran battle map
+                </button>
+            </div>
             <div class="battlemap-board battlemap-board--readonly">
                 {% if combat.battlemap_media_filename %}
                     {% if combat.battlemap_media_type == 'video' %}
@@ -299,6 +304,7 @@
 <div class="floating-hud">
     <button class="btn btn-capture btn-primary mobile-hidden" id="capture-button">🎥 Partager écran</button>
     <button class="btn btn-switch-display btn-primary inl-combat-002" onclick="enterHudMode()">🖥️ Switch Display</button>
+    <button class="btn btn-primary" id="battlemap-player-fullscreen">⛶ Battle map plein écran</button>
     <button class="btn btn-stop-capture btn-danger inl-combat-002">⏹️ Arrêter partage</button>
 
     <div class="capture-container inl-combat-002">
@@ -1107,6 +1113,44 @@ socket.on('disconnect', () => {
 // ✅ CORRECTION : Séparer l'initialisation des événements et des chronos
 }
 
+
+
+function initializeBattlemapFullscreen() {
+    const battlemapBoard = document.querySelector('.battlemap-board');
+    const mapCard = battlemapBoard ? battlemapBoard.closest('.card') : null;
+    const headerToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
+    const floatingToggle = document.getElementById('battlemap-player-fullscreen');
+
+    if (!battlemapBoard || !mapCard) {
+        return;
+    }
+
+    const toggleButtons = [headerToggle, floatingToggle].filter(Boolean);
+
+    const toggleBattlemapFullscreen = async () => {
+        try {
+            if (document.fullscreenElement === mapCard) {
+                await document.exitFullscreen();
+            } else {
+                await mapCard.requestFullscreen();
+            }
+        } catch (error) {
+            console.error('Impossible de basculer le plein ecran de la battle map', error);
+        }
+    };
+
+    toggleButtons.forEach((button) => {
+        button.addEventListener('click', toggleBattlemapFullscreen);
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        const isFullscreen = document.fullscreenElement === mapCard;
+        toggleButtons.forEach((button) => {
+            button.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
+        });
+    });
+}
+
 function initializeEvents() {
     console.log('🎮 Initialisation des événements...');
 
@@ -1126,6 +1170,9 @@ function initializeEvents() {
 
     // ✅ Initialiser les chronos séparément
     initializeChronos();
+
+    // Plein écran battle map (indépendant du partage d'écran)
+    initializeBattlemapFullscreen();
 }
 
 // ✅ NOUVEAU : Auto-refresh périodique en fallback si WebSocket échoue
