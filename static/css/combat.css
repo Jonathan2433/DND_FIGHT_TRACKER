@@ -916,15 +916,42 @@
     margin: 10px 0 14px;
 }
 
-.combat-invite-select {
-    min-height: 140px;
+.combat-invite-list {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
     border-radius: var(--radius-lg);
     border: 1px solid var(--overlay-white-10);
     background: var(--overlay-white-05);
-    color: var(--color-text-primary);
-    padding: 8px;
+    padding: 10px;
 }
 
+.combat-invite-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    cursor: pointer;
+    background: var(--overlay-black-20);
+    border: 1px solid transparent;
+}
+
+.combat-invite-option:hover {
+    border-color: var(--primary-a40);
+}
+
+.combat-invite-option input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+.combat-invite-empty {
+    margin: 0;
+    color: var(--color-text-secondary);
+}
 
 .combat-invite-card p {
     margin-top: 8px;

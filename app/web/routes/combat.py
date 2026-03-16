@@ -198,11 +198,23 @@ def invite_players_to_combat(combat_id):
         flash('Selectionnez au moins un joueur a inviter.', 'warning')
         return redirect(url_for('combat.view_combat', combat_id=combat_id))
 
+    selected_user_ids = []
+    for user_id in selected_ids:
+        try:
+            selected_user_ids.append(int(user_id))
+        except (TypeError, ValueError):
+            continue
+
+    if not selected_user_ids:
+        flash('Selection de joueurs invalide.', 'warning')
+        return redirect(url_for('combat.view_combat', combat_id=combat_id))
+
     campaign_user_ids = {member.user_id for member in CampaignMember.query.filter_by(campaign_id=combat.campaign_id).all()}
-    invited_users = User.query.filter(User.id.in_(selected_ids), User.is_active.is_(True)).all()
+    invited_users = User.query.filter(User.id.in_(selected_user_ids), User.is_active.is_(True)).all()
 
     invitation_url = url_for('combat.join_combat', combat_id=combat_id, _external=True)
     invited_count = 0
+    email_failed_count = 0
 
     for user in invited_users:
         if user.id not in campaign_user_ids or user.id == combat.campaign.mj_id:
@@ -216,20 +228,31 @@ def invite_players_to_combat(combat_id):
             campaign_id=combat.campaign_id,
             auto_commit=False,
         )
-        EmailService.send_combat_invitation(
-            user_email=user.email,
-            username=user.username,
-            campaign_name=combat.campaign.name,
-            combat_name=combat.name,
-            invitation_url=invitation_url,
-        )
+        if user.email:
+            try:
+                email_result = EmailService.send_combat_invitation(
+                    user_email=user.email,
+                    username=user.username,
+                    campaign_name=combat.campaign.name,
+                    combat_name=combat.name,
+                    invitation_url=invitation_url,
+                )
+                if email_result and email_result.get('error'):
+                    email_failed_count += 1
+            except Exception:
+                email_failed_count += 1
         invited_count += 1
 
     from app.extensions import db
     db.session.commit()
 
     if invited_count:
-        flash(f'{invited_count} invitation(s) envoyee(s) (notification + email).', 'success')
+        flash(f'{invited_count} invitation(s) envoyee(s) (notification in-app).', 'success')
+        if email_failed_count:
+            flash(
+                f'Email indisponible pour {email_failed_count} invitation(s) (configuration SMTP ou adresse email).',
+                'warning'
+            )
     else:
         flash('Aucun joueur valide a inviter.', 'warning')
 
