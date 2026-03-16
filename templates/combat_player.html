@@ -37,7 +37,7 @@
                         {% if c.notes %}
                             <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}
-                            <span>{{ c.name[:2]|upper }}</span>
+                            <span>{{ c.token_label }}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -618,7 +618,7 @@ function updateBattlemap(combatState) {
         if (combatant.notes) {
             token.innerHTML = `<img src="${getBattlemapMediaUrl(combatant.notes)}" alt="${combatant.name}">`;
         } else {
-            token.innerHTML = `<span>${combatant.name.substring(0, 2).toUpperCase()}</span>`;
+            token.innerHTML = `<span>${combatant.token_label || combatant.name.substring(0, 2).toUpperCase()}</span>`;
         }
 
         board.appendChild(token);

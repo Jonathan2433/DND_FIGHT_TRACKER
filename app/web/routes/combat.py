@@ -354,7 +354,8 @@ def combat_state(combat_id):
                 'is_dead': c.is_dead,
                 'has_fled': c.has_fled,
                 'conditions': c.conditions.split(',') if c.conditions else [],
-                'notes': c.notes
+                'notes': c.notes,
+                'token_label': c.token_label
             }
             for c in combatants
         ]
