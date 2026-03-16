@@ -1,13 +1,18 @@
 # Migrated to app.web.routes
 # app/routes/pnj.py - VERSION COMPLÈTE CORRIGÉE
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, g, jsonify
+import os
+from uuid import uuid4
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, g, jsonify, current_app
+from werkzeug.utils import secure_filename
 from app.utils.decorators import login_required
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.notification_service import NotificationService
 from app.models import CharacterTemplate
 from app.models.story_arc import StoryArc
 from app.extensions import db
+from app.utils import allowed_file
 
 bp = Blueprint('pnj', __name__, url_prefix='/pnj')
 
@@ -26,6 +31,15 @@ def create_pnj(campaign_id):
 
     if request.method == 'POST':
         try:
+            image = request.files.get('image')
+            image_filename = None
+
+            if image and image.filename and allowed_file(image.filename):
+                original_filename = secure_filename(image.filename)
+                _, extension = os.path.splitext(original_filename)
+                image_filename = f"{uuid4().hex}{extension.lower()}"
+                image.save(os.path.join(current_app.config['UPLOAD_FOLDER'], image_filename))
+
             story_arc_id = request.form.get('story_arc_id', type=int)
             story_arc = None
             if story_arc_id:
@@ -69,6 +83,7 @@ def create_pnj(campaign_id):
                 notes=request.form.get('notes', ''),
                 private_notes=request.form.get('private_notes', ''),
                 background_story=request.form.get('background_story', ''),
+                image_filename=image_filename,
             )
 
             db.session.add(pnj)
