@@ -82,7 +82,7 @@
                         {% if c.notes %}
                             <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}
-                            <span>{{ c.name[:2]|upper }}</span>
+                            <span>{{ c.token_label }}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
