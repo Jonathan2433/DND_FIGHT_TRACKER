@@ -156,6 +156,34 @@
     margin-top: 10px;
 }
 
+.ability-mode-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.ability-mode-toggle label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.ability-base--custom {
+    display: none;
+}
+
+.ability-base--custom:enabled {
+    display: block;
+}
+
+.ability-base--standard:disabled {
+    display: none;
+}
+
 .funnel-preview {
     display: block;
     margin-top: 6px;
@@ -165,13 +193,15 @@
 .funnel-summary {
     margin-top: 14px;
     padding: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(255, 60, 201, 0.35);
     border-radius: 10px;
-    background: #f9fafb;
+    background: rgba(12, 16, 52, 0.8);
+    color: #e6e9ff;
 }
 
 .funnel-summary p {
     margin: 0 0 6px;
+    color: #e6e9ff;
 }
 
 .funnel-summary p:last-child {
