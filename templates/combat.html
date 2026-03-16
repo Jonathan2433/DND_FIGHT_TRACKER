@@ -78,7 +78,7 @@
 
                 {% for c in initiative_order %}
                     {% set token_pos = battlemap_tokens.get(c.id|string) %}
-                    <div class="battlemap-token {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" data-token-id="{{ c.id }}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                    <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" data-token-id="{{ c.id }}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
                         {% if c.notes %}
                             <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}

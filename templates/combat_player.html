@@ -33,7 +33,7 @@
 
                 {% for c in combatants %}
                     {% set token_pos = battlemap_tokens.get(c.id|string) %}
-                    <div class="battlemap-token {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                    <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
                         {% if c.notes %}
                             <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}
@@ -607,7 +607,14 @@ function updateBattlemap(combatState) {
 
     combatState.combatants.forEach((combatant, index) => {
         const token = document.createElement('div');
-        token.className = `battlemap-token ${(combatant.is_dead || combatant.has_fled) ? 'battlemap-token--inactive' : ''}`;
+        const tokenClasses = ['battlemap-token'];
+        if (combatant.id === combatState.current_actor_id) {
+            tokenClasses.push('battlemap-token--active');
+        }
+        if (combatant.is_dead || combatant.has_fled) {
+            tokenClasses.push('battlemap-token--inactive');
+        }
+        token.className = tokenClasses.join(' ');
 
         const pos = combatState.battlemap_tokens[String(combatant.id)] || defaultPosition(index);
         const x = Math.max(0, Math.min(100, Number(pos.x) || 0));
