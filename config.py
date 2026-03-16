@@ -9,6 +9,14 @@ def _as_bool(value, default=False):
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _as_int(value, default):
+    """Convertir une variable d'environnement texte en entier."""
+    try:
+        return int(value) if value is not None else default
+    except (TypeError, ValueError):
+        return default
+
+
 class Config:
     """Configuration de base"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
@@ -23,7 +31,8 @@ class Config:
     # Upload configuration
     UPLOAD_FOLDER = os.path.join("static", "uploads")
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    MAX_CONTENT_LENGTH_MB = _as_int(os.environ.get('MAX_CONTENT_LENGTH_MB'), 256)
+    MAX_CONTENT_LENGTH = MAX_CONTENT_LENGTH_MB * 1024 * 1024
 
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.hostinger.com')

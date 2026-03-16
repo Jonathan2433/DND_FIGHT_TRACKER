@@ -45,6 +45,17 @@ Tu peux ensuite mettre un reverse proxy Nginx:
 - `preprod.exemple.com` -> `127.0.0.1:5001` avec **IP whitelist** (ton IP uniquement)
 - `exemple.com` -> `127.0.0.1:5000`
 
+Ajoute aussi une limite adaptée pour les uploads de battle map (images/vidéos), par exemple dans le `server` Nginx:
+
+```nginx
+server {
+    # ...
+    client_max_body_size 256M;
+}
+```
+
+(À aligner avec `MAX_CONTENT_LENGTH_MB` côté Flask.)
+
 ## 4) Installation côté VPS (une fois)
 
 Depuis le repo applicatif (ou en copiant le script), exécuter:
