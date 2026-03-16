@@ -216,7 +216,7 @@
 
 .home-quick-access__grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: 14px;
 }
 
@@ -230,7 +230,33 @@
     border: 1px solid var(--overlay-white-10);
 }
 
+.home-quick-access__item--nested {
+    gap: 12px;
+}
+
+.home-quick-access__nested-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.home-quick-access__nested-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--overlay-white-05);
+    border: 1px solid var(--overlay-white-10);
+}
+
 .home-quick-access__label {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.home-quick-access__context {
+    margin: 0;
     color: var(--color-text-secondary);
     font-size: 13px;
 }
