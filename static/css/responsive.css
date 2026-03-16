@@ -108,8 +108,12 @@
         border-radius: 22px;
     }
 
-    .home-quick-access__grid {
+    .home-quick-access__progression {
         grid-template-columns: 1fr;
+    }
+
+    .home-quick-access__step::after {
+        display: none;
     }
 
     .home-hero__actions,
@@ -204,7 +208,7 @@
         width: 100%;
     }
 
-    .home-quick-access__item strong {
+    .home-quick-access__step strong {
         min-height: auto;
     }
 

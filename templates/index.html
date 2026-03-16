@@ -46,53 +46,59 @@
                     </div>
                 </div>
 
-                <div class="home-quick-access__grid">
-                    <article class="home-quick-access__item">
-                        <span class="home-quick-access__label">Campagne</span>
+                <div class="home-quick-access__progression">
+                    <article class="home-quick-access__step">
+                        <header class="home-quick-access__step-head">
+                            <span class="home-quick-access__step-index">1</span>
+                            <span class="home-quick-access__label">Campagne active</span>
+                        </header>
                         <strong>{{ featured_campaign_summary.campaign.name }}</strong>
+                        <p class="home-quick-access__hint">Point de depart de votre progression.</p>
                         <a href="{{ url_for('campaign.view_campaign', campaign_id=featured_campaign_summary.campaign.id) }}" class="btn btn-secondary">Ouvrir la campagne</a>
                     </article>
 
-                    <article class="home-quick-access__item home-quick-access__item--nested">
-                        <span class="home-quick-access__label">Progression de la campagne</span>
-                        <p class="home-quick-access__context">{{ featured_campaign_summary.campaign.name }}</p>
+                    <article class="home-quick-access__step">
+                        <header class="home-quick-access__step-head">
+                            <span class="home-quick-access__step-index">2</span>
+                            <span class="home-quick-access__label">Arc actuel</span>
+                        </header>
+                        <strong>
+                            {% if featured_campaign_summary.current_arc %}
+                                {{ featured_campaign_summary.current_arc.name }}
+                            {% else %}
+                                Aucun arc defini
+                            {% endif %}
+                        </strong>
+                        <p class="home-quick-access__hint">Lie a la campagne <em>{{ featured_campaign_summary.campaign.name }}</em>.</p>
+                        {% if featured_campaign_summary.current_arc %}
+                            <a href="{{ url_for('story_arc.view_arc', arc_id=featured_campaign_summary.current_arc.id) }}" class="btn btn-secondary">Rejoindre l'arc</a>
+                        {% else %}
+                            <span class="home-quick-access__empty">Creez un arc depuis la campagne.</span>
+                        {% endif %}
+                    </article>
 
-                        <div class="home-quick-access__nested-grid">
-                            <section class="home-quick-access__nested-item">
-                                <span class="home-quick-access__label">Arc actuel</span>
-                                <strong>
-                                    {% if featured_campaign_summary.current_arc %}
-                                        {{ featured_campaign_summary.current_arc.name }}
-                                    {% else %}
-                                        Aucun arc defini
-                                    {% endif %}
-                                </strong>
-                                {% if featured_campaign_summary.current_arc %}
-                                    <a href="{{ url_for('story_arc.view_arc', arc_id=featured_campaign_summary.current_arc.id) }}" class="btn btn-secondary">Rejoindre l'arc</a>
-                                {% else %}
-                                    <span class="home-quick-access__empty">Creez un arc depuis la campagne.</span>
-                                {% endif %}
-                            </section>
-
-                            <section class="home-quick-access__nested-item">
-                                <span class="home-quick-access__label">Dernier episode</span>
-                                <strong>
-                                    {% if featured_campaign_summary.latest_episode %}
-                                        {{ featured_campaign_summary.latest_episode.title }}
-                                    {% else %}
-                                        Aucun episode
-                                    {% endif %}
-                                </strong>
-                                {% if featured_campaign_summary.current_arc %}
-                                    <p class="home-quick-access__context">Dans l'arc {{ featured_campaign_summary.current_arc.name }}</p>
-                                {% endif %}
-                                {% if featured_campaign_summary.latest_episode %}
-                                    <a href="{{ url_for('episode.view_episode', episode_id=featured_campaign_summary.latest_episode.id) }}" class="btn btn-secondary">Voir l'episode</a>
-                                {% else %}
-                                    <span class="home-quick-access__empty">Ajoutez un episode pour accelerer l'acces.</span>
-                                {% endif %}
-                            </section>
-                        </div>
+                    <article class="home-quick-access__step">
+                        <header class="home-quick-access__step-head">
+                            <span class="home-quick-access__step-index">3</span>
+                            <span class="home-quick-access__label">Dernier episode</span>
+                        </header>
+                        <strong>
+                            {% if featured_campaign_summary.latest_episode %}
+                                {{ featured_campaign_summary.latest_episode.title }}
+                            {% else %}
+                                Aucun episode
+                            {% endif %}
+                        </strong>
+                        {% if featured_campaign_summary.current_arc %}
+                            <p class="home-quick-access__hint">Derniere etape de l'arc <em>{{ featured_campaign_summary.current_arc.name }}</em>.</p>
+                        {% else %}
+                            <p class="home-quick-access__hint">Cet episode apparaitra quand un arc sera actif.</p>
+                        {% endif %}
+                        {% if featured_campaign_summary.latest_episode %}
+                            <a href="{{ url_for('episode.view_episode', episode_id=featured_campaign_summary.latest_episode.id) }}" class="btn btn-secondary">Voir l'episode</a>
+                        {% else %}
+                            <span class="home-quick-access__empty">Ajoutez un episode pour accelerer l'acces.</span>
+                        {% endif %}
                     </article>
                 </div>
             </section>
