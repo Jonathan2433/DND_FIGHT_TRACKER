@@ -164,4 +164,5 @@ SECRET_KEY=change-me
 FLASK_CONFIG=development
 DATABASE_URL=sqlite:///tracker.db
 SESSION_COOKIE_SECURE=false
+MAX_CONTENT_LENGTH_MB=256
 ```
