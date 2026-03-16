@@ -157,19 +157,29 @@
 }
 
 .ability-mode-toggle {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
     margin-top: 12px;
     margin-bottom: 12px;
 }
 
 .ability-mode-toggle label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     color: var(--text-primary);
     font-size: 0.9rem;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.ability-mode-toggle input[type="radio"] {
+    width: auto;
+    margin-top: 2px;
+    flex: 0 0 auto;
 }
 
 .ability-base--custom {
@@ -218,13 +228,29 @@
 }
 
 .creation-steps-nav li {
-    padding: 8px 10px;
     border-radius: 8px;
     font-size: 0.85rem;
     text-align: center;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--color-text-secondary);
+}
+
+.creation-step-trigger {
+    width: 100%;
+    display: block;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.creation-step-trigger:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .creation-steps-nav li.is-active {
@@ -279,7 +305,19 @@
 
     .creation-steps-nav li {
         min-width: 132px;
-        padding: 8px 12px;
         font-size: 0.82rem;
+    }
+
+    .creation-step-trigger {
+        padding: 8px 12px;
+    }
+
+    .ability-mode-toggle {
+        grid-template-columns: 1fr;
+    }
+
+    .ability-mode-toggle label {
+        align-items: center;
+        line-height: 1.35;
     }
 }

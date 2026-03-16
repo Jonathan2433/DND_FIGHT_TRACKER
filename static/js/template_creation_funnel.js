@@ -84,6 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (descriptionEl) descriptionEl.textContent = `Description: ${description}`;
     };
 
+    const renderClassDescription = () => {
+        if (!classSelect) return;
+        const selected = classSelect.options[classSelect.selectedIndex];
+        const description = selected?.dataset.description || '-';
+        const descriptionEl = document.getElementById('class-description-summary');
+        if (descriptionEl) descriptionEl.textContent = `Description: ${description}`;
+    };
+
     const render = () => {
         const selectedRace = raceSelect?.value;
         const selectedClass = classSelect?.value;
@@ -147,13 +155,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stepItems.forEach((item) => {
             const step = Number(item.dataset.step);
-            item.classList.toggle('is-active', step === currentStep);
+            const isActive = step === currentStep;
+            item.classList.toggle('is-active', isActive);
             item.classList.toggle('is-complete', step < currentStep);
+
+            const trigger = item.querySelector('.creation-step-trigger');
+            if (trigger) {
+                trigger.setAttribute('aria-current', isActive ? 'step' : 'false');
+            }
         });
 
         prevButton.disabled = currentStep === 1;
         nextButton.hidden = currentStep === totalSteps;
         submitButton.hidden = currentStep !== totalSteps;
+        submitButton.disabled = currentStep !== totalSteps;
     };
 
     prevButton?.addEventListener('click', () => {
@@ -166,6 +181,25 @@ document.addEventListener('DOMContentLoaded', () => {
     nextButton?.addEventListener('click', () => {
         if (currentStep < totalSteps) {
             currentStep += 1;
+            updateWizardUI();
+        }
+    });
+
+    stepItems.forEach((item) => {
+        const trigger = item.querySelector('.creation-step-trigger');
+        trigger?.addEventListener('click', () => {
+            const targetStep = Number(trigger.dataset.stepTarget || item.dataset.step || currentStep);
+            if (targetStep <= currentStep && targetStep >= 1) {
+                currentStep = targetStep;
+                updateWizardUI();
+            }
+        });
+    });
+
+    form.addEventListener('submit', (event) => {
+        if (currentStep !== totalSteps) {
+            event.preventDefault();
+            currentStep = totalSteps;
             updateWizardUI();
         }
     });
@@ -185,12 +219,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     raceSelect?.addEventListener('change', render);
-    classSelect?.addEventListener('change', render);
+    classSelect?.addEventListener('change', () => {
+        render();
+        renderClassDescription();
+    });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', renderBackground);
 
     syncAbilityMode();
     render();
     renderBackground();
+    renderClassDescription();
     updateWizardUI();
 });
