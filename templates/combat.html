@@ -55,18 +55,21 @@
 
         <section class="card combat-invite-card">
             <h3>📨 Inviter des joueurs au combat</h3>
-            <p>Sélectionnez des joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
+            <p>Cochez un ou plusieurs joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
 
             <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
-                <select name="player_ids" multiple size="6" class="combat-invite-select">
+                <div class="combat-invite-list" role="group" aria-label="Joueurs à inviter">
                     {% if campaign_players %}
                     {% for player in campaign_players %}
-                        <option value="{{ player.id }}">{{ player.username }} — {{ player.email }}</option>
+                    <label class="combat-invite-option">
+                        <input type="checkbox" name="player_ids" value="{{ player.id }}">
+                        <span>{{ player.username }} — {{ player.email }}</span>
+                    </label>
                     {% endfor %}
                     {% else %}
-                        <option value="" disabled>Aucun joueur dans la campagne</option>
+                    <p class="combat-invite-empty">Aucun joueur dans la campagne</p>
                     {% endif %}
-                </select>
+                </div>
                 <button type="submit" class="btn-primary">Envoyer invitation au combat</button>
             </form>
 
