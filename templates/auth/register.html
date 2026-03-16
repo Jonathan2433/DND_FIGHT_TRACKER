@@ -6,7 +6,7 @@
     {% if invitation_token %}
     <p class="inl-auth-007">Vous avez été invité à rejoindre une campagne. Créez votre compte pour accepter l'invitation.</p>
     {% endif %}
-    
+
     <form method="POST">
         {% if invitation_token %}
             <input type="hidden" name="invitation_token" value="{{ invitation_token }}">
@@ -18,17 +18,21 @@
             <label for="username" class="inl-auth-004">Nom d'utilisateur :</label>
             <input type="text" id="username" name="username" required class="inl-auth-005">
         </div>
-        
+
         <div class="inl-auth-003">
             <label for="email" class="inl-auth-004">Email :</label>
             <input type="email" id="email" name="email" value="{{ invited_email }}" {% if invitation_token and invited_email %}readonly{% endif %} required class="inl-auth-005">
         </div>
-        
+
         <div class="inl-auth-003">
             <label for="password" class="inl-auth-004">Mot de passe :</label>
             <input type="password" id="password" name="password" required class="inl-auth-005">
+            <label class="inl-auth-004" for="show-password-register">
+                <input type="checkbox" id="show-password-register">
+                Afficher le mot de passe
+            </label>
         </div>
-        
+
         <!-- ✅ SÉCURISÉ : Seuls Joueur et MJ sont disponibles -->
         <div class="inl-auth-003">
             <label for="role" class="inl-auth-004">Rôle :</label>
@@ -39,15 +43,30 @@
                 <!-- ✅ SUPPRIMÉ : Admin n'est plus disponible -->
             </select>
         </div>
-        
+
         <button type="submit" class="btn-primary inl-auth-006" >
             Créer mon compte
         </button>
     </form>
-    
+
     <p class="inl-auth-007">
         Déjà un compte ?
         <a href="{{ url_for('auth.login', next=next_url) if next_url else url_for('auth.login') }}" class="inl-auth-008">Se connecter</a>
     </p>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.getElementById('show-password-register');
+        const passwordInput = document.getElementById('password');
+
+        if (!toggle || !passwordInput) {
+            return;
+        }
+
+        toggle.addEventListener('change', function () {
+            passwordInput.type = toggle.checked ? 'text' : 'password';
+        });
+    });
+</script>
 {% endblock %}
