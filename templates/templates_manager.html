@@ -31,11 +31,11 @@
 
             <div class="creation-wizard" data-total-steps="5">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
-                    <li class="is-active" data-step="1">1. Classe</li>
-                    <li data-step="2">2. Race</li>
-                    <li data-step="3">3. Background</li>
-                    <li data-step="4">4. Caracteristiques</li>
-                    <li data-step="5">5. Identite & medias</li>
+                    <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
+                    <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Race</button></li>
+                    <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Background</button></li>
+                    <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Caracteristiques</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Identite & medias</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
@@ -45,9 +45,13 @@
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
                         {% for klass in dnd_classes %}
-                            <option value="{{ klass }}" {% if klass == 'Guerrier' %}selected{% endif %}>{{ klass }}</option>
+                            <option value="{{ klass }}" data-description="{{ dnd_class_descriptions.get(klass, '') }}" {% if klass == 'Guerrier' %}selected{% endif %}>{{ klass }}</option>
                         {% endfor %}
                     </select>
+
+                    <div class="funnel-summary">
+                        <p id="class-description-summary">Description: -</p>
+                    </div>
 
                     <label for="create-level">Niveau</label>
                     <input id="create-level" type="number" name="level" value="1" min="1" max="20" required>
@@ -194,7 +198,7 @@
                 <div class="wizard-actions">
                     <button type="button" class="btn btn-secondary" id="wizard-prev" disabled>Etape precedente</button>
                     <button type="button" class="btn btn-primary" id="wizard-next">Etape suivante</button>
-                    <button type="submit" class="btn btn-primary" id="wizard-submit" hidden>Creer</button>
+                    <button type="submit" class="btn btn-primary" id="wizard-submit" hidden disabled>Creer</button>
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('create-form').style.display='none'">Annuler</button>
                 </div>
             </div>

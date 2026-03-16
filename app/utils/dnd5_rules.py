@@ -22,18 +22,66 @@ RACE_BONUSES = {
 }
 
 CLASS_RULES = {
-    "Barbare": {"hit_die": 12, "saving_throws": ["force", "constitution"]},
-    "Barde": {"hit_die": 8, "saving_throws": ["dexterite", "charisme"]},
-    "Clerc": {"hit_die": 8, "saving_throws": ["sagesse", "charisme"]},
-    "Druide": {"hit_die": 8, "saving_throws": ["intelligence", "sagesse"]},
-    "Ensorceleur": {"hit_die": 6, "saving_throws": ["constitution", "charisme"]},
-    "Guerrier": {"hit_die": 10, "saving_throws": ["force", "constitution"]},
-    "Magicien": {"hit_die": 6, "saving_throws": ["intelligence", "sagesse"]},
-    "Moine": {"hit_die": 8, "saving_throws": ["force", "dexterite"]},
-    "Paladin": {"hit_die": 10, "saving_throws": ["sagesse", "charisme"]},
-    "Rodeur": {"hit_die": 10, "saving_throws": ["force", "dexterite"]},
-    "Roublard": {"hit_die": 8, "saving_throws": ["dexterite", "intelligence"]},
-    "Occultiste": {"hit_die": 8, "saving_throws": ["sagesse", "charisme"]},
+    "Barbare": {
+        "hit_die": 12,
+        "saving_throws": ["force", "constitution"],
+        "description": "Combattant sauvage et endurant, le barbare excelle en melee grace a sa rage et sa resistance.",
+    },
+    "Barde": {
+        "hit_die": 8,
+        "saving_throws": ["dexterite", "charisme"],
+        "description": "Artiste polyvalent, le barde soutient le groupe avec ses inspirations, sa magie et ses competences sociales.",
+    },
+    "Clerc": {
+        "hit_die": 8,
+        "saving_throws": ["sagesse", "charisme"],
+        "description": "Lanceur de sorts divin, le clerc soigne, protege ses allies et invoque la puissance de sa divinite.",
+    },
+    "Druide": {
+        "hit_die": 8,
+        "saving_throws": ["intelligence", "sagesse"],
+        "description": "Gardien de la nature, le druide maitrise les sorts elementaires et la metamorphose animale.",
+    },
+    "Ensorceleur": {
+        "hit_die": 6,
+        "saving_throws": ["constitution", "charisme"],
+        "description": "Magicien instinctif, l'ensorceleur puise sa puissance dans un heritage magique inne et modele ses sorts.",
+    },
+    "Guerrier": {
+        "hit_die": 10,
+        "saving_throws": ["force", "constitution"],
+        "description": "Specialiste des armes et armures, le guerrier est fiable en premiere ligne et tres adaptable.",
+    },
+    "Magicien": {
+        "hit_die": 6,
+        "saving_throws": ["intelligence", "sagesse"],
+        "description": "Erudit des arcanes, le magicien possede la plus large palette de sorts utilitaires et offensifs.",
+    },
+    "Moine": {
+        "hit_die": 8,
+        "saving_throws": ["force", "dexterite"],
+        "description": "Adepte du ki, le moine allie mobilite, precision et techniques martiales spectaculaires.",
+    },
+    "Paladin": {
+        "hit_die": 10,
+        "saving_throws": ["sagesse", "charisme"],
+        "description": "Champion sacre, le paladin combine defense, soutien et gros degats grace a ses chatiments divins.",
+    },
+    "Rodeur": {
+        "hit_die": 10,
+        "saving_throws": ["force", "dexterite"],
+        "description": "Eclaireur des terres sauvages, le rodeur piste ses proies et combat avec precision a distance ou au contact.",
+    },
+    "Roublard": {
+        "hit_die": 8,
+        "saving_throws": ["dexterite", "intelligence"],
+        "description": "Expert de l'infiltration, le roublard frappe juste au bon moment et excelle hors combat.",
+    },
+    "Occultiste": {
+        "hit_die": 8,
+        "saving_throws": ["sagesse", "charisme"],
+        "description": "L'occultiste tire sa magie d'un pacte surnaturel, avec des pouvoirs atypiques et des invocations.",
+    },
 }
 
 ABILITY_NAMES = ["force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"]
