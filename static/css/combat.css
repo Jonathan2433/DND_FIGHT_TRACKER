@@ -776,6 +776,11 @@
     cursor: default;
 }
 
+.battlemap-board--readonly .battlemap-token.battlemap-token--player-draggable {
+    cursor: grab;
+    box-shadow: 0 0 0 2px var(--overlay-black-60), 0 0 10px var(--brand-blue-light);
+}
+
 .battlemap-token--active {
     border-color: var(--brand-yellow-active);
     box-shadow: 0 0 0 3px var(--overlay-black-60), 0 0 14px var(--brand-yellow-active);
