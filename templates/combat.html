@@ -69,7 +69,7 @@
 
             <p>Clique-glisse les tokens pour les déplacer. Position sauvegardée automatiquement.</p>
             <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
-            <div id="battlemap-board" class="battlemap-board">
+                <div id="battlemap-board" class="battlemap-board">
                 {% if combat.battlemap_media_filename %}
                     {% if combat.battlemap_media_type == 'video' %}
                         <video class="battlemap-media" autoplay muted loop playsinline>
@@ -92,7 +92,42 @@
                         {% endif %}
                     </div>
                 {% endfor %}
-            </div>
+                </div>
+
+                <aside class="battlemap-fullscreen-initiative">
+                    <h4>🎯 Initiative</h4>
+                    <div class="battlemap-fullscreen-initiative-list">
+                        {% for p in initiative_order %}
+                            <div class="simple-initiative-card {% if p == current_actor %}active-init{% endif %} {% if p.is_dead %}dead-init{% endif %} {% if p.has_fled %}fled-init{% endif %}"
+                                 data-fullscreen-init-id="{{ p.id }}">
+                                <div class="init-name-status">
+                                    <span class="init-name">{% if p.is_dead %}💀 {% elif p.has_fled %}🏃 {% endif %}{{ p.name }}</span>
+                                </div>
+                                <span class="init-initiative">{{ p.initiative }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </aside>
+
+                <div class="battlemap-fullscreen-pj-bar">
+                    <h4>🧙‍♂️ Personnages Joueurs</h4>
+                    <div class="pj-portraits-container">
+                        {% for c in initiative_order if c.type == 'PJ' %}
+                            <div class="pj-portrait {% if c == current_actor %}pj-active{% endif %} {% if c.is_dead %}pj-dead{% endif %} {% if c.has_fled %}pj-fled{% endif %}"
+                                 data-fullscreen-pj-id="{{ c.id }}">
+                                <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
+                                    {% if c.notes %}
+                                        <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
+                                    {% else %}
+                                        <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="pj-name">{{ c.name }}</div>
+                                <div class="pj-ac">CA {{ c.ac_total }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -535,6 +570,32 @@ document.addEventListener("DOMContentLoaded", function() {
                 const combatantState = (combatState.combatants || []).find((combatant) => String(combatant.id) === tokenId);
                 token.classList.toggle('battlemap-token--active', combatState.current_actor_id === Number(tokenId));
                 token.classList.toggle('battlemap-token--inactive', !!combatantState && (combatantState.is_dead || combatantState.has_fled));
+            });
+
+            const fullscreenInitCards = Array.from(document.querySelectorAll('[data-fullscreen-init-id]'));
+            fullscreenInitCards.forEach((card) => {
+                const combatantId = Number(card.dataset.fullscreenInitId);
+                const combatantState = (combatState.combatants || []).find((combatant) => combatant.id === combatantId);
+                if (!combatantState) {
+                    return;
+                }
+
+                card.classList.toggle('active-init', combatState.current_actor_id === combatantId);
+                card.classList.toggle('dead-init', !!combatantState.is_dead);
+                card.classList.toggle('fled-init', !!combatantState.has_fled);
+            });
+
+            const fullscreenPjCards = Array.from(document.querySelectorAll('[data-fullscreen-pj-id]'));
+            fullscreenPjCards.forEach((card) => {
+                const combatantId = Number(card.dataset.fullscreenPjId);
+                const combatantState = (combatState.combatants || []).find((combatant) => combatant.id === combatantId);
+                if (!combatantState) {
+                    return;
+                }
+
+                card.classList.toggle('pj-active', combatState.current_actor_id === combatantId);
+                card.classList.toggle('pj-dead', !!combatantState.is_dead);
+                card.classList.toggle('pj-fled', !!combatantState.has_fled);
             });
         };
 
