@@ -13,3 +13,7 @@
 .inl-auth-011 { color: var(--color-text-primary); }
 .inl-auth-012 { color: var(--color-warning); }
 .inl-auth-013 { text-align: center; margin-top: 30px; }
+.inl-auth-014 { position: relative; }
+.inl-auth-015 { padding-right: 44px; }
+.inl-auth-016 { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; }
+.inl-auth-016:hover { color: var(--color-text-primary); }

@@ -14,17 +14,18 @@
 
         <div class="inl-auth-003">
             <label for="password" class="inl-auth-004">Mot de passe :</label>
-            <input type="password" id="password" name="password" required class="inl-auth-005">
-            <label class="inl-auth-004" for="show-password-login">
-                <input type="checkbox" id="show-password-login">
-                Afficher le mot de passe
-            </label>
+            <div class="inl-auth-014">
+                <input type="password" id="password" name="password" required class="inl-auth-005 inl-auth-015">
+                <button type="button" id="show-password-login" class="inl-auth-016" aria-label="Afficher le mot de passe" aria-pressed="false">
+                    👁️
+                </button>
+            </div>
         </div>
 
         <div class="inl-auth-003">
             <label class="inl-auth-004" for="remember_me">
                 <input type="checkbox" id="remember_me" name="remember_me">
-                Rester connecté (3 jours)
+                Rester connecté
             </label>
         </div>
 
@@ -48,8 +49,15 @@
             return;
         }
 
-        toggle.addEventListener('change', function () {
-            passwordInput.type = toggle.checked ? 'text' : 'password';
+        toggle.addEventListener('click', function () {
+            const shouldShowPassword = passwordInput.type === 'password';
+            passwordInput.type = shouldShowPassword ? 'text' : 'password';
+            toggle.setAttribute('aria-pressed', shouldShowPassword ? 'true' : 'false');
+            toggle.setAttribute(
+                'aria-label',
+                shouldShowPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+            );
+            toggle.textContent = shouldShowPassword ? '🙈' : '👁️';
         });
     });
 </script>

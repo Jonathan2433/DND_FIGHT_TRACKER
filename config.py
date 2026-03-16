@@ -40,7 +40,7 @@ class Config:
     WTF_CSRF_ENABLED = True
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     SESSION_COOKIE_HTTPONLY = True
-    PERMANENT_SESSION_LIFETIME = timedelta(days=int(os.environ.get('REMEMBER_ME_DAYS', 3)))
+    PERMANENT_SESSION_LIFETIME = timedelta(days=int(os.environ.get('REMEMBER_ME_DAYS', 30)))
 
 TEMPLATES_AUTO_RELOAD = True
 
