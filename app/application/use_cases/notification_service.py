@@ -1,12 +1,22 @@
 """Service métier pour la gestion des notifications."""
 
 from app.extensions import db
+from app.extensions import socketio
 from app.models.notification import Notification
 from app.models.campaign import CampaignMember
 
 
 class NotificationService:
     """Opérations de création et lecture des notifications."""
+
+    @staticmethod
+    def _emit_realtime_update(user_id):
+        unread_count = NotificationService.unread_count(user_id)
+        socketio.emit(
+            'notification_update',
+            {'unread_count': unread_count},
+            room=f'user_{user_id}',
+        )
 
     @staticmethod
     def create_notification(user_id, title, message, *, kind='general', campaign_id=None, auto_commit=True):
@@ -20,6 +30,7 @@ class NotificationService:
         db.session.add(notification)
         if auto_commit:
             db.session.commit()
+            NotificationService._emit_realtime_update(user_id)
         return notification
 
     @staticmethod
@@ -39,6 +50,8 @@ class NotificationService:
 
         if auto_commit:
             db.session.commit()
+            for user_id in recipients:
+                NotificationService._emit_realtime_update(user_id)
 
     @staticmethod
     def list_user_notifications(user_id, limit=25):
@@ -56,6 +69,7 @@ class NotificationService:
     def mark_all_as_read(user_id):
         Notification.query.filter_by(user_id=user_id, is_read=False).update({'is_read': True})
         db.session.commit()
+        NotificationService._emit_realtime_update(user_id)
 
     @staticmethod
     def mark_as_read(user_id, notification_id):
@@ -66,5 +80,6 @@ class NotificationService:
         if not notification.is_read:
             notification.is_read = True
             db.session.commit()
+            NotificationService._emit_realtime_update(user_id)
 
         return notification

@@ -82,7 +82,7 @@
                                 >
                                     <span class="site-notification__icon" aria-hidden="true">🔔</span>
                                     {% if unread_notifications_count %}
-                                        <span class="site-notification__badge">{{ unread_notifications_count }}</span>
+                                        <span class="site-notification__badge" data-notification-badge>{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </button>
                                 <div class="site-notification__panel" data-notification-panel>
@@ -170,6 +170,7 @@
             </div>
         </footer>
     </div>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
     <script src="{{ url_for('static', filename='js/notification_center.js') }}"></script>
