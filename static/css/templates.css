@@ -207,3 +207,47 @@
 .funnel-summary p:last-child {
     margin-bottom: 0;
 }
+
+.creation-steps-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 18px;
+}
+
+.creation-steps-nav li {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-secondary);
+}
+
+.creation-steps-nav li.is-active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.creation-steps-nav li.is-complete {
+    color: #9ad1a0;
+    border-color: rgba(154, 209, 160, 0.6);
+}
+
+.wizard-step[hidden] {
+    display: none;
+}
+
+.wizard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.funnel-summary-inline {
+    margin-top: 12px;
+}

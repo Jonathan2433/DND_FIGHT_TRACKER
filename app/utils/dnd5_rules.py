@@ -38,6 +38,59 @@ CLASS_RULES = {
 
 ABILITY_NAMES = ["force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"]
 
+BACKGROUND_RULES = {
+    "Acolyte": {
+        "skills": ["Intuition", "Religion"],
+        "feature": "Abri des fideles",
+        "description": "Vous avez servi un temple et pouvez obtenir aide, soins simples et refuge aupres des lieux de culte de votre foi.",
+    },
+    "Artisan de guilde": {
+        "skills": ["Intuition", "Persuasion"],
+        "feature": "Membre de guilde",
+        "description": "Votre guilde vous ouvre des portes commerciales, un reseau de contacts et un soutien logistique de base.",
+    },
+    "Charlatan": {
+        "skills": ["Tromperie", "Escamotage"],
+        "feature": "Identite de couverture",
+        "description": "Vous maintenez une fausse identite et savez obtenir de petits services en jouant votre role.",
+    },
+    "Criminel": {
+        "skills": ["Tromperie", "Discretion"],
+        "feature": "Contact criminel",
+        "description": "Vous connaissez un contact fiable dans les bas-fonds pour faire passer des messages et denicher des informations.",
+    },
+    "Ermite": {
+        "skills": ["Medecine", "Religion"],
+        "feature": "Decouverte",
+        "description": "Votre retrait du monde vous a offert une revelation majeure que vous pouvez exploiter en jeu.",
+    },
+    "Heros du peuple": {
+        "skills": ["Dressage", "Survie"],
+        "feature": "Hospitalite rustique",
+        "description": "Les gens simples vous hebergent volontiers et vous protegent tant que vous ne les mettez pas en danger direct.",
+    },
+    "Marin": {
+        "skills": ["Athletisme", "Perception"],
+        "feature": "Passage sur navire",
+        "description": "Vous pouvez generalement obtenir un passage gratuit sur un navire civil pour vous et vos compagnons.",
+    },
+    "Noble": {
+        "skills": ["Histoire", "Persuasion"],
+        "feature": "Position de privilege",
+        "description": "Votre titre ouvre des portes dans les cercles de pouvoir et facilite l'obtention d'audiences officielles.",
+    },
+    "Sage": {
+        "skills": ["Arcanes", "Histoire"],
+        "feature": "Chercheur",
+        "description": "Vous savez ou trouver savoirs et references, et vers qui vous tourner pour une reponse erudite.",
+    },
+    "Soldat": {
+        "skills": ["Athletisme", "Intimidation"],
+        "feature": "Grade militaire",
+        "description": "Votre passe militaire vous donne autorite sur des soldats de rang inferieur et un acces a des garnisons alliees.",
+    },
+}
+
 
 def _clamp(value, minimum, maximum):
     return max(minimum, min(maximum, value))

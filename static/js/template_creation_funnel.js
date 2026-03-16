@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const raceSelect = form.querySelector('#create-race');
     const classSelect = form.querySelector('#create-class');
     const levelInput = form.querySelector('#create-level');
+    const backgroundSelect = form.querySelector('#create-background');
     const modeInputs = form.querySelectorAll('input[name="ability_mode"]');
 
     const raceBonuses = {
@@ -37,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
 
     const mod = (score) => Math.floor((score - 10) / 2);
-
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
 
     const syncAbilityMode = () => {
@@ -69,10 +69,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const renderBackground = () => {
+        if (!backgroundSelect) return;
+        const selected = backgroundSelect.options[backgroundSelect.selectedIndex];
+        const feature = selected?.dataset.feature || '-';
+        const skills = selected?.dataset.skills || '-';
+        const description = selected?.dataset.description || '-';
+
+        const featureEl = document.getElementById('background-feature-summary');
+        const skillsEl = document.getElementById('background-skills-summary');
+        const descriptionEl = document.getElementById('background-description-summary');
+        if (featureEl) featureEl.textContent = `Trait: ${feature}`;
+        if (skillsEl) skillsEl.textContent = `Competences suggerees: ${skills}`;
+        if (descriptionEl) descriptionEl.textContent = `Description: ${description}`;
+    };
+
     const render = () => {
-        const selectedRace = raceSelect.value;
-        const selectedClass = classSelect.value;
-        const level = Math.max(1, parseInt(levelInput.value || '1', 10));
+        const selectedRace = raceSelect?.value;
+        const selectedClass = classSelect?.value;
+        const level = Math.max(1, parseInt(levelInput?.value || '1', 10));
 
         const bonuses = raceBonuses[selectedRace] || {};
         const classRule = classRules[selectedClass] || { hitDie: 8, saves: [] };
@@ -82,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const baseField = getMode() === 'custom'
                 ? form.querySelector(`#create-custom-${ability}`)
                 : form.querySelector(`#create-${ability}`);
-            const baseValue = parseInt(baseField.value || '10', 10);
+            const baseValue = parseInt(baseField?.value || '10', 10);
             finalStats[ability] = Math.min(20, Math.max(1, baseValue + (bonuses[ability] || 0)));
 
             const preview = form.querySelector(`#preview-${ability}`);
@@ -95,10 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(([ability, value]) => `${ability.toUpperCase()} +${value}`)
             .join(', ');
         const raceSummary = document.getElementById('race-bonus-summary');
-        raceSummary.textContent = `Bonus raciaux: ${bonusSummary || 'Aucun'}`;
+        if (raceSummary) raceSummary.textContent = `Bonus raciaux: ${bonusSummary || 'Aucun'}`;
 
         const saveSummary = document.getElementById('saving-throws-summary');
-        saveSummary.textContent = `Maitrises de sauvegarde: ${classRule.saves.map((value) => value.charAt(0).toUpperCase() + value.slice(1)).join(', ')}`;
+        if (saveSummary) {
+            saveSummary.textContent = `Maitrises de sauvegarde: ${classRule.saves.map((value) => value.charAt(0).toUpperCase() + value.slice(1)).join(', ')}`;
+        }
 
         const constitutionMod = mod(finalStats.constitution);
         const dexMod = mod(finalStats.dexterite);
@@ -107,14 +124,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const ac = Math.max(10, 10 + dexMod);
 
         const derivedSummary = document.getElementById('derived-stats-summary');
-        derivedSummary.textContent = `PV estimes: ${hp} | CA estimee: ${ac} | Initiative: ${dexMod >= 0 ? '+' : ''}${dexMod}`;
+        if (derivedSummary) {
+            derivedSummary.textContent = `PV estimes: ${hp} | CA estimee: ${ac} | Initiative: ${dexMod >= 0 ? '+' : ''}${dexMod}`;
+        }
     };
+
+    const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
+    const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
+    const prevButton = form.querySelector('#wizard-prev');
+    const nextButton = form.querySelector('#wizard-next');
+    const submitButton = form.querySelector('#wizard-submit');
+    let currentStep = 1;
+    const totalSteps = Number(form.querySelector('.creation-wizard')?.dataset.totalSteps || stepPanels.length);
+
+    const updateWizardUI = () => {
+        stepPanels.forEach((panel) => {
+            const step = Number(panel.dataset.step);
+            const active = step === currentStep;
+            panel.hidden = !active;
+            panel.classList.toggle('is-active', active);
+        });
+
+        stepItems.forEach((item) => {
+            const step = Number(item.dataset.step);
+            item.classList.toggle('is-active', step === currentStep);
+            item.classList.toggle('is-complete', step < currentStep);
+        });
+
+        prevButton.disabled = currentStep === 1;
+        nextButton.hidden = currentStep === totalSteps;
+        submitButton.hidden = currentStep !== totalSteps;
+    };
+
+    prevButton?.addEventListener('click', () => {
+        if (currentStep > 1) {
+            currentStep -= 1;
+            updateWizardUI();
+        }
+    });
+
+    nextButton?.addEventListener('click', () => {
+        if (currentStep < totalSteps) {
+            currentStep += 1;
+            updateWizardUI();
+        }
+    });
 
     abilities.forEach((ability) => {
         const standardField = form.querySelector(`#create-${ability}`);
         const customField = form.querySelector(`#create-custom-${ability}`);
-        if (standardField) standardField.addEventListener('change', render);
-        if (customField) customField.addEventListener('input', render);
+        standardField?.addEventListener('change', render);
+        customField?.addEventListener('input', render);
     });
 
     modeInputs.forEach((modeInput) => {
@@ -124,10 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    raceSelect.addEventListener('change', render);
-    classSelect.addEventListener('change', render);
-    levelInput.addEventListener('input', render);
+    raceSelect?.addEventListener('change', render);
+    classSelect?.addEventListener('change', render);
+    levelInput?.addEventListener('input', render);
+    backgroundSelect?.addEventListener('change', renderBackground);
 
     syncAbilityMode();
     render();
+    renderBackground();
+    updateWizardUI();
 });

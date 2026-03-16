@@ -24,24 +24,23 @@
             </p>
         {% endif %}
 
-        <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data" id="character-create-form">
             {% if campaign_context %}
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="edit-grid edit-grid--spaced">
-                <section class="edit-section">
-                    <h3>Identite</h3>
+            <div class="creation-wizard" data-total-steps="5">
+                <ol class="creation-steps-nav" aria-label="Etapes de creation">
+                    <li class="is-active" data-step="1">1. Classe</li>
+                    <li data-step="2">2. Race</li>
+                    <li data-step="3">3. Background</li>
+                    <li data-step="4">4. Caracteristiques</li>
+                    <li data-step="5">5. Identite & medias</li>
+                </ol>
 
-                    <label for="create-name">Nom</label>
-                    <input id="create-name" type="text" name="name" required>
-
-                    <label for="create-race">Race DnD 5e</label>
-                    <select id="create-race" name="race" required>
-                        {% for race in dnd_races %}
-                            <option value="{{ race }}" {% if race == 'Humain' %}selected{% endif %}>{{ race }}</option>
-                        {% endfor %}
-                    </select>
+                <section class="wizard-step is-active" data-step="1">
+                    <h3>Etape 1 - Choix de la classe</h3>
+                    <p class="section-head__copy">Choisissez votre classe DnD 5e pour appliquer automatiquement les sauvegardes maitrisees et les points de vie de base.</p>
 
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
@@ -52,16 +51,42 @@
 
                     <label for="create-level">Niveau</label>
                     <input id="create-level" type="number" name="level" value="1" min="1" max="20" required>
-
-                    <label for="create-notes">Notes partagees</label>
-                    <textarea id="create-notes" name="notes" rows="4"></textarea>
-
-                    <label for="create-player-private-notes">Notes privees joueur</label>
-                    <textarea id="create-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
                 </section>
 
-                <section class="edit-section">
-                    <h3>Funnel creation DnD 5e</h3>
+                <section class="wizard-step" data-step="2" hidden>
+                    <h3>Etape 2 - Choix de la race</h3>
+                    <p class="section-head__copy">Choisissez la race pour appliquer les bonus raciaux automatiquement sur les caracteristiques finales.</p>
+
+                    <label for="create-race">Race DnD 5e</label>
+                    <select id="create-race" name="race" required>
+                        {% for race in dnd_races %}
+                            <option value="{{ race }}" {% if race == 'Humain' %}selected{% endif %}>{{ race }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <p id="race-bonus-summary" class="funnel-summary-inline">Bonus raciaux: +1 partout</p>
+                </section>
+
+                <section class="wizard-step" data-step="3" hidden>
+                    <h3>Etape 3 - Origine / Antecedent (Background)</h3>
+                    <p class="section-head__copy">Selectionnez un background officiel DnD 5e. Il enrichit le roleplay et propose des competences suggerees.</p>
+
+                    <label for="create-background">Background</label>
+                    <select id="create-background" name="background_story" required>
+                        {% for background_name, background_data in dnd_backgrounds.items() %}
+                            <option value="{{ background_name }}" data-feature="{{ background_data.feature }}" data-skills="{{ background_data.skills|join(', ') }}" data-description="{{ background_data.description }}" {% if loop.first %}selected{% endif %}>{{ background_name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="funnel-summary">
+                        <p id="background-feature-summary">Trait: -</p>
+                        <p id="background-skills-summary">Competences suggerees: -</p>
+                        <p id="background-description-summary">Description: -</p>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="4" hidden>
+                    <h3>Etape 4 - Caracteristiques</h3>
                     <p class="section-head__copy">Choisissez le mode de saisie des caracteristiques. Les bonus raciaux, les jets de sauvegarde de classe, les PV, la CA et l'initiative sont calcules automatiquement.</p>
 
                     <div class="ability-mode-toggle" role="radiogroup" aria-label="Mode de saisie des caracteristiques">
@@ -99,51 +124,79 @@
                     </div>
 
                     <div class="funnel-summary">
-                        <p id="race-bonus-summary">Bonus raciaux: +1 partout</p>
                         <p id="saving-throws-summary">Maitrises de sauvegarde: Force, Constitution</p>
                         <p id="derived-stats-summary">PV, CA et initiative calcules automatiquement a la creation.</p>
                     </div>
                 </section>
-            </div>
 
-            <section class="edit-section edit-section--separator visibility-panel">
-                <h3>Visibilite</h3>
-                <label class="visibility-toggle" for="is_public">
-                    <input type="checkbox" id="is_public" name="is_public">
-                    <span>
-                        <strong>Personnage public</strong>
-                        <small>Si active, la fiche peut etre consultee hors campagne. Sinon elle reste reservee au proprietaire et au MJ de campagne.</small>
-                    </span>
-                </label>
+                <section class="wizard-step" data-step="5" hidden>
+                    <h3>Etape 5 - Identite, visibilite et medias</h3>
 
-                <label for="visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
-                <select id="visibility-level" name="visibility_level">
-                    <option value="private" selected>🔒 Prive (MJ uniquement)</option>
-                    <option value="reduced">👁️ Fiche reduite (nom, prenom, age, photo)</option>
-                    <option value="semi_complete">📊 Fiche semi-complete (+ caracteristiques)</option>
-                    <option value="complete">📜 Fiche complete (tout sauf notes privees)</option>
-                </select>
-            </section>
+                    <div class="edit-grid edit-grid--spaced">
+                        <section class="edit-section">
+                            <label for="create-name">Nom</label>
+                            <input id="create-name" type="text" name="name" required>
 
-            <section class="edit-section edit-section--separator">
-                <h3>Medias</h3>
-                <div class="file-row">
-                    <div>
-                        <label for="create-image">Image</label>
-                        <input id="create-image" type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+                            <label for="create-first-name">Prenom</label>
+                            <input id="create-first-name" type="text" name="first_name" placeholder="Optionnel">
+
+                            <label for="create-gender">Genre</label>
+                            <input id="create-gender" type="text" name="genre" placeholder="Ex: Non-binaire, Femme, Homme...">
+
+                            <label for="create-alignment">Alignement</label>
+                            <input id="create-alignment" type="text" name="alignment" placeholder="Ex: Loyal bon, Neutre...">
+
+                            <label for="create-age">Age</label>
+                            <input id="create-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
+
+                            <label for="create-weight">Poids</label>
+                            <input id="create-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+
+                            <label for="create-notes">Notes partagees</label>
+                            <textarea id="create-notes" name="notes" rows="3"></textarea>
+
+                            <label for="create-player-private-notes">Notes privees joueur</label>
+                            <textarea id="create-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
+                        </section>
+
+                        <section class="edit-section visibility-panel">
+                            <h3>Visibilite</h3>
+                            <label class="visibility-toggle" for="is_public">
+                                <input type="checkbox" id="is_public" name="is_public">
+                                <span>
+                                    <strong>Personnage public</strong>
+                                    <small>Si active, la fiche peut etre consultee hors campagne. Sinon elle reste reservee au proprietaire et au MJ de campagne.</small>
+                                </span>
+                            </label>
+
+                            <label for="visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
+                            <select id="visibility-level" name="visibility_level">
+                                <option value="private" selected>🔒 Prive (MJ uniquement)</option>
+                                <option value="reduced">👁️ Fiche reduite (nom, prenom, age, photo)</option>
+                                <option value="semi_complete">📊 Fiche semi-complete (+ caracteristiques)</option>
+                                <option value="complete">📜 Fiche complete (tout sauf notes privees)</option>
+                            </select>
+
+                            <div class="file-row">
+                                <div>
+                                    <label for="create-image">Image</label>
+                                    <input id="create-image" type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+                                </div>
+                                <div>
+                                    <label for="create-pdf">Fiche PDF</label>
+                                    <input id="create-pdf" type="file" name="pdf" accept=".pdf">
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    <div>
-                        <label for="create-pdf">Fiche PDF</label>
-                        <input id="create-pdf" type="file" name="pdf" accept=".pdf">
-                    </div>
+                </section>
+
+                <div class="wizard-actions">
+                    <button type="button" class="btn btn-secondary" id="wizard-prev" disabled>Etape precedente</button>
+                    <button type="button" class="btn btn-primary" id="wizard-next">Etape suivante</button>
+                    <button type="submit" class="btn btn-primary" id="wizard-submit" hidden>Creer</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('create-form').style.display='none'">Annuler</button>
                 </div>
-            </section>
-
-            <div class="edit-actions">
-                <button type="submit" class="btn btn-primary">Creer</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('create-form').style.display='none'">
-                    Annuler
-                </button>
             </div>
         </form>
     </div>

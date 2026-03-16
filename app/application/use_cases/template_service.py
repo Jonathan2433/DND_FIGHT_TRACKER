@@ -41,6 +41,19 @@ class TemplateService:
 
         resolved_character = resolve_character_creation(form_data)
 
+        identity_bits = []
+        if form_data.get('genre'):
+            identity_bits.append(f"Genre: {form_data.get('genre')}")
+        if form_data.get('alignment'):
+            identity_bits.append(f"Alignement: {form_data.get('alignment')}")
+        if form_data.get('weight'):
+            identity_bits.append(f"Poids: {form_data.get('weight')}")
+
+        shared_notes = form_data.get('notes', '')
+        if identity_bits:
+            identity_notes = " | ".join(identity_bits)
+            shared_notes = f"{identity_notes}\n{shared_notes}".strip()
+
         template = CharacterTemplate(
             # ✅ AJOUT : Champs de sécurité
             owner_id=current_user_id,
@@ -77,8 +90,11 @@ class TemplateService:
 
             image_filename=filename,
             pdf_filename=pdf_filename,
-            notes=form_data.get('notes', ''),
+            notes=shared_notes,
             player_private_notes=form_data.get('player_private_notes', ''),
+            first_name=form_data.get('first_name') or None,
+            age=int(form_data.get('age')) if form_data.get('age') else None,
+            background_story=form_data.get('background_story') or None,
             current_xp=int(form_data.get('current_xp', 0))
         )
 
