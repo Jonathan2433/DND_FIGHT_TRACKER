@@ -34,6 +34,11 @@ def _notification_target(notification):
     if notification.campaign_id and notification.kind in CAMPAIGN_NOTIFICATION_KINDS:
         return url_for('campaign.view_campaign', campaign_id=notification.campaign_id)
 
+    if notification.kind.startswith('combat_invitation:'):
+        combat_id = notification.kind.split(':', 1)[1]
+        if combat_id.isdigit():
+            return url_for('combat.view_combat_player', combat_id=int(combat_id))
+
     if notification.kind.startswith('player_'):
         return url_for('template.manage_templates')
 
