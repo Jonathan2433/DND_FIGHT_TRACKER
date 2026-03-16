@@ -422,8 +422,11 @@
 <!-- SCRIPTS -->
 <!-- ========================= -->
 
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    const combatId = {{ combat.id }};
+    const socket = window.io ? io() : null;
 
     /* AUTO SCROLL TOUR ACTIF */
     const active = document.getElementById("current-turn");
@@ -466,6 +469,36 @@ document.addEventListener("DOMContentLoaded", function() {
     if (board) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const tokens = Array.from(board.querySelectorAll('.battlemap-token'));
+        let isDraggingToken = false;
+
+        const syncBattlemapFromState = async () => {
+            if (isDraggingToken) {
+                return;
+            }
+
+            const response = await fetch(`/combat/${combatId}/state`);
+            if (!response.ok) {
+                console.error('Impossible de recuperer l\'etat du combat', response.status);
+                return;
+            }
+
+            const combatState = await response.json();
+            tokens.forEach((token, index) => {
+                const tokenId = token.dataset.tokenId;
+                const defaultX = 8 + index * 6;
+                const defaultY = 10 + (index % 5) * 15;
+                const position = combatState.battlemap_tokens[tokenId] || {x: defaultX, y: defaultY};
+                const x = Math.max(0, Math.min(100, Number(position.x) || 0));
+                const y = Math.max(0, Math.min(100, Number(position.y) || 0));
+                token.style.left = `${x}%`;
+                token.style.top = `${y}%`;
+
+                const combatantState = (combatState.combatants || []).find((combatant) => String(combatant.id) === tokenId);
+                token.classList.toggle('battlemap-token--active', combatState.current_actor_id === Number(tokenId));
+                token.classList.toggle('battlemap-token--inactive', !!combatantState && (combatantState.is_dead || combatantState.has_fled));
+            });
+        };
+
         const savePositions = async () => {
             const payload = {tokens: {}};
             tokens.forEach((token) => {
@@ -491,10 +524,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
         tokens.forEach((token) => {
             let drag = false;
-            token.addEventListener('mousedown', () => drag = true);
+            token.addEventListener('mousedown', () => {
+                drag = true;
+                isDraggingToken = true;
+            });
             document.addEventListener('mouseup', () => {
                 if (drag) {
                     drag = false;
+                    isDraggingToken = false;
                     savePositions();
                 }
             });
@@ -507,6 +544,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 token.style.top = `${Math.max(0, Math.min(100, y))}%`;
             });
         });
+
+        if (socket) {
+            socket.emit('join_combat', { combat_id: combatId });
+            socket.on('combat_update', (data) => {
+                if (data.combat_id === combatId) {
+                    syncBattlemapFromState();
+                }
+            });
+        }
     }
 
 });
