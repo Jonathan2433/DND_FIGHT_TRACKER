@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from app.application.use_cases import CombatService, CombatantService, GroupService, TemplateService
 from app.models import Combat, CharacterTemplate, EncounterTemplate
 from app.domain.policies import CombatPolicy, EncounterTemplatePolicy
-from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order
+from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order, get_current_actor
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 import os
@@ -95,9 +95,12 @@ def view_combat(combat_id):
     else:
         encounter_templates = EncounterTemplate.query.filter_by(owner_id=g.current_user.id).all()
 
+    current_actor = get_current_actor(combat_data['combat'])
+
     return render_template(
         'combat.html',
         combat=combat_data['combat'],
+        current_actor=current_actor,
         groups=combat_data['groups'],
         singles=combat_data['singles'],
         group_condition_states=combat_data['group_condition_states'],
@@ -118,8 +121,6 @@ def view_combat(combat_id):
 @login_required
 def view_combat_player(combat_id):
     """Vue joueur pour un combat."""
-    from app.utils import get_current_actor
-
     combat = Combat.query.get_or_404(combat_id)
     if not _can_view_player_combat(combat):
         flash('Acces non autorise a ce combat.', 'error')

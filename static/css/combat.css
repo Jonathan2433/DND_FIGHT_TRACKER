@@ -776,6 +776,10 @@
     cursor: default;
 }
 
+.battlemap-token--active {
+    border-color: var(--brand-yellow-active);
+    box-shadow: 0 0 0 3px var(--overlay-black-60), 0 0 14px var(--brand-yellow-active);
+}
 
 .battlemap-token--inactive {
     filter: grayscale(100%);
