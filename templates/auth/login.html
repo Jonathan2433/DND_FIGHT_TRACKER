@@ -2,7 +2,7 @@
 {% block content %}
 <div class="inl-auth-001">
     <h2 class="inl-auth-002">🎲 Se connecter</h2>
-    
+
     <form method="POST">
         {% if next_url %}
             <input type="hidden" name="next" value="{{ next_url }}">
@@ -11,20 +11,54 @@
             <label for="username_or_email" class="inl-auth-004">Nom d'utilisateur ou Email :</label>
             <input type="text" id="username_or_email" name="username_or_email" required class="inl-auth-005">
         </div>
-        
+
         <div class="inl-auth-003">
             <label for="password" class="inl-auth-004">Mot de passe :</label>
-            <input type="password" id="password" name="password" required class="inl-auth-005">
+            <div class="inl-auth-014">
+                <input type="password" id="password" name="password" required class="inl-auth-005 inl-auth-015">
+                <button type="button" id="show-password-login" class="inl-auth-016" aria-label="Afficher le mot de passe" aria-pressed="false">
+                    👁️
+                </button>
+            </div>
         </div>
-        
+
+        <div class="inl-auth-003">
+            <label class="inl-auth-004" for="remember_me">
+                <input type="checkbox" id="remember_me" name="remember_me">
+                Rester connecté
+            </label>
+        </div>
+
         <button type="submit" class="btn-primary inl-auth-006" >
             Se connecter
         </button>
     </form>
-    
+
     <p class="inl-auth-007">
         Pas encore de compte ?
         <a href="{{ url_for('auth.register', next=next_url) if next_url else url_for('auth.register') }}" class="inl-auth-008">S'inscrire</a>
     </p>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.getElementById('show-password-login');
+        const passwordInput = document.getElementById('password');
+
+        if (!toggle || !passwordInput) {
+            return;
+        }
+
+        toggle.addEventListener('click', function () {
+            const shouldShowPassword = passwordInput.type === 'password';
+            passwordInput.type = shouldShowPassword ? 'text' : 'password';
+            toggle.setAttribute('aria-pressed', shouldShowPassword ? 'true' : 'false');
+            toggle.setAttribute(
+                'aria-label',
+                shouldShowPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+            );
+            toggle.textContent = shouldShowPassword ? '🙈' : '👁️';
+        });
+    });
+</script>
 {% endblock %}
