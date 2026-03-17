@@ -246,10 +246,14 @@
                   class="grid-form">
 
                 <select name="template">
-                    {% for name in MONSTER_TEMPLATES.keys() %}
-                        <option>{{ name }}</option>
+                    {% for name, template in MONSTER_TEMPLATES.items() %}
+                        <option value="{{ name }}" data-image="{{ template.image }}">{{ template.display_name or name }}</option>
                     {% endfor %}
                 </select>
+
+                <div class="monster-template-preview">
+                    <img src="" alt="Portrait du monstre" data-monster-template-preview hidden>
+                </div>
 
                 <input type="number" name="quantity" value="1" min="1">
                 <input type="number" name="initiative" placeholder="Initiative (optionnel)">
@@ -499,6 +503,31 @@ document.addEventListener("DOMContentLoaded", function() {
     const socket = window.io ? io() : null;
     const copyButton = document.querySelector('[data-copy-combat-link]');
     const linkInput = document.querySelector('[data-combat-invite-link]');
+    const templateSelect = document.querySelector('select[name="template"]');
+    const templatePreview = document.querySelector('[data-monster-template-preview]');
+
+    const updateMonsterTemplatePreview = () => {
+        if (!templateSelect || !templatePreview) {
+            return;
+        }
+
+        const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+        const imageFilename = selectedOption?.dataset?.image;
+
+        if (!imageFilename) {
+            templatePreview.hidden = true;
+            templatePreview.removeAttribute('src');
+            return;
+        }
+
+        templatePreview.src = `/static/uploads/${imageFilename}`;
+        templatePreview.hidden = false;
+    };
+
+    if (templateSelect && templatePreview) {
+        templateSelect.addEventListener('change', updateMonsterTemplatePreview);
+        updateMonsterTemplatePreview();
+    }
 
     if (copyButton && linkInput) {
         copyButton.addEventListener('click', async () => {

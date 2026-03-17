@@ -974,3 +974,17 @@
     color: var(--color-text-primary);
     padding: 0 12px;
 }
+
+.monster-template-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.monster-template-preview img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--overlay-white-30);
+}
