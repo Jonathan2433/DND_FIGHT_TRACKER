@@ -29,6 +29,7 @@ def manage_templates():
     other_characters = [character for character in characters if character.character_type != 'PJ']
 
     campaign_context = None
+    pnj_campaign_context = None
     campaign_id = request.args.get('campaign_id', type=int)
     if campaign_id:
         campaign_context = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
@@ -36,11 +37,16 @@ def manage_templates():
             flash('Campagne invalide ou accès interdit.', 'error')
             return redirect(url_for('template.manage_templates'))
 
-    can_create_pnj = bool(
-        campaign_context
-        and g.current_user.has_mj_capability()
-        and g.current_user.is_mj_of(campaign_context)
-    )
+    if campaign_context and g.current_user.is_mj_of(campaign_context):
+        pnj_campaign_context = campaign_context
+    else:
+        pnj_campaign_context = (
+            Campaign.query.filter_by(mj_id=g.current_user.id, is_active=True)
+            .order_by(Campaign.created_at.desc())
+            .first()
+        )
+
+    can_create_pnj = bool(pnj_campaign_context and g.current_user.has_mj_capability())
 
     return render_template(
         'templates_manager.html',
@@ -49,6 +55,7 @@ def manage_templates():
         other_characters=other_characters,
         encounters=encounters,
         campaign_context=campaign_context,
+        pnj_campaign_context=pnj_campaign_context,
         dnd_races=sorted(RACE_BONUSES.keys()),
         dnd_classes=sorted(CLASS_RULES.keys()),
         dnd_class_descriptions={name: rule.get('description', '') for name, rule in CLASS_RULES.items()},
