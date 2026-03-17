@@ -1198,6 +1198,7 @@ function initializeBattlemapFullscreen() {
     const battlemapFullscreenTarget = document.getElementById('battlemap-fullscreen-target');
     const headerToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
     const floatingToggle = document.getElementById('battlemap-player-fullscreen');
+    const mobileExpandedClass = 'battlemap-mobile-expanded';
 
     if (!battlemapFullscreenTarget) {
         return;
@@ -1205,15 +1206,47 @@ function initializeBattlemapFullscreen() {
 
     const toggleButtons = [headerToggle, floatingToggle].filter(Boolean);
 
+    const isMobileExpanded = () => document.body.classList.contains(mobileExpandedClass);
+
+    const updateToggleText = () => {
+        const isNativeFullscreen = document.fullscreenElement === battlemapFullscreenTarget;
+        const expanded = isNativeFullscreen || isMobileExpanded();
+        toggleButtons.forEach((button) => {
+            button.textContent = expanded ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
+        });
+    };
+
+    const enterMobileExpandedMode = () => {
+        document.body.classList.add(mobileExpandedClass);
+    };
+
+    const exitMobileExpandedMode = () => {
+        document.body.classList.remove(mobileExpandedClass);
+    };
+
     const toggleBattlemapFullscreen = async () => {
         try {
             if (document.fullscreenElement === battlemapFullscreenTarget) {
                 await document.exitFullscreen();
-            } else {
+                return;
+            }
+
+            if (isMobileExpanded()) {
+                exitMobileExpandedMode();
+                updateToggleText();
+                return;
+            }
+
+            if (battlemapFullscreenTarget.requestFullscreen) {
                 await battlemapFullscreenTarget.requestFullscreen();
+            } else {
+                enterMobileExpandedMode();
             }
         } catch (error) {
-            console.error('Impossible de basculer le plein ecran de la battle map', error);
+            console.warn('Plein écran natif indisponible, bascule mobile activée.', error);
+            enterMobileExpandedMode();
+        } finally {
+            updateToggleText();
         }
     };
 
@@ -1222,11 +1255,20 @@ function initializeBattlemapFullscreen() {
     });
 
     document.addEventListener('fullscreenchange', () => {
-        const isFullscreen = document.fullscreenElement === battlemapFullscreenTarget;
-        toggleButtons.forEach((button) => {
-            button.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
-        });
+        if (document.fullscreenElement !== battlemapFullscreenTarget) {
+            exitMobileExpandedMode();
+        }
+        updateToggleText();
     });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isMobileExpanded()) {
+            exitMobileExpandedMode();
+            updateToggleText();
+        }
+    });
+
+    updateToggleText();
 }
 
 function initializeEvents() {
