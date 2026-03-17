@@ -907,6 +907,76 @@
     border-width: 3px;
 }
 
+body.battlemap-mobile-expanded {
+    overflow: hidden;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    padding: 10px;
+    z-index: 9999;
+    background: radial-gradient(circle at top, var(--bg-primary), var(--bg-dark));
+    border-radius: 0;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-board {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100dvh - 20px);
+    border-width: 3px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: min(42vw, 240px);
+    max-height: calc(100dvh - 125px);
+    overflow: hidden;
+    display: block;
+    background: var(--bg-alt-a95);
+    border: 2px solid var(--primary-a60);
+    border-radius: var(--radius-2xl);
+    padding: 10px;
+    z-index: 5;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative-list {
+    max-height: calc(100dvh - 185px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;
+    z-index: 5;
+    display: block;
+    background: linear-gradient(135deg, var(--bg-alt-a95), var(--surface-a95));
+    border: 2px solid var(--primary-a60);
+    border-radius: 15px;
+    padding: 10px 12px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 25px var(--overlay-black-80);
+    max-width: 95vw;
+    overflow-x: auto;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar h4,
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative h4 {
+    margin: 0;
+    color: var(--color-primary);
+}
+
 .combat-invite-card {
     margin-top: 18px;
 }
