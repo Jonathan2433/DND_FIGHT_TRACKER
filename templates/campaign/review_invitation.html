@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Invitation campagne - ExalQuest{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 780px; margin: 0 auto; display: grid; gap: 14px;">
+    <h1>Invitation de campagne</h1>
+    <p>Vous avez été invité à rejoindre la campagne <strong>{{ campaign.name }}</strong>.</p>
+
+    {% if campaign.description %}
+        <p class="text-muted">{{ campaign.description }}</p>
+    {% endif %}
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a class="btn btn-primary" href="{{ url_for('campaign.accept_invitation', token=invitation.token) }}">Accepter</a>
+        <a class="btn btn-secondary" href="{{ url_for('campaign.decline_invitation', token=invitation.token) }}">Refuser</a>
+        <a class="btn btn-secondary" href="{{ url_for('notification.index') }}">Retour aux notifications</a>
+    </div>
+</div>
+{% endblock %}

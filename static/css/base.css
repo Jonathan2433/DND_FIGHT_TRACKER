@@ -516,3 +516,20 @@ hr {
 .site-notification__mark-all .btn {
     width: 100%;
 }
+
+.site-notification__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.site-notification__action {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    padding: 8px 10px;
+}
+
+.is-hidden {
+    display: none !important;
+}

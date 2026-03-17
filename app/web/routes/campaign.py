@@ -169,6 +169,23 @@ def decline_invitation(token):
     return redirect(url_for('main.index'))
 
 
+@bp.route('/invitation/<int:campaign_id>/review')
+@login_required
+def review_invitation(campaign_id):
+    """Afficher une page dédiée pour accepter/refuser une invitation de campagne."""
+    invitation = CampaignService.get_pending_invitation_for_user(campaign_id, g.current_user.id)
+
+    if not invitation:
+        flash('Invitation introuvable ou déjà traitée.', 'error')
+        return redirect(url_for('notification.index'))
+
+    return render_template(
+        'campaign/review_invitation.html',
+        campaign=invitation.campaign,
+        invitation=invitation,
+    )
+
+
 @bp.route('/<int:campaign_id>/request_join', methods=['POST'])
 @login_required
 def request_join(campaign_id):
