@@ -143,7 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextButton = form.querySelector('#wizard-next');
     const submitButton = form.querySelector('#wizard-submit');
     let currentStep = 1;
-    const totalSteps = Number(form.querySelector('.creation-wizard')?.dataset.totalSteps || stepPanels.length);
+    const configuredTotalSteps = Number(form.querySelector('.creation-wizard')?.dataset.totalSteps);
+    const totalSteps = Number.isFinite(configuredTotalSteps) && configuredTotalSteps > 0
+        ? configuredTotalSteps
+        : stepPanels.length;
 
     const updateWizardUI = () => {
         stepPanels.forEach((panel) => {
@@ -165,10 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        prevButton.disabled = currentStep === 1;
-        nextButton.hidden = currentStep === totalSteps;
-        submitButton.hidden = currentStep !== totalSteps;
-        submitButton.disabled = currentStep !== totalSteps;
+        const isFirstStep = currentStep === 1;
+        const isLastStep = currentStep >= totalSteps;
+
+        prevButton.disabled = isFirstStep;
+
+        nextButton.hidden = isLastStep;
+        nextButton.disabled = isLastStep;
+        nextButton.classList.toggle('is-hidden', isLastStep);
+
+        submitButton.hidden = !isLastStep;
+        submitButton.disabled = !isLastStep;
+        submitButton.classList.toggle('is-hidden', !isLastStep);
     };
 
     prevButton?.addEventListener('click', () => {
