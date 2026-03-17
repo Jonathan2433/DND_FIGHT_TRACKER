@@ -668,28 +668,53 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         };
 
+        let dragState = null;
+
+        const updateDragPosition = (clientX, clientY) => {
+            if (!dragState) return;
+            const rect = board.getBoundingClientRect();
+            const x = ((clientX - rect.left) / rect.width) * 100;
+            const y = ((clientY - rect.top) / rect.height) * 100;
+            dragState.token.style.left = `${Math.max(0, Math.min(100, x))}%`;
+            dragState.token.style.top = `${Math.max(0, Math.min(100, y))}%`;
+        };
+
+        const finishDrag = async () => {
+            if (!dragState) return;
+            dragState = null;
+            isDraggingToken = false;
+            await savePositions();
+        };
+
         tokens.forEach((token) => {
-            let drag = false;
-            token.addEventListener('mousedown', () => {
-                drag = true;
+            const startDrag = (event, clientX, clientY) => {
+                event.preventDefault();
+                dragState = {token};
                 isDraggingToken = true;
+                updateDragPosition(clientX, clientY);
+            };
+
+            token.addEventListener('mousedown', (event) => {
+                startDrag(event, event.clientX, event.clientY);
             });
-            document.addEventListener('mouseup', () => {
-                if (drag) {
-                    drag = false;
-                    isDraggingToken = false;
-                    savePositions();
-                }
-            });
-            board.addEventListener('mousemove', (event) => {
-                if (!drag) return;
-                const rect = board.getBoundingClientRect();
-                const x = ((event.clientX - rect.left) / rect.width) * 100;
-                const y = ((event.clientY - rect.top) / rect.height) * 100;
-                token.style.left = `${Math.max(0, Math.min(100, x))}%`;
-                token.style.top = `${Math.max(0, Math.min(100, y))}%`;
-            });
+
+            token.addEventListener('touchstart', (event) => {
+                if (!event.touches[0]) return;
+                startDrag(event, event.touches[0].clientX, event.touches[0].clientY);
+            }, {passive: false});
         });
+
+        board.addEventListener('mousemove', (event) => updateDragPosition(event.clientX, event.clientY));
+        board.addEventListener('touchmove', (event) => {
+            if (!dragState || !event.touches[0]) return;
+            event.preventDefault();
+            updateDragPosition(event.touches[0].clientX, event.touches[0].clientY);
+        }, {passive: false});
+
+        document.addEventListener('mouseup', finishDrag);
+        board.addEventListener('mouseleave', finishDrag);
+        document.addEventListener('touchend', finishDrag);
+        document.addEventListener('touchcancel', finishDrag);
 
         if (socket) {
             socket.emit('join_combat', { combat_id: combatId });

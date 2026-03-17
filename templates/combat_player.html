@@ -684,8 +684,8 @@ function updateBattlemap(combatState) {
 }
 
 function canControlToken(combatState, combatantId) {
-    const controlledIds = combatState.player_controlled_ids || playerControlledIds;
-    return controlledIds.includes(combatantId) && combatState.current_actor_id === combatantId;
+    const controlledIds = (combatState.player_controlled_ids || playerControlledIds).map((id) => Number(id));
+    return controlledIds.includes(Number(combatantId)) && Number(combatState.current_actor_id) === Number(combatantId);
 }
 
 async function savePlayerTokenPosition(tokenId, x, y) {
@@ -743,6 +743,7 @@ function setupPlayerTokenDragging(combatState) {
     board.onmousemove = (event) => updateDragPosition(event.clientX, event.clientY);
     board.ontouchmove = (event) => {
         if (!dragState || !event.touches[0]) return;
+        event.preventDefault();
         updateDragPosition(event.touches[0].clientX, event.touches[0].clientY);
     };
 
@@ -758,6 +759,7 @@ function setupPlayerTokenDragging(combatState) {
     board.onmouseup = finishDrag;
     board.onmouseleave = finishDrag;
     board.ontouchend = finishDrag;
+    board.ontouchcancel = finishDrag;
 }
 
 // ✅ Fonction pour mettre à jour l'affichage avec synchronisation
