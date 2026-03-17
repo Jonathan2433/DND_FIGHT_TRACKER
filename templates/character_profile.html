@@ -22,7 +22,7 @@
             <div class="character-summary__title">
                 <span class="section-eyebrow">{{ character.character_type }}</span>
                 <h1>{{ profile.name or character.name }}</h1>
-                <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
+                <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.race is defined or character.race %} - {{ profile.race if profile.race is defined else character.race }}{% endif %}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
                 {% if character.campaign %}
                     <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
                 {% endif %}
@@ -122,7 +122,7 @@
                 </div>
             </section>
 
-            {% if not limited_profile %}
+            {% if not limited_profile and can_view_xp %}
             <section class="xp-section">
                 <div class="section-head">
                     <div class="section-head__content">
@@ -172,10 +172,12 @@
                     </p>
                 {% endif %}
 
-                {% if current_user %}
+                {% if can_view_xp %}
                     <div class="profile-actions__buttons">
                         <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">Historique XP</a>
                     </div>
+                {% elif current_user and character.campaign %}
+                    <p class="section-head__copy">Seul le MJ de la campagne peut consulter l'historique et la progression XP.</p>
                 {% else %}
                     <p class="section-head__copy">Connectez-vous pour acceder a l'historique XP.</p>
                 {% endif %}

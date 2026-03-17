@@ -156,16 +156,25 @@ def character_profile(id):
 
     combats_played = TemplateService.get_character_combat_count(character.name)
     can_award_xp = False
+    can_view_xp = False
     is_campaign_mj = False
 
     if current_user:
-        can_award_xp = current_user.role == 'Admin'
+        is_admin = current_user.role == 'Admin'
+        has_campaign_binding = bool(character.campaign or character.campaigns)
         can_manage_from_campaigns = any(current_user.is_mj_of(c) for c in character.campaigns)
+        is_main_campaign_mj = bool(character.campaign and current_user.is_mj_of(character.campaign))
 
-        if (character.campaign and current_user.is_mj_of(character.campaign)) or can_manage_from_campaigns:
+        is_campaign_mj = is_main_campaign_mj or can_manage_from_campaigns
+
+        if is_admin:
+            can_view_xp = True
             can_award_xp = True
-            is_campaign_mj = True
-        elif not character.campaign and character.owner_id == current_user.id:
+        elif has_campaign_binding:
+            can_view_xp = is_campaign_mj
+            can_award_xp = is_campaign_mj
+        elif character.owner_id == current_user.id:
+            can_view_xp = True
             can_award_xp = True
 
     return render_template(
@@ -176,6 +185,7 @@ def character_profile(id):
         limited_profile=limited_profile,
         combats_played=combats_played,
         can_edit=character.can_be_edited_by(current_user) if current_user else False,
+        can_view_xp=can_view_xp,
         can_award_xp=can_award_xp,
         is_campaign_mj=is_campaign_mj
     )
