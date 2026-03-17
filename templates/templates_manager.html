@@ -11,9 +11,14 @@
                 mais ils apparaissent aussi dans votre gestionnaire si vous en etes proprietaire.
             </p>
         </div>
-        <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
-            Nouveau PJ
-        </button>
+        <div class="templates-header-actions">
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
+                Nouveau PJ
+            </button>
+            {% if can_create_pnj and campaign_context %}
+                <a class="btn btn-secondary" href="{{ url_for('pnj.create_pnj', campaign_id=campaign_context.id) }}">Nouveau PNJ</a>
+            {% endif %}
+        </div>
     </div>
 
     <div id="create-form" class="card template-create-form inl-core-004">

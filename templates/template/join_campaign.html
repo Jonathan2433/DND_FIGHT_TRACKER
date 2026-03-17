@@ -3,7 +3,7 @@
 
 <div class="edit-character-container">
     <div class="edit-header">
-        <h2>🎲 Associer {{ character.name }} à une campagne</h2>
+        <h2>🎲 Associer {{ character.name }} a une campagne</h2>
         <a href="{{ url_for('template.character_profile', id=character.id) }}" 
            class="btn btn-secondary">← Retour au profil</a>
     </div>
@@ -11,7 +11,7 @@
     {% if campaigns %}
         <form method="POST">
             <div class="edit-section">
-                <h4>📋 Informations du PJ</h4>
+                <h4>📋 Informations du {{ character.character_type }}</h4>
                 <p><strong>Nom :</strong> {{ character.name }}</p>
                 <p><strong>Classe :</strong> {{ character.character_class }} {{ character.level }}</p>
                 
@@ -48,16 +48,23 @@
                 
                 <div class="help-section">
                     <h5>💡 Information :</h5>
-                    <ul>
-                        <li>Vous ne pouvez associer vos PJ qu'aux campagnes où vous êtes <strong>joueur</strong></li>
-                        <li>Pour rejoindre une nouvelle campagne, demandez une invitation au MJ</li>
-                        <li>Un PJ ne peut être que dans <strong>une seule campagne à la fois</strong> actuellement</li>
-                    </ul>
+                    {% if character.character_type == 'PNJ' %}
+                        <ul>
+                            <li>Un PNJ ne peut etre associe qu'aux campagnes dont vous etes <strong>MJ proprietaire</strong>.</li>
+                            <li>Vous pouvez le rattacher a une autre de vos campagnes a tout moment.</li>
+                            <li>Un personnage ne peut etre associe qu'a <strong>une seule campagne principale</strong> a la fois.</li>
+                        </ul>
+                    {% else %}
+                        <ul>
+                            <li>Vous pouvez associer vos PJ aux campagnes auxquelles vous participez (joueur ou MJ proprietaire).</li>
+                            <li>Un personnage ne peut etre associe qu'a <strong>une seule campagne principale</strong> a la fois.</li>
+                        </ul>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="edit-actions">
-                <button type="submit" class="btn btn-primary">🎯 Associer à la campagne</button>
+                <button type="submit" class="btn btn-primary">🎯 Associer a la campagne</button>
                 <a href="{{ url_for('template.character_profile', id=character.id) }}" 
                    class="btn btn-secondary">❌ Annuler</a>
             </div>

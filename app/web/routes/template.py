@@ -36,6 +36,12 @@ def manage_templates():
             flash('Campagne invalide ou accès interdit.', 'error')
             return redirect(url_for('template.manage_templates'))
 
+    can_create_pnj = bool(
+        campaign_context
+        and g.current_user.has_mj_capability()
+        and g.current_user.is_mj_of(campaign_context)
+    )
+
     return render_template(
         'templates_manager.html',
         characters=characters,
@@ -47,7 +53,8 @@ def manage_templates():
         dnd_classes=sorted(CLASS_RULES.keys()),
         dnd_class_descriptions={name: rule.get('description', '') for name, rule in CLASS_RULES.items()},
         standard_array=STANDARD_ARRAY,
-        dnd_backgrounds=BACKGROUND_RULES
+        dnd_backgrounds=BACKGROUND_RULES,
+        can_create_pnj=can_create_pnj,
     )
 
 
@@ -248,7 +255,7 @@ def export_templates():
 @bp.route('/character/<int:character_id>/join_campaign', methods=['GET', 'POST'])
 @login_required
 def join_campaign(character_id):
-    """Interface pour associer un PJ à une campagne"""
+    """Interface pour associer un personnage à une campagne"""
     character = CharacterTemplate.query.get_or_404(character_id)
 
     # Vérifier que c'est bien le propriétaire du PJ
@@ -256,34 +263,37 @@ def join_campaign(character_id):
         flash('Vous ne pouvez pas modifier ce personnage.', 'error')
         return redirect(url_for('template.character_profile', id=character_id))
 
-    # Vérifier que c'est un PJ
-    if character.character_type != 'PJ':
-        flash('Seuls les PJ peuvent rejoindre des campagnes.', 'error')
+    if character.character_type not in ['PJ', 'PNJ']:
+        flash('Ce type de personnage ne peut pas etre associe a une campagne.', 'error')
         return redirect(url_for('template.character_profile', id=character_id))
 
-    # Récupérer les campagnes où l'utilisateur est membre
-    available_campaigns = []
-    for campaign in g.current_user.get_campaigns():
-        # PJ peut rejoindre les campagnes où il est membre (pas MJ)
-        if not g.current_user.is_mj_of(campaign):
-            available_campaigns.append(campaign)
+    if character.character_type == 'PNJ':
+        available_campaigns = Campaign.query.filter_by(
+            mj_id=g.current_user.id,
+            is_active=True,
+        ).order_by(Campaign.created_at.desc()).all()
+    else:
+        available_campaigns = []
+        for campaign in g.current_user.get_campaigns():
+            if g.current_user.is_mj_of(campaign) or g.current_user.is_member_of(campaign):
+                available_campaigns.append(campaign)
 
     if request.method == 'POST':
-        campaign_id = request.form.get('campaign_id')
+        campaign_id = request.form.get('campaign_id', type=int)
 
         if not campaign_id:
             flash('Veuillez sélectionner une campagne.', 'error')
         else:
             campaign = Campaign.query.get(campaign_id)
+            allowed_campaign_ids = {c.id for c in available_campaigns}
 
-            # Vérifier que l'utilisateur a accès à cette campagne
-            if campaign and g.current_user.can_access_campaign(campaign):
+            if campaign and campaign.id in allowed_campaign_ids:
                 if campaign not in character.campaigns:
                     character.campaigns.append(campaign)
-                character.campaign_id = int(campaign_id)
+                character.campaign_id = campaign_id
                 db.session.commit()
 
-                flash(f'🎉 {character.name} a rejoint la campagne "{campaign.name}" !', 'success')
+                flash(f'🎉 {character.name} est maintenant associe a la campagne "{campaign.name}" !', 'success')
                 return redirect(url_for('template.character_profile', id=character_id))
             else:
                 flash('Campagne invalide ou accès interdit.', 'error')
