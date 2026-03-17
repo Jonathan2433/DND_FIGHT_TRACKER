@@ -105,9 +105,14 @@
 
                                     <p class="site-notification__empty {% if header_notifications %}is-hidden{% endif %}" data-notification-empty>Aucune notification pour le moment.</p>
 
-                                    <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all {% if not header_notifications %}is-hidden{% endif %}" data-notification-mark-all>
-                                        <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
-                                    </form>
+                                    <div class="site-notification__bulk-actions {% if not header_notifications %}is-hidden{% endif %}" data-notification-bulk-actions>
+                                        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all" data-notification-mark-all>
+                                            <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('notification.clear_all') }}" class="site-notification__clear-all" data-notification-clear-all>
+                                            <button type="submit" class="btn btn-danger">Tout effacer</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                             <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>

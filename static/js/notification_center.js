@@ -4,7 +4,7 @@
     const panel = document.querySelector('[data-notification-panel]');
     const list = panel ? panel.querySelector('[data-notification-list]') : null;
     const emptyState = panel ? panel.querySelector('[data-notification-empty]') : null;
-    const markAllForm = panel ? panel.querySelector('[data-notification-mark-all]') : null;
+    const bulkActions = panel ? panel.querySelector('[data-notification-bulk-actions]') : null;
     const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
     const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
 
@@ -103,8 +103,8 @@
             if (emptyState) {
                 emptyState.classList.remove('is-hidden');
             }
-            if (markAllForm) {
-                markAllForm.classList.add('is-hidden');
+            if (bulkActions) {
+                bulkActions.classList.add('is-hidden');
             }
             return;
         }
@@ -116,8 +116,8 @@
         if (emptyState) {
             emptyState.classList.add('is-hidden');
         }
-        if (markAllForm) {
-            markAllForm.classList.remove('is-hidden');
+        if (bulkActions) {
+            bulkActions.classList.remove('is-hidden');
         }
     };
 

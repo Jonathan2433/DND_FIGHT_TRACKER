@@ -72,6 +72,12 @@ class NotificationService:
         NotificationService._emit_realtime_update(user_id)
 
     @staticmethod
+    def clear_all(user_id):
+        Notification.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+        NotificationService._emit_realtime_update(user_id)
+
+    @staticmethod
     def mark_as_read(user_id, notification_id):
         notification = NotificationService.get_user_notification(user_id, notification_id)
         if not notification:

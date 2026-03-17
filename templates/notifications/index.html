@@ -6,9 +6,14 @@
 <div class="card notifications-page">
     <div class="notifications-page__header">
         <h1 aria-label="Notifications">🔔</h1>
-        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="notifications-page__mark-all">
-            <button type="submit" class="btn btn-secondary">Marquer tout comme lu</button>
-        </form>
+        <div class="notifications-page__actions">
+            <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="notifications-page__mark-all">
+                <button type="submit" class="btn btn-secondary">Marquer tout comme lu</button>
+            </form>
+            <form method="POST" action="{{ url_for('notification.clear_all') }}" class="notifications-page__clear-all">
+                <button type="submit" class="btn btn-danger">Tout effacer</button>
+            </form>
+        </div>
     </div>
 
     {% if notifications %}
