@@ -281,6 +281,10 @@ class TemplateService:
             return []
 
         created_combatants = []
+        default_image_filename = template.get("image")
+        selected_image_filename = monster_image_filename or default_image_filename
+        display_name = template.get("display_name", template_name)
+
         for i in range(quantity):
             # Initiative manuelle ou celle du template
             if manual_initiative and manual_initiative.strip() != "":
@@ -289,7 +293,7 @@ class TemplateService:
                 initiative_value = template["initiative"]
 
             combatant = Combatant(
-                name=f"{template_name} {i + 1}" if quantity > 1 else template_name,
+                name=f"{display_name} {i + 1}" if quantity > 1 else display_name,
                 type=template["type"],
                 hp_max=template["hp"],
                 hp_current=template["hp"],
@@ -298,7 +302,7 @@ class TemplateService:
                 ac_bonus=0,
                 conditions="",
                 combat_id=combat_id,
-                notes=monster_image_filename
+                notes=selected_image_filename
             )
 
             db.session.add(combatant)
