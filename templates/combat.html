@@ -114,7 +114,7 @@
                     {% set token_pos = battlemap_tokens.get(c.id|string) %}
                     <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" data-token-id="{{ c.id }}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
                         {% if c.notes %}
-                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                            <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}
                             <span>{{ c.token_label }}</span>
                         {% endif %}
@@ -145,7 +145,7 @@
                                  data-fullscreen-pj-id="{{ c.id }}">
                                 <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
                                     {% if c.notes %}
-                                        <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
+                                        <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
                                     {% else %}
                                         <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
                                     {% endif %}
@@ -258,6 +258,7 @@
                 <input type="number" name="quantity" value="1" min="1">
                 <input type="number" name="initiative" placeholder="Initiative (optionnel)">
                 <input type="file" name="monster_image" accept="image/*">
+                <input type="url" name="monster_image_url" placeholder="URL image (https://...)">
 
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
@@ -520,7 +521,9 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        templatePreview.src = `/static/uploads/${imageFilename}`;
+        templatePreview.src = imageFilename.startsWith('http://') || imageFilename.startsWith('https://')
+            ? imageFilename
+            : `/static/uploads/${imageFilename}`;
         templatePreview.hidden = false;
     };
 
