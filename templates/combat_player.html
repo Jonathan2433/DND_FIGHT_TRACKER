@@ -23,31 +23,68 @@
                     ⛶ Plein écran battle map
                 </button>
             </div>
-            <div class="battlemap-board battlemap-board--readonly">
-                {% if combat.battlemap_media_filename %}
-                    {% if combat.battlemap_media_type == 'video' %}
-                        <video class="battlemap-media" autoplay muted loop playsinline>
-                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
-                        </video>
-                    {% else %}
-                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
-                    {% endif %}
-                {% else %}
-                    <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
-                {% endif %}
-
-                {% for c in combatants %}
-                    {% set token_pos = battlemap_tokens.get(c.id|string) %}
-                    <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}"
-                         data-token-id="{{ c.id }}"
-                         style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
-                        {% if c.notes %}
-                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+            <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
+                <div class="battlemap-board battlemap-board--readonly">
+                    {% if combat.battlemap_media_filename %}
+                        {% if combat.battlemap_media_type == 'video' %}
+                            <video class="battlemap-media" autoplay muted loop playsinline>
+                                <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                            </video>
                         {% else %}
-                            <span>{{ c.token_label }}</span>
+                            <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
                         {% endif %}
+                    {% else %}
+                        <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
+                    {% endif %}
+
+                    {% for c in combatants %}
+                        {% set token_pos = battlemap_tokens.get(c.id|string) %}
+                        <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}"
+                             data-token-id="{{ c.id }}"
+                             style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                            {% if c.notes %}
+                                <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                            {% else %}
+                                <span>{{ c.token_label }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <aside class="battlemap-fullscreen-initiative">
+                    <h4>🎯 Initiative</h4>
+                    <div id="battlemap-fullscreen-initiative-list" class="battlemap-fullscreen-initiative-list">
+                        {% for p in combatants %}
+                            <div class="simple-initiative-card {% if p == current_actor %}active-init{% endif %} {% if p.is_dead %}dead-init{% endif %} {% if p.has_fled %}fled-init{% endif %}"
+                                 data-fullscreen-init-id="{{ p.id }}">
+                                <div class="init-name-status">
+                                    <span class="init-name">{% if p.is_dead %}💀 {% elif p.has_fled %}🏃 {% endif %}{{ p.name }}</span>
+                                </div>
+                                <span class="init-initiative">{{ p.initiative }}</span>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </aside>
+
+                <div class="battlemap-fullscreen-pj-bar">
+                    <h4>🧙‍♂️ Personnages Joueurs</h4>
+                    <div id="battlemap-fullscreen-pj-list" class="pj-portraits-container">
+                        {% for c in combatants if c.type == 'PJ' %}
+                            <div class="pj-portrait {% if c == current_actor %}pj-active{% endif %} {% if c.is_dead %}pj-dead{% endif %} {% if c.has_fled %}pj-fled{% endif %}"
+                                 data-fullscreen-pj-id="{{ c.id }}">
+                                <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
+                                    {% if c.notes %}
+                                        <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
+                                    {% else %}
+                                        <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="pj-name">{{ c.name }}</div>
+                                <div class="pj-ac">CA {{ c.ac_total }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -751,6 +788,7 @@ async function updateCombatDisplay() {
 
         // Mettre à jour le panel d'initiative
         updateSimpleInitiativePanel(orderedCombatants, data.current_actor_id);
+        updateBattlemapFullscreenHud(orderedCombatants, data.current_actor_id);
 
         // Mettre à jour les combattants principaux
         rebuildCombatantsGrid(orderedCombatants, data.current_actor_id);
@@ -865,6 +903,41 @@ function updateSimpleInitiativePanel(combatants, currentActorId) {
         const card = createSimpleInitiativeCard(combatant, currentActorId);
         simpleList.appendChild(card);
     });
+}
+
+
+function updateBattlemapFullscreenHud(combatants, currentActorId) {
+    const initiativeList = document.getElementById('battlemap-fullscreen-initiative-list');
+    if (initiativeList) {
+        initiativeList.innerHTML = '';
+        combatants.forEach((combatant) => {
+            const card = createSimpleInitiativeCard(combatant, currentActorId);
+            card.dataset.fullscreenInitId = combatant.id;
+            initiativeList.appendChild(card);
+        });
+    }
+
+    const pjList = document.getElementById('battlemap-fullscreen-pj-list');
+    if (pjList) {
+        pjList.innerHTML = '';
+        combatants
+            .filter((combatant) => combatant.type === 'PJ')
+            .forEach((combatant) => {
+                const portrait = document.createElement('div');
+                portrait.className = `pj-portrait ${combatant.id === currentActorId ? 'pj-active' : ''} ${combatant.is_dead ? 'pj-dead' : ''} ${combatant.has_fled ? 'pj-fled' : ''}`;
+                portrait.dataset.fullscreenPjId = combatant.id;
+                portrait.innerHTML = `
+                    <div class="pj-portrait-frame ${combatant.notes ? 'has-image' : 'no-image'}">
+                        ${combatant.notes
+                            ? `<img src="/static/uploads/${combatant.notes}" alt="${combatant.name}" class="hud-pj-img">`
+                            : `<div class="pj-avatar">${combatant.name.substring(0, 2).toUpperCase()}</div>`}
+                    </div>
+                    <div class="pj-name">${combatant.name}</div>
+                    <div class="pj-ac">CA ${combatant.ac_total}</div>
+                `;
+                pjList.appendChild(portrait);
+            });
+    }
 }
 
 function createSimpleInitiativeCard(combatant, currentActorId) {
@@ -1116,12 +1189,11 @@ socket.on('disconnect', () => {
 
 
 function initializeBattlemapFullscreen() {
-    const battlemapBoard = document.querySelector('.battlemap-board');
-    const mapCard = battlemapBoard ? battlemapBoard.closest('.card') : null;
+    const battlemapFullscreenTarget = document.getElementById('battlemap-fullscreen-target');
     const headerToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
     const floatingToggle = document.getElementById('battlemap-player-fullscreen');
 
-    if (!battlemapBoard || !mapCard) {
+    if (!battlemapFullscreenTarget) {
         return;
     }
 
@@ -1129,10 +1201,10 @@ function initializeBattlemapFullscreen() {
 
     const toggleBattlemapFullscreen = async () => {
         try {
-            if (document.fullscreenElement === mapCard) {
+            if (document.fullscreenElement === battlemapFullscreenTarget) {
                 await document.exitFullscreen();
             } else {
-                await mapCard.requestFullscreen();
+                await battlemapFullscreenTarget.requestFullscreen();
             }
         } catch (error) {
             console.error('Impossible de basculer le plein ecran de la battle map', error);
@@ -1144,7 +1216,7 @@ function initializeBattlemapFullscreen() {
     });
 
     document.addEventListener('fullscreenchange', () => {
-        const isFullscreen = document.fullscreenElement === mapCard;
+        const isFullscreen = document.fullscreenElement === battlemapFullscreenTarget;
         toggleButtons.forEach((button) => {
             button.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
         });
