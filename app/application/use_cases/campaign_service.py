@@ -126,6 +126,28 @@ class CampaignService:
         return {"success": True, "message": "Invitation envoyée avec succès"}
 
     @staticmethod
+    def get_pending_invitation_for_user(campaign_id, user_id):
+        """Retourner l'invitation en attente d'un utilisateur pour une campagne."""
+        user = User.query.get_or_404(user_id)
+
+        invitation = CampaignInvitation.query.filter_by(
+            campaign_id=campaign_id,
+            invited_user_id=user_id,
+            is_accepted=False,
+            is_declined=False,
+        ).order_by(CampaignInvitation.created_at.desc()).first()
+
+        if invitation:
+            return invitation
+
+        return CampaignInvitation.query.filter_by(
+            campaign_id=campaign_id,
+            invited_email=user.email,
+            is_accepted=False,
+            is_declined=False,
+        ).order_by(CampaignInvitation.created_at.desc()).first()
+
+    @staticmethod
     def accept_invitation(token, user_id):
         """Accepter une invitation à rejoindre une campagne"""
         invitation = CampaignInvitation.query.filter_by(token=token).first()

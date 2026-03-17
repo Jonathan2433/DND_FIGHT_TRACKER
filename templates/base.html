@@ -91,25 +91,23 @@
                                         <a href="{{ url_for('notification.index') }}" class="site-notification__all">Voir tout</a>
                                     </div>
 
-                                    {% if header_notifications %}
-                                        <div class="site-notification__list">
-                                            {% for notif in header_notifications %}
-                                                <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="site-notification__item-form">
-                                                    <button type="submit" class="site-notification__item {% if not notif.is_read %}is-unread{% endif %}">
-                                                        <span class="site-notification__item-title">{{ notif.title }}</span>
-                                                        <span class="site-notification__item-message">{{ notif.message }}</span>
-                                                        <span class="site-notification__item-date">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                                                    </button>
-                                                </form>
-                                            {% endfor %}
-                                        </div>
+                                    <div class="site-notification__list" data-notification-list>
+                                        {% for notif in header_notifications %}
+                                            <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="site-notification__item-form">
+                                                <button type="submit" class="site-notification__item {% if not notif.is_read %}is-unread{% endif %}">
+                                                    <span class="site-notification__item-title">{{ notif.title }}</span>
+                                                    <span class="site-notification__item-message">{{ notif.message }}</span>
+                                                    <span class="site-notification__item-date">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                                </button>
+                                            </form>
+                                        {% endfor %}
+                                    </div>
 
-                                        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all">
-                                            <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
-                                        </form>
-                                    {% else %}
-                                        <p class="site-notification__empty">Aucune notification pour le moment.</p>
-                                    {% endif %}
+                                    <p class="site-notification__empty {% if header_notifications %}is-hidden{% endif %}" data-notification-empty>Aucune notification pour le moment.</p>
+
+                                    <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all {% if not header_notifications %}is-hidden{% endif %}" data-notification-mark-all>
+                                        <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
+                                    </form>
                                 </div>
                             </div>
                             <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
