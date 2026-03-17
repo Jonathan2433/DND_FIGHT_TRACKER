@@ -336,6 +336,13 @@ textarea:focus {
     margin-bottom: 14px;
 }
 
+.notifications-page__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .notifications-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

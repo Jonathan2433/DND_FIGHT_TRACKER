@@ -112,3 +112,11 @@ def header_data():
 def mark_all_read():
     NotificationService.mark_all_as_read(g.current_user.id)
     return redirect(url_for('notification.index'))
+
+
+@bp.route('/clear_all', methods=['POST'])
+@login_required
+def clear_all():
+    NotificationService.clear_all(g.current_user.id)
+    flash('Toutes les notifications ont été supprimées.', 'success')
+    return redirect(url_for('notification.index'))

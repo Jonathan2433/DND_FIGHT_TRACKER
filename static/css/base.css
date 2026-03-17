@@ -509,11 +509,19 @@ hr {
     color: var(--color-text-secondary);
 }
 
-.site-notification__mark-all {
+.site-notification__bulk-actions {
     margin-top: 10px;
+    display: grid;
+    gap: 8px;
 }
 
-.site-notification__mark-all .btn {
+.site-notification__mark-all,
+.site-notification__clear-all {
+    margin: 0;
+}
+
+.site-notification__mark-all .btn,
+.site-notification__clear-all .btn {
     width: 100%;
 }
 
