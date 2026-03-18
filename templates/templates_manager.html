@@ -236,6 +236,10 @@
 
                 <section class="wizard-step" data-step="5" hidden>
                     <h3>Etape 5 - Finalisation (identite, visibilite et medias)</h3>
+                    <p class="section-head__copy">
+                        Nouveau: ce bloc reprend un format proche d'un builder complet (type Aidedd) pour mieux capturer
+                        les competences, l'equipement et les details de la fiche PDF.
+                    </p>
 
                     <div class="edit-grid edit-grid--spaced">
                         <section class="edit-section">
@@ -262,6 +266,24 @@
 
                             <label for="create-equipment">Equipement principal (fiche PDF)</label>
                             <textarea id="create-equipment" name="equipment" rows="3" placeholder="Armes, armure, objets importants..."></textarea>
+
+                            <label for="create-skill-proficiencies">Competences maitrisees (format builder)</label>
+                            <textarea id="create-skill-proficiencies" name="skill_proficiencies" rows="3" placeholder="Ex: Perception, Discretion, Athletisme"></textarea>
+
+                            <label for="create-tool-proficiencies">Outils / instruments maitrises</label>
+                            <textarea id="create-tool-proficiencies" name="tool_proficiencies" rows="2" placeholder="Ex: Outils de voleur, Kit d'herboriste"></textarea>
+
+                            <label for="create-weapon-loadout">Armes equipees</label>
+                            <textarea id="create-weapon-loadout" name="weapon_loadout" rows="2" placeholder="Ex: Epee longue, Arc court"></textarea>
+
+                            <label for="create-armor-loadout">Armure et bouclier</label>
+                            <textarea id="create-armor-loadout" name="armor_loadout" rows="2" placeholder="Ex: Cotte de mailles, Bouclier"></textarea>
+
+                            <label for="create-inventory-items">Inventaire detaille</label>
+                            <textarea id="create-inventory-items" name="inventory_items" rows="3" placeholder="Ex: corde (15m), torches x10, potion de soins"></textarea>
+
+                            <label for="create-spellbook-notes">Sorts / aptitudes clefs</label>
+                            <textarea id="create-spellbook-notes" name="spellbook_notes" rows="3" placeholder="Ex: Trait signature, sorts prepares, ressources de classe"></textarea>
 
                             <label for="create-notes">Notes partagees</label>
                             <textarea id="create-notes" name="notes" rows="3"></textarea>
@@ -296,6 +318,9 @@
                                 <div>
                                     <label for="create-pdf">Fiche PDF</label>
                                     <input id="create-pdf" type="file" name="pdf" accept=".pdf">
+                                    <small id="create-pdf-help">
+                                        Si "Generer automatiquement la fiche DD5 PDF" est active, la fiche generee remplacera ce fichier.
+                                    </small>
                                 </div>
                             </div>
 

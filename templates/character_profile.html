@@ -305,9 +305,16 @@
             <aside class="profile-pdf-preview">
                 <h2>Fiche officielle</h2>
                 <div class="pdf-preview-container">
-                    <embed src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                           type="application/pdf"
-                           class="pdf-preview">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-load-pdf-preview
+                            data-pdf-url="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
+                        Afficher l'aperçu PDF
+                    </button>
+                    <embed type="application/pdf"
+                           class="pdf-preview"
+                           data-pdf-embed
+                           hidden>
                     <div class="pdf-controls">
                         <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
                            target="_blank" class="btn btn-primary btn-pdf">
@@ -322,6 +329,18 @@
 
 <script>
 (() => {
+    const previewButton = document.querySelector('[data-load-pdf-preview]');
+    const previewEmbed = document.querySelector('[data-pdf-embed]');
+    if (previewButton && previewEmbed) {
+        previewButton.addEventListener('click', () => {
+            if (!previewEmbed.getAttribute('src')) {
+                previewEmbed.setAttribute('src', previewButton.dataset.pdfUrl || '');
+            }
+            previewEmbed.hidden = false;
+            previewButton.hidden = true;
+        });
+    }
+
     const context = document.querySelector('[data-live-character-context]');
     if (!context) return;
 
