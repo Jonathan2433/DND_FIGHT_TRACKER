@@ -16,13 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const generatePdfInput = form.querySelector('#create-generate-pdf');
     const pdfInput = form.querySelector('#create-pdf');
     const pdfHelp = form.querySelector('#create-pdf-help');
-    const skillField = form.querySelector('#create-skill-proficiencies');
-    const toolField = form.querySelector('#create-tool-proficiencies');
-    const weaponField = form.querySelector('#create-weapon-loadout');
-    const armorField = form.querySelector('#create-armor-loadout');
-    const inventoryField = form.querySelector('#create-inventory-items');
-    const spellsField = form.querySelector('#create-spellbook-notes');
-    const builderChoiceSelects = Array.from(form.querySelectorAll('.builder-choice-select'));
+    const builderChoiceCheckboxes = Array.from(form.querySelectorAll('.builder-choice-checkbox'));
+    const builderChoiceSearches = Array.from(form.querySelectorAll('.builder-choice-search'));
     const builderManualFields = Array.from(form.querySelectorAll('textarea[data-target-field]'));
 
     const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
@@ -315,28 +310,26 @@ document.addEventListener('DOMContentLoaded', () => {
             ? (classSelect.options[classSelect.selectedIndex]?.dataset.weapons || '')
             : '';
 
-        if (skillField && !skillField.value.trim()) {
+        if (classSkills.length || backgroundSkills.length) {
             const deduped = Array.from(new Set([...classSkills, ...backgroundSkills]));
-            skillField.value = deduped.join(', ');
+            applyRecommendedChoices('create-skill-proficiencies', deduped);
         }
-        if (toolField && !toolField.value.trim() && backgroundTool && backgroundTool !== '-') {
-            toolField.value = backgroundTool;
+        if (backgroundTool && backgroundTool !== '-') {
+            applyRecommendedChoices('create-tool-proficiencies', [backgroundTool]);
         }
-        if (armorField && !armorField.value.trim() && classArmors) {
-            armorField.value = `Maitrises d'armure: ${classArmors}`;
+        if (classArmors) {
+            applyRecommendedChoices('create-armor-loadout', splitCsv(classArmors));
         }
-        if (weaponField && !weaponField.value.trim() && classWeapons) {
-            weaponField.value = `Maitrises d'armes: ${classWeapons}`;
+        if (classWeapons) {
+            applyRecommendedChoices('create-weapon-loadout', splitCsv(classWeapons));
         }
-        if (inventoryField && !inventoryField.value.trim()) {
-            inventoryField.value = 'Sac a dos, ration x10, torches x10, corde (15m), gourde';
+        applyRecommendedChoices('create-inventory-items', ['Sac a dos', 'ration x10', 'torches x10', 'corde (15m)', 'gourde']);
+        if (selectedClass) {
+            const defaultSpellOrFeature = selectedClass === 'Wizard' || selectedClass === 'Cleric' || selectedClass === 'Druid'
+                ? ['Sorts prepares niveau 1']
+                : ['Aptitude signature de classe'];
+            applyRecommendedChoices('create-spellbook-notes', defaultSpellOrFeature);
         }
-        if (spellsField && !spellsField.value.trim() && selectedClass) {
-            spellsField.value = selectedClass === 'Wizard' || selectedClass === 'Cleric' || selectedClass === 'Druid'
-                ? 'Sorts prepares niveau 1 + cantrips (a detailler).'
-                : 'Aptitudes de classe clefs (a detailler).';
-        }
-
         syncBuilderChoiceFields();
     };
 
@@ -344,15 +337,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const splitCsv = (raw) => raw.split(',').map((v) => v.trim()).filter(Boolean);
 
+    const hasAnySelection = (targetId) => builderChoiceCheckboxes.some((input) => input.dataset.targetField === targetId && input.checked);
+
+    const applyRecommendedChoices = (targetId, rawValues) => {
+        const values = new Set(rawValues.map((value) => value.trim()).filter(Boolean).map((value) => value.toLowerCase()));
+        if (!values.size || hasAnySelection(targetId)) return;
+
+        builderChoiceCheckboxes.forEach((input) => {
+            if (input.dataset.targetField !== targetId) return;
+            if (values.has((input.value || '').trim().toLowerCase())) {
+                input.checked = true;
+            }
+        });
+    };
+
     const syncBuilderChoiceFields = () => {
         const grouped = new Map();
 
-        builderChoiceSelects.forEach((select) => {
-            const targetId = select.dataset.targetField;
+        builderChoiceCheckboxes.forEach((input) => {
+            const targetId = input.dataset.targetField;
             if (!targetId) return;
-            const selectedValues = Array.from(select.selectedOptions).map((option) => option.value).filter(Boolean);
+            if (!input.checked) return;
             const existing = grouped.get(targetId) || { selected: [], manual: '' };
-            grouped.set(targetId, { ...existing, selected: selectedValues });
+            grouped.set(targetId, { ...existing, selected: [...existing.selected, input.value] });
         });
 
         builderManualFields.forEach((manualField) => {
@@ -374,15 +381,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const hydrateBuilderChoiceFields = () => {
-        builderChoiceSelects.forEach((select) => {
-            const targetId = select.dataset.targetField;
+        builderChoiceCheckboxes.forEach((input) => {
+            const targetId = input.dataset.targetField;
             const target = targetId ? getTargetField(targetId) : null;
             if (!target || !target.value.trim()) return;
 
             const selected = new Set(splitCsv(target.value));
-            Array.from(select.options).forEach((option) => {
-                option.selected = selected.has(option.value);
-            });
+            input.checked = selected.has(input.value);
+        });
+    };
+
+    const filterChoiceItems = (searchInput) => {
+        const group = searchInput.dataset.choiceGroup;
+        if (!group) return;
+        const container = form.querySelector(`.builder-choice-grid[data-choice-group="${group}"]`);
+        if (!container) return;
+
+        const query = (searchInput.value || '').trim().toLowerCase();
+        const items = Array.from(container.querySelectorAll('.builder-choice-item'));
+        items.forEach((item) => {
+            const haystack = item.dataset.choiceValue || '';
+            item.hidden = Boolean(query) && !haystack.includes(query);
         });
     };
 
@@ -532,7 +551,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);
-    builderChoiceSelects.forEach((select) => select.addEventListener('change', syncBuilderChoiceFields));
+    builderChoiceCheckboxes.forEach((input) => input.addEventListener('change', syncBuilderChoiceFields));
+    builderChoiceSearches.forEach((searchInput) => {
+        searchInput.addEventListener('input', () => filterChoiceItems(searchInput));
+    });
     builderManualFields.forEach((field) => field.addEventListener('input', syncBuilderChoiceFields));
 
     syncAbilityMode();
