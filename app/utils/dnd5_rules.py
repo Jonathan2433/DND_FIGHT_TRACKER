@@ -243,22 +243,33 @@ AIDEDED_SKILL_OPTIONS = [
 AIDEDED_TOOL_OPTIONS = [
     "Materiel de calligraphe", "Outils de voleur", "Kit d'herboriste", "Kit d'alchimiste",
     "Outils de forgeron", "Outils de brasseur", "Outils de cartographe", "Outils de cuisinier",
-    "Instrument de musique", "Kit de deguisement", "Materiel de peintre", "Jeu de cartes",
+    "Outils de cordonnier", "Outils de charpentier", "Outils de macon", "Outils de potier",
+    "Outils de tanneur", "Outils de tisserand", "Outils de souffleur de verre", "Outils de joaillier",
+    "Kit de contrefacon", "Kit de deguisement", "Kit de poison", "Materiel de peintre",
+    "Jeu de cartes", "Jeu de des", "Instrument de musique", "Vehicules terrestres",
+    "Vehicules aquatiques",
 ]
 
 AIDEDED_WEAPON_OPTIONS = [
-    "Epee longue", "Epee courte", "Rapiere", "Dague", "Hache d'armes", "Masse d'armes",
-    "Marteau de guerre", "Lance", "Arc court", "Arc long", "Arbalete legere", "Arbalete de poing",
+    "Epee longue", "Epee courte", "Rapiere", "Dague", "Hache d'armes", "Hachette",
+    "Masse d'armes", "Masse", "Marteau leger", "Marteau de guerre", "Fleau", "Lance",
+    "Javelot", "Glaive", "Hallebarde", "Pique", "Trident", "Cimeterre",
+    "Arc court", "Arc long", "Arbalete legere", "Arbalete lourde", "Arbalete de poing",
+    "Fronde", "Sarbacane",
 ]
 
 AIDEDED_ARMOR_OPTIONS = [
-    "Sans armure", "Armure de cuir", "Armure de cuir cloutee", "Chemise de mailles",
-    "Cotte de mailles", "Demi-plate", "Harnois", "Bouclier",
+    "Sans armure", "Armure matelassee", "Armure de cuir", "Armure de cuir cloutee",
+    "Peau", "Chemise de mailles", "Ecailles", "Cuirasse", "Demi-plate",
+    "Cotte de mailles", "Clibanion", "Armure de plates", "Harnois", "Bouclier",
 ]
 
 AIDEDED_INVENTORY_OPTIONS = [
     "Sac a dos", "Rations x10", "Torches x10", "Corde (15m)", "Gourde", "Sac de couchage",
-    "Silex et amadou", "Piton x10", "Potion de soins", "Ration d'urgence",
+    "Silex et amadou", "Piton x10", "Potion de soins", "Ration d'urgence", "Outre",
+    "Lanternes", "Huile", "Tente 2 places", "Couverture", "Craie", "Pied-de-biche",
+    "Marteau", "Pelle", "Barre a mine", "Corde en soie (15m)", "Paquetage d'explorateur",
+    "Paquetage d'ecclesiastique", "Paquetage d'aventurier", "Paquetage d'erudit",
 ]
 
 AIDEDED_SPELLBOOK_NOTES_OPTIONS = [
@@ -268,16 +279,16 @@ AIDEDED_SPELLBOOK_NOTES_OPTIONS = [
 
 # Catalogue synchronise avec les options visibles du builder Aidedd (D&D5).
 AIDEDED_SPECIES_OPTIONS = [
-    "Haut-elfe", "Elfe des bois", "Elfe noir", "Halfelin pied-léger", "Halfelin robuste",
+    "Haut-elfe", "Elfe des bois", "Elfe noir", "Halfelin pied-leger", "Halfelin robuste",
     "Humain", "Humain (don)", "Nain des collines", "Nain des montagnes", "Demi-elfe",
-    "Demi-orc", "Drakéide", "Gnome des forêts", "Gnome des roches", "Tieffelin",
-    "Aarakocra", "Aasimar", "Centaure", "Changelin", "Conil", "Dhampire", "Duergar",
-    "Éladrin", "Elfe aquatique", "Fadette", "Féral", "Firbolg", "Forgelier",
-    "Génasi de l'air", "Génasi de l'eau", "Génasi du feu", "Génasi de la terre",
+    "Demi-orc", "Drakeide", "Gnome des forets", "Gnome des roches", "Tieffelin",
+    "Aarakocra", "Aasimar", "Autognome", "Bugbear", "Centaure", "Changelin", "Conil",
+    "Dhampire", "Duergar", "Eladrin", "Elfe aquatique", "Fadette", "Feral", "Firbolg",
+    "Forgelier", "Genasi de l'air", "Genasi de l'eau", "Genasi du feu", "Genasi de la terre",
     "Githyanki", "Githzerai", "Gnome des profondeurs", "Gobelin", "Gobelours",
-    "Goliath", "Halfelin sagespectre", "Hiboulin", "Hobgobelin", "Homme-lézard",
-    "Kenku", "Kobold", "Minotaure", "Orc", "Ressuscité", "Sang maudit", "Satyre",
-    "Shadar-kai", "Tabaxi", "Torte", "Triton", "Yuan-ti", "Lignée sur mesure",
+    "Goliath", "Halfelin sagespectre", "Hiboulin", "Hobgobelin", "Homme-lezard",
+    "Kenku", "Kobold", "Minotaure", "Orc", "Ressuscite", "Sang maudit", "Satyre",
+    "Shadar-kai", "Tabaxi", "Torte", "Triton", "Yuan-ti", "Lignee sur mesure",
 ]
 
 AIDEDED_CLASS_OPTIONS = [
@@ -286,8 +297,9 @@ AIDEDED_CLASS_OPTIONS = [
 ]
 
 AIDEDED_BACKGROUND_OPTIONS = [
-    "Acolyte", "Artisan de guilde", "Artiste", "Charlatan", "Chevalier", "Criminel",
-    "Enfant des rues", "Ermite", "Héros du peuple", "Marin", "Noble", "Pirate", "Sage",
+    "Acolyte", "Artisan", "Artisan de guilde", "Artiste", "Charlatan", "Chevalier",
+    "Criminel", "Enfant des rues", "Ermite", "Fermier", "Garde", "Guide",
+    "Héros du peuple", "Marchand", "Marin", "Noble", "Pirate", "Sage", "Scribe",
     "Sauvageon", "Soldat", "Agent de faction", "Anthropologue", "Archéologue", "Captif",
     "Chasseur de primes urbain", "Ciseleur de runes", "Gardien des portails", "Gigantin",
     "Grand voyageur", "Hanté", "Idiot du village", "Mercenaire vétéran",
