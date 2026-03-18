@@ -217,7 +217,6 @@ def character_profile(id):
 
     if current_user:
         is_admin = current_user.role == 'Admin'
-        has_campaign_binding = bool(character.campaign or character.campaigns)
         can_manage_from_campaigns = any(current_user.is_mj_of(c) for c in character.campaigns)
         is_main_campaign_mj = bool(character.campaign and current_user.is_mj_of(character.campaign))
 
@@ -226,12 +225,9 @@ def character_profile(id):
         if is_admin:
             can_view_xp = True
             can_award_xp = True
-        elif has_campaign_binding:
+        elif is_campaign_mj:
             can_view_xp = is_campaign_mj
             can_award_xp = is_campaign_mj
-        elif character.owner_id == current_user.id:
-            can_view_xp = True
-            can_award_xp = True
 
     return render_template(
         'character_profile.html',
