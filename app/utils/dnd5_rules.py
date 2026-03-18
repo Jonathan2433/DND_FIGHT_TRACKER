@@ -234,6 +234,38 @@ COMMON_LANGUAGES = [
     "Langue des signes commune",
 ]
 
+AIDEDED_SKILL_OPTIONS = [
+    "Acrobaties", "Arcanes", "Athletisme", "Discretion", "Dressage", "Escamotage",
+    "Histoire", "Intimidation", "Intuition", "Investigation", "Medecine", "Nature",
+    "Perception", "Persuasion", "Religion", "Representation", "Survie", "Tromperie",
+]
+
+AIDEDED_TOOL_OPTIONS = [
+    "Materiel de calligraphe", "Outils de voleur", "Kit d'herboriste", "Kit d'alchimiste",
+    "Outils de forgeron", "Outils de brasseur", "Outils de cartographe", "Outils de cuisinier",
+    "Instrument de musique", "Kit de deguisement", "Materiel de peintre", "Jeu de cartes",
+]
+
+AIDEDED_WEAPON_OPTIONS = [
+    "Epee longue", "Epee courte", "Rapiere", "Dague", "Hache d'armes", "Masse d'armes",
+    "Marteau de guerre", "Lance", "Arc court", "Arc long", "Arbalete legere", "Arbalete de poing",
+]
+
+AIDEDED_ARMOR_OPTIONS = [
+    "Sans armure", "Armure de cuir", "Armure de cuir cloutee", "Chemise de mailles",
+    "Cotte de mailles", "Demi-plate", "Harnois", "Bouclier",
+]
+
+AIDEDED_INVENTORY_OPTIONS = [
+    "Sac a dos", "Rations x10", "Torches x10", "Corde (15m)", "Gourde", "Sac de couchage",
+    "Silex et amadou", "Piton x10", "Potion de soins", "Ration d'urgence",
+]
+
+AIDEDED_SPELLBOOK_NOTES_OPTIONS = [
+    "Cantrips de classe", "Sorts prepares niveau 1", "Sorts de rituel", "Aptitude signature de classe",
+    "Ressource de classe (rage/ki/sorts)", "Don d'origine et ses usages",
+]
+
 # Catalogue synchronise avec les options visibles du builder Aidedd (D&D5).
 AIDEDED_SPECIES_OPTIONS = [
     "Haut-elfe", "Elfe des bois", "Elfe noir", "Halfelin pied-léger", "Halfelin robuste",

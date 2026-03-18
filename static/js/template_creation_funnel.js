@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const armorField = form.querySelector('#create-armor-loadout');
     const inventoryField = form.querySelector('#create-inventory-items');
     const spellsField = form.querySelector('#create-spellbook-notes');
+    const builderChoiceSelects = Array.from(form.querySelectorAll('.builder-choice-select'));
+    const builderManualFields = Array.from(form.querySelectorAll('textarea[data-target-field]'));
 
     const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
     const pointBuyBudget = 27;
@@ -334,6 +336,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? 'Sorts prepares niveau 1 + cantrips (a detailler).'
                 : 'Aptitudes de classe clefs (a detailler).';
         }
+
+        syncBuilderChoiceFields();
+    };
+
+    const getTargetField = (targetId) => form.querySelector(`#${targetId}`);
+
+    const splitCsv = (raw) => raw.split(',').map((v) => v.trim()).filter(Boolean);
+
+    const syncBuilderChoiceFields = () => {
+        const grouped = new Map();
+
+        builderChoiceSelects.forEach((select) => {
+            const targetId = select.dataset.targetField;
+            if (!targetId) return;
+            const selectedValues = Array.from(select.selectedOptions).map((option) => option.value).filter(Boolean);
+            const existing = grouped.get(targetId) || { selected: [], manual: '' };
+            grouped.set(targetId, { ...existing, selected: selectedValues });
+        });
+
+        builderManualFields.forEach((manualField) => {
+            const targetId = manualField.dataset.targetField;
+            if (!targetId) return;
+            const existing = grouped.get(targetId) || { selected: [], manual: '' };
+            grouped.set(targetId, { ...existing, manual: manualField.value.trim() });
+        });
+
+        grouped.forEach((value, targetId) => {
+            const target = getTargetField(targetId);
+            if (!target) return;
+            const parts = [...value.selected];
+            if (value.manual) {
+                parts.push(...splitCsv(value.manual));
+            }
+            target.value = Array.from(new Set(parts)).join(', ');
+        });
+    };
+
+    const hydrateBuilderChoiceFields = () => {
+        builderChoiceSelects.forEach((select) => {
+            const targetId = select.dataset.targetField;
+            const target = targetId ? getTargetField(targetId) : null;
+            if (!target || !target.value.trim()) return;
+
+            const selected = new Set(splitCsv(target.value));
+            Array.from(select.options).forEach((option) => {
+                option.selected = selected.has(option.value);
+            });
+        });
     };
 
     const syncPdfInputMode = () => {
@@ -482,6 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);
+    builderChoiceSelects.forEach((select) => select.addEventListener('change', syncBuilderChoiceFields));
+    builderManualFields.forEach((field) => field.addEventListener('input', syncBuilderChoiceFields));
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -491,7 +543,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSpecies();
     renderLanguages();
     renderAlignment();
+    hydrateBuilderChoiceFields();
     renderBuilderHints();
+    syncBuilderChoiceFields();
     syncPdfInputMode();
     updateWizardUI();
 });
