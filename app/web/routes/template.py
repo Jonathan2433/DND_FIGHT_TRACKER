@@ -22,6 +22,9 @@ from app.utils.dnd5_rules import (
     COMMON_LANGUAGES,
     POINT_BUY_COSTS,
     POINT_BUY_BUDGET,
+    AIDEDED_SPECIES_OPTIONS,
+    AIDEDED_CLASS_OPTIONS,
+    AIDEDED_BACKGROUND_OPTIONS,
 )
 
 # Créer le blueprint
@@ -111,7 +114,9 @@ def manage_templates():
         campaign_context=campaign_context,
         pnj_campaign_context=pnj_campaign_context,
         dnd_species=sorted(RACE_BONUSES.keys()),
+        dnd_species_catalog=AIDEDED_SPECIES_OPTIONS,
         dnd_classes=sorted(CLASS_RULES.keys()),
+        dnd_classes_catalog=AIDEDED_CLASS_OPTIONS,
         dnd_class_labels=CLASS_LABELS_FR,
         dnd_species_labels=SPECIES_LABELS_FR,
         dnd_background_labels=BACKGROUND_LABELS_FR,
@@ -119,6 +124,7 @@ def manage_templates():
         dnd_class_rules=get_localized_class_rules(),
         standard_array=STANDARD_ARRAY,
         dnd_backgrounds=get_localized_background_rules(),
+        dnd_background_catalog=AIDEDED_BACKGROUND_OPTIONS,
         dnd_species_rules=get_localized_species_rules(),
         dnd_alignments=ALIGNMENTS_FR,
         common_languages=COMMON_LANGUAGES,
@@ -180,7 +186,15 @@ def edit_character_template(id):
         flash('Personnage modifié avec succès !', 'success')
         return redirect(url_for('template.character_profile', id=id))
 
-    return render_template("edit_character.html", character=template)
+    return render_template(
+        "edit_character.html",
+        character=template,
+        dnd_species_catalog=AIDEDED_SPECIES_OPTIONS,
+        dnd_classes_catalog=AIDEDED_CLASS_OPTIONS,
+        dnd_background_catalog=AIDEDED_BACKGROUND_OPTIONS,
+        dnd_alignments=ALIGNMENTS_FR,
+        common_languages=COMMON_LANGUAGES,
+    )
 
 
 @bp.route('/character/<int:id>/delete', methods=['POST'])

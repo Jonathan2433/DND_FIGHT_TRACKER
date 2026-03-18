@@ -234,6 +234,34 @@ COMMON_LANGUAGES = [
     "Langue des signes commune",
 ]
 
+# Catalogue synchronise avec les options visibles du builder Aidedd (D&D5).
+AIDEDED_SPECIES_OPTIONS = [
+    "Haut-elfe", "Elfe des bois", "Elfe noir", "Halfelin pied-léger", "Halfelin robuste",
+    "Humain", "Humain (don)", "Nain des collines", "Nain des montagnes", "Demi-elfe",
+    "Demi-orc", "Drakéide", "Gnome des forêts", "Gnome des roches", "Tieffelin",
+    "Aarakocra", "Aasimar", "Centaure", "Changelin", "Conil", "Dhampire", "Duergar",
+    "Éladrin", "Elfe aquatique", "Fadette", "Féral", "Firbolg", "Forgelier",
+    "Génasi de l'air", "Génasi de l'eau", "Génasi du feu", "Génasi de la terre",
+    "Githyanki", "Githzerai", "Gnome des profondeurs", "Gobelin", "Gobelours",
+    "Goliath", "Halfelin sagespectre", "Hiboulin", "Hobgobelin", "Homme-lézard",
+    "Kenku", "Kobold", "Minotaure", "Orc", "Ressuscité", "Sang maudit", "Satyre",
+    "Shadar-kai", "Tabaxi", "Torte", "Triton", "Yuan-ti", "Lignée sur mesure",
+]
+
+AIDEDED_CLASS_OPTIONS = [
+    "Artificier", "Barbare", "Barde", "Clerc", "Druide", "Ensorceleur", "Guerrier",
+    "Magicien", "Moine", "Occultiste", "Paladin", "Rôdeur", "Roublard",
+]
+
+AIDEDED_BACKGROUND_OPTIONS = [
+    "Acolyte", "Artisan de guilde", "Artiste", "Charlatan", "Chevalier", "Criminel",
+    "Enfant des rues", "Ermite", "Héros du peuple", "Marin", "Noble", "Pirate", "Sage",
+    "Sauvageon", "Soldat", "Agent de faction", "Anthropologue", "Archéologue", "Captif",
+    "Chasseur de primes urbain", "Ciseleur de runes", "Gardien des portails", "Gigantin",
+    "Grand voyageur", "Hanté", "Idiot du village", "Mercenaire vétéran",
+    "Philosophe planaire", "Voyageur", "Historique sur mesure",
+]
+
 CLASS_RULES = {
     "Barbarian": {
         "hit_die": 12,
