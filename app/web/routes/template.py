@@ -56,7 +56,7 @@ def manage_templates():
         encounters=encounters,
         campaign_context=campaign_context,
         pnj_campaign_context=pnj_campaign_context,
-        dnd_races=sorted(RACE_BONUSES.keys()),
+        dnd_species=sorted(RACE_BONUSES.keys()),
         dnd_classes=sorted(CLASS_RULES.keys()),
         dnd_class_descriptions={name: rule.get('description', '') for name, rule in CLASS_RULES.items()},
         standard_array=STANDARD_ARRAY,
