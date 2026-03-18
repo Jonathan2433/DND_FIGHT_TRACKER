@@ -8,6 +8,7 @@ from app.models import CharacterTemplate, EncounterTemplate, Combatant
 from app.utils import MONSTER_TEMPLATES, allowed_file
 from app.utils.dnd5_rules import resolve_character_creation
 from app.application.use_cases.notification_service import NotificationService
+from app.application.use_cases.character_sheet_pdf_service import CharacterSheetPdfService
 
 
 class TemplateService:
@@ -105,6 +106,11 @@ class TemplateService:
             notes=shared_notes,
             player_private_notes=form_data.get('player_private_notes', ''),
             first_name=form_data.get('first_name') or None,
+            player_name=form_data.get('player_name') or None,
+            campaign_name=form_data.get('campaign_name') or None,
+            alignment=form_data.get('alignment') or None,
+            languages=', '.join(selected_languages) if selected_languages else None,
+            equipment=form_data.get('equipment') or None,
             age=int(form_data.get('age')) if form_data.get('age') else None,
             background_story=form_data.get('background_story') or None,
             current_xp=int(form_data.get('current_xp', 0))
@@ -118,6 +124,10 @@ class TemplateService:
             campaign = Campaign.query.get(int(resolved_campaign_id))
             if campaign and campaign not in template.campaigns:
                 template.campaigns.append(campaign)
+
+        should_generate_pdf = bool(form_data.get('generate_pdf_sheet'))
+        if should_generate_pdf:
+            template.pdf_filename = CharacterSheetPdfService.generate(template, upload_folder)
 
         db.session.commit()
 
@@ -155,6 +165,11 @@ class TemplateService:
         template.initiative_bonus = int(form_data['initiative_bonus'])
         template.notes = form_data.get('notes', '')
         template.player_private_notes = form_data.get('player_private_notes', '')
+        template.player_name = form_data.get('player_name') or None
+        template.campaign_name = form_data.get('campaign_name') or None
+        template.alignment = form_data.get('alignment') or None
+        template.languages = form_data.get('languages') or template.languages
+        template.equipment = form_data.get('equipment') or None
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
@@ -200,6 +215,14 @@ class TemplateService:
                 campaign_id=template.campaign_id,
             )
 
+        return template
+
+    @staticmethod
+    def generate_character_sheet_pdf(template_id, upload_folder):
+        """Regenerer une fiche PDF officielle a partir des donnees du personnage."""
+        template = CharacterTemplate.query.get_or_404(template_id)
+        template.pdf_filename = CharacterSheetPdfService.generate(template, upload_folder)
+        db.session.commit()
         return template
 
     @staticmethod

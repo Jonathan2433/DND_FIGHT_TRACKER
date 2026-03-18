@@ -245,6 +245,12 @@
                             <label for="create-first-name">Prenom</label>
                             <input id="create-first-name" type="text" name="first_name" placeholder="Optionnel">
 
+                            <label for="create-player-name">Nom du joueur</label>
+                            <input id="create-player-name" type="text" name="player_name" placeholder="Ex: Alex (optionnel)">
+
+                            <label for="create-campaign-name">Nom de campagne</label>
+                            <input id="create-campaign-name" type="text" name="campaign_name" placeholder="Ex: Les Brumes d'Argent">
+
                             <label for="create-gender">Genre</label>
                             <input id="create-gender" type="text" name="genre" placeholder="Ex: Non-binaire, Femme, Homme...">
 
@@ -253,6 +259,9 @@
 
                             <label for="create-weight">Poids</label>
                             <input id="create-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+
+                            <label for="create-equipment">Equipement principal (fiche PDF)</label>
+                            <textarea id="create-equipment" name="equipment" rows="3" placeholder="Armes, armure, objets importants..."></textarea>
 
                             <label for="create-notes">Notes partagees</label>
                             <textarea id="create-notes" name="notes" rows="3"></textarea>
@@ -289,6 +298,14 @@
                                     <input id="create-pdf" type="file" name="pdf" accept=".pdf">
                                 </div>
                             </div>
+
+                            <label class="visibility-toggle" for="create-generate-pdf">
+                                <input type="checkbox" id="create-generate-pdf" name="generate_pdf_sheet" checked>
+                                <span>
+                                    <strong>Generer automatiquement la fiche DD5 PDF</strong>
+                                    <small>Utilise le template officiel et pre-remplit les informations connues du funnel de creation.</small>
+                                </span>
+                            </label>
                         </section>
                     </div>
                 </section>

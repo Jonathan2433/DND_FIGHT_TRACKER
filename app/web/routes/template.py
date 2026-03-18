@@ -199,6 +199,26 @@ def delete_character_template(id):
     return redirect(url_for('template.manage_templates'))
 
 
+@bp.route('/character/<int:id>/generate_pdf', methods=['POST'])
+@login_required
+def generate_character_pdf(id):
+    """Generer/re-generer la fiche PDF officielle depuis les donnees stockees."""
+    template = CharacterTemplate.query.get_or_404(id)
+
+    if not template.can_be_edited_by(g.current_user):
+        flash('Vous n\'etes pas autorise a generer la fiche PDF pour ce personnage.', 'error')
+        return redirect(url_for('template.character_profile', id=id))
+
+    try:
+        TemplateService.generate_character_sheet_pdf(id, current_app.config['UPLOAD_FOLDER'])
+    except ValueError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('template.character_profile', id=id))
+
+    flash('Fiche PDF generee avec succes.', 'success')
+    return redirect(url_for('template.character_profile', id=id))
+
+
 @bp.route('/character/<int:id>')
 # ✅ PAS de @login_required ici - déjà géré dans le LOT 4
 def character_profile(id):

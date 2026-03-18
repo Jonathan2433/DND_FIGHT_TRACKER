@@ -26,6 +26,11 @@ class CharacterTemplate(db.Model):
     # Identité
     name = db.Column(db.String(100), nullable=False)
     first_name = db.Column(db.String(50))  # Prénom
+    player_name = db.Column(db.String(100))  # Nom du joueur
+    campaign_name = db.Column(db.String(120))  # Nom de campagne pour la fiche PDF
+    alignment = db.Column(db.String(60))  # Alignement DnD
+    languages = db.Column(db.String(255))  # Langues parlées
+    equipment = db.Column(db.Text)  # Equipement principal pour la fiche
     age = db.Column(db.Integer)  # Âge
     background_story = db.Column(db.Text)  # Histoire/background
     character_class = db.Column(db.String(50))
