@@ -33,6 +33,11 @@
                     <strong>Points de vie</strong>
                     {% if profile.hp_current is defined and profile.hp_max is defined %}
                         <span>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                        {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                            <small class="stat-box__helper">+{{ profile.temp_hp }} PV temporaires</small>
+                        {% else %}
+                            <small class="stat-box__helper">Aucun PV temporaire</small>
+                        {% endif %}
                     {% elif profile.hp_max is defined %}
                         <span>{{ profile.hp_max }}</span>
                     {% else %}
@@ -92,11 +97,40 @@
                 <div class="profile-actions">
                     <h2>Etat de combat (persistant)</h2>
                     <p class="section-head__copy">
-                        Ajustez les HP/CA actuels du PJ. Ces valeurs restent visibles sur la fiche apres le combat.
+                        Suivez ici les valeurs actuelles du personnage et appliquez des deltas (+/-) pour les modifier.
+                        Ces valeurs restent visibles sur la fiche apres le combat.
                     </p>
+                    <div class="combat-state-summary">
+                        <article class="combat-state-summary__card">
+                            <span class="combat-state-summary__label">PV actuels</span>
+                            <strong>{{ profile.hp_current if profile.hp_current is defined else '—' }}</strong>
+                        </article>
+                        <article class="combat-state-summary__card">
+                            <span class="combat-state-summary__label">PV maximum</span>
+                            <strong>{{ profile.hp_max if profile.hp_max is defined else '—' }}</strong>
+                        </article>
+                        <article class="combat-state-summary__card">
+                            <span class="combat-state-summary__label">PV temporaires</span>
+                            <strong>{{ profile.temp_hp if profile.temp_hp is defined else 0 }}</strong>
+                        </article>
+                        <article class="combat-state-summary__card">
+                            <span class="combat-state-summary__label">CA actuelle</span>
+                            <strong>{{ profile.ac_total if profile.ac_total is defined else '—' }}</strong>
+                        </article>
+                    </div>
                     <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form">
-                        <input type="number" name="hp_delta" placeholder="Delta HP (ex: -5, +8)" value="0" required>
-                        <input type="number" name="ac_delta" placeholder="Delta CA (ex: +1, -1)" value="0" required>
+                        <label class="combat-state-input">
+                            <span>Modifier PV actuels</span>
+                            <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                        </label>
+                        <label class="combat-state-input">
+                            <span>Modifier PV temporaires</span>
+                            <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                        </label>
+                        <label class="combat-state-input">
+                            <span>Modifier CA</span>
+                            <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                        </label>
                         <button type="submit" class="btn btn-primary">Appliquer</button>
                     </form>
                     {% if profile.ac_base is defined and profile.ac_bonus is defined %}
