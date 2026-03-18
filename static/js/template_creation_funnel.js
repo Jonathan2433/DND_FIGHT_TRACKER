@@ -16,10 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const generatePdfInput = form.querySelector('#create-generate-pdf');
     const pdfInput = form.querySelector('#create-pdf');
     const pdfHelp = form.querySelector('#create-pdf-help');
-    const builderChoiceCheckboxes = Array.from(form.querySelectorAll('.builder-choice-checkbox'));
-    const builderChoiceSearches = Array.from(form.querySelectorAll('.builder-choice-search'));
-    const builderManualFields = Array.from(form.querySelectorAll('textarea[data-target-field]'));
-    const skillProficienciesLimit = 6;
 
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
@@ -49,20 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
-    const classSkillSuggestions = {
-        Barbarian: ['Athletisme', 'Survie', 'Intimidation', 'Perception'],
-        Bard: ['Representation', 'Persuasion', 'Intuition', 'Tromperie'],
-        Cleric: ['Religion', 'Intuition', 'Medecine', 'Persuasion'],
-        Druid: ['Nature', 'Survie', 'Medecine', 'Dressage'],
-        Fighter: ['Athletisme', 'Intimidation', 'Perception', 'Survie'],
-        Monk: ['Acrobaties', 'Athletisme', 'Intuition', 'Discretion'],
-        Paladin: ['Athletisme', 'Intuition', 'Persuasion', 'Religion'],
-        Ranger: ['Discretion', 'Perception', 'Survie', 'Dressage'],
-        Rogue: ['Discretion', 'Escamotage', 'Acrobaties', 'Tromperie'],
-        Sorcerer: ['Arcanes', 'Intimidation', 'Persuasion', 'Tromperie'],
-        Warlock: ['Arcanes', 'Tromperie', 'Histoire', 'Intimidation'],
-        Wizard: ['Arcanes', 'Histoire', 'Investigation', 'Intuition']
-    };
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
@@ -284,109 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const renderBuilderHints = () => {
-        const selectedClass = classSelect?.value;
-        const selectedBackground = backgroundSelect?.options[backgroundSelect.selectedIndex];
-        const classSkills = classSkillSuggestions[selectedClass] || [];
-        const backgroundSkills = (selectedBackground?.dataset.skills || '').split(',').map((v) => v.trim()).filter(Boolean);
-
-        if (classSkills.length || backgroundSkills.length) {
-            const deduped = Array.from(new Set([...classSkills, ...backgroundSkills]));
-            applyRecommendedChoices('create-skill-proficiencies', deduped);
-        }
-        syncBuilderChoiceFields();
-    };
-
-    const getTargetField = (targetId) => form.querySelector(`#${targetId}`);
-
-    const splitCsv = (raw) => raw.split(',').map((v) => v.trim()).filter(Boolean);
-
-    const getSkillSelectionCount = () => {
-        const checkedCount = builderChoiceCheckboxes
-            .filter((input) => input.dataset.targetField === 'create-skill-proficiencies' && input.checked)
-            .length;
-        const manualField = form.querySelector('#create-skill-proficiencies-manual');
-        const manualCount = manualField ? splitCsv(manualField.value).length : 0;
-        return checkedCount + manualCount;
-    };
-
-    const updateSkillLimitSummary = () => {
-        const summaryEl = form.querySelector('#skill-proficiencies-limit-summary');
-        if (!summaryEl) return;
-        const count = getSkillSelectionCount();
-        summaryEl.textContent = `Maitrises selectionnees: ${count} / ${skillProficienciesLimit} (limite technique actuelle).`;
-        summaryEl.style.color = count > skillProficienciesLimit ? '#ff8f8f' : '';
-    };
-
-    const hasAnySelection = (targetId) => builderChoiceCheckboxes.some((input) => input.dataset.targetField === targetId && input.checked);
-
-    const applyRecommendedChoices = (targetId, rawValues) => {
-        const values = new Set(rawValues.map((value) => value.trim()).filter(Boolean).map((value) => value.toLowerCase()));
-        if (!values.size || hasAnySelection(targetId)) return;
-
-        builderChoiceCheckboxes.forEach((input) => {
-            if (input.dataset.targetField !== targetId) return;
-            if (values.has((input.value || '').trim().toLowerCase())) {
-                input.checked = true;
-            }
-        });
-    };
-
-    const syncBuilderChoiceFields = () => {
-        const grouped = new Map();
-
-        builderChoiceCheckboxes.forEach((input) => {
-            const targetId = input.dataset.targetField;
-            if (!targetId) return;
-            if (!input.checked) return;
-            const existing = grouped.get(targetId) || { selected: [], manual: '' };
-            grouped.set(targetId, { ...existing, selected: [...existing.selected, input.value] });
-        });
-
-        builderManualFields.forEach((manualField) => {
-            const targetId = manualField.dataset.targetField;
-            if (!targetId) return;
-            const existing = grouped.get(targetId) || { selected: [], manual: '' };
-            grouped.set(targetId, { ...existing, manual: manualField.value.trim() });
-        });
-
-        grouped.forEach((value, targetId) => {
-            const target = getTargetField(targetId);
-            if (!target) return;
-            const parts = [...value.selected];
-            if (value.manual) {
-                parts.push(...splitCsv(value.manual));
-            }
-            target.value = Array.from(new Set(parts)).join(', ');
-        });
-        updateSkillLimitSummary();
-    };
-
-    const hydrateBuilderChoiceFields = () => {
-        builderChoiceCheckboxes.forEach((input) => {
-            const targetId = input.dataset.targetField;
-            const target = targetId ? getTargetField(targetId) : null;
-            if (!target || !target.value.trim()) return;
-
-            const selected = new Set(splitCsv(target.value));
-            input.checked = selected.has(input.value);
-        });
-    };
-
-    const filterChoiceItems = (searchInput) => {
-        const group = searchInput.dataset.choiceGroup;
-        if (!group) return;
-        const container = form.querySelector(`.builder-choice-grid[data-choice-group="${group}"]`);
-        if (!container) return;
-
-        const query = (searchInput.value || '').trim().toLowerCase();
-        const items = Array.from(container.querySelectorAll('.builder-choice-item'));
-        items.forEach((item) => {
-            const haystack = item.dataset.choiceValue || '';
-            item.hidden = Boolean(query) && !haystack.includes(query);
-        });
-    };
-
     const syncPdfInputMode = () => {
         const autoGenerate = Boolean(generatePdfInput?.checked);
         if (!pdfInput) return;
@@ -490,13 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (getSkillSelectionCount() > skillProficienciesLimit) {
-            event.preventDefault();
-            alert(`Vous pouvez renseigner au maximum ${skillProficienciesLimit} competences maitrisees.`);
-            goToStep(5, { scrollToStep: true });
-            return;
-        }
-
         if (currentStep !== totalSteps) {
             event.preventDefault();
             goToStep(totalSteps, { scrollToStep: true });
@@ -534,40 +406,15 @@ document.addEventListener('DOMContentLoaded', () => {
     classSelect?.addEventListener('change', () => {
         render();
         renderClassDescription();
-        renderBuilderHints();
     });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', () => {
         syncBackgroundBonusFields();
         renderBackground();
         render();
-        renderBuilderHints();
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);
-    builderChoiceCheckboxes.forEach((input) => input.addEventListener('change', (event) => {
-        const checkbox = event.currentTarget;
-        if (!(checkbox instanceof HTMLInputElement)) return;
-
-        if (checkbox.dataset.targetField === 'create-skill-proficiencies' && checkbox.checked && getSkillSelectionCount() > skillProficienciesLimit) {
-            checkbox.checked = false;
-            alert(`Limite atteinte: ${skillProficienciesLimit} competences maitrisees maximum.`);
-        }
-
-        syncBuilderChoiceFields();
-    }));
-    builderChoiceSearches.forEach((searchInput) => {
-        searchInput.addEventListener('input', () => filterChoiceItems(searchInput));
-    });
-    builderManualFields.forEach((field) => field.addEventListener('input', () => {
-        if (field.dataset.targetField === 'create-skill-proficiencies') {
-            const entries = splitCsv(field.value);
-            if (entries.length > skillProficienciesLimit) {
-                field.value = entries.slice(0, skillProficienciesLimit).join(', ');
-            }
-        }
-        syncBuilderChoiceFields();
-    }));
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -577,10 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSpecies();
     renderLanguages();
     renderAlignment();
-    hydrateBuilderChoiceFields();
-    renderBuilderHints();
-    syncBuilderChoiceFields();
-    updateSkillLimitSummary();
     syncPdfInputMode();
     updateWizardUI();
 });
