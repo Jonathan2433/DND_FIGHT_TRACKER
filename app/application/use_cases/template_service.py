@@ -15,6 +15,37 @@ class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
 
     @staticmethod
+    def _compose_builder_equipment(form_data):
+        """Compose un bloc equipement detaille depuis le funnel de creation."""
+        base_equipment = (form_data.get('equipment') or '').strip()
+        skill_proficiencies = (form_data.get('skill_proficiencies') or '').strip()
+        tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
+        weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
+        armor_loadout = (form_data.get('armor_loadout') or '').strip()
+        inventory_items = (form_data.get('inventory_items') or '').strip()
+        spellbook_notes = (form_data.get('spellbook_notes') or '').strip()
+
+        sections = []
+        if base_equipment:
+            sections.append(f"Equipement principal: {base_equipment}")
+        if weapon_loadout:
+            sections.append(f"Armes equipees: {weapon_loadout}")
+        if armor_loadout:
+            sections.append(f"Armure/Bouclier: {armor_loadout}")
+        if inventory_items:
+            sections.append(f"Inventaire: {inventory_items}")
+        if skill_proficiencies:
+            sections.append(f"Competences maitrisees: {skill_proficiencies}")
+        if tool_proficiencies:
+            sections.append(f"Outils maitrises: {tool_proficiencies}")
+        if spellbook_notes:
+            sections.append(f"Sorts/Aptitudes: {spellbook_notes}")
+
+        if not sections:
+            return None
+        return " | ".join(sections)
+
+    @staticmethod
     def create_character_template(form_data, files, upload_folder, current_user_id=None, campaign_id=None):
         """Créer un nouveau template de personnage"""
         image = files.get("image")
@@ -110,7 +141,7 @@ class TemplateService:
             campaign_name=form_data.get('campaign_name') or None,
             alignment=form_data.get('alignment') or None,
             languages=', '.join(selected_languages) if selected_languages else None,
-            equipment=form_data.get('equipment') or None,
+            equipment=TemplateService._compose_builder_equipment(form_data),
             age=int(form_data.get('age')) if form_data.get('age') else None,
             background_story=form_data.get('background_story') or None,
             current_xp=int(form_data.get('current_xp', 0))

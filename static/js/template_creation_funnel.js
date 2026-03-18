@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
         form.querySelector('#create-language-2'),
         form.querySelector('#create-language-3')
     ];
+    const generatePdfInput = form.querySelector('#create-generate-pdf');
+    const pdfInput = form.querySelector('#create-pdf');
+    const pdfHelp = form.querySelector('#create-pdf-help');
+    const skillField = form.querySelector('#create-skill-proficiencies');
+    const toolField = form.querySelector('#create-tool-proficiencies');
+    const weaponField = form.querySelector('#create-weapon-loadout');
+    const armorField = form.querySelector('#create-armor-loadout');
+    const inventoryField = form.querySelector('#create-inventory-items');
+    const spellsField = form.querySelector('#create-spellbook-notes');
 
     const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
     const pointBuyBudget = 27;
@@ -33,6 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
+    const classSkillSuggestions = {
+        Barbarian: ['Athletisme', 'Survie', 'Intimidation', 'Perception'],
+        Bard: ['Representation', 'Persuasion', 'Intuition', 'Tromperie'],
+        Cleric: ['Religion', 'Intuition', 'Medecine', 'Persuasion'],
+        Druid: ['Nature', 'Survie', 'Medecine', 'Dressage'],
+        Fighter: ['Athletisme', 'Intimidation', 'Perception', 'Survie'],
+        Monk: ['Acrobaties', 'Athletisme', 'Intuition', 'Discretion'],
+        Paladin: ['Athletisme', 'Intuition', 'Persuasion', 'Religion'],
+        Ranger: ['Discretion', 'Perception', 'Survie', 'Dressage'],
+        Rogue: ['Discretion', 'Escamotage', 'Acrobaties', 'Tromperie'],
+        Sorcerer: ['Arcanes', 'Intimidation', 'Persuasion', 'Tromperie'],
+        Warlock: ['Arcanes', 'Tromperie', 'Histoire', 'Intimidation'],
+        Wizard: ['Arcanes', 'Histoire', 'Investigation', 'Intuition']
+    };
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
@@ -265,6 +288,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const renderBuilderHints = () => {
+        const selectedClass = classSelect?.value;
+        const selectedBackground = backgroundSelect?.options[backgroundSelect.selectedIndex];
+        const classSkills = classSkillSuggestions[selectedClass] || [];
+        const backgroundSkills = (selectedBackground?.dataset.skills || '').split(',').map((v) => v.trim()).filter(Boolean);
+        const backgroundTool = selectedBackground?.dataset.tool || '';
+        const classArmors = selectedClass
+            ? (classSelect.options[classSelect.selectedIndex]?.dataset.armors || '')
+            : '';
+        const classWeapons = selectedClass
+            ? (classSelect.options[classSelect.selectedIndex]?.dataset.weapons || '')
+            : '';
+
+        if (skillField && !skillField.value.trim()) {
+            const deduped = Array.from(new Set([...classSkills, ...backgroundSkills]));
+            skillField.value = deduped.join(', ');
+        }
+        if (toolField && !toolField.value.trim() && backgroundTool && backgroundTool !== '-') {
+            toolField.value = backgroundTool;
+        }
+        if (armorField && !armorField.value.trim() && classArmors) {
+            armorField.value = `Maitrises d'armure: ${classArmors}`;
+        }
+        if (weaponField && !weaponField.value.trim() && classWeapons) {
+            weaponField.value = `Maitrises d'armes: ${classWeapons}`;
+        }
+        if (inventoryField && !inventoryField.value.trim()) {
+            inventoryField.value = 'Sac a dos, ration x10, torches x10, corde (15m), gourde';
+        }
+        if (spellsField && !spellsField.value.trim() && selectedClass) {
+            spellsField.value = selectedClass === 'Wizard' || selectedClass === 'Cleric' || selectedClass === 'Druid'
+                ? 'Sorts prepares niveau 1 + cantrips (a detailler).'
+                : 'Aptitudes de classe clefs (a detailler).';
+        }
+    };
+
+    const syncPdfInputMode = () => {
+        const autoGenerate = Boolean(generatePdfInput?.checked);
+        if (!pdfInput) return;
+        pdfInput.disabled = autoGenerate;
+        if (autoGenerate) {
+            pdfInput.value = '';
+        }
+        if (pdfHelp) {
+            pdfHelp.textContent = autoGenerate
+                ? 'Generation auto active: la fiche PDF generee sera attachee automatiquement au personnage.'
+                : 'Generation auto desactivee: vous pouvez televerser votre propre fiche PDF.';
+        }
+    };
+
     const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
     const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
     const prevButton = form.querySelector('#wizard-prev');
@@ -386,14 +459,17 @@ document.addEventListener('DOMContentLoaded', () => {
     classSelect?.addEventListener('change', () => {
         render();
         renderClassDescription();
+        renderBuilderHints();
     });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', () => {
         syncBackgroundBonusFields();
         renderBackground();
         render();
+        renderBuilderHints();
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
+    generatePdfInput?.addEventListener('change', syncPdfInputMode);
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -403,5 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSpecies();
     renderLanguages();
     renderAlignment();
+    renderBuilderHints();
+    syncPdfInputMode();
     updateWizardUI();
 });
