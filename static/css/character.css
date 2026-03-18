@@ -685,9 +685,12 @@
 
 @media (max-width: 540px) {
     .char-stats-compact,
-    .profile-stats,
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .xp-info {
