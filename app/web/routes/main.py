@@ -12,6 +12,28 @@ from app.utils import format_duration
 bp = Blueprint('main', __name__)
 
 
+def _build_campaign_summary(campaign):
+    arcs = sorted(campaign.story_arcs, key=lambda arc: arc.order_index)
+    current_arc = next((arc for arc in arcs if arc.status == 'en_cours'), None)
+    if not current_arc:
+        current_arc = next((arc for arc in arcs if arc.status == 'à_venir'), None)
+    if not current_arc and arcs:
+        current_arc = arcs[-1]
+
+    latest_episode = (
+        Episode.query.join(StoryArc, Episode.story_arc_id == StoryArc.id)
+        .filter(StoryArc.campaign_id == campaign.id)
+        .order_by(Episode.created_at.desc(), Episode.order_index.desc())
+        .first()
+    )
+
+    return {
+        'campaign': campaign,
+        'current_arc': current_arc,
+        'latest_episode': latest_episode,
+    }
+
+
 @bp.route('/')
 def index():
     """Page d'accueil."""
@@ -41,6 +63,7 @@ def index():
     user_campaigns = []
     user_characters = []
     featured_campaign_summary = None
+    mj_campaign_summaries = []
 
     if user_is_connected:
         user_campaigns = g.current_user.get_campaigns()
@@ -57,26 +80,13 @@ def index():
                 key=lambda campaign: campaign.created_at,
                 reverse=True,
             )[0]
+            featured_campaign_summary = _build_campaign_summary(featured_campaign)
 
-            arcs = sorted(featured_campaign.story_arcs, key=lambda arc: arc.order_index)
-            current_arc = next((arc for arc in arcs if arc.status == 'en_cours'), None)
-            if not current_arc:
-                current_arc = next((arc for arc in arcs if arc.status == 'à_venir'), None)
-            if not current_arc and arcs:
-                current_arc = arcs[-1]
-
-            latest_episode = (
-                Episode.query.join(StoryArc, Episode.story_arc_id == StoryArc.id)
-                .filter(StoryArc.campaign_id == featured_campaign.id)
-                .order_by(Episode.created_at.desc(), Episode.order_index.desc())
-                .first()
-            )
-
-            featured_campaign_summary = {
-                'campaign': featured_campaign,
-                'current_arc': current_arc,
-                'latest_episode': latest_episode,
-            }
+            mj_campaigns = [campaign for campaign in user_campaigns if campaign.mj_id == g.current_user.id]
+            mj_campaign_summaries = [
+                _build_campaign_summary(campaign)
+                for campaign in sorted(mj_campaigns, key=lambda campaign: campaign.created_at, reverse=True)
+            ]
 
     return render_template(
         'index.html',
@@ -88,6 +98,7 @@ def index():
         user_campaigns=user_campaigns,
         user_characters=user_characters,
         featured_campaign_summary=featured_campaign_summary,
+        mj_campaign_summaries=mj_campaign_summaries,
     )
 
 
