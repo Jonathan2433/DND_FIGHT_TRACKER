@@ -14,6 +14,20 @@ from app.utils.dnd5_rules import RACE_BONUSES, CLASS_RULES, STANDARD_ARRAY, BACK
 bp = Blueprint('template', __name__, url_prefix='/template')
 
 
+def _can_manage_character_combat_state(character, user):
+    """Seul le proprietaire du PJ ou le MJ proprietaire de sa campagne peut modifier HP/CA."""
+    if not user or character.character_type != 'PJ':
+        return False
+
+    if character.owner_id == user.id:
+        return True
+
+    if character.campaign and user.is_mj_of(character.campaign):
+        return True
+
+    return any(user.is_mj_of(campaign) for campaign in character.campaigns)
+
+
 @bp.route('/manage')
 @login_required
 def manage_templates():
@@ -172,6 +186,7 @@ def character_profile(id):
     can_award_xp = False
     can_view_xp = False
     is_campaign_mj = False
+    can_manage_combat_state = _can_manage_character_combat_state(character, current_user)
 
     if current_user:
         is_admin = current_user.role == 'Admin'
@@ -201,8 +216,39 @@ def character_profile(id):
         can_edit=character.can_be_edited_by(current_user) if current_user else False,
         can_view_xp=can_view_xp,
         can_award_xp=can_award_xp,
-        is_campaign_mj=is_campaign_mj
+        is_campaign_mj=is_campaign_mj,
+        can_manage_combat_state=can_manage_combat_state
     )
+
+
+@bp.route('/character/<int:id>/combat_state', methods=['POST'])
+@login_required
+def update_character_combat_state(id):
+    """Ajuster rapidement les HP/CA persistants d'un PJ."""
+    character = CharacterTemplate.query.get_or_404(id)
+
+    if not _can_manage_character_combat_state(character, g.current_user):
+        flash('Seul le proprietaire du PJ ou le MJ proprietaire de la campagne peut modifier ces valeurs.', 'error')
+        return redirect(url_for('template.character_profile', id=id))
+
+    hp_delta = request.form.get('hp_delta', default=0, type=int) or 0
+    ac_delta = request.form.get('ac_delta', default=0, type=int) or 0
+
+    if hp_delta == 0 and ac_delta == 0:
+        flash('Aucun changement applique (HP et CA a 0).', 'info')
+        return redirect(url_for('template.character_profile', id=id))
+
+    current_hp = character.hp_current_effective
+    character.hp_current = max(0, min(current_hp + hp_delta, character.hp_max))
+    character.ac_bonus = (character.ac_bonus or 0) + ac_delta
+
+    db.session.commit()
+
+    flash(
+        f'Valeurs mises a jour : HP {character.hp_current}/{character.hp_max}, CA {character.ac_total} (base {character.ac_base}).',
+        'success'
+    )
+    return redirect(url_for('template.character_profile', id=id))
 
 
 # ✅ ROUTES RENCONTRES AUSSI SÉCURISÉES
