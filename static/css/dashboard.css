@@ -220,6 +220,22 @@
     gap: 14px;
 }
 
+.campaign-quick-access {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.campaign-quick-access__title {
+    margin: 0;
+    color: var(--color-text-secondary);
+}
+
+.campaign-quick-access__title strong {
+    color: var(--color-text);
+}
+
 .home-quick-access__step {
     position: relative;
     display: flex;
