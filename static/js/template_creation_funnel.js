@@ -8,37 +8,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const backgroundSelect = form.querySelector('#create-background');
     const modeInputs = form.querySelectorAll('input[name="ability_mode"]');
 
-    const raceBonuses = {
-        'Humain': { force: 1, dexterite: 1, constitution: 1, intelligence: 1, sagesse: 1, charisme: 1 },
-        'Elfe': { dexterite: 2 },
-        'Nain': { constitution: 2 },
-        'Halfelin': { dexterite: 2 },
-        'Drakeide': { force: 2, charisme: 1 },
-        'Gnome': { intelligence: 2 },
-        'Demi-elfe': { charisme: 2, dexterite: 1, constitution: 1 },
-        'Demi-orc': { force: 2, constitution: 1 },
-        'Tieffelin': { charisme: 2, intelligence: 1 }
+    const classRules = {
+        Barbarian: { hitDie: 12, saves: ['force', 'constitution'] },
+        Bard: { hitDie: 8, saves: ['dexterite', 'charisme'] },
+        Cleric: { hitDie: 8, saves: ['sagesse', 'charisme'] },
+        Druid: { hitDie: 8, saves: ['intelligence', 'sagesse'] },
+        Fighter: { hitDie: 10, saves: ['force', 'constitution'] },
+        Monk: { hitDie: 8, saves: ['force', 'dexterite'] },
+        Paladin: { hitDie: 10, saves: ['sagesse', 'charisme'] },
+        Ranger: { hitDie: 10, saves: ['force', 'dexterite'] },
+        Rogue: { hitDie: 8, saves: ['dexterite', 'intelligence'] },
+        Sorcerer: { hitDie: 6, saves: ['constitution', 'charisme'] },
+        Warlock: { hitDie: 8, saves: ['sagesse', 'charisme'] },
+        Wizard: { hitDie: 6, saves: ['intelligence', 'sagesse'] }
     };
 
-    const classRules = {
-        'Barbare': { hitDie: 12, saves: ['force', 'constitution'] },
-        'Barde': { hitDie: 8, saves: ['dexterite', 'charisme'] },
-        'Clerc': { hitDie: 8, saves: ['sagesse', 'charisme'] },
-        'Druide': { hitDie: 8, saves: ['intelligence', 'sagesse'] },
-        'Ensorceleur': { hitDie: 6, saves: ['constitution', 'charisme'] },
-        'Guerrier': { hitDie: 10, saves: ['force', 'constitution'] },
-        'Magicien': { hitDie: 6, saves: ['intelligence', 'sagesse'] },
-        'Moine': { hitDie: 8, saves: ['force', 'dexterite'] },
-        'Paladin': { hitDie: 10, saves: ['sagesse', 'charisme'] },
-        'Rodeur': { hitDie: 10, saves: ['force', 'dexterite'] },
-        'Roublard': { hitDie: 8, saves: ['dexterite', 'intelligence'] },
-        'Occultiste': { hitDie: 8, saves: ['sagesse', 'charisme'] }
+    const backgroundAbilityOptions = {
+        Acolyte: ['intelligence', 'sagesse', 'charisme'],
+        Artisan: ['force', 'dexterite', 'intelligence'],
+        Charlatan: ['dexterite', 'constitution', 'charisme'],
+        Criminal: ['dexterite', 'constitution', 'intelligence'],
+        Entertainer: ['force', 'dexterite', 'charisme'],
+        Farmer: ['force', 'constitution', 'sagesse'],
+        Guard: ['force', 'intelligence', 'sagesse'],
+        Guide: ['dexterite', 'constitution', 'sagesse'],
+        Hermit: ['constitution', 'sagesse', 'charisme'],
+        Merchant: ['constitution', 'intelligence', 'charisme'],
+        Noble: ['force', 'intelligence', 'charisme'],
+        Sage: ['constitution', 'intelligence', 'sagesse'],
+        Sailor: ['force', 'dexterite', 'sagesse'],
+        Scribe: ['dexterite', 'intelligence', 'sagesse'],
+        Soldier: ['force', 'dexterite', 'constitution'],
+        Wayfarer: ['dexterite', 'sagesse', 'charisme']
     };
 
     const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
+
+    const getBackgroundBudget = () => {
+        let used = 0;
+        abilities.forEach((ability) => {
+            const field = form.querySelector(`#create-bg-${ability}`);
+            used += Number.parseInt(field?.value || '0', 10);
+        });
+        return used;
+    };
 
     const syncAbilityMode = () => {
         const mode = getMode();
@@ -69,6 +85,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const syncBackgroundBonusFields = () => {
+        const background = backgroundSelect?.value;
+        const allowed = new Set(backgroundAbilityOptions[background] || []);
+
+        abilities.forEach((ability) => {
+            const field = form.querySelector(`#create-bg-${ability}`);
+            if (!field) return;
+
+            if (allowed.has(ability)) {
+                field.disabled = false;
+            } else {
+                field.disabled = true;
+                field.value = '0';
+            }
+        });
+
+        let spent = getBackgroundBudget();
+        if (spent === 0 && allowed.size) {
+            allowed.forEach((ability) => {
+                const field = form.querySelector(`#create-bg-${ability}`);
+                if (field) field.value = '1';
+            });
+            spent = getBackgroundBudget();
+        }
+
+        if (spent > 3) {
+            for (const ability of abilities) {
+                if (spent <= 3) break;
+                const field = form.querySelector(`#create-bg-${ability}`);
+                if (!field || field.disabled) continue;
+
+                const current = Number.parseInt(field.value || '0', 10);
+                const removable = Math.min(current, spent - 3);
+                field.value = String(current - removable);
+                spent -= removable;
+            }
+        }
+
+        const summary = document.getElementById('background-bonus-summary');
+        if (summary) {
+            summary.textContent = `Points background: ${getBackgroundBudget()} / 3`;
+        }
+    };
+
     const renderBackground = () => {
         if (!backgroundSelect) return;
         const selected = backgroundSelect.options[backgroundSelect.selectedIndex];
@@ -93,11 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const render = () => {
-        const selectedRace = raceSelect?.value;
         const selectedClass = classSelect?.value;
         const level = Math.max(1, parseInt(levelInput?.value || '1', 10));
 
-        const bonuses = raceBonuses[selectedRace] || {};
         const classRule = classRules[selectedClass] || { hitDie: 8, saves: [] };
 
         const finalStats = {};
@@ -105,8 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const baseField = getMode() === 'custom'
                 ? form.querySelector(`#create-custom-${ability}`)
                 : form.querySelector(`#create-${ability}`);
+            const bgField = form.querySelector(`#create-bg-${ability}`);
+
             const baseValue = parseInt(baseField?.value || '10', 10);
-            finalStats[ability] = Math.min(20, Math.max(1, baseValue + (bonuses[ability] || 0)));
+            const backgroundBonus = parseInt(bgField?.value || '0', 10);
+            finalStats[ability] = Math.min(20, Math.max(1, baseValue + backgroundBonus));
 
             const preview = form.querySelector(`#preview-${ability}`);
             if (preview) {
@@ -114,11 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const bonusSummary = Object.entries(bonuses)
-            .map(([ability, value]) => `${ability.toUpperCase()} +${value}`)
-            .join(', ');
         const raceSummary = document.getElementById('race-bonus-summary');
-        if (raceSummary) raceSummary.textContent = `Bonus raciaux: ${bonusSummary || 'Aucun'}`;
+        if (raceSummary) {
+            raceSummary.textContent = "Bonus d'espece: aucun modificateur de caracteristiques (regles 2024)";
+        }
 
         const saveSummary = document.getElementById('saving-throws-summary');
         if (saveSummary) {
@@ -218,8 +278,16 @@ document.addEventListener('DOMContentLoaded', () => {
     abilities.forEach((ability) => {
         const standardField = form.querySelector(`#create-${ability}`);
         const customField = form.querySelector(`#create-custom-${ability}`);
+        const bgField = form.querySelector(`#create-bg-${ability}`);
+
         standardField?.addEventListener('change', render);
         customField?.addEventListener('input', render);
+        bgField?.addEventListener('change', () => {
+            const value = Number.parseInt(bgField.value || '0', 10);
+            if (value > 2) bgField.value = '2';
+            syncBackgroundBonusFields();
+            render();
+        });
     });
 
     modeInputs.forEach((modeInput) => {
@@ -235,9 +303,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClassDescription();
     });
     levelInput?.addEventListener('input', render);
-    backgroundSelect?.addEventListener('change', renderBackground);
+    backgroundSelect?.addEventListener('change', () => {
+        syncBackgroundBonusFields();
+        renderBackground();
+        render();
+    });
 
     syncAbilityMode();
+    syncBackgroundBonusFields();
     render();
     renderBackground();
     renderClassDescription();

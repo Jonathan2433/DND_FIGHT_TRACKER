@@ -1,63 +1,49 @@
-"""Règles simplifiées DnD 5e pour le funnel de création de personnage."""
+"""Règles simplifiées DnD 5e (version 2024) pour le funnel de création de personnage."""
 
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
 
+# En 2024, les bonus de caractéristiques ne sont plus liés à l'espèce.
+# On conserve cette structure pour compatibilité d'affichage et de code existant.
 RACE_BONUSES = {
-    "Humain": {
-        "force": 1,
-        "dexterite": 1,
-        "constitution": 1,
-        "intelligence": 1,
-        "sagesse": 1,
-        "charisme": 1,
-    },
-    "Elfe": {"dexterite": 2},
-    "Nain": {"constitution": 2},
-    "Halfelin": {"dexterite": 2},
-    "Drakeide": {"force": 2, "charisme": 1},
-    "Gnome": {"intelligence": 2},
-    "Demi-elfe": {"charisme": 2, "dexterite": 1, "constitution": 1},
-    "Demi-orc": {"force": 2, "constitution": 1},
-    "Tieffelin": {"charisme": 2, "intelligence": 1},
+    "Aasimar": {},
+    "Dragonborn": {},
+    "Dwarf": {},
+    "Elf": {},
+    "Gnome": {},
+    "Goliath": {},
+    "Halfling": {},
+    "Human": {},
+    "Orc": {},
+    "Tiefling": {},
 }
 
 CLASS_RULES = {
-    "Barbare": {
+    "Barbarian": {
         "hit_die": 12,
         "saving_throws": ["force", "constitution"],
         "description": "Combattant sauvage et endurant, le barbare excelle en melee grace a sa rage et sa resistance.",
     },
-    "Barde": {
+    "Bard": {
         "hit_die": 8,
         "saving_throws": ["dexterite", "charisme"],
         "description": "Artiste polyvalent, le barde soutient le groupe avec ses inspirations, sa magie et ses competences sociales.",
     },
-    "Clerc": {
+    "Cleric": {
         "hit_die": 8,
         "saving_throws": ["sagesse", "charisme"],
         "description": "Lanceur de sorts divin, le clerc soigne, protege ses allies et invoque la puissance de sa divinite.",
     },
-    "Druide": {
+    "Druid": {
         "hit_die": 8,
         "saving_throws": ["intelligence", "sagesse"],
         "description": "Gardien de la nature, le druide maitrise les sorts elementaires et la metamorphose animale.",
     },
-    "Ensorceleur": {
-        "hit_die": 6,
-        "saving_throws": ["constitution", "charisme"],
-        "description": "Magicien instinctif, l'ensorceleur puise sa puissance dans un heritage magique inne et modele ses sorts.",
-    },
-    "Guerrier": {
+    "Fighter": {
         "hit_die": 10,
         "saving_throws": ["force", "constitution"],
         "description": "Specialiste des armes et armures, le guerrier est fiable en premiere ligne et tres adaptable.",
     },
-    "Magicien": {
-        "hit_die": 6,
-        "saving_throws": ["intelligence", "sagesse"],
-        "description": "Erudit des arcanes, le magicien possede la plus large palette de sorts utilitaires et offensifs.",
-    },
-    "Moine": {
+    "Monk": {
         "hit_die": 8,
         "saving_throws": ["force", "dexterite"],
         "description": "Adepte du ki, le moine allie mobilite, precision et techniques martiales spectaculaires.",
@@ -67,20 +53,30 @@ CLASS_RULES = {
         "saving_throws": ["sagesse", "charisme"],
         "description": "Champion sacre, le paladin combine defense, soutien et gros degats grace a ses chatiments divins.",
     },
-    "Rodeur": {
+    "Ranger": {
         "hit_die": 10,
         "saving_throws": ["force", "dexterite"],
         "description": "Eclaireur des terres sauvages, le rodeur piste ses proies et combat avec precision a distance ou au contact.",
     },
-    "Roublard": {
+    "Rogue": {
         "hit_die": 8,
         "saving_throws": ["dexterite", "intelligence"],
         "description": "Expert de l'infiltration, le roublard frappe juste au bon moment et excelle hors combat.",
     },
-    "Occultiste": {
+    "Sorcerer": {
+        "hit_die": 6,
+        "saving_throws": ["constitution", "charisme"],
+        "description": "Magicien instinctif, l'ensorceleur puise sa puissance dans un heritage magique inne et modele ses sorts.",
+    },
+    "Warlock": {
         "hit_die": 8,
         "saving_throws": ["sagesse", "charisme"],
         "description": "L'occultiste tire sa magie d'un pacte surnaturel, avec des pouvoirs atypiques et des invocations.",
+    },
+    "Wizard": {
+        "hit_die": 6,
+        "saving_throws": ["intelligence", "sagesse"],
+        "description": "Erudit des arcanes, le magicien possede la plus large palette de sorts utilitaires et offensifs.",
     },
 }
 
@@ -88,54 +84,100 @@ ABILITY_NAMES = ["force", "dexterite", "constitution", "intelligence", "sagesse"
 
 BACKGROUND_RULES = {
     "Acolyte": {
-        "skills": ["Intuition", "Religion"],
-        "feature": "Abri des fideles",
-        "description": "Vous avez servi un temple et pouvez obtenir aide, soins simples et refuge aupres des lieux de culte de votre foi.",
+        "skills": ["Insight", "Religion"],
+        "feature": "Appel divin",
+        "description": "Origine religieuse : vous etes forme aux rites et a l'etude du sacre.",
+        "ability_options": ["intelligence", "sagesse", "charisme"],
     },
-    "Artisan de guilde": {
-        "skills": ["Intuition", "Persuasion"],
-        "feature": "Membre de guilde",
-        "description": "Votre guilde vous ouvre des portes commerciales, un reseau de contacts et un soutien logistique de base.",
+    "Artisan": {
+        "skills": ["Investigation", "Persuasion"],
+        "feature": "Savoir-faire",
+        "description": "Vous venez d'un metier manuel ou d'atelier et savez valoriser votre expertise.",
+        "ability_options": ["force", "dexterite", "intelligence"],
     },
     "Charlatan": {
-        "skills": ["Tromperie", "Escamotage"],
-        "feature": "Identite de couverture",
-        "description": "Vous maintenez une fausse identite et savez obtenir de petits services en jouant votre role.",
+        "skills": ["Deception", "Sleight of Hand"],
+        "feature": "Arnaqueur de talent",
+        "description": "Vous maitrisez les faux-semblants, les impostures et les manipulations sociales.",
+        "ability_options": ["dexterite", "constitution", "charisme"],
     },
-    "Criminel": {
-        "skills": ["Tromperie", "Discretion"],
-        "feature": "Contact criminel",
-        "description": "Vous connaissez un contact fiable dans les bas-fonds pour faire passer des messages et denicher des informations.",
+    "Criminal": {
+        "skills": ["Sleight of Hand", "Stealth"],
+        "feature": "Réseau du milieu",
+        "description": "Vous connaissez les codes des bas-fonds et savez operer discretement.",
+        "ability_options": ["dexterite", "constitution", "intelligence"],
     },
-    "Ermite": {
-        "skills": ["Medecine", "Religion"],
-        "feature": "Decouverte",
-        "description": "Votre retrait du monde vous a offert une revelation majeure que vous pouvez exploiter en jeu.",
+    "Entertainer": {
+        "skills": ["Acrobatics", "Performance"],
+        "feature": "Art de la scene",
+        "description": "Vous savez captiver un public et faire de votre presence un atout.",
+        "ability_options": ["force", "dexterite", "charisme"],
     },
-    "Heros du peuple": {
-        "skills": ["Dressage", "Survie"],
-        "feature": "Hospitalite rustique",
-        "description": "Les gens simples vous hebergent volontiers et vous protegent tant que vous ne les mettez pas en danger direct.",
+    "Farmer": {
+        "skills": ["Animal Handling", "Nature"],
+        "feature": "Vie rurale",
+        "description": "Vous etes rompu aux travaux du quotidien et a la vie au grand air.",
+        "ability_options": ["force", "constitution", "sagesse"],
     },
-    "Marin": {
-        "skills": ["Athletisme", "Perception"],
-        "feature": "Passage sur navire",
-        "description": "Vous pouvez generalement obtenir un passage gratuit sur un navire civil pour vous et vos compagnons.",
+    "Guard": {
+        "skills": ["Athletics", "Perception"],
+        "feature": "Vigilance",
+        "description": "Vous etes habitue a proteger, patrouiller et reagir aux menaces.",
+        "ability_options": ["force", "intelligence", "sagesse"],
+    },
+    "Guide": {
+        "skills": ["Stealth", "Survival"],
+        "feature": "Connaissance du terrain",
+        "description": "Vous savez mener un groupe en milieu hostile et trouver votre route.",
+        "ability_options": ["dexterite", "constitution", "sagesse"],
+    },
+    "Hermit": {
+        "skills": ["Medicine", "Religion"],
+        "feature": "Recul et introspection",
+        "description": "Votre retraite vous a apporte discipline, endurance et sagesse interieure.",
+        "ability_options": ["constitution", "sagesse", "charisme"],
+    },
+    "Merchant": {
+        "skills": ["Animal Handling", "Persuasion"],
+        "feature": "Sens des affaires",
+        "description": "Vous savez negocier, estimer et tirer profit des opportunites.",
+        "ability_options": ["constitution", "intelligence", "charisme"],
     },
     "Noble": {
-        "skills": ["Histoire", "Persuasion"],
-        "feature": "Position de privilege",
-        "description": "Votre titre ouvre des portes dans les cercles de pouvoir et facilite l'obtention d'audiences officielles.",
+        "skills": ["History", "Persuasion"],
+        "feature": "Etiquette de cour",
+        "description": "Vous evoluez avec aisance dans les cercles d'influence et de pouvoir.",
+        "ability_options": ["force", "intelligence", "charisme"],
     },
     "Sage": {
-        "skills": ["Arcanes", "Histoire"],
-        "feature": "Chercheur",
-        "description": "Vous savez ou trouver savoirs et references, et vers qui vous tourner pour une reponse erudite.",
+        "skills": ["Arcana", "History"],
+        "feature": "Erudition",
+        "description": "Vous avez passe votre vie a compiler, etudier et transmettre le savoir.",
+        "ability_options": ["constitution", "intelligence", "sagesse"],
     },
-    "Soldat": {
-        "skills": ["Athletisme", "Intimidation"],
-        "feature": "Grade militaire",
-        "description": "Votre passe militaire vous donne autorite sur des soldats de rang inferieur et un acces a des garnisons alliees.",
+    "Sailor": {
+        "skills": ["Perception", "Acrobatics"],
+        "feature": "Marin aguerri",
+        "description": "Vous connaissez les navires, les tempetes et la vie de pont.",
+        "ability_options": ["force", "dexterite", "sagesse"],
+    },
+    "Scribe": {
+        "skills": ["Investigation", "Perception"],
+        "feature": "Memoire ecrite",
+        "description": "Vous etes forme aux archives, aux manuscrits et aux details cruciaux.",
+        "ability_options": ["dexterite", "intelligence", "sagesse"],
+    },
+    "Soldier": {
+        "skills": ["Athletics", "Intimidation"],
+        "feature": "Formation militaire",
+        "description": "Vous avez appris la discipline, la tactique et le travail d'unite.",
+        "ability_options": ["force", "dexterite", "constitution"],
+    },
+    "Wayfarer": {
+        "skills": ["Insight", "Stealth"],
+        "feature": "Voyageur",
+        "description": "Vous avez l'habitude de vivre sur les routes et d'improviser partout.",
+        "ability_options": ["dexterite", "sagesse", "charisme"],
     },
 }
 
@@ -148,20 +190,52 @@ def ability_modifier(score):
     return (score - 10) // 2
 
 
+def _resolve_background_bonuses(form_data, background_name):
+    background_rule = BACKGROUND_RULES.get(background_name, {})
+    allowed = set(background_rule.get("ability_options", []))
+
+    requested_bonus = {}
+    for ability in ABILITY_NAMES:
+        raw_value = form_data.get(f"{ability}_bg_bonus", 0)
+        bonus_value = _clamp(int(raw_value), 0, 2)
+        requested_bonus[ability] = bonus_value if ability in allowed else 0
+
+    spent_points = sum(requested_bonus.values())
+
+    # Compatibilité : si rien n'est envoyé, appliquer +1/+1/+1 sur les scores autorisés.
+    if spent_points == 0 and allowed:
+        for ability in background_rule.get("ability_options", []):
+            requested_bonus[ability] = 1
+        return requested_bonus
+
+    # Normaliser pour respecter le budget 2024 (3 points max, max +2 par score).
+    if spent_points > 3:
+        overflow = spent_points - 3
+        for ability in ABILITY_NAMES:
+            if overflow <= 0:
+                break
+            reducible = min(overflow, requested_bonus[ability])
+            requested_bonus[ability] -= reducible
+            overflow -= reducible
+
+    return requested_bonus
+
+
 def resolve_character_creation(form_data):
-    """Calcule les stats finales et les valeurs dérivées selon race/classe."""
+    """Calcule les stats finales et les valeurs dérivées selon les règles 2024."""
     level = _clamp(int(form_data.get("level", 1)), 1, 20)
-    race = form_data.get("race", "Humain")
-    character_class = form_data.get("character_class", "Guerrier")
+    race = form_data.get("race", "Human")
+    character_class = form_data.get("character_class", "Fighter")
+    background_name = form_data.get("background_story", "Acolyte")
 
     base_scores = {}
     for ability in ABILITY_NAMES:
         base_value = int(form_data.get(f"{ability}_base", form_data.get(ability, 10)))
         base_scores[ability] = _clamp(base_value, 1, 20)
 
-    race_bonus = RACE_BONUSES.get(race, {})
+    background_bonus = _resolve_background_bonuses(form_data, background_name)
     final_scores = {
-        ability: _clamp(base_scores[ability] + race_bonus.get(ability, 0), 1, 20)
+        ability: _clamp(base_scores[ability] + background_bonus.get(ability, 0), 1, 20)
         for ability in ABILITY_NAMES
     }
 
