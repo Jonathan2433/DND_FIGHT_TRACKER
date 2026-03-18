@@ -6,6 +6,7 @@ import uuid
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
+from app.models.user import User
 from app.utils import MONSTER_TEMPLATES, allowed_file
 from app.utils.dnd5_rules import resolve_character_creation
 from app.application.use_cases.notification_service import NotificationService
@@ -76,6 +77,7 @@ class TemplateService:
         current_user_id = current_user_id or session.get('user_id')
         if not current_user_id:
             raise ValueError("Aucun utilisateur connecté")
+        current_user = User.query.get(current_user_id)
 
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
@@ -145,7 +147,7 @@ class TemplateService:
             notes=shared_notes,
             player_private_notes=form_data.get('player_private_notes', ''),
             first_name=form_data.get('first_name') or None,
-            player_name=form_data.get('player_name') or None,
+            player_name=current_user.username if current_user else None,
             campaign_name=form_data.get('campaign_name') or None,
             alignment=form_data.get('alignment') or None,
             languages=', '.join(selected_languages) if selected_languages else None,

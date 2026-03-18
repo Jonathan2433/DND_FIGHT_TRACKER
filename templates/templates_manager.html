@@ -34,20 +34,17 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="7">
+            <div class="creation-wizard" data-total-steps="5">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
                     <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
                     <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
                     <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Maitrises</button></li>
-                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Arsenal & inventaire</button></li>
-                    <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Finalisation</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Finalisation</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
                     <h3>Etape 1 - Choix de la classe</h3>
-                    <p class="section-head__copy">Choisissez votre classe DnD 5e pour appliquer automatiquement les sauvegardes maitrisees, la base de maitrises (armes/armures) et les points de vie de base.</p>
 
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
@@ -74,7 +71,6 @@
 
                 <section class="wizard-step" data-step="2" hidden>
                     <h3>Etape 2 - Origines (espece, background, langues)</h3>
-                    <p class="section-head__copy">Selectionnez votre espece et votre background 2024, puis au moins 3 langues (Commun + 2).</p>
 
                     <label for="create-race">Espece DnD 5e 2024</label>
                     <select id="create-race" name="race" required>
@@ -82,7 +78,6 @@
                             {% set species_data = dnd_species_rules.get(race, {}) %}
                             <option
                                 value="{{ race }}"
-                                data-size="{{ species_data.get('size', 'non specifie') }}"
                                 data-speed="{{ species_data.get('speed', 'non specifie') }}"
                                 data-proficiencies="{{ species_data.get('proficiencies', [])|join(', ') }}"
                                 data-traits="{{ species_data.get('traits', [])|join(', ') }}"
@@ -116,6 +111,7 @@
                     <div class="funnel-summary">
                         <p id="background-feature-summary">Trait: -</p>
                         <p id="background-feat-summary">Don d'origine: -</p>
+                        <p id="background-ability-options-summary">Caracteristiques autorisees: -</p>
                         <p id="background-tool-summary">Maitrise d'outil: -</p>
                         <p id="background-skills-summary">Competences suggerees: -</p>
                         <p id="background-description-summary">Description: -</p>
@@ -152,16 +148,12 @@
 
                 <section class="wizard-step" data-step="3" hidden>
                     <h3>Etape 3 - Caracteristiques</h3>
-                    <p class="section-head__copy">Choisissez la methode de creation des caracteristiques: tableau standard, point-buy ou saisie libre.</p>
+                    <p class="section-head__copy">Choisissez entre tableau standard et saisie libre.</p>
 
                     <div class="ability-mode-toggle" role="radiogroup" aria-label="Mode de saisie des caracteristiques">
                         <label for="ability-mode-standard">
                             <input type="radio" id="ability-mode-standard" name="ability_mode" value="standard" checked>
                             Tableau standard ({{ standard_array|join(', ') }})
-                        </label>
-                        <label for="ability-mode-point-buy">
-                            <input type="radio" id="ability-mode-point-buy" name="ability_mode" value="point_buy">
-                            Point Buy (budget {{ point_buy_budget }})
                         </label>
                         <label for="ability-mode-custom">
                             <input type="radio" id="ability-mode-custom" name="ability_mode" value="custom">
@@ -186,11 +178,6 @@
                                         <option value="{{ value }}" {% if (ability_key == 'force' and value == 15) or (ability_key == 'dexterite' and value == 14) or (ability_key == 'constitution' and value == 13) or (ability_key == 'intelligence' and value == 12) or (ability_key == 'sagesse' and value == 10) or (ability_key == 'charisme' and value == 8) %}selected{% endif %}>{{ value }}</option>
                                     {% endfor %}
                                 </select>
-                                <select id="create-point-{{ ability_key }}" class="ability-base ability-base--point-buy" data-base-name="{{ ability_key }}_base" data-ability-key="{{ ability_key }}" disabled>
-                                    {% for value in point_buy_values %}
-                                        <option value="{{ value }}" {% if value == 10 %}selected{% endif %}>{{ value }}</option>
-                                    {% endfor %}
-                                </select>
                                 <input id="create-custom-{{ ability_key }}" type="number" class="ability-base ability-base--custom" min="1" max="20" value="10" data-base-name="{{ ability_key }}_base" data-ability-key="{{ ability_key }}" disabled>
                                 <small id="preview-{{ ability_key }}" class="funnel-preview">Final: -</small>
                             </div>
@@ -198,7 +185,7 @@
                     </div>
 
                     <div class="funnel-summary">
-                        <p>Bonus de background (2024): depensez 3 points sur les 3 caracteristiques autorisees (max +2 par stat).</p>
+                        <p id="background-bonus-instructions">Bonus de background (2024): depensez 3 points sur les 3 caracteristiques autorisees (max +2 par stat).</p>
                     </div>
 
                     <div class="stats-grid stats-grid--funnel">
@@ -216,7 +203,6 @@
 
                     <div class="funnel-summary">
                         <p id="ability-mode-summary">Mode: tableau standard.</p>
-                        <p id="point-buy-summary">Point Buy: 0 / {{ point_buy_budget }}</p>
                         <p id="background-bonus-summary">Points background: 0 / 3</p>
                         <p id="saving-throws-summary">Maitrises de sauvegarde: Force, Constitution</p>
                         <p id="derived-stats-summary">PV, CA et initiative calcules automatiquement a la creation.</p>
@@ -238,9 +224,9 @@
                 </section>
 
                 <section class="wizard-step" data-step="5" hidden>
-                    <h3>Etape 5 - Maitrises et aptitudes</h3>
+                    <h3>Etape 5 - Finalisation (identite, visibilite et medias)</h3>
                     <p class="section-head__copy">
-                        Utilisez des cases a cocher au lieu des anciennes listes multi-select, puis completez si besoin.
+                        Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
                     </p>
 
                     <div class="builder-choice-block">
@@ -258,126 +244,19 @@
                     <textarea id="create-skill-proficiencies-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-skill-proficiencies"></textarea>
                     <textarea id="create-skill-proficiencies" name="skill_proficiencies" rows="2" hidden></textarea>
 
-                    <div class="builder-choice-block">
-                        <label for="search-tool-proficiencies">Outils / instruments maitrises</label>
-                        <input id="search-tool-proficiencies" type="search" class="builder-choice-search" data-choice-group="create-tool-proficiencies" placeholder="Filtrer les outils...">
-                        <div class="builder-choice-grid" data-choice-group="create-tool-proficiencies">
-                            {% for option in dnd_tool_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-tool-proficiencies" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-tool-proficiencies-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-tool-proficiencies"></textarea>
-                    <textarea id="create-tool-proficiencies" name="tool_proficiencies" rows="2" hidden></textarea>
-
-                    <div class="builder-choice-block">
-                        <label for="search-spellbook-notes">Sorts / aptitudes clefs</label>
-                        <input id="search-spellbook-notes" type="search" class="builder-choice-search" data-choice-group="create-spellbook-notes" placeholder="Filtrer sorts et aptitudes...">
-                        <div class="builder-choice-grid" data-choice-group="create-spellbook-notes">
-                            {% for option in dnd_spellbook_notes_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-spellbook-notes" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-spellbook-notes-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-spellbook-notes"></textarea>
-                    <textarea id="create-spellbook-notes" name="spellbook_notes" rows="2" hidden></textarea>
-                </section>
-
-                <section class="wizard-step" data-step="6" hidden>
-                    <h3>Etape 6 - Arsenal et inventaire</h3>
-                    <p class="section-head__copy">
-                        Selectionnez d'abord votre kit de base, puis ajustez votre inventaire detaille.
-                    </p>
-
-                    <div class="builder-choice-block">
-                        <label for="search-equipment">Equipement principal (fiche PDF)</label>
-                        <input id="search-equipment" type="search" class="builder-choice-search" data-choice-group="create-equipment" placeholder="Filtrer l'equipement principal...">
-                        <div class="builder-choice-grid" data-choice-group="create-equipment">
-                            {% for option in dnd_inventory_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-equipment" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-equipment-manual" rows="2" placeholder="Ajouts manuels (optionnel): ex. objets magiques, grimoires..." data-target-field="create-equipment"></textarea>
-                    <textarea id="create-equipment" name="equipment" rows="2" hidden></textarea>
-
-                    <div class="builder-choice-block">
-                        <label for="search-weapon-loadout">Armes equipees</label>
-                        <input id="search-weapon-loadout" type="search" class="builder-choice-search" data-choice-group="create-weapon-loadout" placeholder="Filtrer les armes...">
-                        <div class="builder-choice-grid" data-choice-group="create-weapon-loadout">
-                            {% for option in dnd_weapon_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-weapon-loadout" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-weapon-loadout-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-weapon-loadout"></textarea>
-                    <textarea id="create-weapon-loadout" name="weapon_loadout" rows="2" hidden></textarea>
-
-                    <div class="builder-choice-block">
-                        <label for="search-armor-loadout">Armure et bouclier</label>
-                        <input id="search-armor-loadout" type="search" class="builder-choice-search" data-choice-group="create-armor-loadout" placeholder="Filtrer les armures...">
-                        <div class="builder-choice-grid" data-choice-group="create-armor-loadout">
-                            {% for option in dnd_armor_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-armor-loadout" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-armor-loadout-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-armor-loadout"></textarea>
-                    <textarea id="create-armor-loadout" name="armor_loadout" rows="2" hidden></textarea>
-
-                    <div class="builder-choice-block">
-                        <label for="search-inventory-items">Inventaire detaille</label>
-                        <input id="search-inventory-items" type="search" class="builder-choice-search" data-choice-group="create-inventory-items" placeholder="Filtrer l'inventaire...">
-                        <div class="builder-choice-grid" data-choice-group="create-inventory-items">
-                            {% for option in dnd_inventory_options %}
-                                <label class="builder-choice-item" data-choice-value="{{ option|lower }}">
-                                    <input type="checkbox" class="builder-choice-checkbox" data-target-field="create-inventory-items" value="{{ option }}">
-                                    <span>{{ option }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <textarea id="create-inventory-items-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-inventory-items"></textarea>
-                    <textarea id="create-inventory-items" name="inventory_items" rows="2" hidden></textarea>
-                </section>
-
-                <section class="wizard-step" data-step="7" hidden>
-                    <h3>Etape 7 - Finalisation (identite, visibilite et medias)</h3>
-                    <p class="section-head__copy">
-                        Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
-                    </p>
-
                     <div class="edit-grid edit-grid--spaced">
                         <section class="edit-section">
                             <label for="create-name">Nom</label>
                             <input id="create-name" type="text" name="name" required>
 
-                            <label for="create-first-name">Prenom</label>
-                            <input id="create-first-name" type="text" name="first_name" placeholder="Optionnel">
-
-                            <label for="create-player-name">Nom du joueur</label>
-                            <input id="create-player-name" type="text" name="player_name" placeholder="Ex: Alex (optionnel)">
-
-                            <label for="create-campaign-name">Nom de campagne</label>
-                            <input id="create-campaign-name" type="text" name="campaign_name" placeholder="Ex: Les Brumes d'Argent">
-
                             <label for="create-gender">Genre</label>
-                            <input id="create-gender" type="text" name="genre" placeholder="Ex: Non-binaire, Femme, Homme...">
+                            <select id="create-gender" name="genre">
+                                <option value="" selected>Non precise</option>
+                                <option value="Femme">Femme</option>
+                                <option value="Homme">Homme</option>
+                                <option value="Non-binaire">Non-binaire</option>
+                                <option value="Autre">Autre</option>
+                            </select>
 
                             <label for="create-age">Age</label>
                             <input id="create-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">

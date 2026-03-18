@@ -20,9 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const builderChoiceSearches = Array.from(form.querySelectorAll('.builder-choice-search'));
     const builderManualFields = Array.from(form.querySelectorAll('textarea[data-target-field]'));
 
-    const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
-    const pointBuyBudget = 27;
-
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
         Barbarian: { hitDie: 12, saves: ['force', 'constitution'] },
@@ -78,41 +75,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return used;
     };
 
-    const getPointBuyCost = () => {
-        let total = 0;
-        abilities.forEach((ability) => {
-            const field = form.querySelector(`#create-point-${ability}`);
-            const value = Number.parseInt(field?.value || '8', 10);
-            total += pointBuyCosts[value] || 0;
-        });
-        return total;
-    };
-
     const syncAbilityMode = () => {
         const mode = getMode();
 
         abilities.forEach((ability) => {
             const standardField = form.querySelector(`#create-${ability}`);
-            const pointBuyField = form.querySelector(`#create-point-${ability}`);
             const customField = form.querySelector(`#create-custom-${ability}`);
-            if (!standardField || !pointBuyField || !customField) return;
+            if (!standardField || !customField) return;
 
             standardField.disabled = mode !== 'standard';
-            pointBuyField.disabled = mode !== 'point_buy';
             customField.disabled = mode !== 'custom';
 
             standardField.required = mode === 'standard';
-            pointBuyField.required = mode === 'point_buy';
             customField.required = mode === 'custom';
 
             standardField.removeAttribute('name');
-            pointBuyField.removeAttribute('name');
             customField.removeAttribute('name');
 
             if (mode === 'standard') {
                 standardField.name = `${ability}_base`;
-            } else if (mode === 'point_buy') {
-                pointBuyField.name = pointBuyField.dataset.baseName || `${ability}_base`;
             } else {
                 customField.name = customField.dataset.baseName || `${ability}_base`;
             }
@@ -171,17 +152,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const description = selected?.dataset.description || '-';
         const originFeat = selected?.dataset.originFeat || '-';
         const tool = selected?.dataset.tool || '-';
+        const abilityOptions = (selected?.dataset.abilityOptions || '')
+            .split(',')
+            .map((value) => value.trim())
+            .filter(Boolean)
+            .map((value) => value.charAt(0).toUpperCase() + value.slice(1))
+            .join(', ') || '-';
 
         const featureEl = document.getElementById('background-feature-summary');
         const featEl = document.getElementById('background-feat-summary');
+        const abilityOptionsEl = document.getElementById('background-ability-options-summary');
         const toolEl = document.getElementById('background-tool-summary');
         const skillsEl = document.getElementById('background-skills-summary');
         const descriptionEl = document.getElementById('background-description-summary');
         if (featureEl) featureEl.textContent = `Trait: ${feature}`;
         if (featEl) featEl.textContent = `Don d'origine: ${originFeat}`;
+        if (abilityOptionsEl) abilityOptionsEl.textContent = `Caracteristiques autorisees: ${abilityOptions}`;
         if (toolEl) toolEl.textContent = `Maitrise d'outil: ${tool}`;
         if (skillsEl) skillsEl.textContent = `Competences suggerees: ${skills}`;
         if (descriptionEl) descriptionEl.textContent = `Description: ${description}`;
+
+        const bgInstructionsEl = document.getElementById('background-bonus-instructions');
+        if (bgInstructionsEl) {
+            bgInstructionsEl.textContent = `Bonus de background (2024): repartissez +1/+1/+1 ou +2/+1 parmi ${abilityOptions.toLowerCase()}.`;
+        }
     };
 
     const renderClassDescription = () => {
@@ -201,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selected = raceSelect.options[raceSelect.selectedIndex];
         const traits = selected?.dataset.traits || '-';
         const proficiencies = selected?.dataset.proficiencies || 'aucune';
-        const size = selected?.dataset.size || '-';
         const speed = selected?.dataset.speed || '-';
         const extraFeat = selected?.dataset.extraOriginFeat === '1';
 
@@ -213,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? "Bonus d'espece: aucun bonus de caracteristiques, mais un don d'origine supplementaire (Humain)."
                 : "Bonus d'espece: aucun modificateur de caracteristiques (regles 2024).";
         }
-        if (raceTraitsSummary) raceTraitsSummary.textContent = `Traits d'espece: ${traits} | Taille: ${size} | Vitesse: ${speed}`;
+        if (raceTraitsSummary) raceTraitsSummary.textContent = `Traits d'espece: ${traits} | Vitesse: ${speed}`;
         if (raceProficienciesSummary) raceProficienciesSummary.textContent = `Maitrises d'espece: ${proficiencies}`;
     };
 
@@ -254,9 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         abilities.forEach((ability) => {
             const baseField = mode === 'custom'
                 ? form.querySelector(`#create-custom-${ability}`)
-                : mode === 'point_buy'
-                    ? form.querySelector(`#create-point-${ability}`)
-                    : form.querySelector(`#create-${ability}`);
+                : form.querySelector(`#create-${ability}`);
             const bgField = form.querySelector(`#create-bg-${ability}`);
 
             const baseValue = parseInt(baseField?.value || '10', 10);
@@ -271,13 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const modeSummary = document.getElementById('ability-mode-summary');
         if (modeSummary) {
-            const label = mode === 'point_buy' ? 'point-buy' : (mode === 'custom' ? 'saisie libre' : 'tableau standard');
+            const label = mode === 'custom' ? 'saisie libre' : 'tableau standard';
             modeSummary.textContent = `Mode: ${label}.`;
-        }
-
-        const pointBuySummary = document.getElementById('point-buy-summary');
-        if (pointBuySummary) {
-            pointBuySummary.textContent = `Point Buy: ${getPointBuyCost()} / ${pointBuyBudget}`;
         }
 
         const saveSummary = document.getElementById('saving-throws-summary');
@@ -302,33 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedBackground = backgroundSelect?.options[backgroundSelect.selectedIndex];
         const classSkills = classSkillSuggestions[selectedClass] || [];
         const backgroundSkills = (selectedBackground?.dataset.skills || '').split(',').map((v) => v.trim()).filter(Boolean);
-        const backgroundTool = selectedBackground?.dataset.tool || '';
-        const classArmors = selectedClass
-            ? (classSelect.options[classSelect.selectedIndex]?.dataset.armors || '')
-            : '';
-        const classWeapons = selectedClass
-            ? (classSelect.options[classSelect.selectedIndex]?.dataset.weapons || '')
-            : '';
 
         if (classSkills.length || backgroundSkills.length) {
             const deduped = Array.from(new Set([...classSkills, ...backgroundSkills]));
             applyRecommendedChoices('create-skill-proficiencies', deduped);
-        }
-        if (backgroundTool && backgroundTool !== '-') {
-            applyRecommendedChoices('create-tool-proficiencies', [backgroundTool]);
-        }
-        if (classArmors) {
-            applyRecommendedChoices('create-armor-loadout', splitCsv(classArmors));
-        }
-        if (classWeapons) {
-            applyRecommendedChoices('create-weapon-loadout', splitCsv(classWeapons));
-        }
-        applyRecommendedChoices('create-inventory-items', ['Sac a dos', 'ration x10', 'torches x10', 'corde (15m)', 'gourde']);
-        if (selectedClass) {
-            const defaultSpellOrFeature = selectedClass === 'Wizard' || selectedClass === 'Cleric' || selectedClass === 'Druid'
-                ? ['Sorts prepares niveau 1']
-                : ['Aptitude signature de classe'];
-            applyRecommendedChoices('create-spellbook-notes', defaultSpellOrFeature);
         }
         syncBuilderChoiceFields();
     };
@@ -509,12 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     abilities.forEach((ability) => {
         const standardField = form.querySelector(`#create-${ability}`);
-        const pointBuyField = form.querySelector(`#create-point-${ability}`);
         const customField = form.querySelector(`#create-custom-${ability}`);
         const bgField = form.querySelector(`#create-bg-${ability}`);
 
         standardField?.addEventListener('change', render);
-        pointBuyField?.addEventListener('change', render);
         customField?.addEventListener('input', render);
         bgField?.addEventListener('change', () => {
             const value = Number.parseInt(bgField.value || '0', 10);
