@@ -19,7 +19,53 @@
                 <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
 
                 <label for="character-class">Classe</label>
-                <input id="character-class" type="text" name="character_class" value="{{ character.character_class }}" required>
+                <select id="character-class" name="character_class" required>
+                    {% for klass in dnd_classes_catalog %}
+                        <option value="{{ klass }}" {% if character.character_class == klass %}selected{% endif %}>{{ klass }}</option>
+                    {% endfor %}
+                    {% if character.character_class and character.character_class not in dnd_classes_catalog %}
+                        <option value="{{ character.character_class }}" selected>{{ character.character_class }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-race">Race</label>
+                <select id="character-race" name="race" required>
+                    {% for race in dnd_species_catalog %}
+                        <option value="{{ race }}" {% if character.race == race %}selected{% endif %}>{{ race }}</option>
+                    {% endfor %}
+                    {% if character.race and character.race not in dnd_species_catalog %}
+                        <option value="{{ character.race }}" selected>{{ character.race }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-background">Historique</label>
+                <select id="character-background" name="background_story">
+                    <option value="">-- Non precise --</option>
+                    {% for background in dnd_background_catalog %}
+                        <option value="{{ background }}" {% if character.background_story == background %}selected{% endif %}>{{ background }}</option>
+                    {% endfor %}
+                    {% if character.background_story and character.background_story not in dnd_background_catalog %}
+                        <option value="{{ character.background_story }}" selected>{{ character.background_story }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-alignment">Alignement</label>
+                <select id="character-alignment" name="alignment">
+                    {% for alignment in dnd_alignments %}
+                        <option value="{{ alignment.value }}" {% if (character.alignment or '') == alignment.value %}selected{% endif %}>{{ alignment.label }}</option>
+                    {% endfor %}
+                    {% if character.alignment and character.alignment not in dnd_alignments|map(attribute='value')|list %}
+                        <option value="{{ character.alignment }}" selected>{{ character.alignment }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-languages">Langues</label>
+                <input id="character-languages" type="text" name="languages" list="character-languages-list" value="{{ character.languages or '' }}" placeholder="Ex: Commun, Elfique, Nain">
+                <datalist id="character-languages-list">
+                    {% for language in common_languages %}
+                        <option value="{{ language }}">
+                    {% endfor %}
+                </datalist>
 
                 <label for="character-level">Niveau</label>
                 <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>

@@ -12,7 +12,10 @@ from reportlab.pdfgen import canvas
 class CharacterSheetPdfService:
     """Construit un PDF de fiche personnage en surimpression d'un template officiel."""
 
-    DEFAULT_TEMPLATE = "Feuille_de_personnage_Dungeons__Dragons_-_DD_5_1.pdf"
+    DEFAULT_TEMPLATES = [
+        "Feuille_de_personnage_Dungeons__Dragons_-_DD_5_2.pdf",
+        "Feuille_de_personnage_Dungeons__Dragons_-_DD_5_1.pdf",
+    ]
 
     @staticmethod
     def _format_mod(value: int) -> str:
@@ -21,7 +24,15 @@ class CharacterSheetPdfService:
     @classmethod
     def generate(cls, character, upload_folder: str, template_filename: str | None = None) -> str:
         """Genere un PDF de fiche pour un personnage et retourne le nom de fichier produit."""
-        template_name = template_filename or cls.DEFAULT_TEMPLATE
+        template_candidates = [template_filename] if template_filename else cls.DEFAULT_TEMPLATES
+        template_name = next(
+            (candidate for candidate in template_candidates if candidate and os.path.exists(os.path.join(upload_folder, candidate))),
+            None,
+        )
+        if not template_name:
+            expected = ", ".join(cls.DEFAULT_TEMPLATES)
+            raise ValueError(f"Template PDF introuvable. Fichiers attendus: {expected}")
+
         template_path = os.path.join(upload_folder, template_name)
         if not os.path.exists(template_path):
             raise ValueError(f"Template PDF introuvable: {template_name}")

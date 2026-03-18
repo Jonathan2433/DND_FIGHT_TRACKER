@@ -49,14 +49,14 @@
 
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
-                        {% for klass in dnd_classes %}
+                        {% for klass in dnd_classes_catalog %}
                             {% set class_data = dnd_class_rules.get(klass, {}) %}
                             <option
                                 value="{{ klass }}"
                                 data-description="{{ class_data.get('description', '') }}"
                                 data-armors="{{ class_data.get('proficiencies', {}).get('armors', [])|join(', ') }}"
                                 data-weapons="{{ class_data.get('proficiencies', {}).get('weapons', [])|join(', ') }}"
-                                {% if klass == 'Fighter' %}selected{% endif %}
+                                {% if klass in ['Fighter', 'Guerrier'] %}selected{% endif %}
                             >{{ dnd_class_labels.get(klass, klass) }}</option>
                         {% endfor %}
                     </select>
@@ -76,7 +76,7 @@
 
                     <label for="create-race">Espece DnD 5e 2024</label>
                     <select id="create-race" name="race" required>
-                        {% for race in dnd_species %}
+                        {% for race in dnd_species_catalog %}
                             {% set species_data = dnd_species_rules.get(race, {}) %}
                             <option
                                 value="{{ race }}"
@@ -85,7 +85,7 @@
                                 data-proficiencies="{{ species_data.get('proficiencies', [])|join(', ') }}"
                                 data-traits="{{ species_data.get('traits', [])|join(', ') }}"
                                 data-extra-origin-feat="{{ '1' if species_data.get('extra_origin_feat') else '0' }}"
-                                {% if race == 'Human' %}selected{% endif %}
+                                {% if race in ['Human', 'Humain'] %}selected{% endif %}
                             >{{ dnd_species_labels.get(race, race) }}</option>
                         {% endfor %}
                     </select>
@@ -96,15 +96,16 @@
 
                     <label for="create-background">Background</label>
                     <select id="create-background" name="background_story" required>
-                        {% for background_name, background_data in dnd_backgrounds.items() %}
+                        {% for background_name in dnd_background_catalog %}
+                            {% set background_data = dnd_backgrounds.get(background_name, {}) %}
                             <option
                                 value="{{ background_name }}"
-                                data-feature="{{ background_data.feature }}"
-                                data-skills="{{ background_data.skills|join(', ') }}"
-                                data-description="{{ background_data.description }}"
-                                data-origin-feat="{{ background_data.origin_feat }}"
-                                data-tool="{{ background_data.tool }}"
-                                data-ability-options="{{ background_data.ability_options|join(',') }}"
+                                data-feature="{{ background_data.get('feature', '') }}"
+                                data-skills="{{ background_data.get('skills', [])|join(', ') }}"
+                                data-description="{{ background_data.get('description', '') }}"
+                                data-origin-feat="{{ background_data.get('origin_feat', '') }}"
+                                data-tool="{{ background_data.get('tool', '') }}"
+                                data-ability-options="{{ background_data.get('ability_options', [])|join(',') }}"
                                 {% if loop.first %}selected{% endif %}
                             >{{ dnd_background_labels.get(background_name, background_name) }}</option>
                         {% endfor %}

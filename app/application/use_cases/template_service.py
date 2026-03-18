@@ -2,6 +2,7 @@
 """Service métier pour la gestion des templates"""
 import json
 import os
+import uuid
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
@@ -13,6 +14,15 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
+
+    @staticmethod
+    def _save_uploaded_file(uploaded_file, upload_folder):
+        """Sauvegarde un fichier avec un nom unique pour éviter tout écrasement."""
+        original_name = secure_filename(uploaded_file.filename or "")
+        extension = os.path.splitext(original_name)[1].lower()
+        unique_name = f"{uuid.uuid4().hex}{extension}"
+        uploaded_file.save(os.path.join(upload_folder, unique_name))
+        return unique_name
 
     @staticmethod
     def _compose_builder_equipment(form_data):
@@ -55,13 +65,11 @@ class TemplateService:
 
         # Gestion de l'image
         if image and image.filename != "" and allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            image.save(os.path.join(upload_folder, filename))
+            filename = TemplateService._save_uploaded_file(image, upload_folder)
 
         # Gestion du PDF
         if pdf and pdf.filename != "" and pdf.filename.lower().endswith(".pdf"):
-            pdf_filename = secure_filename(pdf.filename)
-            pdf.save(os.path.join(upload_folder, pdf_filename))
+            pdf_filename = TemplateService._save_uploaded_file(pdf, upload_folder)
 
         # ✅ CORRECTION : Récupérer l'utilisateur connecté
         from flask import session
@@ -189,6 +197,8 @@ class TemplateService:
         # Mise à jour des données de base
         template.name = form_data['name']
         template.character_class = form_data['character_class']
+        template.race = form_data.get('race') or template.race
+        template.background_story = form_data.get('background_story') or None
         template.level = int(form_data['level'])
         template.hp_max = int(form_data['hp_max'])
         template.hp_current = template.hp_max if template.hp_current is None else min(template.hp_current, template.hp_max)
@@ -225,14 +235,12 @@ class TemplateService:
         # Gestion des fichiers
         image = files.get("image")
         if image and image.filename != "" and allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            image.save(os.path.join(upload_folder, filename))
+            filename = TemplateService._save_uploaded_file(image, upload_folder)
             template.image_filename = filename
 
         pdf = files.get("pdf")
         if pdf and pdf.filename != "" and pdf.filename.lower().endswith(".pdf"):
-            pdf_filename = secure_filename(pdf.filename)
-            pdf.save(os.path.join(upload_folder, pdf_filename))
+            pdf_filename = TemplateService._save_uploaded_file(pdf, upload_folder)
             template.pdf_filename = pdf_filename
 
         db.session.commit()
