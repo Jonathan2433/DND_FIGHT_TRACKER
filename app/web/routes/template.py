@@ -25,6 +25,12 @@ from app.utils.dnd5_rules import (
     AIDEDED_SPECIES_OPTIONS,
     AIDEDED_CLASS_OPTIONS,
     AIDEDED_BACKGROUND_OPTIONS,
+    AIDEDED_SKILL_OPTIONS,
+    AIDEDED_TOOL_OPTIONS,
+    AIDEDED_WEAPON_OPTIONS,
+    AIDEDED_ARMOR_OPTIONS,
+    AIDEDED_INVENTORY_OPTIONS,
+    AIDEDED_SPELLBOOK_NOTES_OPTIONS,
 )
 
 # Créer le blueprint
@@ -125,6 +131,12 @@ def manage_templates():
         standard_array=STANDARD_ARRAY,
         dnd_backgrounds=get_localized_background_rules(),
         dnd_background_catalog=AIDEDED_BACKGROUND_OPTIONS,
+        dnd_skill_options=AIDEDED_SKILL_OPTIONS,
+        dnd_tool_options=AIDEDED_TOOL_OPTIONS,
+        dnd_weapon_options=AIDEDED_WEAPON_OPTIONS,
+        dnd_armor_options=AIDEDED_ARMOR_OPTIONS,
+        dnd_inventory_options=AIDEDED_INVENTORY_OPTIONS,
+        dnd_spellbook_notes_options=AIDEDED_SPELLBOOK_NOTES_OPTIONS,
         dnd_species_rules=get_localized_species_rules(),
         dnd_alignments=ALIGNMENTS_FR,
         common_languages=COMMON_LANGUAGES,
