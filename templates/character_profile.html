@@ -29,14 +29,14 @@
             </div>
 
             <div class="profile-stats">
-                <div class="stat-box">
+                <div class="stat-box" data-live-hp-block>
                     <strong>Points de vie</strong>
                     {% if profile.hp_current is defined and profile.hp_max is defined %}
-                        <span>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                        <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
                         {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
-                            <small class="stat-box__helper">+{{ profile.temp_hp }} PV temporaires</small>
+                            <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
                         {% else %}
-                            <small class="stat-box__helper">Aucun PV temporaire</small>
+                            <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
                         {% endif %}
                     {% elif profile.hp_max is defined %}
                         <span>{{ profile.hp_max }}</span>
@@ -44,10 +44,10 @@
                         <span>—</span>
                     {% endif %}
                 </div>
-                <div class="stat-box">
+                <div class="stat-box" data-live-ac-block>
                     <strong>Classe d'armure</strong>
                     {% if profile.ac_total is defined %}
-                        <span>{{ profile.ac_total }}</span>
+                        <span data-live-ac-text>{{ profile.ac_total }}</span>
                     {% elif profile.ac_base is defined %}
                         <span>{{ profile.ac_base }}</span>
                     {% else %}
@@ -101,22 +101,25 @@
                         Ces valeurs restent visibles sur la fiche apres le combat.
                     </p>
                     <div class="combat-state-layout">
-                        <div class="combat-state-summary">
+                        <div class="combat-state-summary"
+                             data-live-character-context
+                             data-character-id="{{ character.id }}"
+                             data-active-combat-ids='{{ active_combat_ids|tojson }}'>
                             <article class="combat-state-summary__card">
                                 <span class="combat-state-summary__label">PV actuels</span>
-                                <strong>{{ profile.hp_current if profile.hp_current is defined else '—' }}</strong>
+                                <strong data-live-combat-hp>{{ profile.hp_current if profile.hp_current is defined else '—' }}</strong>
                             </article>
                             <article class="combat-state-summary__card">
                                 <span class="combat-state-summary__label">PV maximum</span>
-                                <strong>{{ profile.hp_max if profile.hp_max is defined else '—' }}</strong>
+                                <strong data-live-combat-hp-max>{{ profile.hp_max if profile.hp_max is defined else '—' }}</strong>
                             </article>
                             <article class="combat-state-summary__card">
                                 <span class="combat-state-summary__label">PV temporaires</span>
-                                <strong>{{ profile.temp_hp if profile.temp_hp is defined else 0 }}</strong>
+                                <strong data-live-combat-temp-hp>{{ profile.temp_hp if profile.temp_hp is defined else 0 }}</strong>
                             </article>
                             <article class="combat-state-summary__card">
                                 <span class="combat-state-summary__label">CA actuelle</span>
-                                <strong>{{ profile.ac_total if profile.ac_total is defined else '—' }}</strong>
+                                <strong data-live-combat-ac>{{ profile.ac_total if profile.ac_total is defined else '—' }}</strong>
                             </article>
                         </div>
                         <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
@@ -306,5 +309,66 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+(() => {
+    const context = document.querySelector('[data-live-character-context]');
+    if (!context) return;
+
+    const socket = window.io ? io() : null;
+    const characterId = Number(context.dataset.characterId);
+    let activeCombatIds = JSON.parse(context.dataset.activeCombatIds || '[]').map((id) => Number(id));
+
+    const hpText = document.querySelector('[data-live-hp-text]');
+    const tempHpText = document.querySelector('[data-live-temp-hp]');
+    const acText = document.querySelector('[data-live-ac-text]');
+    const summaryHp = document.querySelector('[data-live-combat-hp]');
+    const summaryHpMax = document.querySelector('[data-live-combat-hp-max]');
+    const summaryTempHp = document.querySelector('[data-live-combat-temp-hp]');
+    const summaryAc = document.querySelector('[data-live-combat-ac]');
+
+    function applyLiveState(data) {
+        if (!data || !data.has_active_combat) return;
+
+        if (hpText) hpText.textContent = `${data.hp_current} / ${data.hp_max}`;
+        if (tempHpText) {
+            tempHpText.textContent = data.temp_hp > 0 ? `+${data.temp_hp} PV temporaires` : 'Aucun PV temporaire';
+        }
+        if (acText) acText.textContent = `${data.ac_total}`;
+        if (summaryHp) summaryHp.textContent = `${data.hp_current}`;
+        if (summaryHpMax) summaryHpMax.textContent = `${data.hp_max}`;
+        if (summaryTempHp) summaryTempHp.textContent = `${data.temp_hp}`;
+        if (summaryAc) summaryAc.textContent = `${data.ac_total}`;
+
+        activeCombatIds = (data.active_combat_ids || []).map((id) => Number(id));
+    }
+
+    async function refreshFromServer() {
+        try {
+            const response = await fetch(`/template/character/${characterId}/live_state`);
+            if (!response.ok) return;
+            const data = await response.json();
+            applyLiveState(data);
+        } catch (error) {
+            console.warn('Live sync combat indisponible.', error);
+        }
+    }
+
+    if (socket) {
+        activeCombatIds.forEach((combatId) => {
+            socket.emit('join_combat', { combat_id: combatId });
+        });
+
+        socket.on('combat_update', (payload) => {
+            if (!payload || !activeCombatIds.includes(Number(payload.combat_id))) {
+                return;
+            }
+            refreshFromServer();
+        });
+    }
+
+    refreshFromServer();
+})();
+</script>
 
 {% endblock %}
