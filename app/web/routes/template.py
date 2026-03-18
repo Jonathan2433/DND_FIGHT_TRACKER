@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
 from app.application.use_cases import TemplateService
 from app.application.use_cases.campaign_service import CampaignService
-from app.models import CharacterTemplate, EncounterTemplate
+from app.models import CharacterTemplate, EncounterTemplate, Combatant
 from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
@@ -40,6 +40,32 @@ def _can_manage_character_combat_state(character, user):
         return True
 
     return any(user.is_mj_of(campaign) for campaign in character.campaigns)
+
+
+def _get_character_live_combat_context(character_id):
+    """Retourne les combats actifs lies a un personnage + le combattant prioritaire."""
+    linked_combatants = (
+        Combatant.query
+        .join(Combatant.combat)
+        .filter(
+            Combatant.character_template_id == character_id,
+            Combatant.combat.has(is_closed=False)
+        )
+        .all()
+    )
+
+    if not linked_combatants:
+        return [], None
+
+    def sort_key(combatant):
+        combat = combatant.combat
+        started_rank = 0 if combat.has_started else 1
+        started_at = combat.start_time or combat.created_at
+        return (started_rank, started_at)
+
+    ordered = sorted(linked_combatants, key=sort_key, reverse=False)
+    combat_ids = [combatant.combat_id for combatant in ordered]
+    return combat_ids, ordered[0]
 
 
 @bp.route('/manage')
@@ -214,6 +240,7 @@ def character_profile(id):
     can_view_xp = False
     is_campaign_mj = False
     can_manage_combat_state = _can_manage_character_combat_state(character, current_user)
+    active_combat_ids, prioritized_combatant = _get_character_live_combat_context(character.id)
 
     if current_user:
         is_admin = current_user.role == 'Admin'
@@ -240,7 +267,9 @@ def character_profile(id):
         can_view_xp=can_view_xp,
         can_award_xp=can_award_xp,
         is_campaign_mj=is_campaign_mj,
-        can_manage_combat_state=can_manage_combat_state
+        can_manage_combat_state=can_manage_combat_state,
+        active_combat_ids=active_combat_ids,
+        active_combatant=prioritized_combatant,
     )
 
 
@@ -275,6 +304,43 @@ def update_character_combat_state(id):
         'success'
     )
     return redirect(url_for('template.character_profile', id=id))
+
+
+@bp.route('/character/<int:id>/live_state', methods=['GET'])
+def character_live_state(id):
+    """Expose l'etat de combat live d'un personnage (si en combat actif)."""
+    character = CharacterTemplate.query.get_or_404(id)
+
+    from flask import session
+    from app.application.use_cases.auth_service import AuthService
+
+    current_user = None
+    if 'user_id' in session:
+        current_user = AuthService.get_user_by_id(session['user_id'])
+
+    if not character.can_be_viewed_by(current_user):
+        return jsonify({'error': 'forbidden'}), 403
+
+    active_combat_ids, prioritized_combatant = _get_character_live_combat_context(character.id)
+    if not prioritized_combatant:
+        return jsonify({
+            'has_active_combat': False,
+            'active_combat_ids': [],
+        })
+
+    return jsonify({
+        'has_active_combat': True,
+        'active_combat_ids': active_combat_ids,
+        'combat_id': prioritized_combatant.combat_id,
+        'combat_name': prioritized_combatant.combat.name,
+        'combat_round': prioritized_combatant.combat.round,
+        'hp_current': prioritized_combatant.hp_current,
+        'hp_max': prioritized_combatant.hp_max,
+        'temp_hp': prioritized_combatant.temp_hp,
+        'ac_total': prioritized_combatant.ac_total,
+        'is_dead': prioritized_combatant.is_dead,
+        'has_fled': prioritized_combatant.has_fled,
+    })
 
 
 # ✅ ROUTES RENCONTRES AUSSI SÉCURISÉES
