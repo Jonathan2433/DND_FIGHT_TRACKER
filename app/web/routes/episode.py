@@ -60,6 +60,28 @@ def view_episode(episode_id):
     )
 
 
+@bp.route('/<int:episode_id>/edit', methods=['POST'])
+@login_required
+def update_episode(episode_id):
+    """Modifier le titre et le resume partage de l'episode (MJ uniquement)."""
+    episode = Episode.query.get_or_404(episode_id)
+    campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut modifier cet episode.', 'error')
+        return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+    title = request.form.get('title', '').strip()
+    if not title:
+        flash("Le titre de l'episode est obligatoire.", 'error')
+        return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+    summary_shared = request.form.get('summary_shared', '').strip()
+    EpisodeService.update_episode(episode_id, title, summary_shared)
+    flash('Episode mis a jour.', 'success')
+    return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+
 @bp.route('/<int:episode_id>/shared_summary', methods=['POST'])
 @login_required
 def update_shared_summary(episode_id):
