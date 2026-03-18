@@ -980,6 +980,10 @@ body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscree
     line-height: 1.2;
 }
 
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar h4 {
+    display: none;
+}
+
 body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative .simple-initiative-card {
     min-width: 115px;
     padding: 6px 8px;
