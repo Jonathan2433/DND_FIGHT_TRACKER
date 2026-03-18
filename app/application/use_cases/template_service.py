@@ -40,6 +40,14 @@ class TemplateService:
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
         resolved_character = resolve_character_creation(form_data)
+        selected_languages = [
+            form_data.get('language_1'),
+            form_data.get('language_2'),
+            form_data.get('language_3'),
+        ]
+        selected_languages = [language for language in selected_languages if language]
+        if len(set(selected_languages)) < 3 or 'Commun' not in selected_languages:
+            raise ValueError("Les langues doivent inclure Commun et 2 langues distinctes.")
 
         identity_bits = []
         if form_data.get('genre'):
@@ -48,6 +56,8 @@ class TemplateService:
             identity_bits.append(f"Alignement: {form_data.get('alignment')}")
         if form_data.get('weight'):
             identity_bits.append(f"Poids: {form_data.get('weight')}")
+        if selected_languages:
+            identity_bits.append(f"Langues: {', '.join(selected_languages)}")
 
         shared_notes = form_data.get('notes', '')
         if identity_bits:

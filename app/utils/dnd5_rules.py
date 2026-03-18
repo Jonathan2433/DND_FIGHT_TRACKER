@@ -1,9 +1,10 @@
 """Règles simplifiées DnD 5e (version 2024) pour le funnel de création de personnage."""
 
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
+POINT_BUY_COSTS = {8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9}
+POINT_BUY_BUDGET = 27
 
 # En 2024, les bonus de caractéristiques ne sont plus liés à l'espèce.
-# On conserve cette structure pour compatibilité d'affichage et de code existant.
 RACE_BONUSES = {
     "Aasimar": {},
     "Dragonborn": {},
@@ -17,65 +18,197 @@ RACE_BONUSES = {
     "Tiefling": {},
 }
 
+SPECIES_RULES = {
+    "Aasimar": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Healing Hands", "Celestial Revelation"],
+    },
+    "Dragonborn": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Draconic Ancestry", "Breath Weapon", "Damage Resistance"],
+    },
+    "Dwarf": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Dwarven Resilience", "Dwarven Toughness", "Stonecunning"],
+    },
+    "Elf": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Keen Senses", "Fey Ancestry", "Trance"],
+    },
+    "Gnome": {
+        "size": "Petite",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Gnomish Cunning", "Gnomish Lineage"],
+    },
+    "Goliath": {
+        "size": "Moyenne",
+        "speed": 35,
+        "proficiencies": [],
+        "traits": ["Large Form", "Powerful Build", "Giant Ancestry"],
+    },
+    "Halfling": {
+        "size": "Petite",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Brave", "Halfling Nimbleness", "Luck"],
+    },
+    "Human": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Resourceful", "Skillful", "Versatile"],
+        "extra_origin_feat": True,
+    },
+    "Orc": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Adrenaline Rush", "Darkvision", "Relentless Endurance"],
+    },
+    "Tiefling": {
+        "size": "Moyenne",
+        "speed": 30,
+        "proficiencies": [],
+        "traits": ["Darkvision", "Fiendish Legacy", "Otherworldly Presence"],
+    },
+}
+
+COMMON_LANGUAGES = [
+    "Commun",
+    "Nain",
+    "Elfique",
+    "Géant",
+    "Gnomique",
+    "Gobelin",
+    "Halfelin",
+    "Orc",
+    "Abyssal",
+    "Céleste",
+    "Draconique",
+    "Profond",
+    "Infernal",
+    "Primordial",
+    "Sylvestre",
+    "Sous-commun",
+    "Langue des signes commune",
+]
+
 CLASS_RULES = {
     "Barbarian": {
         "hit_die": 12,
         "saving_throws": ["force", "constitution"],
+        "proficiencies": {
+            "armors": ["light", "medium", "shields"],
+            "weapons": ["simple", "martial"],
+        },
         "description": "Combattant sauvage et endurant, le barbare excelle en melee grace a sa rage et sa resistance.",
     },
     "Bard": {
         "hit_die": 8,
         "saving_throws": ["dexterite", "charisme"],
+        "proficiencies": {
+            "armors": ["light"],
+            "weapons": ["simple"],
+        },
         "description": "Artiste polyvalent, le barde soutient le groupe avec ses inspirations, sa magie et ses competences sociales.",
     },
     "Cleric": {
         "hit_die": 8,
         "saving_throws": ["sagesse", "charisme"],
+        "proficiencies": {
+            "armors": ["light", "medium", "shields"],
+            "weapons": ["simple"],
+        },
         "description": "Lanceur de sorts divin, le clerc soigne, protege ses allies et invoque la puissance de sa divinite.",
     },
     "Druid": {
         "hit_die": 8,
         "saving_throws": ["intelligence", "sagesse"],
+        "proficiencies": {
+            "armors": ["light", "medium", "shields"],
+            "weapons": ["simple"],
+        },
         "description": "Gardien de la nature, le druide maitrise les sorts elementaires et la metamorphose animale.",
     },
     "Fighter": {
         "hit_die": 10,
         "saving_throws": ["force", "constitution"],
+        "proficiencies": {
+            "armors": ["light", "medium", "heavy", "shields"],
+            "weapons": ["simple", "martial"],
+        },
         "description": "Specialiste des armes et armures, le guerrier est fiable en premiere ligne et tres adaptable.",
     },
     "Monk": {
         "hit_die": 8,
         "saving_throws": ["force", "dexterite"],
+        "proficiencies": {
+            "armors": [],
+            "weapons": ["simple", "shortsword"],
+        },
         "description": "Adepte du ki, le moine allie mobilite, precision et techniques martiales spectaculaires.",
     },
     "Paladin": {
         "hit_die": 10,
         "saving_throws": ["sagesse", "charisme"],
+        "proficiencies": {
+            "armors": ["light", "medium", "heavy", "shields"],
+            "weapons": ["simple", "martial"],
+        },
         "description": "Champion sacre, le paladin combine defense, soutien et gros degats grace a ses chatiments divins.",
     },
     "Ranger": {
         "hit_die": 10,
         "saving_throws": ["force", "dexterite"],
+        "proficiencies": {
+            "armors": ["light", "medium", "shields"],
+            "weapons": ["simple", "martial"],
+        },
         "description": "Eclaireur des terres sauvages, le rodeur piste ses proies et combat avec precision a distance ou au contact.",
     },
     "Rogue": {
         "hit_die": 8,
         "saving_throws": ["dexterite", "intelligence"],
+        "proficiencies": {
+            "armors": ["light"],
+            "weapons": ["simple", "hand crossbow", "longsword", "rapier", "shortsword"],
+        },
         "description": "Expert de l'infiltration, le roublard frappe juste au bon moment et excelle hors combat.",
     },
     "Sorcerer": {
         "hit_die": 6,
         "saving_throws": ["constitution", "charisme"],
+        "proficiencies": {
+            "armors": [],
+            "weapons": ["simple"],
+        },
         "description": "Magicien instinctif, l'ensorceleur puise sa puissance dans un heritage magique inne et modele ses sorts.",
     },
     "Warlock": {
         "hit_die": 8,
         "saving_throws": ["sagesse", "charisme"],
+        "proficiencies": {
+            "armors": ["light"],
+            "weapons": ["simple"],
+        },
         "description": "L'occultiste tire sa magie d'un pacte surnaturel, avec des pouvoirs atypiques et des invocations.",
     },
     "Wizard": {
         "hit_die": 6,
         "saving_throws": ["intelligence", "sagesse"],
+        "proficiencies": {
+            "armors": [],
+            "weapons": ["simple"],
+        },
         "description": "Erudit des arcanes, le magicien possede la plus large palette de sorts utilitaires et offensifs.",
     },
 }
@@ -85,96 +218,128 @@ ABILITY_NAMES = ["force", "dexterite", "constitution", "intelligence", "sagesse"
 BACKGROUND_RULES = {
     "Acolyte": {
         "skills": ["Insight", "Religion"],
+        "tool": "Calligrapher’s Supplies",
+        "origin_feat": "Magic Initiate (Cleric)",
         "feature": "Appel divin",
         "description": "Origine religieuse : vous etes forme aux rites et a l'etude du sacre.",
         "ability_options": ["intelligence", "sagesse", "charisme"],
     },
     "Artisan": {
         "skills": ["Investigation", "Persuasion"],
+        "tool": "non spécifié",
+        "origin_feat": "Crafter",
         "feature": "Savoir-faire",
         "description": "Vous venez d'un metier manuel ou d'atelier et savez valoriser votre expertise.",
         "ability_options": ["force", "dexterite", "intelligence"],
     },
     "Charlatan": {
         "skills": ["Deception", "Sleight of Hand"],
+        "tool": "non spécifié",
+        "origin_feat": "Skilled",
         "feature": "Arnaqueur de talent",
         "description": "Vous maitrisez les faux-semblants, les impostures et les manipulations sociales.",
         "ability_options": ["dexterite", "constitution", "charisme"],
     },
     "Criminal": {
         "skills": ["Sleight of Hand", "Stealth"],
+        "tool": "non spécifié",
+        "origin_feat": "Alert",
         "feature": "Réseau du milieu",
         "description": "Vous connaissez les codes des bas-fonds et savez operer discretement.",
         "ability_options": ["dexterite", "constitution", "intelligence"],
     },
     "Entertainer": {
         "skills": ["Acrobatics", "Performance"],
+        "tool": "non spécifié",
+        "origin_feat": "Musician",
         "feature": "Art de la scene",
         "description": "Vous savez captiver un public et faire de votre presence un atout.",
         "ability_options": ["force", "dexterite", "charisme"],
     },
     "Farmer": {
         "skills": ["Animal Handling", "Nature"],
+        "tool": "non spécifié",
+        "origin_feat": "Tough",
         "feature": "Vie rurale",
         "description": "Vous etes rompu aux travaux du quotidien et a la vie au grand air.",
         "ability_options": ["force", "constitution", "sagesse"],
     },
     "Guard": {
         "skills": ["Athletics", "Perception"],
+        "tool": "non spécifié",
+        "origin_feat": "Alert",
         "feature": "Vigilance",
         "description": "Vous etes habitue a proteger, patrouiller et reagir aux menaces.",
         "ability_options": ["force", "intelligence", "sagesse"],
     },
     "Guide": {
         "skills": ["Stealth", "Survival"],
+        "tool": "non spécifié",
+        "origin_feat": "Magic Initiate (Druid)",
         "feature": "Connaissance du terrain",
         "description": "Vous savez mener un groupe en milieu hostile et trouver votre route.",
         "ability_options": ["dexterite", "constitution", "sagesse"],
     },
     "Hermit": {
         "skills": ["Medicine", "Religion"],
+        "tool": "non spécifié",
+        "origin_feat": "Healer",
         "feature": "Recul et introspection",
         "description": "Votre retraite vous a apporte discipline, endurance et sagesse interieure.",
         "ability_options": ["constitution", "sagesse", "charisme"],
     },
     "Merchant": {
         "skills": ["Animal Handling", "Persuasion"],
+        "tool": "non spécifié",
+        "origin_feat": "Lucky",
         "feature": "Sens des affaires",
         "description": "Vous savez negocier, estimer et tirer profit des opportunites.",
         "ability_options": ["constitution", "intelligence", "charisme"],
     },
     "Noble": {
         "skills": ["History", "Persuasion"],
+        "tool": "non spécifié",
+        "origin_feat": "Skilled",
         "feature": "Etiquette de cour",
         "description": "Vous evoluez avec aisance dans les cercles d'influence et de pouvoir.",
         "ability_options": ["force", "intelligence", "charisme"],
     },
     "Sage": {
         "skills": ["Arcana", "History"],
+        "tool": "non spécifié",
+        "origin_feat": "Magic Initiate (Wizard)",
         "feature": "Erudition",
         "description": "Vous avez passe votre vie a compiler, etudier et transmettre le savoir.",
         "ability_options": ["constitution", "intelligence", "sagesse"],
     },
     "Sailor": {
         "skills": ["Perception", "Acrobatics"],
+        "tool": "non spécifié",
+        "origin_feat": "Tavern Brawler",
         "feature": "Marin aguerri",
         "description": "Vous connaissez les navires, les tempetes et la vie de pont.",
         "ability_options": ["force", "dexterite", "sagesse"],
     },
     "Scribe": {
         "skills": ["Investigation", "Perception"],
+        "tool": "non spécifié",
+        "origin_feat": "Skilled",
         "feature": "Memoire ecrite",
         "description": "Vous etes forme aux archives, aux manuscrits et aux details cruciaux.",
         "ability_options": ["dexterite", "intelligence", "sagesse"],
     },
     "Soldier": {
         "skills": ["Athletics", "Intimidation"],
+        "tool": "non spécifié",
+        "origin_feat": "Savage Attacker",
         "feature": "Formation militaire",
         "description": "Vous avez appris la discipline, la tactique et le travail d'unite.",
         "ability_options": ["force", "dexterite", "constitution"],
     },
     "Wayfarer": {
         "skills": ["Insight", "Stealth"],
+        "tool": "Thieves’ Tools",
+        "origin_feat": "Lucky",
         "feature": "Voyageur",
         "description": "Vous avez l'habitude de vivre sur les routes et d'improviser partout.",
         "ability_options": ["dexterite", "sagesse", "charisme"],
@@ -221,6 +386,26 @@ def _resolve_background_bonuses(form_data, background_name):
     return requested_bonus
 
 
+def _resolve_base_scores(form_data):
+    mode = (form_data.get("ability_mode") or "standard").lower()
+    base_scores = {}
+    for ability in ABILITY_NAMES:
+        raw_value = form_data.get(f"{ability}_base", form_data.get(ability, 10))
+        base_scores[ability] = _clamp(int(raw_value), 1, 20)
+
+    values = list(base_scores.values())
+    if mode == "standard":
+        if sorted(values, reverse=True) != sorted(STANDARD_ARRAY, reverse=True):
+            raise ValueError("Le mode standard doit utiliser exactement les valeurs 15, 14, 13, 12, 10, 8.")
+    elif mode == "point_buy":
+        if any(value not in POINT_BUY_COSTS for value in values):
+            raise ValueError("Le mode Point Buy autorise uniquement des scores entre 8 et 15.")
+        total_cost = sum(POINT_BUY_COSTS[value] for value in values)
+        if total_cost > POINT_BUY_BUDGET:
+            raise ValueError(f"Le mode Point Buy depasse le budget de {POINT_BUY_BUDGET} points.")
+    return base_scores
+
+
 def resolve_character_creation(form_data):
     """Calcule les stats finales et les valeurs dérivées selon les règles 2024."""
     level = _clamp(int(form_data.get("level", 1)), 1, 20)
@@ -228,10 +413,7 @@ def resolve_character_creation(form_data):
     character_class = form_data.get("character_class", "Fighter")
     background_name = form_data.get("background_story", "Acolyte")
 
-    base_scores = {}
-    for ability in ABILITY_NAMES:
-        base_value = int(form_data.get(f"{ability}_base", form_data.get(ability, 10)))
-        base_scores[ability] = _clamp(base_value, 1, 20)
+    base_scores = _resolve_base_scores(form_data)
 
     background_bonus = _resolve_background_bonuses(form_data, background_name)
     final_scores = {

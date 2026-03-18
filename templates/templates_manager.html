@@ -37,25 +37,33 @@
             <div class="creation-wizard" data-total-steps="5">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
-                    <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Espece</button></li>
-                    <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Background</button></li>
-                    <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Caracteristiques</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Identite & medias</button></li>
+                    <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
+                    <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
+                    <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Finalisation</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
                     <h3>Etape 1 - Choix de la classe</h3>
-                    <p class="section-head__copy">Choisissez votre classe DnD 5e pour appliquer automatiquement les sauvegardes maitrisees et les points de vie de base.</p>
+                    <p class="section-head__copy">Choisissez votre classe DnD 5e pour appliquer automatiquement les sauvegardes maitrisees, la base de maitrises (armes/armures) et les points de vie de base.</p>
 
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
                         {% for klass in dnd_classes %}
-                            <option value="{{ klass }}" data-description="{{ dnd_class_descriptions.get(klass, '') }}" {% if klass == 'Fighter' %}selected{% endif %}>{{ klass }}</option>
+                            {% set class_data = dnd_class_rules.get(klass, {}) %}
+                            <option
+                                value="{{ klass }}"
+                                data-description="{{ class_data.get('description', '') }}"
+                                data-armors="{{ class_data.get('proficiencies', {}).get('armors', [])|join(', ') }}"
+                                data-weapons="{{ class_data.get('proficiencies', {}).get('weapons', [])|join(', ') }}"
+                                {% if klass == 'Fighter' %}selected{% endif %}
+                            >{{ klass }}</option>
                         {% endfor %}
                     </select>
 
                     <div class="funnel-summary">
                         <p id="class-description-summary">Description: -</p>
+                        <p id="class-proficiencies-summary">Maitrises de classe: -</p>
                     </div>
 
                     <label for="create-level">Niveau</label>
@@ -63,45 +71,94 @@
                 </section>
 
                 <section class="wizard-step" data-step="2" hidden>
-                    <h3>Etape 2 - Choix de l'espece</h3>
-                    <p class="section-head__copy">Choisissez l'espece. En regles 2024, elle n'applique plus de bonus de caracteristiques.</p>
+                    <h3>Etape 2 - Origines (espece, background, langues)</h3>
+                    <p class="section-head__copy">Selectionnez votre espece et votre background 2024, puis au moins 3 langues (Commun + 2).</p>
 
                     <label for="create-race">Espece DnD 5e 2024</label>
                     <select id="create-race" name="race" required>
                         {% for race in dnd_species %}
-                            <option value="{{ race }}" {% if race == 'Human' %}selected{% endif %}>{{ race }}</option>
+                            {% set species_data = dnd_species_rules.get(race, {}) %}
+                            <option
+                                value="{{ race }}"
+                                data-size="{{ species_data.get('size', 'non specifie') }}"
+                                data-speed="{{ species_data.get('speed', 'non specifie') }}"
+                                data-proficiencies="{{ species_data.get('proficiencies', [])|join(', ') }}"
+                                data-traits="{{ species_data.get('traits', [])|join(', ') }}"
+                                data-extra-origin-feat="{{ '1' if species_data.get('extra_origin_feat') else '0' }}"
+                                {% if race == 'Human' %}selected{% endif %}
+                            >{{ race }}</option>
                         {% endfor %}
                     </select>
 
                     <p id="race-bonus-summary" class="funnel-summary-inline">Bonus d'espece: aucun modificateur de caracteristiques (regles 2024)</p>
-                </section>
-
-                <section class="wizard-step" data-step="3" hidden>
-                    <h3>Etape 3 - Origine / Antecedent (Background)</h3>
-                    <p class="section-head__copy">Selectionnez un background 2024. Il definit les options de bonus de caracteristiques (+3 repartis sur 3 stats autorisees).</p>
+                    <p id="race-traits-summary" class="funnel-summary-inline">Traits d'espece: -</p>
+                    <p id="race-proficiencies-summary" class="funnel-summary-inline">Maitrises d'espece: -</p>
 
                     <label for="create-background">Background</label>
                     <select id="create-background" name="background_story" required>
                         {% for background_name, background_data in dnd_backgrounds.items() %}
-                            <option value="{{ background_name }}" data-feature="{{ background_data.feature }}" data-skills="{{ background_data.skills|join(', ') }}" data-description="{{ background_data.description }}" {% if loop.first %}selected{% endif %}>{{ background_name }}</option>
+                            <option
+                                value="{{ background_name }}"
+                                data-feature="{{ background_data.feature }}"
+                                data-skills="{{ background_data.skills|join(', ') }}"
+                                data-description="{{ background_data.description }}"
+                                data-origin-feat="{{ background_data.origin_feat }}"
+                                data-tool="{{ background_data.tool }}"
+                                data-ability-options="{{ background_data.ability_options|join(',') }}"
+                                {% if loop.first %}selected{% endif %}
+                            >{{ background_name }}</option>
                         {% endfor %}
                     </select>
 
                     <div class="funnel-summary">
                         <p id="background-feature-summary">Trait: -</p>
+                        <p id="background-feat-summary">Don d'origine: -</p>
+                        <p id="background-tool-summary">Maitrise d'outil: -</p>
                         <p id="background-skills-summary">Competences suggerees: -</p>
                         <p id="background-description-summary">Description: -</p>
                     </div>
+
+                    <div class="stats-grid stats-grid--funnel">
+                        <div class="stat-input">
+                            <label for="create-language-1">Langue 1 (Commun recommande)</label>
+                            <select id="create-language-1" name="language_1" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Commun' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="stat-input">
+                            <label for="create-language-2">Langue 2</label>
+                            <select id="create-language-2" name="language_2" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Elfique' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="stat-input">
+                            <label for="create-language-3">Langue 3</label>
+                            <select id="create-language-3" name="language_3" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Nain' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <p id="language-summary" class="funnel-summary-inline">Langues: Commun + 2 langues au choix.</p>
                 </section>
 
-                <section class="wizard-step" data-step="4" hidden>
-                    <h3>Etape 4 - Caracteristiques</h3>
-                    <p class="section-head__copy">Choisissez le mode de saisie des caracteristiques. Les bonus de background 2024, les jets de sauvegarde de classe, les PV, la CA et l'initiative sont calcules automatiquement.</p>
+                <section class="wizard-step" data-step="3" hidden>
+                    <h3>Etape 3 - Caracteristiques</h3>
+                    <p class="section-head__copy">Choisissez la methode de creation des caracteristiques: tableau standard, point-buy ou saisie libre.</p>
 
                     <div class="ability-mode-toggle" role="radiogroup" aria-label="Mode de saisie des caracteristiques">
                         <label for="ability-mode-standard">
                             <input type="radio" id="ability-mode-standard" name="ability_mode" value="standard" checked>
                             Tableau standard ({{ standard_array|join(', ') }})
+                        </label>
+                        <label for="ability-mode-point-buy">
+                            <input type="radio" id="ability-mode-point-buy" name="ability_mode" value="point_buy">
+                            Point Buy (budget {{ point_buy_budget }})
                         </label>
                         <label for="ability-mode-custom">
                             <input type="radio" id="ability-mode-custom" name="ability_mode" value="custom">
@@ -124,6 +181,11 @@
                                 <select id="create-{{ ability_key }}" name="{{ ability_key }}_base" class="ability-base ability-base--standard" required>
                                     {% for value in standard_array %}
                                         <option value="{{ value }}" {% if (ability_key == 'force' and value == 15) or (ability_key == 'dexterite' and value == 14) or (ability_key == 'constitution' and value == 13) or (ability_key == 'intelligence' and value == 12) or (ability_key == 'sagesse' and value == 10) or (ability_key == 'charisme' and value == 8) %}selected{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select id="create-point-{{ ability_key }}" class="ability-base ability-base--point-buy" data-base-name="{{ ability_key }}_base" data-ability-key="{{ ability_key }}" disabled>
+                                    {% for value in point_buy_values %}
+                                        <option value="{{ value }}" {% if value == 10 %}selected{% endif %}>{{ value }}</option>
                                     {% endfor %}
                                 </select>
                                 <input id="create-custom-{{ ability_key }}" type="number" class="ability-base ability-base--custom" min="1" max="20" value="10" data-base-name="{{ ability_key }}_base" data-ability-key="{{ ability_key }}" disabled>
@@ -150,14 +212,23 @@
                     </div>
 
                     <div class="funnel-summary">
+                        <p id="ability-mode-summary">Mode: tableau standard.</p>
+                        <p id="point-buy-summary">Point Buy: 0 / {{ point_buy_budget }}</p>
                         <p id="background-bonus-summary">Points background: 0 / 3</p>
                         <p id="saving-throws-summary">Maitrises de sauvegarde: Force, Constitution</p>
                         <p id="derived-stats-summary">PV, CA et initiative calcules automatiquement a la creation.</p>
                     </div>
                 </section>
 
+                <section class="wizard-step" data-step="4" hidden>
+                    <h3>Etape 4 - Alignement</h3>
+                    <p class="section-head__copy">Choix optionnel mais recommande pour cadrer le roleplay.</p>
+                    <label for="create-alignment">Alignement</label>
+                    <input id="create-alignment" type="text" name="alignment" placeholder="Ex: Loyal bon, Neutre...">
+                </section>
+
                 <section class="wizard-step" data-step="5" hidden>
-                    <h3>Etape 5 - Identite, visibilite et medias</h3>
+                    <h3>Etape 5 - Finalisation (identite, visibilite et medias)</h3>
 
                     <div class="edit-grid edit-grid--spaced">
                         <section class="edit-section">
@@ -169,9 +240,6 @@
 
                             <label for="create-gender">Genre</label>
                             <input id="create-gender" type="text" name="genre" placeholder="Ex: Non-binaire, Femme, Homme...">
-
-                            <label for="create-alignment">Alignement</label>
-                            <input id="create-alignment" type="text" name="alignment" placeholder="Ex: Loyal bon, Neutre...">
 
                             <label for="create-age">Age</label>
                             <input id="create-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
@@ -217,7 +285,6 @@
                         </section>
                     </div>
                 </section>
-
                 <div class="wizard-actions">
                     <button type="button" class="btn btn-secondary" id="wizard-prev" disabled>Etape precedente</button>
                     <button type="button" class="btn btn-primary" id="wizard-next">Etape suivante</button>
