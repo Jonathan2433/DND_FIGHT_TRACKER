@@ -8,7 +8,16 @@ from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
 from app.extensions import db
-from app.utils.dnd5_rules import RACE_BONUSES, CLASS_RULES, STANDARD_ARRAY, BACKGROUND_RULES
+from app.utils.dnd5_rules import (
+    RACE_BONUSES,
+    CLASS_RULES,
+    STANDARD_ARRAY,
+    BACKGROUND_RULES,
+    SPECIES_RULES,
+    COMMON_LANGUAGES,
+    POINT_BUY_COSTS,
+    POINT_BUY_BUDGET,
+)
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
@@ -73,8 +82,13 @@ def manage_templates():
         dnd_species=sorted(RACE_BONUSES.keys()),
         dnd_classes=sorted(CLASS_RULES.keys()),
         dnd_class_descriptions={name: rule.get('description', '') for name, rule in CLASS_RULES.items()},
+        dnd_class_rules=CLASS_RULES,
         standard_array=STANDARD_ARRAY,
         dnd_backgrounds=BACKGROUND_RULES,
+        dnd_species_rules=SPECIES_RULES,
+        common_languages=COMMON_LANGUAGES,
+        point_buy_values=sorted(POINT_BUY_COSTS.keys()),
+        point_buy_budget=POINT_BUY_BUDGET,
         can_create_pnj=can_create_pnj,
     )
 
@@ -91,13 +105,17 @@ def create_character_template():
             flash('Campagne invalide ou accès interdit.', 'error')
             return redirect(url_for('template.manage_templates'))
 
-    TemplateService.create_character_template(
-        request.form,
-        request.files,
-        current_app.config['UPLOAD_FOLDER'],
-        current_user_id=g.current_user.id,
-        campaign_id=campaign_id
-    )
+    try:
+        TemplateService.create_character_template(
+            request.form,
+            request.files,
+            current_app.config['UPLOAD_FOLDER'],
+            current_user_id=g.current_user.id,
+            campaign_id=campaign_id
+        )
+    except ValueError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
 
     if campaign_id:
         flash('PJ créé et automatiquement associé à la campagne.', 'success')
