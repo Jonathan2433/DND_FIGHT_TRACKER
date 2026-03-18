@@ -37,7 +37,9 @@ class CharacterTemplate(db.Model):
 
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)
+    hp_current = db.Column(db.Integer, nullable=False)
     ac_base = db.Column(db.Integer, nullable=False)
+    ac_bonus = db.Column(db.Integer, default=0, nullable=False)
     initiative_bonus = db.Column(db.Integer, default=0)
 
     # Caractéristiques principales
@@ -75,6 +77,18 @@ class CharacterTemplate(db.Model):
     # ========== PROPRIÉTÉS CALCULÉES (UNE SEULE FOIS) ==========
 
     # Modificateurs
+    @property
+    def hp_current_effective(self):
+        """Points de vie courants (fallback au max pour anciens enregistrements)."""
+        if self.hp_current is None:
+            return self.hp_max
+        return max(0, min(self.hp_current, self.hp_max))
+
+    @property
+    def ac_total(self):
+        """Classe d'armure totale actuelle (base + bonus/malus)."""
+        return self.ac_base + (self.ac_bonus or 0)
+
     @property
     def mod_force(self):
         """Modificateur de Force"""
@@ -358,7 +372,10 @@ class CharacterTemplate(db.Model):
         data.update({
             # Statistiques de combat
             'hp_max': self.hp_max,
+            'hp_current': self.hp_current_effective,
             'ac_base': self.ac_base,
+            'ac_bonus': self.ac_bonus or 0,
+            'ac_total': self.ac_total,
             'initiative_bonus': self.initiative_bonus,
 
             # Maîtrises de sauvegarde

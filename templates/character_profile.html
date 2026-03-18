@@ -31,11 +31,23 @@
             <div class="profile-stats">
                 <div class="stat-box">
                     <strong>Points de vie</strong>
-                    <span>{{ profile.hp_max if profile.hp_max is defined else '—' }}</span>
+                    {% if profile.hp_current is defined and profile.hp_max is defined %}
+                        <span>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                    {% elif profile.hp_max is defined %}
+                        <span>{{ profile.hp_max }}</span>
+                    {% else %}
+                        <span>—</span>
+                    {% endif %}
                 </div>
                 <div class="stat-box">
                     <strong>Classe d'armure</strong>
-                    <span>{{ profile.ac_base if profile.ac_base is defined else '—' }}</span>
+                    {% if profile.ac_total is defined %}
+                        <span>{{ profile.ac_total }}</span>
+                    {% elif profile.ac_base is defined %}
+                        <span>{{ profile.ac_base }}</span>
+                    {% else %}
+                        <span>—</span>
+                    {% endif %}
                 </div>
                 <div class="stat-box">
                     <strong>Initiative</strong>
@@ -73,6 +85,23 @@
                 <div class="profile-actions">
                     <h2>Consultation</h2>
                     <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
+                </div>
+            {% endif %}
+
+            {% if can_manage_combat_state and not limited_profile %}
+                <div class="profile-actions">
+                    <h2>Etat de combat (persistant)</h2>
+                    <p class="section-head__copy">
+                        Ajustez les HP/CA actuels du PJ. Ces valeurs restent visibles sur la fiche apres le combat.
+                    </p>
+                    <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form">
+                        <input type="number" name="hp_delta" placeholder="Delta HP (ex: -5, +8)" value="0" required>
+                        <input type="number" name="ac_delta" placeholder="Delta CA (ex: +1, -1)" value="0" required>
+                        <button type="submit" class="btn btn-primary">Appliquer</button>
+                    </form>
+                    {% if profile.ac_base is defined and profile.ac_bonus is defined %}
+                        <p class="section-head__copy">CA actuelle : {{ profile.ac_total }} (base {{ profile.ac_base }}, mod {{ profile.ac_bonus }}).</p>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

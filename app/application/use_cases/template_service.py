@@ -69,7 +69,9 @@ class TemplateService:
             character_class=resolved_character['character_class'],
             level=resolved_character['level'],
             hp_max=resolved_character['hp_max'],
+            hp_current=resolved_character['hp_max'],
             ac_base=resolved_character['ac_base'],
+            ac_bonus=0,
             initiative_bonus=resolved_character['initiative_bonus'],
 
             # Caractéristiques
@@ -138,6 +140,7 @@ class TemplateService:
         template.character_class = form_data['character_class']
         template.level = int(form_data['level'])
         template.hp_max = int(form_data['hp_max'])
+        template.hp_current = template.hp_max if template.hp_current is None else min(template.hp_current, template.hp_max)
         template.ac_base = int(form_data['ac_base'])
         template.initiative_bonus = int(form_data['initiative_bonus'])
         template.notes = form_data.get('notes', '')
@@ -231,11 +234,13 @@ class TemplateService:
 
         combatant = Combatant(
             combat_id=combat_id,
+            character_template_id=template.id,
             name=template.name,
             type="PJ",
             hp_max=template.hp_max,
-            hp_current=template.hp_max,
+            hp_current=template.hp_current_effective,
             ac_base=template.ac_base,
+            ac_bonus=template.ac_bonus or 0,
             initiative=initiative,
             notes=template.image_filename  # Pour stocker le nom de l'image
         )

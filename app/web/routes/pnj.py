@@ -59,7 +59,9 @@ def create_pnj(campaign_id):
 
                 # Combat
                 hp_max=int(request.form['hp_max']),
+                hp_current=int(request.form['hp_max']),
                 ac_base=int(request.form['ac_base']),
+                ac_bonus=0,
                 initiative_bonus=int(request.form.get('initiative_bonus', 0)),
 
                 # Caractéristiques
