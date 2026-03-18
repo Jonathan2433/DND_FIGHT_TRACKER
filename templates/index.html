@@ -194,12 +194,6 @@
                                     {% if campaign.description and campaign.description|length > 140 %}...{% endif %}
                                 </p>
 
-                                <div class="campaign-info">
-                                    <span>MJ : {{ campaign.mj.username }}</span>
-                                    <span>Membres : {{ campaign.members|length + 1 }}</span>
-                                    <span>Arcs : {{ campaign.story_arcs|length }}</span>
-                                </div>
-
                                 <div class="campaign-actions">
                                     <a href="{{ url_for('campaign.view_campaign', campaign_id=campaign.id) }}" class="btn btn-primary">Ouvrir</a>
                                 </div>
