@@ -34,13 +34,14 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="5">
+            <div class="creation-wizard" data-total-steps="6">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
                     <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
                     <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
                     <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Finalisation</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Competences</button></li>
+                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Finalisation</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
@@ -224,10 +225,17 @@
                 </section>
 
                 <section class="wizard-step" data-step="5" hidden>
-                    <h3>Etape 5 - Finalisation (identite, visibilite et medias)</h3>
+                    <h3>Etape 5 - Competences maitrisees</h3>
                     <p class="section-head__copy">
-                        Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
+                        Les competences maitrisees representent les domaines ou votre personnage est entraine.
+                        Une competence maitrisee ajoute votre bonus de maitrise au jet associe.
                     </p>
+
+                    <div class="funnel-summary">
+                        <p id="skill-proficiencies-limit-summary">Maitrises selectionnees: 0 / 6 (limite technique actuelle).</p>
+                        <p>En pratique DD5 donne souvent 4 a 6 maitrises au niveau 1 (classe + background + bonus eventuels).</p>
+                        <p>Chaque competence maitrisee augmente vos chances de reussir les tests lies.</p>
+                    </div>
 
                     <div class="builder-choice-block">
                         <label for="search-skill-proficiencies">Competences maitrisees</label>
@@ -241,8 +249,15 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <textarea id="create-skill-proficiencies-manual" rows="2" placeholder="Ajouts manuels (optionnel)" data-target-field="create-skill-proficiencies"></textarea>
+                    <textarea id="create-skill-proficiencies-manual" rows="2" placeholder="Ajouts manuels (optionnel, separes par des virgules)" data-target-field="create-skill-proficiencies"></textarea>
                     <textarea id="create-skill-proficiencies" name="skill_proficiencies" rows="2" hidden></textarea>
+                </section>
+
+                <section class="wizard-step" data-step="6" hidden>
+                    <h3>Etape 6 - Finalisation (identite, visibilite et medias)</h3>
+                    <p class="section-head__copy">
+                        Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
+                    </p>
 
                     <div class="edit-grid edit-grid--spaced">
                         <section class="edit-section">

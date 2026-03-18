@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const builderChoiceCheckboxes = Array.from(form.querySelectorAll('.builder-choice-checkbox'));
     const builderChoiceSearches = Array.from(form.querySelectorAll('.builder-choice-search'));
     const builderManualFields = Array.from(form.querySelectorAll('textarea[data-target-field]'));
+    const skillProficienciesLimit = 6;
 
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
@@ -300,6 +301,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const splitCsv = (raw) => raw.split(',').map((v) => v.trim()).filter(Boolean);
 
+    const getSkillSelectionCount = () => {
+        const checkedCount = builderChoiceCheckboxes
+            .filter((input) => input.dataset.targetField === 'create-skill-proficiencies' && input.checked)
+            .length;
+        const manualField = form.querySelector('#create-skill-proficiencies-manual');
+        const manualCount = manualField ? splitCsv(manualField.value).length : 0;
+        return checkedCount + manualCount;
+    };
+
+    const updateSkillLimitSummary = () => {
+        const summaryEl = form.querySelector('#skill-proficiencies-limit-summary');
+        if (!summaryEl) return;
+        const count = getSkillSelectionCount();
+        summaryEl.textContent = `Maitrises selectionnees: ${count} / ${skillProficienciesLimit} (limite technique actuelle).`;
+        summaryEl.style.color = count > skillProficienciesLimit ? '#ff8f8f' : '';
+    };
+
     const hasAnySelection = (targetId) => builderChoiceCheckboxes.some((input) => input.dataset.targetField === targetId && input.checked);
 
     const applyRecommendedChoices = (targetId, rawValues) => {
@@ -341,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             target.value = Array.from(new Set(parts)).join(', ');
         });
+        updateSkillLimitSummary();
     };
 
     const hydrateBuilderChoiceFields = () => {
@@ -427,17 +446,27 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.classList.toggle('is-hidden', !isLastStep);
     };
 
+    const goToStep = (targetStep, options = {}) => {
+        if (!Number.isFinite(targetStep) || targetStep < 1 || targetStep > totalSteps) return;
+        currentStep = targetStep;
+        updateWizardUI();
+
+        if (options.scrollToStep) {
+            const activePanel = stepPanels.find((panel) => Number(panel.dataset.step) === currentStep);
+            const anchor = activePanel || form;
+            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
     prevButton?.addEventListener('click', () => {
         if (currentStep > 1) {
-            currentStep -= 1;
-            updateWizardUI();
+            goToStep(currentStep - 1, { scrollToStep: true });
         }
     });
 
     nextButton?.addEventListener('click', () => {
         if (currentStep < totalSteps) {
-            currentStep += 1;
-            updateWizardUI();
+            goToStep(currentStep + 1, { scrollToStep: true });
         }
     });
 
@@ -446,8 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger?.addEventListener('click', () => {
             const targetStep = Number(trigger.dataset.stepTarget || item.dataset.step || currentStep);
             if (targetStep <= currentStep && targetStep >= 1) {
-                currentStep = targetStep;
-                updateWizardUI();
+                goToStep(targetStep, { scrollToStep: true });
             }
         });
     });
@@ -458,15 +486,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!languageValues.includes('Commun') || uniqueLanguages.size < 3) {
             event.preventDefault();
             alert('Les langues doivent contenir Commun et 2 langues distinctes.');
-            currentStep = 2;
-            updateWizardUI();
+            goToStep(2, { scrollToStep: true });
+            return;
+        }
+
+        if (getSkillSelectionCount() > skillProficienciesLimit) {
+            event.preventDefault();
+            alert(`Vous pouvez renseigner au maximum ${skillProficienciesLimit} competences maitrisees.`);
+            goToStep(5, { scrollToStep: true });
             return;
         }
 
         if (currentStep !== totalSteps) {
             event.preventDefault();
-            currentStep = totalSteps;
-            updateWizardUI();
+            goToStep(totalSteps, { scrollToStep: true });
         }
     });
 
@@ -512,11 +545,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);
-    builderChoiceCheckboxes.forEach((input) => input.addEventListener('change', syncBuilderChoiceFields));
+    builderChoiceCheckboxes.forEach((input) => input.addEventListener('change', (event) => {
+        const checkbox = event.currentTarget;
+        if (!(checkbox instanceof HTMLInputElement)) return;
+
+        if (checkbox.dataset.targetField === 'create-skill-proficiencies' && checkbox.checked && getSkillSelectionCount() > skillProficienciesLimit) {
+            checkbox.checked = false;
+            alert(`Limite atteinte: ${skillProficienciesLimit} competences maitrisees maximum.`);
+        }
+
+        syncBuilderChoiceFields();
+    }));
     builderChoiceSearches.forEach((searchInput) => {
         searchInput.addEventListener('input', () => filterChoiceItems(searchInput));
     });
-    builderManualFields.forEach((field) => field.addEventListener('input', syncBuilderChoiceFields));
+    builderManualFields.forEach((field) => field.addEventListener('input', () => {
+        if (field.dataset.targetField === 'create-skill-proficiencies') {
+            const entries = splitCsv(field.value);
+            if (entries.length > skillProficienciesLimit) {
+                field.value = entries.slice(0, skillProficienciesLimit).join(', ');
+            }
+        }
+        syncBuilderChoiceFields();
+    }));
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -529,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hydrateBuilderChoiceFields();
     renderBuilderHints();
     syncBuilderChoiceFields();
+    updateSkillLimitSummary();
     syncPdfInputMode();
     updateWizardUI();
 });
