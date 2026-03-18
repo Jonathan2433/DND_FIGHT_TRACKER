@@ -291,6 +291,16 @@
             {% endif %}
         </div>
 
+        {% if can_edit and not limited_profile %}
+            <section class="profile-generate-pdf card">
+                <h2>Fiche PDF DD5</h2>
+                <p class="section-head__copy">Generez une fiche officielle pre-remplie a partir des informations du personnage.</p>
+                <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                    <button type="submit" class="btn btn-secondary">{{ 'Regenerer la fiche PDF' if character.pdf_filename else 'Generer la fiche PDF' }}</button>
+                </form>
+            </section>
+        {% endif %}
+
         {% if not limited_profile and character.pdf_filename %}
             <aside class="profile-pdf-preview">
                 <h2>Fiche officielle</h2>
