@@ -81,6 +81,40 @@
                                 </div>
                                 <div class="pj-name">{{ c.name }}</div>
                                 <div class="pj-ac">CA {{ c.ac_total }}</div>
+
+                                <div class="pj-hp-container">
+                                    {% set ratio = c.hp_current / c.hp_max %}
+                                    <div class="pj-hp-bar">
+                                        <div class="pj-hp-fill js-width {% if ratio > 0.6 %}hp-green{% elif ratio > 0.3 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                             data-width="{{ (ratio * 100)|round(1) }}%"></div>
+
+                                        {% if c.temp_hp > 0 %}
+                                            <div class="pj-temp-hp js-width"
+                                                 data-width="{{ ((c.temp_hp / c.hp_max) * 100)|round(1) }}%"></div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="pj-hp-text">
+                                        {{ c.hp_current }}/{{ c.hp_max }}
+                                        {% if c.temp_hp > 0 %}(+{{ c.temp_hp }}){% endif %}
+                                    </div>
+                                </div>
+
+                                {% if c.is_dead %}
+                                    <div class="pj-status-text">💀 Mort</div>
+                                {% elif c.has_fled %}
+                                    <div class="pj-status-text">🏃 En fuite</div>
+                                {% endif %}
+
+                                {% if c.conditions %}
+                                    <div class="pj-conditions">
+                                        {% for cond in c.conditions.split(",") %}
+                                            {% if cond.strip() %}
+                                                <span class="pj-condition-tag">{{ cond.strip() }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -929,17 +963,38 @@ function updateBattlemapFullscreenHud(combatants, currentActorId) {
         combatants
             .filter((combatant) => combatant.type === 'PJ')
             .forEach((combatant) => {
+                const ratio = combatant.hp_current / combatant.hp_max;
+                const hpColor = ratio > 0.6 ? 'hp-green' : ratio > 0.3 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red';
+                const conditions = Array.isArray(combatant.conditions) ? combatant.conditions : [];
                 const portrait = document.createElement('div');
                 portrait.className = `pj-portrait ${combatant.id === currentActorId ? 'pj-active' : ''} ${combatant.is_dead ? 'pj-dead' : ''} ${combatant.has_fled ? 'pj-fled' : ''}`;
                 portrait.dataset.fullscreenPjId = combatant.id;
                 portrait.innerHTML = `
                     <div class="pj-portrait-frame ${combatant.notes ? 'has-image' : 'no-image'}">
                         ${combatant.notes
-                            ? `<img src="/static/uploads/${combatant.notes}" alt="${combatant.name}" class="hud-pj-img">`
+                            ? `<img src="${getBattlemapMediaUrl(combatant.notes)}" alt="${combatant.name}" class="hud-pj-img">`
                             : `<div class="pj-avatar">${combatant.name.substring(0, 2).toUpperCase()}</div>`}
                     </div>
                     <div class="pj-name">${combatant.name}</div>
                     <div class="pj-ac">CA ${combatant.ac_total}</div>
+                    <div class="pj-hp-container">
+                        <div class="pj-hp-bar">
+                            <div class="pj-hp-fill js-width ${hpColor}" data-width="${(ratio * 100).toFixed(1)}%"></div>
+                            ${combatant.temp_hp > 0
+                                ? `<div class="pj-temp-hp js-width" data-width="${((combatant.temp_hp / combatant.hp_max) * 100).toFixed(1)}%"></div>`
+                                : ''}
+                        </div>
+                        <div class="pj-hp-text">
+                            ${combatant.hp_current}/${combatant.hp_max}${combatant.temp_hp > 0 ? ` (+${combatant.temp_hp})` : ''}
+                        </div>
+                    </div>
+                    ${combatant.is_dead ? '<div class="pj-status-text">💀 Mort</div>' : ''}
+                    ${combatant.has_fled ? '<div class="pj-status-text">🏃 En fuite</div>' : ''}
+                    ${conditions.length > 0
+                        ? `<div class="pj-conditions">
+                            ${conditions.map((condition) => condition.trim() ? `<span class="pj-condition-tag">${condition.trim()}</span>` : '').join('')}
+                          </div>`
+                        : ''}
                 `;
                 pjList.appendChild(portrait);
             });
