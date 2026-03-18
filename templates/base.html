@@ -77,15 +77,20 @@
                                     class="site-notification__toggle"
                                     aria-haspopup="true"
                                     aria-expanded="false"
-                                    aria-label="Ouvrir les notifications"
+                                    aria-label="Ouvrir le menu utilisateur"
                                     data-notification-toggle
                                 >
+                                    <span class="site-notification__menu-icon" aria-hidden="true">☰</span>
                                     <span class="site-notification__icon" aria-hidden="true">🔔</span>
                                     {% if unread_notifications_count %}
                                         <span class="site-notification__badge" data-notification-badge>{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </button>
                                 <div class="site-notification__panel" data-notification-panel>
+                                    <div class="site-notification__account-links">
+                                        <a href="{{ url_for('auth.profile') }}" class="site-notification__account-link">Profil</a>
+                                        <a href="{{ url_for('auth.logout') }}" class="site-notification__account-link">Deconnexion</a>
+                                    </div>
                                     <div class="site-notification__panel-header">
                                         <strong>Notifications</strong>
                                         <a href="{{ url_for('notification.index') }}" class="site-notification__all">Voir tout</a>
@@ -115,8 +120,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
-                            <a href="{{ url_for('auth.logout') }}" class="site-nav__link">Deconnexion</a>
+                            <a href="{{ url_for('auth.profile') }}" class="site-nav__link site-nav__link--mobile-only">Profil</a>
+                            <a href="{{ url_for('auth.logout') }}" class="site-nav__link site-nav__link--mobile-only">Deconnexion</a>
                         {% else %}
                             <a href="{{ url_for('auth.login') }}" class="site-nav__link">Connexion</a>
                             <a href="{{ url_for('auth.register') }}" class="site-nav__link site-nav__link--accent">Inscription</a>
