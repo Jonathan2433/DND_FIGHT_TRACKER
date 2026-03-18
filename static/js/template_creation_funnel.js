@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const classSelect = form.querySelector('#create-class');
     const levelInput = form.querySelector('#create-level');
     const backgroundSelect = form.querySelector('#create-background');
+    const alignmentSelect = form.querySelector('#create-alignment');
     const modeInputs = form.querySelectorAll('input[name="ability_mode"]');
     const languageInputs = [
         form.querySelector('#create-language-1'),
@@ -199,6 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const renderAlignment = () => {
+        if (!alignmentSelect) return;
+        const selected = alignmentSelect.options[alignmentSelect.selectedIndex];
+        const label = selected?.textContent?.trim() || 'Non précisé';
+        const description = selected?.dataset.description || '-';
+        const summaryEl = document.getElementById('alignment-description-summary');
+        if (summaryEl) {
+            summaryEl.textContent = `Alignement: ${label} — ${description}`;
+        }
+    };
+
     const render = () => {
         const selectedClass = classSelect?.value;
         const level = Math.max(1, parseInt(levelInput?.value || '1', 10));
@@ -381,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBackground();
         render();
     });
+    alignmentSelect?.addEventListener('change', renderAlignment);
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -389,5 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderClassDescription();
     renderSpecies();
     renderLanguages();
+    renderAlignment();
     updateWizardUI();
 });

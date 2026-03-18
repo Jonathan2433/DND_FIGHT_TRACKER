@@ -4,6 +4,138 @@ STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
 POINT_BUY_COSTS = {8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9}
 POINT_BUY_BUDGET = 27
 
+CLASS_LABELS_FR = {
+    "Barbarian": "Barbare",
+    "Bard": "Barde",
+    "Cleric": "Clerc",
+    "Druid": "Druide",
+    "Fighter": "Guerrier",
+    "Monk": "Moine",
+    "Paladin": "Paladin",
+    "Ranger": "Rôdeur",
+    "Rogue": "Roublard",
+    "Sorcerer": "Ensorceleur",
+    "Warlock": "Occultiste",
+    "Wizard": "Magicien",
+}
+
+SPECIES_LABELS_FR = {
+    "Aasimar": "Aasimar",
+    "Dragonborn": "Drakéide",
+    "Dwarf": "Nain",
+    "Elf": "Elfe",
+    "Gnome": "Gnome",
+    "Goliath": "Goliath",
+    "Halfling": "Halfelin",
+    "Human": "Humain",
+    "Orc": "Orc",
+    "Tiefling": "Tieffelin",
+}
+
+BACKGROUND_LABELS_FR = {
+    "Acolyte": "Acolyte",
+    "Artisan": "Artisan",
+    "Charlatan": "Charlatan",
+    "Criminal": "Criminel",
+    "Entertainer": "Artiste",
+    "Farmer": "Fermier",
+    "Guard": "Garde",
+    "Guide": "Guide",
+    "Hermit": "Ermite",
+    "Merchant": "Marchand",
+    "Noble": "Noble",
+    "Sage": "Sage",
+    "Sailor": "Marin",
+    "Scribe": "Scribe",
+    "Soldier": "Soldat",
+    "Wayfarer": "Voyageur",
+}
+
+ALIGNMENTS_FR = [
+    {"value": "", "label": "Non précisé", "description": "Aucun alignement défini pour l'instant."},
+    {"value": "Loyal Bon", "label": "Loyal Bon", "description": "Respecte les lois et agit pour le bien commun."},
+    {"value": "Neutre Bon", "label": "Neutre Bon", "description": "Cherche surtout à faire le bien, avec souplesse."},
+    {"value": "Chaotique Bon", "label": "Chaotique Bon", "description": "Privilégie la liberté individuelle au service du bien."},
+    {"value": "Loyal Neutre", "label": "Loyal Neutre", "description": "Suit les règles, l'ordre et ses principes avant tout."},
+    {"value": "Neutre", "label": "Neutre", "description": "Recherche l'équilibre ou agit selon le contexte."},
+    {"value": "Chaotique Neutre", "label": "Chaotique Neutre", "description": "Suit avant tout son indépendance et son instinct."},
+    {"value": "Loyal Mauvais", "label": "Loyal Mauvais", "description": "Utilise l'ordre et les règles pour dominer ou exploiter."},
+    {"value": "Neutre Mauvais", "label": "Neutre Mauvais", "description": "Poursuit ses intérêts sans scrupules particuliers."},
+    {"value": "Chaotique Mauvais", "label": "Chaotique Mauvais", "description": "Sème la destruction selon ses pulsions et sa cruauté."},
+]
+
+TERM_TRANSLATIONS_FR = {
+    "light": "légères",
+    "medium": "intermédiaires",
+    "heavy": "lourdes",
+    "shields": "boucliers",
+    "simple": "simples",
+    "martial": "martiales",
+    "shortsword": "épée courte",
+    "hand crossbow": "arbalète de poing",
+    "longsword": "épée longue",
+    "rapier": "rapière",
+    "Insight": "Intuition",
+    "Religion": "Religion",
+    "Investigation": "Investigation",
+    "Persuasion": "Persuasion",
+    "Deception": "Tromperie",
+    "Sleight of Hand": "Escamotage",
+    "Stealth": "Discrétion",
+    "Acrobatics": "Acrobaties",
+    "Performance": "Représentation",
+    "Animal Handling": "Dressage",
+    "Nature": "Nature",
+    "Athletics": "Athlétisme",
+    "Perception": "Perception",
+    "Survival": "Survie",
+    "Medicine": "Médecine",
+    "History": "Histoire",
+    "Arcana": "Arcanes",
+    "Intimidation": "Intimidation",
+    "Calligrapher’s Supplies": "Matériel de calligraphe",
+    "Thieves’ Tools": "Outils de voleur",
+    "Magic Initiate (Cleric)": "Initiation à la magie (Clerc)",
+    "Crafter": "Artisanat",
+    "Skilled": "Compétent",
+    "Alert": "Alerte",
+    "Musician": "Musicien",
+    "Tough": "Robuste",
+    "Magic Initiate (Druid)": "Initiation à la magie (Druide)",
+    "Healer": "Guérisseur",
+    "Lucky": "Chanceux",
+    "Magic Initiate (Wizard)": "Initiation à la magie (Magicien)",
+    "Tavern Brawler": "Bagarreur de taverne",
+    "Savage Attacker": "Attaquant sauvage",
+    "Darkvision": "Vision dans le noir",
+    "Healing Hands": "Mains guérisseuses",
+    "Celestial Revelation": "Révélation céleste",
+    "Draconic Ancestry": "Ascendance draconique",
+    "Breath Weapon": "Souffle draconique",
+    "Damage Resistance": "Résistance aux dégâts",
+    "Dwarven Resilience": "Résilience naine",
+    "Dwarven Toughness": "Robustesse naine",
+    "Stonecunning": "Maîtrise de la pierre",
+    "Keen Senses": "Sens aiguisés",
+    "Fey Ancestry": "Ascendance féerique",
+    "Trance": "Transe",
+    "Gnomish Cunning": "Ruse gnome",
+    "Gnomish Lineage": "Lignage gnome",
+    "Large Form": "Grande carrure",
+    "Powerful Build": "Constitution puissante",
+    "Giant Ancestry": "Ascendance des géants",
+    "Brave": "Bravoure",
+    "Halfling Nimbleness": "Agilité halfeline",
+    "Luck": "Chance",
+    "Resourceful": "Débrouillard",
+    "Skillful": "Polyvalent",
+    "Versatile": "Adaptable",
+    "Adrenaline Rush": "Montée d'adrénaline",
+    "Relentless Endurance": "Endurance implacable",
+    "Fiendish Legacy": "Héritage infernal",
+    "Otherworldly Presence": "Présence d'outre-monde",
+}
+
 # En 2024, les bonus de caractéristiques ne sont plus liés à l'espèce.
 RACE_BONUSES = {
     "Aasimar": {},
@@ -345,6 +477,50 @@ BACKGROUND_RULES = {
         "ability_options": ["dexterite", "sagesse", "charisme"],
     },
 }
+
+
+def _translate_term(term):
+    return TERM_TRANSLATIONS_FR.get(term, term)
+
+
+def _translate_term_list(terms):
+    return [_translate_term(term) for term in terms]
+
+
+def get_localized_class_rules():
+    localized_rules = {}
+    for class_name, class_data in CLASS_RULES.items():
+        localized_rules[class_name] = {
+            **class_data,
+            "proficiencies": {
+                "armors": _translate_term_list(class_data.get("proficiencies", {}).get("armors", [])),
+                "weapons": _translate_term_list(class_data.get("proficiencies", {}).get("weapons", [])),
+            },
+        }
+    return localized_rules
+
+
+def get_localized_species_rules():
+    localized_rules = {}
+    for species_name, species_data in SPECIES_RULES.items():
+        localized_rules[species_name] = {
+            **species_data,
+            "traits": _translate_term_list(species_data.get("traits", [])),
+            "proficiencies": _translate_term_list(species_data.get("proficiencies", [])),
+        }
+    return localized_rules
+
+
+def get_localized_background_rules():
+    localized_rules = {}
+    for background_name, background_data in BACKGROUND_RULES.items():
+        localized_rules[background_name] = {
+            **background_data,
+            "skills": _translate_term_list(background_data.get("skills", [])),
+            "tool": _translate_term(background_data.get("tool", "")),
+            "origin_feat": _translate_term(background_data.get("origin_feat", "")),
+        }
+    return localized_rules
 
 
 def _clamp(value, minimum, maximum):

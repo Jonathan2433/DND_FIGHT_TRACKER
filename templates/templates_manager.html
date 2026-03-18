@@ -57,7 +57,7 @@
                                 data-armors="{{ class_data.get('proficiencies', {}).get('armors', [])|join(', ') }}"
                                 data-weapons="{{ class_data.get('proficiencies', {}).get('weapons', [])|join(', ') }}"
                                 {% if klass == 'Fighter' %}selected{% endif %}
-                            >{{ klass }}</option>
+                            >{{ dnd_class_labels.get(klass, klass) }}</option>
                         {% endfor %}
                     </select>
 
@@ -86,7 +86,7 @@
                                 data-traits="{{ species_data.get('traits', [])|join(', ') }}"
                                 data-extra-origin-feat="{{ '1' if species_data.get('extra_origin_feat') else '0' }}"
                                 {% if race == 'Human' %}selected{% endif %}
-                            >{{ race }}</option>
+                            >{{ dnd_species_labels.get(race, race) }}</option>
                         {% endfor %}
                     </select>
 
@@ -106,7 +106,7 @@
                                 data-tool="{{ background_data.tool }}"
                                 data-ability-options="{{ background_data.ability_options|join(',') }}"
                                 {% if loop.first %}selected{% endif %}
-                            >{{ background_name }}</option>
+                            >{{ dnd_background_labels.get(background_name, background_name) }}</option>
                         {% endfor %}
                     </select>
 
@@ -224,7 +224,14 @@
                     <h3>Etape 4 - Alignement</h3>
                     <p class="section-head__copy">Choix optionnel mais recommande pour cadrer le roleplay.</p>
                     <label for="create-alignment">Alignement</label>
-                    <input id="create-alignment" type="text" name="alignment" placeholder="Ex: Loyal bon, Neutre...">
+                    <select id="create-alignment" name="alignment">
+                        {% for alignment in dnd_alignments %}
+                            <option value="{{ alignment.value }}" data-description="{{ alignment.description }}" {% if loop.first %}selected{% endif %}>
+                                {{ alignment.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <p id="alignment-description-summary" class="funnel-summary-inline">Alignement: -</p>
                 </section>
 
                 <section class="wizard-step" data-step="5" hidden>
