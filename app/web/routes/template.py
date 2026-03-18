@@ -232,20 +232,23 @@ def update_character_combat_state(id):
         return redirect(url_for('template.character_profile', id=id))
 
     hp_delta = request.form.get('hp_delta', default=0, type=int) or 0
+    temp_hp_delta = request.form.get('temp_hp_delta', default=0, type=int) or 0
     ac_delta = request.form.get('ac_delta', default=0, type=int) or 0
 
-    if hp_delta == 0 and ac_delta == 0:
-        flash('Aucun changement applique (HP et CA a 0).', 'info')
+    if hp_delta == 0 and temp_hp_delta == 0 and ac_delta == 0:
+        flash('Aucun changement applique (HP, PV temporaires et CA a 0).', 'info')
         return redirect(url_for('template.character_profile', id=id))
 
     current_hp = character.hp_current_effective
     character.hp_current = max(0, min(current_hp + hp_delta, character.hp_max))
+    character.temp_hp = max(0, (character.temp_hp or 0) + temp_hp_delta)
     character.ac_bonus = (character.ac_bonus or 0) + ac_delta
 
     db.session.commit()
 
     flash(
-        f'Valeurs mises a jour : HP {character.hp_current}/{character.hp_max}, CA {character.ac_total} (base {character.ac_base}).',
+        f'Valeurs mises a jour : HP {character.hp_current}/{character.hp_max}, '
+        f'PV temporaires {character.temp_hp}, CA {character.ac_total} (base {character.ac_base}).',
         'success'
     )
     return redirect(url_for('template.character_profile', id=id))

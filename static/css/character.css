@@ -125,6 +125,11 @@
     text-transform: uppercase;
 }
 
+.stat-box__helper {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
 .profile-actions,
 .char-details,
 .xp-section,
@@ -286,6 +291,45 @@
     padding: 16px;
     border-radius: 22px;
     border: 1px solid var(--overlay-white-10);
+}
+
+.combat-state-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.combat-state-summary__card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--overlay-white-10);
+    background: rgba(11, 13, 29, 0.32);
+}
+
+.combat-state-summary__label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+}
+
+.combat-state-summary__card strong {
+    font-size: 20px;
+}
+
+.combat-state-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.combat-state-input span {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-weight: 700;
 }
 
 .award-xp-form form {

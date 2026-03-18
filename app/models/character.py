@@ -38,6 +38,7 @@ class CharacterTemplate(db.Model):
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)
     hp_current = db.Column(db.Integer, nullable=False)
+    temp_hp = db.Column(db.Integer, default=0, nullable=False)
     ac_base = db.Column(db.Integer, nullable=False)
     ac_bonus = db.Column(db.Integer, default=0, nullable=False)
     initiative_bonus = db.Column(db.Integer, default=0)
@@ -373,6 +374,7 @@ class CharacterTemplate(db.Model):
             # Statistiques de combat
             'hp_max': self.hp_max,
             'hp_current': self.hp_current_effective,
+            'temp_hp': max(0, self.temp_hp or 0),
             'ac_base': self.ac_base,
             'ac_bonus': self.ac_bonus or 0,
             'ac_total': self.ac_total,
