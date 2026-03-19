@@ -550,8 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
         spellOptionLabels.forEach((label) => {
             const name = (label.dataset.spellName || '').toLowerCase();
-            const spellNameForClassRules = (label.dataset.spellNameEn || label.dataset.spellName || '').toLowerCase();
-            const normalizedName = normalizeSpellName(spellNameForClassRules);
+            const normalizedName = normalizeSpellName(name);
             const allowedClasses = (label.dataset.spellClasses || '')
                 .split(',')
                 .map((value) => value.trim().toLowerCase())

@@ -173,8 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
             spellOptions.forEach((label) => {
                 const spellName = (label.dataset.spellName || '').toLowerCase();
-                const spellNameForClassRules = (label.dataset.spellNameEn || label.dataset.spellName || '').toLowerCase();
-                const normalizedSpellName = normalizeSpellName(spellNameForClassRules);
+                const normalizedSpellName = normalizeSpellName(spellName);
                 const classes = (label.dataset.spellClasses || '').split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
                 const checkbox = label.querySelector('input[type="checkbox"]');
                 const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
