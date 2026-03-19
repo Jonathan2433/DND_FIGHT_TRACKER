@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shieldChoiceSelect = form.querySelector('#create-shield-choice');
     const armorEquippedSelect = form.querySelector('#create-armor-equipped');
     const shieldEquippedCheckbox = form.querySelector('#create-shield-equipped');
+    const shieldEquippedWrapper = shieldEquippedCheckbox?.closest('label');
     const acBaseHiddenInput = form.querySelector('#create-ac-base-hidden');
     const inventoryItemsField = form.querySelector('#create-inventory-items');
     const toolProficienciesField = form.querySelector('#create-tool-proficiencies');
@@ -416,6 +417,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!hasShieldMastery && shieldChoiceSelect.value === '1') {
                 shieldChoiceSelect.value = '0';
+            }
+        }
+
+        if (shieldEquippedWrapper && shieldEquippedCheckbox) {
+            shieldEquippedWrapper.hidden = !hasShieldMastery;
+            shieldEquippedCheckbox.disabled = !hasShieldMastery;
+            if (!hasShieldMastery) {
+                shieldEquippedCheckbox.checked = false;
             }
         }
     };
