@@ -135,10 +135,42 @@
                 <textarea id="character-equipment" name="equipment" rows="2">{{ equipment_fields.equipment }}</textarea>
 
                 <label for="character-weapon-loadout">Armes equipees</label>
-                <input id="character-weapon-loadout" type="text" name="weapon_loadout" value="{{ equipment_fields.weapon_loadout }}">
+                <select id="character-weapon-loadout" name="weapon_loadout">
+                    <option value="">Aucune</option>
+                    <option value="Epee longue" {% if equipment_fields.weapon_loadout == 'Epee longue' %}selected{% endif %}>Epee longue</option>
+                    <option value="Epee courte" {% if equipment_fields.weapon_loadout == 'Epee courte' %}selected{% endif %}>Epee courte</option>
+                    <option value="Dague" {% if equipment_fields.weapon_loadout == 'Dague' %}selected{% endif %}>Dague</option>
+                    <option value="Hachette" {% if equipment_fields.weapon_loadout == 'Hachette' %}selected{% endif %}>Hachette</option>
+                    <option value="Marteau leger" {% if equipment_fields.weapon_loadout == 'Marteau leger' %}selected{% endif %}>Marteau leger</option>
+                    <option value="Lance" {% if equipment_fields.weapon_loadout == 'Lance' %}selected{% endif %}>Lance</option>
+                    <option value="Arc court" {% if equipment_fields.weapon_loadout == 'Arc court' %}selected{% endif %}>Arc court</option>
+                    <option value="Arc long" {% if equipment_fields.weapon_loadout == 'Arc long' %}selected{% endif %}>Arc long</option>
+                    <option value="Arbalete legere" {% if equipment_fields.weapon_loadout == 'Arbalete legere' %}selected{% endif %}>Arbalete legere</option>
+                    <option value="Arbalete de poing" {% if equipment_fields.weapon_loadout == 'Arbalete de poing' %}selected{% endif %}>Arbalete de poing</option>
+                    {% if equipment_fields.weapon_loadout and equipment_fields.weapon_loadout not in ['', 'Epee longue', 'Epee courte', 'Dague', 'Hachette', 'Marteau leger', 'Lance', 'Arc court', 'Arc long', 'Arbalete legere', 'Arbalete de poing'] %}
+                    <option value="{{ equipment_fields.weapon_loadout }}" selected>{{ equipment_fields.weapon_loadout }}</option>
+                    {% endif %}
+                </select>
 
                 <label for="character-armor-loadout">Armure / Bouclier</label>
-                <input id="character-armor-loadout" type="text" name="armor_loadout" value="{{ equipment_fields.armor_loadout }}">
+                <select id="character-armor-loadout" name="armor_loadout">
+                    <option value="Sans armure" {% if not equipment_fields.armor_loadout or equipment_fields.armor_loadout == 'Sans armure' %}selected{% endif %}>Sans armure</option>
+                    <option value="Armure matelassee" {% if equipment_fields.armor_loadout == 'Armure matelassee' %}selected{% endif %}>Armure matelassee</option>
+                    <option value="Armure de cuir" {% if equipment_fields.armor_loadout == 'Armure de cuir' %}selected{% endif %}>Armure de cuir</option>
+                    <option value="Armure de cuir cloutee" {% if equipment_fields.armor_loadout == 'Armure de cuir cloutee' %}selected{% endif %}>Armure de cuir cloutee</option>
+                    <option value="Chemise de mailles" {% if equipment_fields.armor_loadout == 'Chemise de mailles' %}selected{% endif %}>Chemise de mailles</option>
+                    <option value="Cuirasse" {% if equipment_fields.armor_loadout == 'Cuirasse' %}selected{% endif %}>Cuirasse</option>
+                    <option value="Demi-plate" {% if equipment_fields.armor_loadout == 'Demi-plate' %}selected{% endif %}>Demi-plate</option>
+                    <option value="Cotte de mailles" {% if equipment_fields.armor_loadout == 'Cotte de mailles' %}selected{% endif %}>Cotte de mailles</option>
+                    <option value="Harnois" {% if equipment_fields.armor_loadout == 'Harnois' %}selected{% endif %}>Harnois</option>
+                    <option value="Bouclier" {% if equipment_fields.armor_loadout == 'Bouclier' %}selected{% endif %}>Bouclier</option>
+                    <option value="Armure de cuir + Bouclier" {% if equipment_fields.armor_loadout == 'Armure de cuir + Bouclier' %}selected{% endif %}>Armure de cuir + Bouclier</option>
+                    <option value="Chemise de mailles + Bouclier" {% if equipment_fields.armor_loadout == 'Chemise de mailles + Bouclier' %}selected{% endif %}>Chemise de mailles + Bouclier</option>
+                    <option value="Cotte de mailles + Bouclier" {% if equipment_fields.armor_loadout == 'Cotte de mailles + Bouclier' %}selected{% endif %}>Cotte de mailles + Bouclier</option>
+                    {% if equipment_fields.armor_loadout and equipment_fields.armor_loadout not in ['Sans armure', 'Armure matelassee', 'Armure de cuir', 'Armure de cuir cloutee', 'Chemise de mailles', 'Cuirasse', 'Demi-plate', 'Cotte de mailles', 'Harnois', 'Bouclier', 'Armure de cuir + Bouclier', 'Chemise de mailles + Bouclier', 'Cotte de mailles + Bouclier'] %}
+                    <option value="{{ equipment_fields.armor_loadout }}" selected>{{ equipment_fields.armor_loadout }}</option>
+                    {% endif %}
+                </select>
 
                 <label for="character-inventory-items">Inventaire</label>
                 <textarea id="character-inventory-items" name="inventory_items" rows="2">{{ equipment_fields.inventory_items }}</textarea>
