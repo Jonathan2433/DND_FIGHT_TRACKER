@@ -443,11 +443,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const normalizedClass = normalizeClassName(classSelect?.value);
             let alwaysPreparedText = '';
             if (normalizedClass === 'druide' || normalizedClass === 'druid') {
-                alwaysPreparedText = ' Toujours préparé (hors limite): Speak with Animals.';
+                alwaysPreparedText = ' Toujours préparé (hors limite): Communication avec les animaux.';
             } else if (normalizedClass === 'paladin') {
-                alwaysPreparedText = ' Toujours préparé (hors limite): Divine Smite.';
+                alwaysPreparedText = ' Toujours préparé (hors limite): Châtiment divin.';
             } else if (normalizedClass === 'ranger' || normalizedClass === 'rodeur' || normalizedClass === 'rôdeur') {
-                alwaysPreparedText = ' Toujours préparé (hors limite): Hunter’s Mark.';
+                alwaysPreparedText = ' Toujours préparé (hors limite): Marque du chasseur.';
             }
             spellSelectionLimitsHint.textContent = `${classLabel}: ${limits.cantrips} sort(s) mineur(s), ${limits.levelOne} sort(s) de niveau 1 au niveau 1.${alwaysPreparedText}`;
         }
