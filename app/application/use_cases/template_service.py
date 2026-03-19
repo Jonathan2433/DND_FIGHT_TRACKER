@@ -15,6 +15,60 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
+    SPELLCASTING_ABILITIES_BY_CLASS = {
+        "artificier": "INT",
+        "bard": "CHA",
+        "barde": "CHA",
+        "clerc": "WIS",
+        "cleric": "WIS",
+        "druide": "WIS",
+        "druid": "WIS",
+        "ensorceleur": "CHA",
+        "magicien": "INT",
+        "occultiste": "CHA",
+        "paladin": "CHA",
+        "ranger": "WIS",
+        "rodeur": "WIS",
+        "rôdeur": "WIS",
+        "sorcerer": "CHA",
+        "warlock": "CHA",
+        "wizard": "INT",
+    }
+
+    @staticmethod
+    def _normalize_skill_proficiencies(form_data):
+        """Normalise les competences maitrisees depuis les checkboxes (ou texte legacy)."""
+        selected_skills = [item.strip() for item in form_data.getlist('skill_proficiencies') if item and item.strip()]
+        if selected_skills:
+            return ", ".join(dict.fromkeys(selected_skills))
+
+        legacy_value = (form_data.get('skill_proficiencies') or '').strip()
+        if not legacy_value:
+            return None
+        split_values = [token.strip() for token in legacy_value.replace(';', ',').split(',') if token.strip()]
+        return ", ".join(dict.fromkeys(split_values)) if split_values else None
+
+    @classmethod
+    def _derive_spellcasting_stats(cls, character_class, level, resolved_character):
+        """Calcule la stat de lancement, DD des sorts et bonus d'attaque."""
+        normalized_class = (character_class or '').strip().lower().replace('ô', 'o').replace('é', 'e').replace('è', 'e')
+        ability_code = cls.SPELLCASTING_ABILITIES_BY_CLASS.get(normalized_class)
+        if not ability_code:
+            return None, None, None
+
+        ability_field = {
+            'STR': 'force',
+            'DEX': 'dexterite',
+            'CON': 'constitution',
+            'INT': 'intelligence',
+            'WIS': 'sagesse',
+            'CHA': 'charisme',
+        }[ability_code]
+        ability_score = int(resolved_character.get(ability_field, 10) or 10)
+        ability_mod = (ability_score - 10) // 2
+        level = int(level or 1)
+        proficiency_bonus = 2 + ((max(1, level) - 1) // 4)
+        return ability_code, 8 + proficiency_bonus + ability_mod, proficiency_bonus + ability_mod
 
     @staticmethod
     def _save_uploaded_file(uploaded_file, upload_folder):
@@ -29,7 +83,7 @@ class TemplateService:
     def _compose_builder_equipment(form_data):
         """Compose un bloc equipement detaille depuis le funnel de creation."""
         base_equipment = (form_data.get('equipment') or '').strip()
-        skill_proficiencies = (form_data.get('skill_proficiencies') or '').strip()
+        skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
         tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
         weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
         armor_loadout = (form_data.get('armor_loadout') or '').strip()
@@ -82,6 +136,12 @@ class TemplateService:
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
         resolved_character = resolve_character_creation(form_data)
+        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            resolved_character.get('level') or form_data.get('level'),
+            resolved_character,
+        )
         selected_languages = [
             form_data.get('language_1'),
             form_data.get('language_2'),
@@ -158,17 +218,17 @@ class TemplateService:
             skin=form_data.get('skin') or None,
             hair=form_data.get('hair') or None,
             equipment=TemplateService._compose_builder_equipment(form_data),
-            skill_proficiencies=form_data.get('skill_proficiencies') or None,
+            skill_proficiencies=normalized_skill_proficiencies,
             age=int(form_data.get('age')) if form_data.get('age') else None,
             character_appearance=form_data.get('character_appearance') or None,
             allies_organizations=form_data.get('allies_organizations') or None,
             additional_features_traits=form_data.get('additional_features_traits') or None,
             treasure=form_data.get('treasure') or None,
             symbol_name=form_data.get('symbol_name') or None,
-            spellcasting_class=form_data.get('spellcasting_class') or None,
-            spellcasting_ability=form_data.get('spellcasting_ability') or None,
-            spell_save_dc=int(form_data.get('spell_save_dc')) if form_data.get('spell_save_dc') else None,
-            spell_attack_bonus=int(form_data.get('spell_attack_bonus')) if form_data.get('spell_attack_bonus') else None,
+            spellcasting_class=resolved_character.get('character_class') or form_data.get('spellcasting_class') or None,
+            spellcasting_ability=spellcasting_ability,
+            spell_save_dc=spell_save_dc,
+            spell_attack_bonus=spell_attack_bonus,
             background_story=form_data.get('background_story') or None,
             current_xp=int(form_data.get('current_xp', 0))
         )
@@ -235,17 +295,29 @@ class TemplateService:
         template.skin = form_data.get('skin') or None
         template.hair = form_data.get('hair') or None
         template.equipment = form_data.get('equipment') or None
-        template.skill_proficiencies = form_data.get('skill_proficiencies') or None
+        template.skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
         template.age = int(form_data.get('age')) if form_data.get('age') else template.age
         template.character_appearance = form_data.get('character_appearance') or None
         template.allies_organizations = form_data.get('allies_organizations') or None
         template.additional_features_traits = form_data.get('additional_features_traits') or None
         template.treasure = form_data.get('treasure') or None
         template.symbol_name = form_data.get('symbol_name') or None
-        template.spellcasting_class = form_data.get('spellcasting_class') or None
-        template.spellcasting_ability = form_data.get('spellcasting_ability') or None
-        template.spell_save_dc = int(form_data.get('spell_save_dc')) if form_data.get('spell_save_dc') else None
-        template.spell_attack_bonus = int(form_data.get('spell_attack_bonus')) if form_data.get('spell_attack_bonus') else None
+        spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
+            form_data.get('character_class') or template.character_class,
+            form_data.get('level') or template.level,
+            {
+                'force': int(form_data.get('force', template.force or 10) or 10),
+                'dexterite': int(form_data.get('dexterite', template.dexterite or 10) or 10),
+                'constitution': int(form_data.get('constitution', template.constitution or 10) or 10),
+                'intelligence': int(form_data.get('intelligence', template.intelligence or 10) or 10),
+                'sagesse': int(form_data.get('sagesse', template.sagesse or 10) or 10),
+                'charisme': int(form_data.get('charisme', template.charisme or 10) or 10),
+            },
+        )
+        template.spellcasting_class = form_data.get('character_class') or template.character_class
+        template.spellcasting_ability = spellcasting_ability
+        template.spell_save_dc = spell_save_dc
+        template.spell_attack_bonus = spell_attack_bonus
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
