@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 import os
 import logging
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -152,6 +153,18 @@ class CharacterSheetPdfService:
         "stealth": "dexterite",
         "survival": "sagesse",
     }
+    WEAPON_PROFILES = {
+        "epee longue": {"damage": "1d8", "damage_type": "Tranchant", "is_ranged": False, "finesse": False},
+        "epee courte": {"damage": "1d6", "damage_type": "Percant", "is_ranged": False, "finesse": True},
+        "dague": {"damage": "1d4", "damage_type": "Percant", "is_ranged": False, "finesse": True},
+        "hachette": {"damage": "1d6", "damage_type": "Tranchant", "is_ranged": False, "finesse": False},
+        "marteau leger": {"damage": "1d4", "damage_type": "Contondant", "is_ranged": False, "finesse": False},
+        "lance": {"damage": "1d6", "damage_type": "Percant", "is_ranged": False, "finesse": False},
+        "arc court": {"damage": "1d6", "damage_type": "Percant", "is_ranged": True, "finesse": False},
+        "arc long": {"damage": "1d8", "damage_type": "Percant", "is_ranged": True, "finesse": False},
+        "arbalete legere": {"damage": "1d8", "damage_type": "Percant", "is_ranged": True, "finesse": False},
+        "arbalete de poing": {"damage": "1d6", "damage_type": "Percant", "is_ranged": True, "finesse": False},
+    }
 
     @staticmethod
     def _format_mod(value: int) -> str:
@@ -198,6 +211,75 @@ class CharacterSheetPdfService:
         if not value:
             return []
         return [part.strip() for part in re.split(r"\s*(?:,|;|\|)\s*", value) if part.strip()]
+
+    @staticmethod
+    def _normalize_text_key(value: str | None) -> str:
+        if not value:
+            return ""
+        normalized = unicodedata.normalize("NFKD", str(value))
+        ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
+        return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", ascii_only.lower())).strip()
+
+    @classmethod
+    def _resolve_weapon_profile(cls, weapon_name: str) -> dict[str, Any] | None:
+        normalized_name = cls._normalize_text_key(weapon_name)
+        if not normalized_name:
+            return None
+        if normalized_name in cls.WEAPON_PROFILES:
+            return cls.WEAPON_PROFILES[normalized_name]
+
+        for key, profile in cls.WEAPON_PROFILES.items():
+            if normalized_name in key or key in normalized_name:
+                return profile
+        return None
+
+    @staticmethod
+    def _extract_weapon_loadouts(equipment_value: str | None) -> list[str]:
+        if not equipment_value:
+            return []
+
+        melee_prefix = "Arme de corps a corps equipee:"
+        ranged_prefix = "Arme a distance equipee:"
+        selected: list[str] = []
+
+        chunks = [chunk.strip() for chunk in (equipment_value or "").split("|") if chunk.strip()]
+        for chunk in chunks:
+            if chunk.startswith(melee_prefix):
+                name = chunk.replace(melee_prefix, "", 1).strip()
+                if name:
+                    selected.append(name)
+            elif chunk.startswith(ranged_prefix):
+                name = chunk.replace(ranged_prefix, "", 1).strip()
+                if name:
+                    selected.append(name)
+        return list(dict.fromkeys(selected))
+
+    @classmethod
+    def _build_attacks_spellcasting_text(cls, character) -> str:
+        weapon_names = cls._extract_weapon_loadouts(character.equipment)
+        if not weapon_names:
+            return ""
+
+        attack_lines: list[str] = []
+        for weapon_name in weapon_names[:3]:
+            profile = cls._resolve_weapon_profile(weapon_name)
+            if not profile:
+                attack_lines.append(weapon_name)
+                continue
+
+            if profile["is_ranged"]:
+                ability_mod = character.mod_dexterite
+            elif profile["finesse"]:
+                ability_mod = max(character.mod_force, character.mod_dexterite)
+            else:
+                ability_mod = character.mod_force
+
+            attack_bonus = cls._format_mod(ability_mod + character.bonus_maitrise)
+            damage_bonus = f"+{ability_mod}" if ability_mod >= 0 else str(ability_mod)
+            damage_block = f"{profile['damage']}{damage_bonus} {profile['damage_type']}"
+            attack_lines.append(f"{weapon_name}: {attack_bonus} | {damage_block}")
+
+        return "\n".join(attack_lines)
 
     @classmethod
     def _build_dynamic_spell_field_values(
@@ -430,6 +512,7 @@ class CharacterSheetPdfService:
             skill_values[skill_key] = cls._format_mod(ability_mod + bonus)
 
         spellcasting_class, spellcasting_ability, spell_save_dc, spell_attack_bonus = cls._derive_spellcasting_from_class(character)
+        attacks_spellcasting = cls._build_attacks_spellcasting_text(character)
         proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
         background_name, backstory_text = cls._split_background_payload(character.background_story)
 
@@ -475,7 +558,7 @@ class CharacterSheetPdfService:
             "ideals": "",
             "bonds": "",
             "flaws": "",
-            "attacks_spellcasting": "",
+            "attacks_spellcasting": attacks_spellcasting,
             "allies_organizations": cls._normalize_multiline(character.allies_organizations, width=32, max_lines=12),
             "character_appearance": cls._normalize_multiline(character.character_appearance, width=30, max_lines=16),
             "additional_features_traits": cls._normalize_multiline(character.additional_features_traits, width=32, max_lines=16),
