@@ -194,6 +194,74 @@ class CharacterSheetPdfService:
         return "\n".join(lines[:max_lines])
 
     @staticmethod
+    def _split_spell_list(value: str | None) -> list[str]:
+        if not value:
+            return []
+        return [part.strip() for part in re.split(r"\s*(?:,|;|\|)\s*", value) if part.strip()]
+
+    @classmethod
+    def _build_dynamic_spell_field_values(
+        cls,
+        character,
+        field_names: list[str],
+        existing_values: dict[str, str],
+    ) -> dict[str, str]:
+        """Mappe dynamiquement les sorts choisis vers les champs de la page sorts du PDF."""
+        selected_spells = list(
+            dict.fromkeys(
+                cls._split_spell_list(character.selected_cantrips)
+                + cls._split_spell_list(character.selected_level_1_spells)
+            )
+        )
+        if not selected_spells:
+            return {}
+
+        candidate_fields: list[str] = []
+        for field_name in field_names:
+            normalized = field_name.strip().lower()
+            if not normalized:
+                continue
+            if any(
+                blocked in normalized
+                for blocked in (
+                    "spellcasting",
+                    "spellsavedc",
+                    "spell save dc",
+                    "spell attack bonus",
+                    "spellatkbonus",
+                    "attacks",
+                    "attack",
+                    "slots",
+                    "slot",
+                    "prepared",
+                    "checkbox",
+                )
+            ):
+                continue
+            looks_like_spell_name_field = (
+                "cantrip" in normalized
+                or bool(re.search(r"\bspell\b", normalized))
+                or bool(re.search(r"\bspells?\s*\d+\b", normalized))
+            )
+            if looks_like_spell_name_field:
+                candidate_fields.append(field_name)
+
+        if not candidate_fields:
+            return {}
+
+        def field_sort_key(name: str) -> tuple[int, str]:
+            numbers = re.findall(r"\d+", name)
+            return (int(numbers[0]), name.lower()) if numbers else (10**9, name.lower())
+
+        candidate_fields = sorted(dict.fromkeys(candidate_fields), key=field_sort_key)
+        dynamic_values: dict[str, str] = {}
+        for field_name, spell_name in zip(candidate_fields, selected_spells):
+            if existing_values.get(field_name):
+                continue
+            dynamic_values[field_name] = spell_name
+        return dynamic_values
+
+    @staticmethod
     def _split_background_payload(value: str | None) -> tuple[str, str]:
         """Retourne (background court, backstory libre) depuis la valeur stockee."""
         raw = (value or "").strip()
@@ -468,11 +536,17 @@ class CharacterSheetPdfService:
         output_filename = f"character_sheet_{character.id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.pdf"
         output_path = Path(upload_folder) / output_filename
 
-        resolved_mapping = cls._resolve_field_mapping(template_path)
-        field_values = cls._build_field_values(character, resolved_mapping)
-
         # On ne modifie jamais le template source : on lit puis on ecrit dans un nouveau fichier.
         template_reader = PdfReader(str(template_path))
+        resolved_mapping = cls._resolve_field_mapping(template_path)
+        field_values = cls._build_field_values(character, resolved_mapping)
+        field_values.update(
+            cls._build_dynamic_spell_field_values(
+                character,
+                cls._extract_pdf_field_names(template_reader),
+                field_values,
+            )
+        )
         writer = PdfWriter()
         writer.clone_document_from_reader(template_reader)
         writer.set_need_appearances_writer(True)
