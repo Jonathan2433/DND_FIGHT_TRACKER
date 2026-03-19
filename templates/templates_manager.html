@@ -330,6 +330,7 @@
                         <p id="equipment-class-base-summary">Base de classe: -</p>
                         <p id="equipment-background-choice-summary">Historique: -</p>
                         <p id="equipment-pack-summary">Pack d'aventure: -</p>
+                        <p id="equipment-armor-summary">Armure portee: sans armure.</p>
                         <p id="equipment-notes-summary">Notes: Colifichet gratuit, AC selon armure, charge = FOR x 15 lb.</p>
                     </div>
 
@@ -358,6 +359,28 @@
 
                             <label for="create-armor-loadout">Armure / bouclier</label>
                             <textarea id="create-armor-loadout" name="armor_loadout" rows="2" placeholder="Ex: armure de cuir, bouclier"></textarea>
+
+                            <label for="create-armor-equipped">Port d'armure</label>
+                            <select id="create-armor-equipped" name="armor_equipped">
+                                <option value="none" selected>Sans armure</option>
+                                <option value="padded">Matelassee (11 + DEX)</option>
+                                <option value="leather">Cuir (11 + DEX)</option>
+                                <option value="studded_leather">Cuir cloute (12 + DEX)</option>
+                                <option value="hide">Peau (12 + DEX max +2)</option>
+                                <option value="chain_shirt">Chemise de mailles (13 + DEX max +2)</option>
+                                <option value="scale_mail">Clibanion (14 + DEX max +2)</option>
+                                <option value="breastplate">Cuirasse (14 + DEX max +2)</option>
+                                <option value="half_plate">Demi-plate (15 + DEX max +2)</option>
+                                <option value="ring_mail">Broigne (14)</option>
+                                <option value="chain_mail">Cotte de mailles (16)</option>
+                                <option value="splint">Clibanion (17)</option>
+                                <option value="plate">Harnois (18)</option>
+                            </select>
+                            <label class="inline-checkbox" for="create-shield-equipped">
+                                <input id="create-shield-equipped" type="checkbox" name="shield_equipped" value="1">
+                                Bouclier equipe (+2 CA)
+                            </label>
+                            <input id="create-ac-base-hidden" type="hidden" name="ac_base" value="10">
 
                             <label for="create-inventory-items">Inventaire detaille</label>
                             <textarea id="create-inventory-items" name="inventory_items" rows="3" placeholder="Objets utilitaires, consommables, kits..."></textarea>
