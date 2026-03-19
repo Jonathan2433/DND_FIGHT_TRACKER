@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, session, g
 
 from app.application.use_cases.campaign_service import CampaignService
-from app.models import Combat, CharacterTemplate, Campaign
+from app.models import Combat, CharacterTemplate, Campaign, User
 from app.models.story_arc import StoryArc
 from app.models.episode import Episode
 from app.utils import format_duration
@@ -42,6 +42,7 @@ def index():
     total_combats = Combat.query.count()
     total_campaigns = Campaign.query.count()
     total_pj = CharacterTemplate.query.filter_by(character_type='PJ', is_active=True).count()
+    total_users = User.query.count()
 
     combat_cards = []
     for combat in combats:
@@ -93,6 +94,7 @@ def index():
         total_campaigns=total_campaigns,
         total_combats=total_combats,
         total_pj=total_pj,
+        total_users=total_users,
         combat_cards=combat_cards,
         user_is_connected=user_is_connected,
         user_campaigns=user_campaigns,
