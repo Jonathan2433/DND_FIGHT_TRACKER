@@ -249,18 +249,26 @@ class TemplateService:
                 f"La classe '{character_class}' ne peut choisir que {limits['level_1_spells']} sort(s) de niveau 1 au niveau 1."
             )
 
+        catalog_index = {spell["name"]: spell for spell in (cantrip_catalog + level_one_catalog)}
         strict_level_one_allow_list = cls.LEVEL_ONE_SPELLS_BY_CLASS.get(class_key_canonical)
         if strict_level_one_allow_list is not None:
-            disallowed_level_one = [
-                spell_name for spell_name in selected_level_one_names
-                if cls._normalize_spell_name(spell_name) not in strict_level_one_allow_list
-            ]
+            disallowed_level_one = []
+            for spell_name in selected_level_one_names:
+                spell = catalog_index.get(spell_name) or {}
+                normalized_candidates = {
+                    cls._normalize_spell_name(spell_name),
+                    cls._normalize_spell_name(spell.get("name")),
+                    cls._normalize_spell_name(spell.get("name_en")),
+                }
+                normalized_candidates.discard("")
+                if not any(candidate in strict_level_one_allow_list for candidate in normalized_candidates):
+                    disallowed_level_one.append(spell_name)
+
             if disallowed_level_one:
                 raise ValueError(
                     f"La classe '{character_class}' ne peut pas preparer ces sorts de niveau 1: {', '.join(disallowed_level_one)}."
                 )
 
-        catalog_index = {spell["name"]: spell for spell in (cantrip_catalog + level_one_catalog)}
         for spell_name in selected_cantrip_names + selected_level_one_names:
             spell = catalog_index.get(spell_name)
             if not spell:
