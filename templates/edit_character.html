@@ -245,6 +245,49 @@
             <textarea id="character-treasure" name="treasure" rows="3">{{ character.treasure or '' }}</textarea>
         </section>
 
+        <section class="edit-section edit-section--separator" data-spell-selection data-class-selector="#character-class">
+            <h2>Sorts (niveau 1)</h2>
+            <p class="funnel-summary-inline">Survolez un sort avec la souris pour voir ses details.</p>
+            <input type="hidden" name="spellcasting_class" value="{{ character.spellcasting_class or character.character_class or '' }}">
+
+            <label for="edit-spell-search-input">Filtrer les sorts par nom</label>
+            <input id="edit-spell-search-input" type="search" data-spell-search placeholder="Ex: projectile, soin, lumiere">
+
+            <h3>Sorts mineurs (niveau 0)</h3>
+            <div class="skill-proficiencies-grid">
+                {% for spell in cantrip_catalog %}
+                    <label
+                        class="skill-option spell-option"
+                        data-spell-name="{{ spell.name|lower }}"
+                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
+                    >
+                        <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}" {% if spell.name in selected_cantrips %}checked{% endif %}>
+                        <span>{{ spell.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <h3>Sorts de niveau 1</h3>
+            <div class="skill-proficiencies-grid">
+                {% for spell in level_one_spell_catalog %}
+                    <label
+                        class="skill-option spell-option"
+                        data-spell-name="{{ spell.name|lower }}"
+                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
+                    >
+                        <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}" {% if spell.name in selected_level_one_spells %}checked{% endif %}>
+                        <span>{{ spell.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <p class="funnel-summary-inline" data-spell-limits></p>
+            <p class="funnel-summary-inline" data-spell-summary></p>
+            <p class="funnel-summary-inline" data-spell-always-prepared></p>
+        </section>
+
         <section class="edit-section edit-section--separator">
             <h2>Medias</h2>
 
@@ -304,4 +347,5 @@
     </section>
 </div>
 
+<script src="{{ url_for('static', filename='js/spell_selection.js') }}"></script>
 {% endblock %}

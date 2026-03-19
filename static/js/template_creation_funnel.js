@@ -114,12 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ensorceleur: { cantrips: 4, levelOne: 2 },
         warlock: { cantrips: 2, levelOne: 2 },
         occultiste: { cantrips: 2, levelOne: 2 },
-        wizard: { cantrips: 3, levelOne: 6 },
-        magicien: { cantrips: 3, levelOne: 6 },
-        paladin: { cantrips: 0, levelOne: 0 },
-        ranger: { cantrips: 0, levelOne: 0 },
-        rodeur: { cantrips: 0, levelOne: 0 },
-        rôdeur: { cantrips: 0, levelOne: 0 }
+        wizard: { cantrips: 3, levelOne: 4 },
+        magicien: { cantrips: 3, levelOne: 4 },
+        paladin: { cantrips: 0, levelOne: 2 },
+        ranger: { cantrips: 0, levelOne: 2 },
+        rodeur: { cantrips: 0, levelOne: 2 },
+        rôdeur: { cantrips: 0, levelOne: 2 }
     };
 
     const mod = (score) => Math.floor((score - 10) / 2);
@@ -440,7 +440,16 @@ document.addEventListener('DOMContentLoaded', () => {
         spellSelectionSummary.textContent = `Sorts selectionnes: ${cantripCount}/${limits.cantrips} sort(s) mineur(s), ${levelOneCount}/${limits.levelOne} sort(s) de niveau 1.`;
         if (spellSelectionLimitsHint) {
             const classLabel = classSelect?.value || 'Classe';
-            spellSelectionLimitsHint.textContent = `${classLabel}: ${limits.cantrips} sort(s) mineur(s), ${limits.levelOne} sort(s) de niveau 1 au niveau 1.`;
+            const normalizedClass = normalizeClassName(classSelect?.value);
+            let alwaysPreparedText = '';
+            if (normalizedClass === 'druide' || normalizedClass === 'druid') {
+                alwaysPreparedText = ' Toujours préparé (hors limite): Speak with Animals.';
+            } else if (normalizedClass === 'paladin') {
+                alwaysPreparedText = ' Toujours préparé (hors limite): Divine Smite.';
+            } else if (normalizedClass === 'ranger' || normalizedClass === 'rodeur' || normalizedClass === 'rôdeur') {
+                alwaysPreparedText = ' Toujours préparé (hors limite): Hunter’s Mark.';
+            }
+            spellSelectionLimitsHint.textContent = `${classLabel}: ${limits.cantrips} sort(s) mineur(s), ${limits.levelOne} sort(s) de niveau 1 au niveau 1.${alwaysPreparedText}`;
         }
     };
 

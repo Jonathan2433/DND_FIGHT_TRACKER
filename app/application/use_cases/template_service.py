@@ -74,12 +74,12 @@ class TemplateService:
         "ensorceleur": {"cantrips": 4, "level_1_spells": 2},
         "warlock": {"cantrips": 2, "level_1_spells": 2},
         "occultiste": {"cantrips": 2, "level_1_spells": 2},
-        "wizard": {"cantrips": 3, "level_1_spells": 6},
-        "magicien": {"cantrips": 3, "level_1_spells": 6},
-        "paladin": {"cantrips": 0, "level_1_spells": 0},
-        "ranger": {"cantrips": 0, "level_1_spells": 0},
-        "rodeur": {"cantrips": 0, "level_1_spells": 0},
-        "rôdeur": {"cantrips": 0, "level_1_spells": 0},
+        "wizard": {"cantrips": 3, "level_1_spells": 4},
+        "magicien": {"cantrips": 3, "level_1_spells": 4},
+        "paladin": {"cantrips": 0, "level_1_spells": 2},
+        "ranger": {"cantrips": 0, "level_1_spells": 2},
+        "rodeur": {"cantrips": 0, "level_1_spells": 2},
+        "rôdeur": {"cantrips": 0, "level_1_spells": 2},
     }
     CLASS_ALIAS_TO_ENGLISH = {
         "artificier": "artificer",
