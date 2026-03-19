@@ -239,8 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(Boolean);
         const checkbox = label.querySelector('input[type="checkbox"]');
         const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
-        const name = (label.dataset.spellName || '').toLowerCase();
-        const normalizedName = normalizeSpellName(name);
+        const englishName = (label.dataset.spellNameEn || '').toLowerCase();
+        const fallbackName = (label.dataset.spellName || '').toLowerCase();
+        const normalizedName = normalizeSpellName(englishName || fallbackName);
         const allowedByClassList = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
         const allowedByJsonLevelOne = !isLevelOneSpell || !levelOneAllowList || levelOneAllowList.has(normalizedName);
         return allowedByClassList && allowedByJsonLevelOne;
@@ -587,11 +588,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
         spellOptionLabels.forEach((label) => {
             const name = (label.dataset.spellName || '').toLowerCase();
+            const englishName = (label.dataset.spellNameEn || '').toLowerCase();
             const checkbox = label.querySelector('input[type="checkbox"]');
             const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
             const classAllowed = classAllowsSpellLabel(label, selectedClass, levelOneAllowList);
             const term = isLevelOneSpell ? levelOneTerm : cantripTerm;
-            const visible = classAllowed && (!term || name.includes(term));
+            const matchesSearch = !term || name.includes(term) || englishName.includes(term);
+            const visible = classAllowed && matchesSearch;
             label.hidden = !visible;
             if (checkbox) {
                 checkbox.dataset.classBlocked = classAllowed ? '0' : '1';
