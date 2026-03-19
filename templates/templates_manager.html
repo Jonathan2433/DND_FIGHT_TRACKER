@@ -56,6 +56,8 @@
                                 data-description="{{ class_data.get('description', '') }}"
                                 data-armors="{{ class_data.get('proficiencies', {}).get('armors', [])|join(', ') }}"
                                 data-weapons="{{ class_data.get('proficiencies', {}).get('weapons', [])|join(', ') }}"
+                                data-default-cantrips="{{ class_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ class_data.get('default_spells', [])|join(', ') }}"
                                 {% if klass in ['Fighter', 'Guerrier'] %}selected{% endif %}
                             >{{ dnd_class_labels.get(klass, klass) }}</option>
                         {% endfor %}
@@ -83,6 +85,8 @@
                                 data-proficiencies="{{ species_data.get('proficiencies', [])|join(', ') }}"
                                 data-traits="{{ species_data.get('traits', [])|join(', ') }}"
                                 data-extra-origin-feat="{{ '1' if species_data.get('extra_origin_feat') else '0' }}"
+                                data-default-cantrips="{{ species_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ species_data.get('default_spells', [])|join(', ') }}"
                                 {% if race in ['Human', 'Humain'] %}selected{% endif %}
                             >{{ dnd_species_labels.get(race, race) }}</option>
                         {% endfor %}
@@ -104,6 +108,8 @@
                                 data-origin-feat="{{ background_data.get('origin_feat', '') }}"
                                 data-tool="{{ background_data.get('tool', '') }}"
                                 data-ability-options="{{ background_data.get('ability_options', [])|join(',') }}"
+                                data-default-cantrips="{{ background_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ background_data.get('default_spells', [])|join(', ') }}"
                                 {% if loop.first %}selected{% endif %}
                             >{{ dnd_background_labels.get(background_name, background_name) }}</option>
                         {% endfor %}
@@ -227,7 +233,7 @@
                 <section class="wizard-step" data-step="5" hidden id="spell-selection-step">
                     <h3>Etape 5 - Selection des sorts</h3>
                     <p class="section-head__copy">
-                        Cette etape apparait uniquement pour les classes lanceuses de sorts.
+                        Cette etape apparait uniquement quand des sorts sont selectionnables.
                     </p>
                     <div id="spellcasting-fields">
                         <input type="hidden" id="create-spellcasting-class" name="spellcasting_class" value="">
