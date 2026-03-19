@@ -151,6 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
         spellSelectionLimitsByClass[normalizeClassName(classSelect?.value)] || { cantrips: 0, levelOne: 0 }
     );
     const getSkillLimitForSelectedClass = () => skillProficiencyLimitsByClass[normalizeClassName(classSelect?.value)] || 2;
+    const parseDataSpellList = (value) => (value || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    const selectedOptionHasDefaultSpells = (selectEl) => {
+        const selected = selectEl?.options?.[selectEl.selectedIndex];
+        if (!selected) return false;
+        return parseDataSpellList(selected.dataset.defaultCantrips).length > 0
+            || parseDataSpellList(selected.dataset.defaultSpells).length > 0;
+    };
+    const shouldHideSpellSelectionStep = () => (
+        selectedOptionHasDefaultSpells(classSelect)
+        || selectedOptionHasDefaultSpells(raceSelect)
+        || selectedOptionHasDefaultSpells(backgroundSelect)
+    );
 
     const syncSkillProficiencyLimit = (changedCheckbox = null) => {
         const selected = skillCheckboxes.filter((checkbox) => checkbox.checked);
@@ -484,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncSpellcastingFields = () => {
         if (!spellcastingContainer || !classSelect) return;
         const selectedClass = classSelect.value;
-        const isSpellcaster = isSelectedClassSpellcaster();
+        const isSpellcaster = isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep();
         if (spellSelectionStep) {
             spellSelectionStep.hidden = !isSpellcaster;
             spellSelectionStep.classList.toggle('is-disabled-step', !isSpellcaster);
@@ -525,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? configuredTotalSteps
         : stepPanels.length;
     const getAvailableSteps = () => {
-        if (isSelectedClassSpellcaster()) {
+        if (isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep()) {
             return [1, 2, 3, 4, 5, 6];
         }
         return [1, 2, 3, 4, 6];
@@ -637,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const lastStep = getLastAvailableStep();
-        if (isSelectedClassSpellcaster()) {
+        if (isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep()) {
             const limits = getSpellSelectionLimitsForSelectedClass();
             const selectedCantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
             const selectedLevelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
@@ -680,6 +695,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     raceSelect?.addEventListener('change', () => {
         renderSpecies();
+        syncSpellcastingFields();
+        if (!getAvailableSteps().includes(currentStep)) {
+            goToStep(getLastAvailableStep());
+        } else {
+            updateWizardUI();
+        }
     });
 
     classSelect?.addEventListener('change', () => {
@@ -698,6 +719,12 @@ document.addEventListener('DOMContentLoaded', () => {
         syncBackgroundBonusFields();
         renderBackground();
         render();
+        syncSpellcastingFields();
+        if (!getAvailableSteps().includes(currentStep)) {
+            goToStep(getLastAvailableStep());
+        } else {
+            updateWizardUI();
+        }
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);

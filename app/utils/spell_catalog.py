@@ -10,13 +10,43 @@ CATALOG_PATH = Path(__file__).resolve().parents[2] / "app" / "data" / "spells_ca
 
 def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
     """Normaliser un sort pour l'UI."""
+    raw_level = raw_spell.get("level", raw_spell.get("Lvl", 0))
+    try:
+        level = int(str(raw_level).strip() or 0)
+    except (TypeError, ValueError):
+        level = 0
+
+    classes = raw_spell.get("classes")
+    if not classes:
+        classes = raw_spell.get("Classes")
+    if isinstance(classes, str):
+        classes = [item.strip() for item in classes.split(",") if item.strip()]
+    elif not isinstance(classes, list):
+        classes = []
+
+    description = (
+        raw_spell.get("description")
+        or raw_spell.get("Description_FR")
+        or raw_spell.get("Description")
+        or ""
+    )
+
+    display_name = (
+        raw_spell.get("name_fr")
+        or raw_spell.get("Spell_FR")
+        or raw_spell.get("name")
+        or raw_spell.get("Spell")
+        or ""
+    )
+
     return {
-        "name": (raw_spell.get("name") or "").strip(),
-        "level": int(raw_spell.get("level", 0) or 0),
-        "school": (raw_spell.get("school") or "").strip(),
-        "classes": raw_spell.get("classes") or [],
-        "source": (raw_spell.get("source") or "").strip(),
-        "description": (raw_spell.get("description") or "").strip(),
+        "name": str(display_name).strip(),
+        "name_en": str(raw_spell.get("name") or raw_spell.get("Spell") or "").strip(),
+        "level": level,
+        "school": str(raw_spell.get("school") or raw_spell.get("School") or "").strip(),
+        "classes": classes,
+        "source": str(raw_spell.get("source") or raw_spell.get("Source") or "").strip(),
+        "description": str(description).strip(),
     }
 
 
