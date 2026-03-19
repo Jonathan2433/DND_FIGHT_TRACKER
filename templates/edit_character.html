@@ -38,14 +38,14 @@
                     {% endif %}
                 </select>
 
-                <label for="character-background">Historique</label>
-                <select id="character-background" name="background_story">
+                <label for="character-background">Background</label>
+                <select id="character-background" name="background_choice">
                     <option value="">-- Non precise --</option>
                     {% for background in dnd_background_catalog %}
-                        <option value="{{ background }}" {% if character.background_story == background %}selected{% endif %}>{{ background }}</option>
+                        <option value="{{ background }}" {% if background_fields.background_choice == background %}selected{% endif %}>{{ background }}</option>
                     {% endfor %}
-                    {% if character.background_story and character.background_story not in dnd_background_catalog %}
-                        <option value="{{ character.background_story }}" selected>{{ character.background_story }}</option>
+                    {% if background_fields.background_choice and background_fields.background_choice not in dnd_background_catalog %}
+                        <option value="{{ background_fields.background_choice }}" selected>{{ background_fields.background_choice }}</option>
                     {% endif %}
                 </select>
 
@@ -70,6 +70,47 @@
                 <label for="character-level">Niveau</label>
                 <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
 
+                <label for="character-gender">Genre</label>
+                <select id="character-gender" name="gender">
+                    <option value="" {% if not character.gender %}selected{% endif %}>Non precise</option>
+                    <option value="Femme" {% if character.gender == 'Femme' %}selected{% endif %}>Femme</option>
+                    <option value="Homme" {% if character.gender == 'Homme' %}selected{% endif %}>Homme</option>
+                    <option value="Non-binaire" {% if character.gender == 'Non-binaire' %}selected{% endif %}>Non-binaire</option>
+                    <option value="Autre" {% if character.gender == 'Autre' %}selected{% endif %}>Autre</option>
+                </select>
+
+                <label for="character-age">Age</label>
+                <input id="character-age" type="number" name="age" min="1" max="10000" value="{{ character.age or '' }}">
+
+                <div class="stats-grid">
+                    <div class="stat-input">
+                        <label for="character-height">Taille</label>
+                        <input id="character-height" type="text" name="height" value="{{ character.height or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-weight">Poids</label>
+                        <input id="character-weight" type="text" name="weight" value="{{ character.weight or '' }}">
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-input">
+                        <label for="character-eyes">Yeux</label>
+                        <input id="character-eyes" type="text" name="eyes" value="{{ character.eyes or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-skin">Peau</label>
+                        <input id="character-skin" type="text" name="skin" value="{{ character.skin or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-hair">Cheveux</label>
+                        <input id="character-hair" type="text" name="hair" value="{{ character.hair or '' }}">
+                    </div>
+                </div>
+
+                <label for="character-backstory">Backstory du personnage</label>
+                <textarea id="character-backstory" name="backstory_text" rows="3">{{ background_fields.backstory_text }}</textarea>
+
                 <label for="character-notes">Notes partagees</label>
                 <textarea id="character-notes" name="notes" rows="5">{{ character.notes }}</textarea>
 
@@ -88,6 +129,25 @@
 
                 <label for="character-init">Bonus initiative</label>
                 <input id="character-init" type="number" name="initiative_bonus" value="{{ character.initiative_bonus }}">
+
+                <h3>Equipement (comme a la creation)</h3>
+                <label for="character-equipment">Equipement principal</label>
+                <textarea id="character-equipment" name="equipment" rows="2">{{ equipment_fields.equipment }}</textarea>
+
+                <label for="character-weapon-loadout">Armes equipees</label>
+                <input id="character-weapon-loadout" type="text" name="weapon_loadout" value="{{ equipment_fields.weapon_loadout }}">
+
+                <label for="character-armor-loadout">Armure / Bouclier</label>
+                <input id="character-armor-loadout" type="text" name="armor_loadout" value="{{ equipment_fields.armor_loadout }}">
+
+                <label for="character-inventory-items">Inventaire</label>
+                <textarea id="character-inventory-items" name="inventory_items" rows="2">{{ equipment_fields.inventory_items }}</textarea>
+
+                <label for="character-tool-proficiencies">Outils maitrises</label>
+                <input id="character-tool-proficiencies" type="text" name="tool_proficiencies" value="{{ equipment_fields.tool_proficiencies }}">
+
+                <label for="character-spellbook-notes">Sorts / Aptitudes</label>
+                <textarea id="character-spellbook-notes" name="spellbook_notes" rows="2">{{ equipment_fields.spellbook_notes }}</textarea>
             </section>
         </div>
 
@@ -154,6 +214,35 @@
                     <small>Modificateur : {{ character.mod_charisme }} - Sauvegarde : {{ character.sauvegarde_charisme }}</small>
                 </div>
             </div>
+        </section>
+
+        <section class="edit-section edit-section--separator">
+            <h2>Details avances (creation PJ)</h2>
+
+            <label>Competences maitrisees</label>
+            <div class="skill-proficiencies-grid">
+                {% for skill in dnd_skill_options %}
+                    <label class="skill-option">
+                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}" {% if skill in selected_skills %}checked{% endif %}>
+                        <span>{{ skill }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <label for="character-appearance">Apparence du personnage</label>
+            <textarea id="character-appearance" name="character_appearance" rows="3">{{ character.character_appearance or '' }}</textarea>
+
+            <label for="character-allies-organizations">Allies & organisations</label>
+            <textarea id="character-allies-organizations" name="allies_organizations" rows="3">{{ character.allies_organizations or '' }}</textarea>
+
+            <label for="character-symbol-name">Nom du symbole</label>
+            <input id="character-symbol-name" type="text" name="symbol_name" value="{{ character.symbol_name or '' }}">
+
+            <label for="character-additional-features">Traits supplementaires</label>
+            <textarea id="character-additional-features" name="additional_features_traits" rows="3">{{ character.additional_features_traits or '' }}</textarea>
+
+            <label for="character-treasure">Tresor</label>
+            <textarea id="character-treasure" name="treasure" rows="3">{{ character.treasure or '' }}</textarea>
         </section>
 
         <section class="edit-section edit-section--separator">

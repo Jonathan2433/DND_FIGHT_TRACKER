@@ -155,6 +155,42 @@ class TemplateService:
         return " | ".join(sections)
 
     @staticmethod
+    def split_builder_equipment(equipment_value):
+        """Reconstitue les champs du funnel a partir de la chaine equipement stockee."""
+        parsed = {
+            "equipment": "",
+            "weapon_loadout": "",
+            "armor_loadout": "",
+            "inventory_items": "",
+            "skill_proficiencies": "",
+            "tool_proficiencies": "",
+            "spellbook_notes": "",
+        }
+        if not equipment_value:
+            return parsed
+
+        mapping = {
+            "Equipement principal:": "equipment",
+            "Armes equipees:": "weapon_loadout",
+            "Armure/Bouclier:": "armor_loadout",
+            "Inventaire:": "inventory_items",
+            "Competences maitrisees:": "skill_proficiencies",
+            "Outils maitrises:": "tool_proficiencies",
+            "Sorts/Aptitudes:": "spellbook_notes",
+        }
+
+        chunks = [chunk.strip() for chunk in equipment_value.split("|") if chunk.strip()]
+        for chunk in chunks:
+            for prefix, key in mapping.items():
+                if chunk.startswith(prefix):
+                    parsed[key] = chunk.replace(prefix, "", 1).strip()
+                    break
+            else:
+                if not parsed["equipment"]:
+                    parsed["equipment"] = chunk
+        return parsed
+
+    @staticmethod
     def _compose_background_payload(form_data):
         """Conserve le background mecanique + le backstory libre dans un seul champ DB."""
         background_choice = (form_data.get('background_choice') or form_data.get('background_story') or '').strip()
@@ -166,6 +202,17 @@ class TemplateService:
         if not backstory_text:
             return background_choice
         return f"{background_choice}\n\n{backstory_text}"
+
+    @staticmethod
+    def split_background_payload(background_story):
+        """Separer background choisi et backstory libre pour pre-remplir l'edition."""
+        if not background_story:
+            return {"background_choice": "", "backstory_text": ""}
+
+        parts = [part.strip() for part in background_story.split("\n\n", 1)]
+        if len(parts) == 1:
+            return {"background_choice": parts[0], "backstory_text": ""}
+        return {"background_choice": parts[0], "backstory_text": parts[1]}
 
     @staticmethod
     def create_character_template(form_data, files, upload_folder, current_user_id=None, campaign_id=None):
@@ -355,7 +402,8 @@ class TemplateService:
         template.eyes = form_data.get('eyes') or None
         template.skin = form_data.get('skin') or None
         template.hair = form_data.get('hair') or None
-        template.equipment = form_data.get('equipment') or None
+        detailed_equipment = TemplateService._compose_builder_equipment(form_data)
+        template.equipment = detailed_equipment or form_data.get('equipment') or None
         template.skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
         TemplateService._validate_skill_proficiencies_limit(
             form_data.get('character_class') or template.character_class,

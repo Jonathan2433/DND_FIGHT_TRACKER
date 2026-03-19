@@ -186,6 +186,12 @@ def edit_character_template(id):
         flash('Personnage modifié avec succès !', 'success')
         return redirect(url_for('template.character_profile', id=id))
 
+    equipment_fields = TemplateService.split_builder_equipment(template.equipment)
+    background_fields = TemplateService.split_background_payload(template.background_story)
+    selected_skills = {
+        token.strip() for token in (template.skill_proficiencies or '').split(',') if token.strip()
+    }
+
     return render_template(
         "edit_character.html",
         character=template,
@@ -194,6 +200,10 @@ def edit_character_template(id):
         dnd_background_catalog=AIDEDED_BACKGROUND_OPTIONS,
         dnd_alignments=ALIGNMENTS_FR,
         common_languages=COMMON_LANGUAGES,
+        dnd_skill_options=AIDEDED_SKILL_OPTIONS,
+        equipment_fields=equipment_fields,
+        background_fields=background_fields,
+        selected_skills=selected_skills,
     )
 
 
