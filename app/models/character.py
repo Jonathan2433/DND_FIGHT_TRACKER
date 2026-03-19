@@ -26,12 +26,28 @@ class CharacterTemplate(db.Model):
     # Identité
     name = db.Column(db.String(100), nullable=False)
     first_name = db.Column(db.String(50))  # Prénom
+    gender = db.Column(db.String(30))  # Genre affiche dans la fiche PDF
     player_name = db.Column(db.String(100))  # Nom du joueur
     campaign_name = db.Column(db.String(120))  # Nom de campagne pour la fiche PDF
     alignment = db.Column(db.String(60))  # Alignement DnD
     languages = db.Column(db.String(255))  # Langues parlées
+    height = db.Column(db.String(60))  # Taille libre
+    weight = db.Column(db.String(60))  # Poids libre
+    eyes = db.Column(db.String(60))  # Couleur des yeux
+    skin = db.Column(db.String(60))  # Teint/couleur de peau
+    hair = db.Column(db.String(60))  # Couleur/coiffure
     equipment = db.Column(db.Text)  # Equipement principal pour la fiche
+    skill_proficiencies = db.Column(db.String(255))  # Competences maitrisees (CSV)
     age = db.Column(db.Integer)  # Âge
+    character_appearance = db.Column(db.Text)  # Zone "Character appearance"
+    allies_organizations = db.Column(db.Text)  # Zone "Allies & Organizations"
+    additional_features_traits = db.Column(db.Text)  # Zone "Additional Features & Traits"
+    treasure = db.Column(db.Text)  # Zone "Treasure"
+    symbol_name = db.Column(db.String(120))  # Nom dans le cartouche symbole (page 2)
+    spellcasting_class = db.Column(db.String(80))  # Classe de lancement de sorts
+    spellcasting_ability = db.Column(db.String(30))  # Caracteristique de lancement de sorts
+    spell_save_dc = db.Column(db.Integer)  # DD de sauvegarde des sorts
+    spell_attack_bonus = db.Column(db.Integer)  # Bonus d'attaque des sorts
     background_story = db.Column(db.Text)  # Histoire/background
     character_class = db.Column(db.String(50))
     race = db.Column(db.String(50))
