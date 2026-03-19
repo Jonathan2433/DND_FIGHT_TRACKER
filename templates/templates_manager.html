@@ -246,8 +246,44 @@
                             <label for="create-age">Age</label>
                             <input id="create-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
 
+                            <label for="create-height">Taille</label>
+                            <input id="create-height" type="text" name="height" placeholder="Ex: 1m82">
+
                             <label for="create-weight">Poids</label>
                             <input id="create-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+
+                            <div class="stats-grid stats-grid--funnel">
+                                <div class="stat-input">
+                                    <label for="create-eyes">Yeux</label>
+                                    <input id="create-eyes" type="text" name="eyes" placeholder="Ex: verts">
+                                </div>
+                                <div class="stat-input">
+                                    <label for="create-skin">Peau</label>
+                                    <input id="create-skin" type="text" name="skin" placeholder="Ex: halee">
+                                </div>
+                                <div class="stat-input">
+                                    <label for="create-hair">Cheveux</label>
+                                    <input id="create-hair" type="text" name="hair" placeholder="Ex: noirs">
+                                </div>
+                            </div>
+
+                            <label for="create-skill-proficiencies">Competences maitrisees</label>
+                            <input id="create-skill-proficiencies" type="text" name="skill_proficiencies" placeholder="Ex: Perception, Discretion, Athletisme">
+
+                            <label for="create-character-appearance">Apparence du personnage</label>
+                            <textarea id="create-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
+
+                            <label for="create-allies-organizations">Allies & organisations</label>
+                            <textarea id="create-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
+
+                            <label for="create-symbol-name">Nom du symbole</label>
+                            <input id="create-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
+
+                            <label for="create-additional-features">Traits supplementaires</label>
+                            <textarea id="create-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
+
+                            <label for="create-treasure">Tresor</label>
+                            <textarea id="create-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
 
                             <label for="create-notes">Notes partagees</label>
                             <textarea id="create-notes" name="notes" rows="3"></textarea>
@@ -295,6 +331,32 @@
                                     <small>Utilise le template officiel et pre-remplit les informations connues du funnel de creation.</small>
                                 </span>
                             </label>
+
+                            <section id="spellcasting-fields" hidden>
+                                <h3>Lanceur de sorts</h3>
+                                <label for="create-spellcasting-class">Spellcasting class</label>
+                                <input id="create-spellcasting-class" type="text" name="spellcasting_class" placeholder="Ex: Wizard">
+                                <label for="create-spellcasting-ability">Spellcasting ability</label>
+                                <select id="create-spellcasting-ability" name="spellcasting_ability">
+                                    <option value="">-</option>
+                                    <option value="STR">STR</option>
+                                    <option value="DEX">DEX</option>
+                                    <option value="CON">CON</option>
+                                    <option value="INT">INT</option>
+                                    <option value="WIS">WIS</option>
+                                    <option value="CHA">CHA</option>
+                                </select>
+                                <div class="stats-grid stats-grid--funnel">
+                                    <div class="stat-input">
+                                        <label for="create-spell-save-dc">Spell save DC</label>
+                                        <input id="create-spell-save-dc" type="number" name="spell_save_dc" min="1" max="40" placeholder="Ex: 13">
+                                    </div>
+                                    <div class="stat-input">
+                                        <label for="create-spell-attack-bonus">Spell attack bonus</label>
+                                        <input id="create-spell-attack-bonus" type="number" name="spell_attack_bonus" min="-10" max="20" placeholder="Ex: 5">
+                                    </div>
+                                </div>
+                            </section>
                         </section>
                     </div>
                 </section>

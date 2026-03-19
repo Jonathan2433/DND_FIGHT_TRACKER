@@ -103,7 +103,7 @@ class TemplateService:
 
         shared_notes = form_data.get('notes', '')
         if identity_bits:
-            identity_notes = " | ".join(identity_bits)
+            identity_notes = "\n".join(identity_bits)
             shared_notes = f"{identity_notes}\n{shared_notes}".strip()
 
         template = CharacterTemplate(
@@ -147,12 +147,28 @@ class TemplateService:
             notes=shared_notes,
             player_private_notes=form_data.get('player_private_notes', ''),
             first_name=form_data.get('first_name') or None,
+            gender=form_data.get('genre') or None,
             player_name=current_user.username if current_user else None,
             campaign_name=form_data.get('campaign_name') or None,
             alignment=form_data.get('alignment') or None,
             languages=', '.join(selected_languages) if selected_languages else None,
+            height=form_data.get('height') or None,
+            weight=form_data.get('weight') or None,
+            eyes=form_data.get('eyes') or None,
+            skin=form_data.get('skin') or None,
+            hair=form_data.get('hair') or None,
             equipment=TemplateService._compose_builder_equipment(form_data),
+            skill_proficiencies=form_data.get('skill_proficiencies') or None,
             age=int(form_data.get('age')) if form_data.get('age') else None,
+            character_appearance=form_data.get('character_appearance') or None,
+            allies_organizations=form_data.get('allies_organizations') or None,
+            additional_features_traits=form_data.get('additional_features_traits') or None,
+            treasure=form_data.get('treasure') or None,
+            symbol_name=form_data.get('symbol_name') or None,
+            spellcasting_class=form_data.get('spellcasting_class') or None,
+            spellcasting_ability=form_data.get('spellcasting_ability') or None,
+            spell_save_dc=int(form_data.get('spell_save_dc')) if form_data.get('spell_save_dc') else None,
+            spell_attack_bonus=int(form_data.get('spell_attack_bonus')) if form_data.get('spell_attack_bonus') else None,
             background_story=form_data.get('background_story') or None,
             current_xp=int(form_data.get('current_xp', 0))
         )
@@ -210,9 +226,26 @@ class TemplateService:
         template.player_private_notes = form_data.get('player_private_notes', '')
         template.player_name = form_data.get('player_name') or None
         template.campaign_name = form_data.get('campaign_name') or None
+        template.gender = form_data.get('gender') or form_data.get('genre') or None
         template.alignment = form_data.get('alignment') or None
         template.languages = form_data.get('languages') or template.languages
+        template.height = form_data.get('height') or None
+        template.weight = form_data.get('weight') or None
+        template.eyes = form_data.get('eyes') or None
+        template.skin = form_data.get('skin') or None
+        template.hair = form_data.get('hair') or None
         template.equipment = form_data.get('equipment') or None
+        template.skill_proficiencies = form_data.get('skill_proficiencies') or None
+        template.age = int(form_data.get('age')) if form_data.get('age') else template.age
+        template.character_appearance = form_data.get('character_appearance') or None
+        template.allies_organizations = form_data.get('allies_organizations') or None
+        template.additional_features_traits = form_data.get('additional_features_traits') or None
+        template.treasure = form_data.get('treasure') or None
+        template.symbol_name = form_data.get('symbol_name') or None
+        template.spellcasting_class = form_data.get('spellcasting_class') or None
+        template.spellcasting_ability = form_data.get('spellcasting_ability') or None
+        template.spell_save_dc = int(form_data.get('spell_save_dc')) if form_data.get('spell_save_dc') else None
+        template.spell_attack_bonus = int(form_data.get('spell_attack_bonus')) if form_data.get('spell_attack_bonus') else None
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))

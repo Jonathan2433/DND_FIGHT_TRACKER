@@ -52,6 +52,72 @@ class CharacterSheetPdfService:
         "languages": ("Languages",),
         "equipment": ("Equipment", "EquipmentNotes", "Treasure"),
         "features_traits": ("Features and Traits", "FeaturesTraits", "Features and Traits 1"),
+        "passive_wisdom": ("Passive", "Passive Wisdom (Perception)"),
+        "proficiency_checkbox": ("ProfCheckbox", "Inspiration", "Inspiration Checkbox"),
+        "age": ("Age",),
+        "height": ("Height",),
+        "weight": ("Weight",),
+        "eyes": ("Eyes",),
+        "skin": ("Skin",),
+        "hair": ("Hair",),
+        "personality_traits": ("PersonalityTraits", "Personality Traits"),
+        "allies_organizations": ("AlliesOrganizations", "Allies & Organizations"),
+        "character_appearance": ("CharacterAppearance", "CHARACTER APPEARANCE"),
+        "additional_features_traits": ("AdditionalFeatandTraits", "Additional Features and Traits"),
+        "treasure": ("Treasure",),
+        "symbol_name": ("FactionName", "Faction Name", "Name"),
+        "spellcasting_class": ("Spellcasting Class 2", "Spellcasting Class"),
+        "spellcasting_ability": ("SpellcastingAbility 2", "Spellcasting Ability"),
+        "spell_save_dc": ("SpellSaveDC 2", "Spell Save DC"),
+        "spell_attack_bonus": ("SpellAtkBonus 2", "Spell Attack Bonus"),
+        "saving_throw_strength": ("ST Strength",),
+        "saving_throw_dexterity": ("ST Dexterity",),
+        "saving_throw_constitution": ("ST Constitution",),
+        "saving_throw_intelligence": ("ST Intelligence",),
+        "saving_throw_wisdom": ("ST Wisdom",),
+        "saving_throw_charisma": ("ST Charisma",),
+        "saving_throw_strength_prof": ("Check Box 11",),
+        "saving_throw_dexterity_prof": ("Check Box 18",),
+        "saving_throw_constitution_prof": ("Check Box 19",),
+        "saving_throw_intelligence_prof": ("Check Box 20",),
+        "saving_throw_wisdom_prof": ("Check Box 21",),
+        "saving_throw_charisma_prof": ("Check Box 22",),
+        "acrobatics": ("Acrobatics",),
+        "animal_handling": ("Animal", "Animal Handling"),
+        "arcana": ("Arcana",),
+        "athletics": ("Athletics",),
+        "deception": ("Deception ", "Deception"),
+        "history": ("History ", "History"),
+        "insight": ("Insight",),
+        "intimidation": ("Intimidation",),
+        "investigation": ("Investigation ", "Investigation"),
+        "medicine": ("Medicine",),
+        "nature": ("Nature",),
+        "perception": ("Perception ", "Perception"),
+        "performance": ("Performance",),
+        "persuasion": ("Persuasion",),
+        "religion": ("Religion",),
+        "sleight_of_hand": ("SleightofHand", "Sleight of Hand"),
+        "stealth": ("Stealth ", "Stealth"),
+        "survival": ("Survival",),
+        "acrobatics_prof": ("Check Box 23",),
+        "animal_handling_prof": ("Check Box 24",),
+        "arcana_prof": ("Check Box 25",),
+        "athletics_prof": ("Check Box 26",),
+        "deception_prof": ("Check Box 27",),
+        "history_prof": ("Check Box 28",),
+        "insight_prof": ("Check Box 29",),
+        "intimidation_prof": ("Check Box 30",),
+        "investigation_prof": ("Check Box 31",),
+        "medicine_prof": ("Check Box 32",),
+        "nature_prof": ("Check Box 33",),
+        "perception_prof": ("Check Box 34",),
+        "performance_prof": ("Check Box 35",),
+        "persuasion_prof": ("Check Box 36",),
+        "religion_prof": ("Check Box 37",),
+        "sleight_of_hand_prof": ("Check Box 38",),
+        "stealth_prof": ("Check Box 39",),
+        "survival_prof": ("Check Box 40",),
     }
 
     REQUIRED_MAPPING_KEYS = ("character_name", "class_level", "race", "armor_class", "strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma")
@@ -85,6 +151,40 @@ class CharacterSheetPdfService:
         "languages": ("language",),
         "equipment": ("equipment",),
         "features_traits": ("features", "traits"),
+        "age": ("age",),
+        "height": ("height",),
+        "weight": ("weight",),
+        "eyes": ("eyes",),
+        "skin": ("skin",),
+        "hair": ("hair",),
+        "allies_organizations": ("allies", "organizations"),
+        "character_appearance": ("appearance",),
+        "additional_features_traits": ("additional", "features", "traits"),
+        "spellcasting_class": ("spellcastingclass",),
+        "spellcasting_ability": ("spellcastingability",),
+        "spell_save_dc": ("spellsavedc",),
+        "spell_attack_bonus": ("spellatkbonus", "spellattackbonus"),
+    }
+
+    SKILL_TO_ABILITY = {
+        "acrobatics": "dexterite",
+        "animal_handling": "sagesse",
+        "arcana": "intelligence",
+        "athletics": "force",
+        "deception": "charisme",
+        "history": "intelligence",
+        "insight": "sagesse",
+        "intimidation": "charisme",
+        "investigation": "intelligence",
+        "medicine": "sagesse",
+        "nature": "intelligence",
+        "perception": "sagesse",
+        "performance": "charisme",
+        "persuasion": "charisme",
+        "religion": "intelligence",
+        "sleight_of_hand": "dexterite",
+        "stealth": "dexterite",
+        "survival": "sagesse",
     }
 
     @staticmethod
@@ -215,6 +315,39 @@ class CharacterSheetPdfService:
 
     @classmethod
     def _build_field_values(cls, character, resolved_mapping: dict[str, str]) -> dict[str, str]:
+        raw_skills = (character.skill_proficiencies or "").lower()
+        normalized_skills = {token.strip() for token in re.split(r"[,;/|]", raw_skills) if token.strip()}
+
+        def has_skill(*terms: str) -> bool:
+            return any(term.lower() in normalized_skills for term in terms)
+
+        skill_flags = {
+            "acrobatics": has_skill("acrobatics", "acrobaties"),
+            "animal_handling": has_skill("animal handling", "dressage"),
+            "arcana": has_skill("arcana", "arcanes"),
+            "athletics": has_skill("athletics", "athletisme"),
+            "deception": has_skill("deception", "tromperie"),
+            "history": has_skill("history", "histoire"),
+            "insight": has_skill("insight", "intuition"),
+            "intimidation": has_skill("intimidation"),
+            "investigation": has_skill("investigation"),
+            "medicine": has_skill("medicine", "medecine"),
+            "nature": has_skill("nature"),
+            "perception": has_skill("perception"),
+            "performance": has_skill("performance"),
+            "persuasion": has_skill("persuasion"),
+            "religion": has_skill("religion"),
+            "sleight_of_hand": has_skill("sleight of hand", "escamotage"),
+            "stealth": has_skill("stealth", "discretion"),
+            "survival": has_skill("survival", "survie"),
+        }
+
+        skill_values = {}
+        for skill_key, ability_key in cls.SKILL_TO_ABILITY.items():
+            ability_mod = getattr(character, f"mod_{ability_key}", 0)
+            bonus = character.bonus_maitrise if skill_flags[skill_key] else 0
+            skill_values[skill_key] = cls._format_mod(ability_mod + bonus)
+
         values_by_business_key: dict[str, Any] = {
             "character_name": character.name or "",
             "class_level": f"{character.character_class or ''} {character.level or 1}".strip(),
@@ -245,7 +378,38 @@ class CharacterSheetPdfService:
             "languages": character.languages or "",
             "equipment": (character.equipment or "")[:400],
             "features_traits": (character.notes or "")[:900],
+            "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
+            "age": str(character.age or ""),
+            "height": character.height or "",
+            "weight": character.weight or "",
+            "eyes": character.eyes or "",
+            "skin": character.skin or "",
+            "hair": character.hair or "",
+            "personality_traits": "\n".join(filter(None, [f"Genre: {character.gender}" if character.gender else "", f"Alignement: {character.alignment}" if character.alignment else ""])),
+            "allies_organizations": (character.allies_organizations or "")[:900],
+            "character_appearance": (character.character_appearance or "")[:900],
+            "additional_features_traits": (character.additional_features_traits or "")[:1200],
+            "treasure": (character.treasure or character.equipment or "")[:1200],
+            "symbol_name": character.symbol_name or "",
+            "spellcasting_class": character.spellcasting_class or "",
+            "spellcasting_ability": character.spellcasting_ability or "",
+            "spell_save_dc": str(character.spell_save_dc or ""),
+            "spell_attack_bonus": cls._format_mod(character.spell_attack_bonus or 0) if character.spell_attack_bonus is not None else "",
+            "saving_throw_strength": cls._format_mod(character.sauvegarde_force),
+            "saving_throw_dexterity": cls._format_mod(character.sauvegarde_dexterite),
+            "saving_throw_constitution": cls._format_mod(character.sauvegarde_constitution),
+            "saving_throw_intelligence": cls._format_mod(character.sauvegarde_intelligence),
+            "saving_throw_wisdom": cls._format_mod(character.sauvegarde_sagesse),
+            "saving_throw_charisma": cls._format_mod(character.sauvegarde_charisme),
+            "saving_throw_strength_prof": "Yes" if character.maitrise_force else "Off",
+            "saving_throw_dexterity_prof": "Yes" if character.maitrise_dexterite else "Off",
+            "saving_throw_constitution_prof": "Yes" if character.maitrise_constitution else "Off",
+            "saving_throw_intelligence_prof": "Yes" if character.maitrise_intelligence else "Off",
+            "saving_throw_wisdom_prof": "Yes" if character.maitrise_sagesse else "Off",
+            "saving_throw_charisma_prof": "Yes" if character.maitrise_charisme else "Off",
         }
+        values_by_business_key.update(skill_values)
+        values_by_business_key.update({f"{skill_key}_prof": "Yes" if is_proficient else "Off" for skill_key, is_proficient in skill_flags.items()})
 
         return {
             resolved_mapping[business_key]: str(value)

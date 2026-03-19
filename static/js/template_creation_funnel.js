@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const generatePdfInput = form.querySelector('#create-generate-pdf');
     const pdfInput = form.querySelector('#create-pdf');
     const pdfHelp = form.querySelector('#create-pdf-help');
+    const spellcastingContainer = form.querySelector('#spellcasting-fields');
+    const spellcastingClassInput = form.querySelector('#create-spellcasting-class');
+    const spellcastingAbilityInput = form.querySelector('#create-spellcasting-ability');
 
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
@@ -45,6 +48,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const abilities = ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'];
+    const spellcasterRules = {
+        Artificier: 'INT',
+        Barde: 'CHA',
+        Bard: 'CHA',
+        Clerc: 'WIS',
+        Cleric: 'WIS',
+        Druide: 'WIS',
+        Druid: 'WIS',
+        Ensorceleur: 'CHA',
+        Magicien: 'INT',
+        Occultiste: 'CHA',
+        Paladin: 'CHA',
+        Ranger: 'WIS',
+        Rôdeur: 'WIS',
+        Sorcerer: 'CHA',
+        Warlock: 'CHA',
+        Wizard: 'INT'
+    };
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
@@ -280,6 +301,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const syncSpellcastingFields = () => {
+        if (!spellcastingContainer || !classSelect) return;
+        const selectedClass = classSelect.value;
+        const isSpellcaster = Object.prototype.hasOwnProperty.call(spellcasterRules, selectedClass);
+        spellcastingContainer.hidden = !isSpellcaster;
+
+        if (!isSpellcaster) {
+            if (spellcastingClassInput) spellcastingClassInput.value = '';
+            if (spellcastingAbilityInput) spellcastingAbilityInput.value = '';
+            return;
+        }
+
+        if (spellcastingClassInput && !spellcastingClassInput.value) {
+            spellcastingClassInput.value = selectedClass;
+        }
+
+        const suggestedAbility = spellcasterRules[selectedClass];
+        if (spellcastingAbilityInput && suggestedAbility && !spellcastingAbilityInput.value) {
+            spellcastingAbilityInput.value = suggestedAbility;
+        }
+    };
+
     const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
     const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
     const prevButton = form.querySelector('#wizard-prev');
@@ -406,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     classSelect?.addEventListener('change', () => {
         render();
         renderClassDescription();
+        syncSpellcastingFields();
     });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', () => {
@@ -425,5 +469,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLanguages();
     renderAlignment();
     syncPdfInputMode();
+    syncSpellcastingFields();
     updateWizardUI();
 });
