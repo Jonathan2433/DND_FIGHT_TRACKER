@@ -647,7 +647,11 @@ def resolve_character_creation(form_data):
     level = _clamp(int(form_data.get("level", 1)), 1, 20)
     race = form_data.get("race", "Human")
     character_class = form_data.get("character_class", "Fighter")
-    background_name = form_data.get("background_story", "Acolyte")
+    background_name = (
+        form_data.get("background_choice")
+        or form_data.get("background_story")
+        or "Acolyte"
+    )
 
     base_scores = _resolve_base_scores(form_data)
 

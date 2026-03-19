@@ -92,7 +92,7 @@
                     <p id="race-proficiencies-summary" class="funnel-summary-inline">Maitrises d'espece: -</p>
 
                     <label for="create-background">Background</label>
-                    <select id="create-background" name="background_story" required>
+                    <select id="create-background" name="background_choice" required>
                         {% for background_name in dnd_background_catalog %}
                             {% set background_data = dnd_backgrounds.get(background_name, {}) %}
                             <option
@@ -295,6 +295,9 @@
                             <label for="create-treasure">Tresor</label>
                             <textarea id="create-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
 
+                            <label for="create-backstory">Backstory du personnage</label>
+                            <textarea id="create-backstory" name="backstory_text" rows="3" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
+
                             <label for="create-notes">Notes partagees</label>
                             <textarea id="create-notes" name="notes" rows="3"></textarea>
 
@@ -342,16 +345,6 @@
                                 </span>
                             </label>
 
-                            <section id="spellcasting-fields" hidden>
-                                <h3>Lanceur de sorts</h3>
-                                <label for="create-spellcasting-class">Spellcasting class</label>
-                                <input id="create-spellcasting-class" type="text" name="spellcasting_class" placeholder="Ex: Wizard">
-                                <p class="funnel-summary-inline">
-                                    Les champs <strong>Spellcasting Ability</strong>, <strong>Spell save DC</strong> et
-                                    <strong>Spell attack bonus</strong> sont calcules automatiquement selon la classe,
-                                    le niveau et les caracteristiques D&D.
-                                </p>
-                            </section>
                         </section>
                     </div>
                 </section>
