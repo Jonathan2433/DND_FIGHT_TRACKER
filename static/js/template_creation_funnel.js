@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const equipmentField = form.querySelector('#create-equipment');
     const weaponLoadoutField = form.querySelector('#create-weapon-loadout');
     const armorLoadoutField = form.querySelector('#create-armor-loadout');
+    const armorEquippedSelect = form.querySelector('#create-armor-equipped');
+    const shieldEquippedCheckbox = form.querySelector('#create-shield-equipped');
+    const acBaseHiddenInput = form.querySelector('#create-ac-base-hidden');
     const inventoryItemsField = form.querySelector('#create-inventory-items');
     const toolProficienciesField = form.querySelector('#create-tool-proficiencies');
 
@@ -84,6 +87,46 @@ document.addEventListener('DOMContentLoaded', () => {
         sorcerer: 'Aucune armure ; Armes courantes',
         warlock: 'Armures legeres ; Armes courantes',
         wizard: 'Aucune armure ; Armes courantes',
+    };
+    const classArmorMasteries = {
+        barbare: new Set(['light', 'medium', 'shield']),
+        barde: new Set(['light']),
+        clerc: new Set(['light', 'medium', 'shield']),
+        druide: new Set(['light', 'shield']),
+        guerrier: new Set(['light', 'medium', 'heavy', 'shield']),
+        moine: new Set([]),
+        paladin: new Set(['light', 'medium', 'heavy', 'shield']),
+        rodeur: new Set(['light', 'medium', 'shield']),
+        roublard: new Set(['light']),
+        ensorceleur: new Set([]),
+        occultiste: new Set(['light']),
+        magicien: new Set([]),
+        barbarian: new Set(['light', 'medium', 'shield']),
+        bard: new Set(['light']),
+        cleric: new Set(['light', 'medium', 'shield']),
+        druid: new Set(['light', 'shield']),
+        fighter: new Set(['light', 'medium', 'heavy', 'shield']),
+        monk: new Set([]),
+        ranger: new Set(['light', 'medium', 'shield']),
+        rogue: new Set(['light']),
+        sorcerer: new Set([]),
+        warlock: new Set(['light']),
+        wizard: new Set([]),
+    };
+    const armorCatalog = {
+        none: { label: 'Sans armure', category: 'none', base: 10, dexCap: null },
+        padded: { label: 'Matelassee', category: 'light', base: 11, dexCap: null },
+        leather: { label: 'Cuir', category: 'light', base: 11, dexCap: null },
+        studded_leather: { label: 'Cuir cloute', category: 'light', base: 12, dexCap: null },
+        hide: { label: 'Peau', category: 'medium', base: 12, dexCap: 2 },
+        chain_shirt: { label: 'Chemise de mailles', category: 'medium', base: 13, dexCap: 2 },
+        scale_mail: { label: 'Clibanion (Scale Mail)', category: 'medium', base: 14, dexCap: 2 },
+        breastplate: { label: 'Cuirasse', category: 'medium', base: 14, dexCap: 2 },
+        half_plate: { label: 'Demi-plate', category: 'medium', base: 15, dexCap: 2 },
+        ring_mail: { label: 'Broigne (Ring Mail)', category: 'heavy', base: 14, dexCap: 0 },
+        chain_mail: { label: 'Cotte de mailles', category: 'heavy', base: 16, dexCap: 0 },
+        splint: { label: 'Clibanion (Splint)', category: 'heavy', base: 17, dexCap: 0 },
+        plate: { label: 'Harnois (Plate)', category: 'heavy', base: 18, dexCap: 0 },
     };
     const adventurePacks = {
         'Cambrioleur (Burglar)': ['Sac a dos', 'Sac de billes', 'Cloche', '10 bougies', 'Pied-de-biche', 'Lanterne sourde', "7 flacons d'huile", '5 jours de rations', 'Corde', "Boite d'allume-feu", 'Outre'],
@@ -474,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const classBaseSummary = document.getElementById('equipment-class-base-summary');
         const backgroundChoiceSummary = document.getElementById('equipment-background-choice-summary');
         const packSummary = document.getElementById('equipment-pack-summary');
+        const armorSummary = document.getElementById('equipment-armor-summary');
         if (classBaseSummary) classBaseSummary.textContent = `Base de classe: ${classBaseRule}`;
 
         let backgroundChoiceText = 'Historique non reference dans les sets automatiques (Acolyte, Criminel, Sage, Soldat).';
@@ -504,7 +548,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toolProficienciesField.value = selectedBackground?.dataset.tool || '';
         }
         if (armorLoadoutField && !armorLoadoutField.dataset.userEdited) {
-            armorLoadoutField.value = classBaseRule.includes('Aucune armure') ? 'Sans armure (10 + DEX)' : '';
+            const selectedArmor = armorCatalog[armorEquippedSelect?.value || 'none'] || armorCatalog.none;
+            const loadout = [selectedArmor.label];
+            if (shieldEquippedCheckbox?.checked) {
+                loadout.push('Bouclier');
+            }
+            armorLoadoutField.value = loadout.join(', ');
         }
         if (weaponLoadoutField && !weaponLoadoutField.dataset.userEdited) {
             weaponLoadoutField.value = '';
@@ -512,6 +561,55 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inventoryItemsField && !inventoryItemsField.dataset.userEdited) {
             inventoryItemsField.value = selectedPackItems.join(', ');
         }
+        if (armorSummary && !armorSummary.dataset.dynamicArmor) {
+            armorSummary.textContent = 'Armure portee: sans armure.';
+        }
+    };
+
+    const computeArmorClass = (finalStats) => {
+        const selectedArmorKey = armorEquippedSelect?.value || 'none';
+        const armor = armorCatalog[selectedArmorKey] || armorCatalog.none;
+        const dexMod = mod(finalStats.dexterite || 10);
+        const conMod = mod(finalStats.constitution || 10);
+        const wisMod = mod(finalStats.sagesse || 10);
+        const chaMod = mod(finalStats.charisme || 10);
+        const normalizedClass = normalizeClassName(classSelect?.value);
+        const classMasteries = classArmorMasteries[normalizedClass] || new Set([]);
+        const hasShield = Boolean(shieldEquippedCheckbox?.checked);
+
+        let ac = 10 + dexMod;
+        let formula = '10 + DEX';
+        if (armor.category === 'none') {
+            if (normalizedClass === 'barbare' || normalizedClass === 'barbarian') {
+                ac = 10 + dexMod + conMod;
+                formula = '10 + DEX + CON (Defense sans armure Barbare)';
+            } else if (normalizedClass === 'moine' || normalizedClass === 'monk') {
+                ac = 10 + dexMod + wisMod;
+                formula = '10 + DEX + SAG (Defense sans armure Moine)';
+            } else if (normalizedClass === 'ensorceleur' || normalizedClass === 'sorcerer') {
+                ac = 10 + dexMod + chaMod;
+                formula = '10 + DEX + CHA (Lignee draconique, si applicable)';
+            }
+        } else if (armor.category === 'heavy') {
+            ac = armor.base;
+            formula = `${armor.base} (armure lourde)`;
+        } else {
+            const dexUsed = armor.dexCap === null ? dexMod : Math.min(dexMod, armor.dexCap);
+            ac = armor.base + dexUsed;
+            formula = armor.dexCap === null
+                ? `${armor.base} + DEX`
+                : `${armor.base} + DEX (max +${armor.dexCap})`;
+        }
+
+        if (hasShield) {
+            ac += 2;
+            formula += ' + 2 (bouclier)';
+        }
+
+        const armorMastered = armor.category === 'none' || classMasteries.has(armor.category);
+        const shieldMastered = !hasShield || classMasteries.has('shield');
+        const isMastered = armorMastered && shieldMastered;
+        return { ac, formula, armor, isMastered, hasShield };
     };
 
     const renderSpecies = () => {
@@ -599,7 +697,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const dexMod = mod(finalStats.dexterite);
         const avgGain = Math.floor(classRule.hitDie / 2) + 1;
         const hp = Math.max(1, classRule.hitDie + constitutionMod + (level - 1) * (avgGain + constitutionMod));
-        const ac = Math.max(10, 10 + dexMod);
+        const armorComputation = computeArmorClass(finalStats);
+        const ac = armorComputation.ac;
+        if (acBaseHiddenInput) {
+            acBaseHiddenInput.value = String(ac);
+        }
+
+        const armorSummary = document.getElementById('equipment-armor-summary');
+        if (armorSummary) {
+            const masteryWarning = armorComputation.isMastered
+                ? ''
+                : ' ⚠ Non maitrise: desavantage FOR/DEX + impossibilite de lancer des sorts.';
+            armorSummary.dataset.dynamicArmor = '1';
+            armorSummary.textContent = `Armure portee: ${armorComputation.armor.label}${armorComputation.hasShield ? ' + bouclier' : ''} | CA ${ac} (${armorComputation.formula}).${masteryWarning}`;
+        }
 
         const derivedSummary = document.getElementById('derived-stats-summary');
         if (derivedSummary) {
@@ -981,6 +1092,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     backgroundEquipmentChoiceSelect?.addEventListener('change', renderEquipmentStep);
     adventurePackSelect?.addEventListener('change', renderEquipmentStep);
+    armorEquippedSelect?.addEventListener('change', () => {
+        renderEquipmentStep();
+        render();
+    });
+    shieldEquippedCheckbox?.addEventListener('change', () => {
+        renderEquipmentStep();
+        render();
+    });
     [equipmentField, weaponLoadoutField, armorLoadoutField, inventoryItemsField, toolProficienciesField].forEach((field) => {
         field?.addEventListener('input', () => {
             field.dataset.userEdited = '1';
