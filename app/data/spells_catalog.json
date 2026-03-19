@@ -1,20 +1,827 @@
 {
   "spells": [
     {
-      "name": "Lumiere",
+      "name": "Acid Splash",
       "level": 0,
-      "school": "Evocation",
-      "classes": ["Clerc", "Magicien"],
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard",
+        "Artificer"
+      ],
       "source": "SRD 5.1",
-      "description": "Vous touchez un objet qui emet de la lumiere vive dans un rayon de 6 metres."
+      "description": ""
     },
     {
-      "name": "Projectile magique",
-      "level": 1,
-      "school": "Evocation",
-      "classes": ["Magicien", "Ensorceleur"],
+      "name": "Blade Ward",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
       "source": "SRD 5.1",
-      "description": "Trois dards de force touchent automatiquement des cibles visibles a portee."
+      "description": ""
+    },
+    {
+      "name": "Chill Touch",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Dancing Lights",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Fire Bolt",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Friends",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Guidance",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Druid",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Light",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Sorcerer",
+        "Wizard",
+        "Bard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Mage Hand",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Mending",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Message",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Minor Illusion",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Poison Spray",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Druid",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Prestidigitation",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Ray of Frost",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Resistance",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Druid",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Sacred Flame",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Shocking Grasp",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Artificer",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Spare the Dying",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Thaumaturgy",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "True Strike",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Vicious Mockery",
+      "level": 0,
+      "school": "",
+      "classes": [
+        "Bard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Alarm",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Ranger",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Animal Friendship",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Druid",
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Bane",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Bless",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Paladin"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Burning Hands",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Charm Person",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Druid",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Chromatic Orb",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Color Spray",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Command",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Paladin"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Comprehend Languages",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Create or Destroy Water",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Druid"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Cure Wounds",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Paladin",
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Detect Magic",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Paladin",
+        "Ranger",
+        "Sorcerer",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Detect Poison and Disease",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Druid",
+        "Paladin",
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Disguise Self",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Entangle",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Druid",
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Expeditious Retreat",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Warlock",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "False Life",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Feather Fall",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Find Familiar",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Fog Cloud",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Druid",
+        "Ranger",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Goodberry",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Druid",
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Grease",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Guiding Bolt",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Healing Word",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Cleric",
+        "Druid"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Heroism",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Paladin"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Hex",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Warlock"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Hunter's Mark",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Ranger"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Identify",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Illusory Script",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Inflict Wounds",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Jump",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Druid",
+        "Ranger",
+        "Sorcerer",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Longstrider",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Druid",
+        "Ranger",
+        "Wizard",
+        "Artificer"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Mage Armor",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Magic Missile",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Protection from Evil and Good",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Paladin",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Purify Food and Drink",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric",
+        "Druid",
+        "Paladin"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Ray of Sickness",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Sanctuary",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Cleric"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Shield",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Silent Image",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Sleep",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Tasha's Hideous Laughter",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Tenser's Floating Disk",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Thunderwave",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Druid",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Unseen Servant",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Bard",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
+    },
+    {
+      "name": "Witch Bolt",
+      "level": 1,
+      "school": "",
+      "classes": [
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ],
+      "source": "SRD 5.1",
+      "description": ""
     }
   ]
 }
