@@ -144,7 +144,7 @@ class CharacterSheetPdfService:
         "charisma": ("cha", "charisma"),
         "charisma_mod": ("chamod", "charismamod"),
         "proficiency_bonus": ("prof", "proficiency"),
-        "armor_class": ("ac", "armorclass"),
+        "armor_class": ("armorclass",),
         "initiative": ("initiative",),
         "speed": ("speed",),
         "hp_max": ("hpmax", "hitpointmaximum"),
@@ -345,6 +345,14 @@ class CharacterSheetPdfService:
                 if business_key in mapping:
                     continue
                 for normalized_name, real_name in normalized_to_real.items():
+                    if business_key == "armor_class":
+                        is_armor_field = (
+                            normalized_name in {"ac", "armorclass", "armourclass"}
+                            or "armorclass" in normalized_name
+                            or "armourclass" in normalized_name
+                        )
+                        if not is_armor_field:
+                            continue
                     if any(keyword in normalized_name for keyword in keywords):
                         mapping[business_key] = real_name
                         break

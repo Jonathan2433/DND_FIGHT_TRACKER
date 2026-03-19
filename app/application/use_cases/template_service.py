@@ -15,6 +15,33 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
+    SKILL_PROFICIENCY_LIMITS_BY_CLASS = {
+        "artificier": 2,
+        "barbarian": 2,
+        "barbare": 2,
+        "bard": 3,
+        "barde": 3,
+        "cleric": 2,
+        "clerc": 2,
+        "druid": 2,
+        "druide": 2,
+        "fighter": 2,
+        "guerrier": 2,
+        "monk": 2,
+        "moine": 2,
+        "paladin": 2,
+        "ranger": 3,
+        "rodeur": 3,
+        "rôdeur": 3,
+        "rogue": 4,
+        "roublard": 4,
+        "sorcerer": 2,
+        "ensorceleur": 2,
+        "warlock": 2,
+        "occultiste": 2,
+        "wizard": 2,
+        "magicien": 2,
+    }
     SPELLCASTING_ABILITIES_BY_CLASS = {
         "artificier": "INT",
         "bard": "CHA",
@@ -47,6 +74,23 @@ class TemplateService:
             return None
         split_values = [token.strip() for token in legacy_value.replace(';', ',').split(',') if token.strip()]
         return ", ".join(dict.fromkeys(split_values)) if split_values else None
+
+    @staticmethod
+    def _normalize_class_name(value):
+        return (value or '').strip().lower().replace('ô', 'o').replace('é', 'e').replace('è', 'e')
+
+    @classmethod
+    def _validate_skill_proficiencies_limit(cls, character_class, normalized_skill_proficiencies):
+        if not normalized_skill_proficiencies:
+            return
+        selected_skills = [token.strip() for token in normalized_skill_proficiencies.split(',') if token.strip()]
+        selected_count = len(selected_skills)
+        class_key = cls._normalize_class_name(character_class)
+        max_allowed = cls.SKILL_PROFICIENCY_LIMITS_BY_CLASS.get(class_key, 2)
+        if selected_count > max_allowed:
+            raise ValueError(
+                f"La classe '{character_class}' ne peut choisir que {max_allowed} competences maitrisees au niveau 1 (selection actuelle: {selected_count})."
+            )
 
     @classmethod
     def _derive_spellcasting_stats(cls, character_class, level, resolved_character):
@@ -137,6 +181,10 @@ class TemplateService:
 
         resolved_character = resolve_character_creation(form_data)
         normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        TemplateService._validate_skill_proficiencies_limit(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            normalized_skill_proficiencies,
+        )
         spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
             resolved_character.get('character_class') or form_data.get('character_class'),
             resolved_character.get('level') or form_data.get('level'),
@@ -296,6 +344,10 @@ class TemplateService:
         template.hair = form_data.get('hair') or None
         template.equipment = form_data.get('equipment') or None
         template.skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        TemplateService._validate_skill_proficiencies_limit(
+            form_data.get('character_class') or template.character_class,
+            template.skill_proficiencies,
+        )
         template.age = int(form_data.get('age')) if form_data.get('age') else template.age
         template.character_appearance = form_data.get('character_appearance') or None
         template.allies_organizations = form_data.get('allies_organizations') or None
