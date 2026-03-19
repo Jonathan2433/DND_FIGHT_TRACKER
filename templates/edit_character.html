@@ -178,8 +178,10 @@
                 <label for="character-tool-proficiencies">Outils maitrises</label>
                 <input id="character-tool-proficiencies" type="text" name="tool_proficiencies" value="{{ equipment_fields.tool_proficiencies }}">
 
-                <label for="character-spellbook-notes">Sorts / Aptitudes</label>
-                <textarea id="character-spellbook-notes" name="spellbook_notes" rows="2">{{ equipment_fields.spellbook_notes }}</textarea>
+                <div data-spellbook-notes-field>
+                    <label for="character-spellbook-notes">Sorts / Aptitudes</label>
+                    <textarea id="character-spellbook-notes" name="spellbook_notes" rows="2">{{ equipment_fields.spellbook_notes }}</textarea>
+                </div>
             </section>
         </div>
 
@@ -385,6 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const classSelect = document.getElementById('character-class');
     const weaponSelect = document.getElementById('character-weapon-loadout');
     const armorSelect = document.getElementById('character-armor-loadout');
+    const spellSection = document.querySelector('[data-spell-selection]');
+    const spellbookField = document.querySelector('[data-spellbook-notes-field]');
     if (!classSelect || !weaponSelect || !armorSelect) return;
 
     const normalizeClassName = (value) => (value || '')
@@ -442,6 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
         warlock: { simple: true, martial: false },
         wizard: { simple: true, martial: false },
     };
+    const spellcastingClasses = new Set([
+        'artificier', 'bard', 'barde', 'cleric', 'clerc', 'druid', 'druide',
+        'sorcerer', 'ensorceleur', 'warlock', 'occultiste', 'wizard', 'magicien',
+        'paladin', 'ranger', 'rodeur',
+    ]);
 
     const isWeaponAllowed = (option, classRule) => {
         if (!option.value) return true;
@@ -491,8 +500,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    classSelect.addEventListener('change', syncEquipmentByClass);
+    const syncClassSpecificVisibility = () => {
+        const classKey = normalizeClassName(classSelect.value);
+        const isSpellcaster = spellcastingClasses.has(classKey);
+
+        if (spellSection) {
+            spellSection.hidden = !isSpellcaster;
+            if (!isSpellcaster) {
+                spellSection.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                    input.checked = false;
+                });
+                const spellSearch = spellSection.querySelector('[data-spell-search]');
+                if (spellSearch) spellSearch.value = '';
+            }
+        }
+
+        if (spellbookField) {
+            spellbookField.hidden = !isSpellcaster;
+            if (!isSpellcaster) {
+                const spellbookTextarea = spellbookField.querySelector('textarea[name="spellbook_notes"]');
+                if (spellbookTextarea) spellbookTextarea.value = '';
+            }
+        }
+    };
+
+    classSelect.addEventListener('change', () => {
+        syncEquipmentByClass();
+        syncClassSpecificVisibility();
+    });
     syncEquipmentByClass();
+    syncClassSpecificVisibility();
 });
 </script>
 {% endblock %}

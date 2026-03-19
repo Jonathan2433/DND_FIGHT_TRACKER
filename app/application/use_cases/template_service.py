@@ -16,6 +16,83 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 class TemplateService:
     """Service pour la gestion des templates de personnages et rencontres"""
+    ARMOR_MASTERY_BY_CLASS = {
+        "barbare": {"light", "medium", "shield"},
+        "barde": {"light"},
+        "clerc": {"light", "medium", "shield"},
+        "druide": {"light", "shield"},
+        "guerrier": {"light", "medium", "heavy", "shield"},
+        "moine": set(),
+        "paladin": {"light", "medium", "heavy", "shield"},
+        "rodeur": {"light", "medium", "shield"},
+        "roublard": {"light"},
+        "ensorceleur": set(),
+        "occultiste": {"light"},
+        "magicien": set(),
+        "barbarian": {"light", "medium", "shield"},
+        "bard": {"light"},
+        "cleric": {"light", "medium", "shield"},
+        "druid": {"light", "shield"},
+        "fighter": {"light", "medium", "heavy", "shield"},
+        "monk": set(),
+        "ranger": {"light", "medium", "shield"},
+        "rogue": {"light"},
+        "sorcerer": set(),
+        "warlock": {"light"},
+        "wizard": set(),
+    }
+    WEAPON_MASTERY_BY_CLASS = {
+        "barbare": {"simple": True, "martial": True, "martial_allowed": None},
+        "barde": {"simple": True, "martial": False, "martial_allowed": None},
+        "clerc": {"simple": True, "martial": False, "martial_allowed": None},
+        "druide": {"simple": True, "martial": False, "martial_allowed": None},
+        "guerrier": {"simple": True, "martial": True, "martial_allowed": None},
+        "moine": {"simple": True, "martial": True, "martial_allowed": {"Epee courte", "Arbalete de poing"}},
+        "paladin": {"simple": True, "martial": True, "martial_allowed": None},
+        "rodeur": {"simple": True, "martial": True, "martial_allowed": None},
+        "roublard": {"simple": True, "martial": True, "martial_allowed": {"Epee courte", "Arc long", "Arbalete de poing"}},
+        "ensorceleur": {"simple": True, "martial": False, "martial_allowed": None},
+        "occultiste": {"simple": True, "martial": False, "martial_allowed": None},
+        "magicien": {"simple": True, "martial": False, "martial_allowed": None},
+        "barbarian": {"simple": True, "martial": True, "martial_allowed": None},
+        "bard": {"simple": True, "martial": False, "martial_allowed": None},
+        "cleric": {"simple": True, "martial": False, "martial_allowed": None},
+        "druid": {"simple": True, "martial": False, "martial_allowed": None},
+        "fighter": {"simple": True, "martial": True, "martial_allowed": None},
+        "monk": {"simple": True, "martial": True, "martial_allowed": {"Epee courte", "Arbalete de poing"}},
+        "ranger": {"simple": True, "martial": True, "martial_allowed": None},
+        "rogue": {"simple": True, "martial": True, "martial_allowed": {"Epee courte", "Arc long", "Arbalete de poing"}},
+        "sorcerer": {"simple": True, "martial": False, "martial_allowed": None},
+        "warlock": {"simple": True, "martial": False, "martial_allowed": None},
+        "wizard": {"simple": True, "martial": False, "martial_allowed": None},
+    }
+    WEAPON_CATEGORY_BY_LOADOUT = {
+        "Epee longue": "martial",
+        "Epee courte": "martial",
+        "Dague": "simple",
+        "Hachette": "simple",
+        "Marteau leger": "simple",
+        "Lance": "simple",
+        "Arc court": "simple",
+        "Arc long": "martial",
+        "Arbalete legere": "simple",
+        "Arbalete de poing": "martial",
+    }
+    ARMOR_CATEGORIES_BY_LOADOUT = {
+        "Sans armure": {"none"},
+        "Armure matelassee": {"light"},
+        "Armure de cuir": {"light"},
+        "Armure de cuir cloutee": {"light"},
+        "Chemise de mailles": {"medium"},
+        "Cuirasse": {"medium"},
+        "Demi-plate": {"medium"},
+        "Cotte de mailles": {"heavy"},
+        "Harnois": {"heavy"},
+        "Bouclier": {"shield"},
+        "Armure de cuir + Bouclier": {"light", "shield"},
+        "Chemise de mailles + Bouclier": {"medium", "shield"},
+        "Cotte de mailles + Bouclier": {"heavy", "shield"},
+    }
     SKILL_PROFICIENCY_LIMITS_BY_CLASS = {
         "artificier": 2,
         "barbarian": 2,
@@ -279,6 +356,41 @@ class TemplateService:
                     f"Le sort '{spell_name}' n'est pas disponible pour la classe '{character_class}'."
                 )
 
+    @classmethod
+    def _validate_equipment_mastery(cls, character_class, weapon_loadout, armor_loadout):
+        class_key = cls._normalize_class_name(character_class)
+        weapon_rule = cls.WEAPON_MASTERY_BY_CLASS.get(class_key)
+        armor_masteries = cls.ARMOR_MASTERY_BY_CLASS.get(class_key)
+
+        selected_weapon = (weapon_loadout or "").strip()
+        if selected_weapon:
+            weapon_category = cls.WEAPON_CATEGORY_BY_LOADOUT.get(selected_weapon)
+            if weapon_category and weapon_rule:
+                if weapon_category == "simple" and not weapon_rule.get("simple"):
+                    raise ValueError(
+                        f"La classe '{character_class}' ne maitrise pas l'arme '{selected_weapon}'."
+                    )
+                if weapon_category == "martial":
+                    if not weapon_rule.get("martial"):
+                        raise ValueError(
+                            f"La classe '{character_class}' ne maitrise pas l'arme martiale '{selected_weapon}'."
+                        )
+                    allowed_list = weapon_rule.get("martial_allowed")
+                    if allowed_list is not None and selected_weapon not in allowed_list:
+                        raise ValueError(
+                            f"La classe '{character_class}' ne peut pas s'equiper avec '{selected_weapon}'."
+                        )
+
+        selected_armor = (armor_loadout or "").strip()
+        if selected_armor:
+            armor_needs = cls.ARMOR_CATEGORIES_BY_LOADOUT.get(selected_armor)
+            if armor_needs and armor_masteries is not None:
+                required_masteries = {item for item in armor_needs if item != "none"}
+                if not required_masteries.issubset(armor_masteries):
+                    raise ValueError(
+                        f"La classe '{character_class}' ne maitrise pas l'armure/bouclier '{selected_armor}'."
+                    )
+
     @staticmethod
     def _save_uploaded_file(uploaded_file, upload_folder):
         """Sauvegarde un fichier avec un nom unique pour éviter tout écrasement."""
@@ -423,6 +535,11 @@ class TemplateService:
         )
         selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        TemplateService._validate_equipment_mastery(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            form_data.get('weapon_loadout'),
+            form_data.get('armor_loadout'),
+        )
         cantrip_catalog = get_cantrips()
         level_one_catalog = get_spells_for_level(1)
         TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
@@ -621,6 +738,11 @@ class TemplateService:
             template.selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         if 'selected_level_1_spells' in form_data:
             template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        TemplateService._validate_equipment_mastery(
+            form_data.get('character_class') or template.character_class,
+            form_data.get('weapon_loadout'),
+            form_data.get('armor_loadout'),
+        )
         cantrip_catalog = get_cantrips()
         level_one_catalog = get_spells_for_level(1)
         TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
