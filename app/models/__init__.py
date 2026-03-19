@@ -6,7 +6,7 @@ from .character import CharacterTemplate
 from .encounter import EncounterTemplate
 from .experience import XPLog
 from .user import User, EmailVerification
-from .campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
+from .campaign import Campaign, CampaignSession, CampaignMember, CampaignInvitation, JoinRequest
 from .story_arc import StoryArc
 from .notification import Notification
 from .episode import Episode, EpisodeUserNote
@@ -22,6 +22,7 @@ __all__ = [
     'User',
     'EmailVerification',
     'Campaign',
+    'CampaignSession',
     'CampaignMember',
     'CampaignInvitation',
     'JoinRequest',

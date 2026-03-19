@@ -1,11 +1,13 @@
 # Migrated to app.web.routes
 """Routes pour la gestion des campagnes"""
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
 from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required, mj_or_admin_required
-from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
+from app.models.campaign import Campaign, CampaignSession, CampaignMember, CampaignInvitation, JoinRequest
 from app.models.combat import Combat
 from app.models.user import User
 from app.models import CharacterTemplate
@@ -70,6 +72,10 @@ def view_campaign(campaign_id):
 
     current_arc = next((arc for arc in campaign.story_arcs if arc.status == 'en_cours'), None)
 
+    campaign_sessions = CampaignSession.query.filter_by(campaign_id=campaign.id).order_by(
+        CampaignSession.scheduled_for.asc()
+    ).all()
+
     # PJ du joueur courant pouvant être ajoutés à cette campagne
     available_player_pjs = []
     player_campaign_pjs = []
@@ -114,6 +120,7 @@ def view_campaign(campaign_id):
         is_mj=g.current_user.is_mj_of(campaign),
         combats_count=combats_count,
         current_arc=current_arc,
+        campaign_sessions=campaign_sessions,
         available_player_pjs=available_player_pjs,
         player_campaign_pjs=player_campaign_pjs,
         visible_campaign_pnjs=visible_campaign_pnjs
@@ -412,3 +419,114 @@ def remove_member(campaign_id, user_id):
         flash(f'Membre {removed_username} retiré de la campagne.', 'success')
 
     return redirect(url_for('campaign.campaign_settings', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/create', methods=['POST'])
+@login_required
+def create_campaign_session(campaign_id):
+    """Créer une nouvelle date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut planifier une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    scheduled_for_raw = request.form.get('scheduled_for', '').strip()
+    if not scheduled_for_raw:
+        flash('Veuillez renseigner une date et une heure.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    try:
+        scheduled_for = datetime.strptime(scheduled_for_raw, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        flash('Format de date invalide.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession(campaign_id=campaign.id, scheduled_for=scheduled_for)
+    db.session.add(session_entry)
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Nouvelle session planifiée',
+        message=f'Le MJ a planifié une session le {scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_created',
+        include_mj=False,
+    )
+
+    flash('Session planifiée avec succès.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/<int:session_id>/update', methods=['POST'])
+@login_required
+def update_campaign_session(campaign_id, session_id):
+    """Modifier une date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut modifier une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession.query.filter_by(id=session_id, campaign_id=campaign.id).first()
+    if not session_entry:
+        flash('Session introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    scheduled_for_raw = request.form.get('scheduled_for', '').strip()
+    try:
+        new_scheduled_for = datetime.strptime(scheduled_for_raw, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        flash('Format de date invalide.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry.scheduled_for = new_scheduled_for
+    session_entry.is_cancelled = False
+    session_entry.cancelled_at = None
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Session modifiée',
+        message=f'Le MJ a modifié une session : {new_scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_updated',
+        include_mj=False,
+    )
+
+    flash('Date de session mise à jour.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/<int:session_id>/cancel', methods=['POST'])
+@login_required
+def cancel_campaign_session(campaign_id, session_id):
+    """Annuler une date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut annuler une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession.query.filter_by(id=session_id, campaign_id=campaign.id).first()
+    if not session_entry:
+        flash('Session introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    if session_entry.is_cancelled:
+        flash('Cette session est déjà annulée.', 'info')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry.is_cancelled = True
+    session_entry.cancelled_at = datetime.utcnow()
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Session annulée',
+        message=f'Le MJ a annulé la session du {session_entry.scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_cancelled',
+        include_mj=False,
+    )
+
+    flash('Session annulée.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
