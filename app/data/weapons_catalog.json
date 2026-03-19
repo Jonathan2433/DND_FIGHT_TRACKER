@@ -1,0 +1,39 @@
+{
+  "armes_simples_corps_a_corps": [
+    { "nom": "Dague (Dagger)", "degats": "1d4", "type": "Perçant", "proprietes": "Finesse, légère, lancée (20/60) [3-5]" },
+    { "nom": "Masse d'armes (Mace)", "degats": "1d6", "type": "Contondant", "proprietes": "[6, 7]" },
+    { "nom": "Pieu (Spear)", "degats": "1d6", "type": "Perçant", "proprietes": "Lancée (20/60), polyvalente (1d8) [3, 8]" },
+    { "nom": "Bâton (Quarterstaff)", "degats": "1d6", "type": "Contondant", "proprietes": "Polyvalente (1d8) [3, 9, 10]" },
+    { "nom": "Club", "degats": "1d4", "type": "Contondant", "proprietes": "Légère [11]" },
+    { "nom": "Hachette (Handaxe)", "degats": "1d6", "type": "Tranchant", "proprietes": "Légère, lancée (20/60) [12]" },
+    { "nom": "Javelot (Javelin)", "degats": "1d6", "type": "Perçant", "proprietes": "Lancée (30/120) [8, 13]" },
+    { "nom": "Marteau léger (Light Hammer)", "degats": "1d4", "type": "Contondant", "proprietes": "Légère, lancée (20/60) [14]" },
+    { "nom": "Grande masse (Greatclub)", "degats": "1d8", "type": "Contondant", "proprietes": "Deux mains [13]" },
+    { "nom": "Serpe (Sickle)", "degats": "1d4", "type": "Tranchant", "proprietes": "Légère [15]" }
+  ],
+  "armes_simples_a_distance": [
+    { "nom": "Arc court (Shortbow)", "degats": "1d6", "type": "Perçant", "proprietes": "Munition (80/320), deux mains [16, 17]" },
+    { "nom": "Arbalète légère (Light Crossbow)", "degats": "1d8", "type": "Perçant", "proprietes": "Munition (80/320), chargement, deux mains [18, 19]" }
+  ],
+  "armes_de_guerre_corps_a_corps": [
+    { "nom": "Épée courte (Shortsword)", "degats": "1d6", "type": "Perçant", "proprietes": "Finesse, légère [20, 21]" },
+    { "nom": "Cimeterre (Scimitar)", "degats": "1d6", "type": "Tranchant", "proprietes": "Finesse, légère [17, 19]" },
+    { "nom": "Rapière (Rapier)", "degats": "1d8", "type": "Perçant", "proprietes": "Finesse [22, 23]" },
+    { "nom": "Épée longue (Longsword)", "degats": "1d8", "type": "Tranchant", "proprietes": "Polyvalente (1d10) [8, 24]" },
+    { "nom": "Épée à deux mains (Greatsword)", "degats": "2d6", "type": "Tranchant", "proprietes": "Lourde, deux mains [25, 26]" },
+    { "nom": "Grande hache (Greataxe)", "degats": "1d12", "type": "Tranchant", "proprietes": "Lourde, deux mains [5, 27]" },
+    { "nom": "Marteau de guerre (Warhammer)", "degats": "1d8", "type": "Contondant", "proprietes": "Polyvalente (1d10) [7, 28]" },
+    { "nom": "Hache d'armes (Battleaxe)", "degats": "1d8", "type": "Tranchant", "proprietes": "Polyvalente (1d10) [29]" },
+    { "nom": "Fléau d'armes (Morningstar)", "degats": "1d8", "type": "Perçant", "proprietes": "[29, 30]" },
+    { "nom": "Pique (Pike)", "degats": "1d10", "type": "Perçant", "proprietes": "Lourde, portée, deux mains [31]" },
+    { "nom": "Vouge (Glaive)", "degats": "1d10", "type": "Tranchant", "proprietes": "Lourde, portée, deux mains [32]" },
+    { "nom": "Hallebarde (Halberd)", "degats": "1d10", "type": "Tranchant", "proprietes": "Lourde, portée, deux mains [33]" },
+    { "nom": "Trident", "degats": "1d6", "type": "Perçant", "proprietes": "Lancée (20/60), polyvalente (1d8) [34]" },
+    { "nom": "Maul", "degats": "2d6", "type": "Contondant", "proprietes": "Lourde, deux mains [35]" }
+  ],
+  "armes_de_guerre_a_distance": [
+    { "nom": "Arc long (Longbow)", "degats": "1d8", "type": "Perçant", "proprietes": "Munition (150/600), lourde, deux mains [25, 31]" },
+    { "nom": "Arbalète lourde (Heavy Crossbow)", "degats": "1d10", "type": "Perçant", "proprietes": "Munition (100/400), lourde, chargement, deux mains [7, 26]" },
+    { "nom": "Arbalète de poing (Hand Crossbow)", "degats": "1d6", "type": "Perçant", "proprietes": "Munition (30/120), légère, chargement [36, 37]" }
+  ]
+}
