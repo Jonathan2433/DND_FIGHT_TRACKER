@@ -242,6 +242,7 @@
                                     class="skill-option spell-option"
                                     data-spell-name="{{ spell.name|lower }}"
                                     data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                                    title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
                                 >
                                     <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}">
                                     <span>{{ spell.name }}</span>
@@ -256,6 +257,7 @@
                                     class="skill-option spell-option"
                                     data-spell-name="{{ spell.name|lower }}"
                                     data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                                    title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
                                 >
                                     <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}">
                                     <span>{{ spell.name }}</span>

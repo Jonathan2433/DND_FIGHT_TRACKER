@@ -180,12 +180,17 @@ def edit_character_template(id):
         return redirect(url_for('template.character_profile', id=id))
 
     if request.method == 'POST':
-        TemplateService.update_character_template(
-            id,
-            request.form,
-            request.files,
-            current_app.config['UPLOAD_FOLDER']
-        )
+        try:
+            TemplateService.update_character_template(
+                id,
+                request.form,
+                request.files,
+                current_app.config['UPLOAD_FOLDER']
+            )
+        except ValueError as exc:
+            flash(str(exc), 'error')
+            return redirect(url_for('template.edit_character_template', id=id))
+
         flash('Personnage modifié avec succès !', 'success')
         return redirect(url_for('template.character_profile', id=id))
 
@@ -193,6 +198,12 @@ def edit_character_template(id):
     background_fields = TemplateService.split_background_payload(template.background_story)
     selected_skills = {
         token.strip() for token in (template.skill_proficiencies or '').split(',') if token.strip()
+    }
+    selected_cantrips = {
+        token.strip() for token in (template.selected_cantrips or '').split(',') if token.strip()
+    }
+    selected_level_one_spells = {
+        token.strip() for token in (template.selected_level_1_spells or '').split(',') if token.strip()
     }
 
     return render_template(
@@ -207,6 +218,10 @@ def edit_character_template(id):
         equipment_fields=equipment_fields,
         background_fields=background_fields,
         selected_skills=selected_skills,
+        selected_cantrips=selected_cantrips,
+        selected_level_one_spells=selected_level_one_spells,
+        cantrip_catalog=get_cantrips(),
+        level_one_spell_catalog=get_spells_for_level(1),
     )
 
 
