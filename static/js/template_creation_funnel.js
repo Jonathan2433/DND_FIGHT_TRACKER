@@ -37,8 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const backgroundEquipmentChoiceSelect = form.querySelector('#create-background-equipment-choice');
     const adventurePackSelect = form.querySelector('#create-adventure-pack');
     const equipmentField = form.querySelector('#create-equipment');
+    const weaponLoadoutSelect = form.querySelector('#create-weapon-loadout-select');
+    const weaponLoadoutCustomInput = form.querySelector('#create-weapon-loadout-custom');
     const weaponLoadoutField = form.querySelector('#create-weapon-loadout');
     const armorLoadoutField = form.querySelector('#create-armor-loadout');
+    const shieldChoiceSelect = form.querySelector('#create-shield-choice');
     const armorEquippedSelect = form.querySelector('#create-armor-equipped');
     const shieldEquippedCheckbox = form.querySelector('#create-shield-equipped');
     const acBaseHiddenInput = form.querySelector('#create-ac-base-hidden');
@@ -547,7 +550,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedBackground = backgroundSelect?.options?.[backgroundSelect.selectedIndex];
             toolProficienciesField.value = selectedBackground?.dataset.tool || '';
         }
-        if (armorLoadoutField && !armorLoadoutField.dataset.userEdited) {
+        if (shieldChoiceSelect && shieldEquippedCheckbox) {
+            shieldEquippedCheckbox.checked = shieldChoiceSelect.value === '1';
+        }
+        if (armorLoadoutField) {
             const selectedArmor = armorCatalog[armorEquippedSelect?.value || 'none'] || armorCatalog.none;
             const loadout = [selectedArmor.label];
             if (shieldEquippedCheckbox?.checked) {
@@ -555,8 +561,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             armorLoadoutField.value = loadout.join(', ');
         }
-        if (weaponLoadoutField && !weaponLoadoutField.dataset.userEdited) {
-            weaponLoadoutField.value = '';
+        if (weaponLoadoutField) {
+            const selectedWeapon = weaponLoadoutSelect?.value || '';
+            const isCustom = selectedWeapon === 'other';
+            if (weaponLoadoutCustomInput) {
+                weaponLoadoutCustomInput.hidden = !isCustom;
+            }
+            weaponLoadoutField.value = isCustom
+                ? (weaponLoadoutCustomInput?.value || '')
+                : selectedWeapon;
         }
         if (inventoryItemsField && !inventoryItemsField.dataset.userEdited) {
             inventoryItemsField.value = selectedPackItems.join(', ');
@@ -1096,11 +1109,20 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEquipmentStep();
         render();
     });
-    shieldEquippedCheckbox?.addEventListener('change', () => {
+    shieldChoiceSelect?.addEventListener('change', () => {
         renderEquipmentStep();
         render();
     });
-    [equipmentField, weaponLoadoutField, armorLoadoutField, inventoryItemsField, toolProficienciesField].forEach((field) => {
+    shieldEquippedCheckbox?.addEventListener('change', () => {
+        if (shieldChoiceSelect) {
+            shieldChoiceSelect.value = shieldEquippedCheckbox.checked ? '1' : '0';
+        }
+        renderEquipmentStep();
+        render();
+    });
+    weaponLoadoutSelect?.addEventListener('change', renderEquipmentStep);
+    weaponLoadoutCustomInput?.addEventListener('input', renderEquipmentStep);
+    [equipmentField, inventoryItemsField, toolProficienciesField].forEach((field) => {
         field?.addEventListener('input', () => {
             field.dataset.userEdited = '1';
         });
