@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfHelp = form.querySelector('#create-pdf-help');
     const spellcastingContainer = form.querySelector('#spellcasting-fields');
     const spellcastingClassInput = form.querySelector('#create-spellcasting-class');
-    const spellcastingAbilityInput = form.querySelector('#create-spellcasting-ability');
 
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
@@ -309,7 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isSpellcaster) {
             if (spellcastingClassInput) spellcastingClassInput.value = '';
-            if (spellcastingAbilityInput) spellcastingAbilityInput.value = '';
             return;
         }
 
@@ -318,8 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const suggestedAbility = spellcasterRules[selectedClass];
-        if (spellcastingAbilityInput && suggestedAbility && !spellcastingAbilityInput.value) {
-            spellcastingAbilityInput.value = suggestedAbility;
+        if (spellcastingContainer) {
+            spellcastingContainer.dataset.suggestedAbility = suggestedAbility || '';
         }
     };
 

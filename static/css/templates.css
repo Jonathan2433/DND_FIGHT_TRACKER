@@ -371,3 +371,23 @@
         max-height: 190px;
     }
 }
+
+.skill-proficiencies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.skill-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.skill-option input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}

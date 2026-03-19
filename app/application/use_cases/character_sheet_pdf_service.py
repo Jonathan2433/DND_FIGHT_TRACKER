@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from pypdf import PdfReader, PdfWriter
+from pypdf.generic import NameObject, TextStringObject
 
 
 class CharacterSheetPdfService:
@@ -50,6 +51,7 @@ class CharacterSheetPdfService:
         "hp_current": ("HPCurrent", "Current HP", "Current Hit Points"),
         "temp_hp": ("HPTemp", "Temp HP", "Temporary Hit Points"),
         "languages": ("Languages",),
+        "proficiencies_languages": ("ProficienciesLang", "Proficiencies & Languages", "Proficiencies and Languages"),
         "equipment": ("Equipment", "EquipmentNotes", "Treasure"),
         "features_traits": ("Features and Traits", "FeaturesTraits", "Features and Traits 1"),
         "passive_wisdom": ("Passive", "Passive Wisdom (Perception)"),
@@ -195,6 +197,49 @@ class CharacterSheetPdfService:
     def _normalize_field_name(value: str) -> str:
         return re.sub(r"[^a-z0-9]+", "", value.lower())
 
+    @staticmethod
+    def _normalize_class_name(class_name: str | None) -> str:
+        value = (class_name or "").strip().lower()
+        return (
+            value.replace("ô", "o")
+            .replace("é", "e")
+            .replace("è", "e")
+            .replace("ê", "e")
+            .replace("à", "a")
+            .replace("ï", "i")
+        )
+
+    @classmethod
+    def _derive_spellcasting_from_class(cls, character) -> tuple[str, str, str, str]:
+        spellcasting_by_class = {
+            "artificier": ("INT", character.mod_intelligence),
+            "bard": ("CHA", character.mod_charisme),
+            "barde": ("CHA", character.mod_charisme),
+            "clerc": ("WIS", character.mod_sagesse),
+            "cleric": ("WIS", character.mod_sagesse),
+            "druide": ("WIS", character.mod_sagesse),
+            "druid": ("WIS", character.mod_sagesse),
+            "ensorceleur": ("CHA", character.mod_charisme),
+            "magicien": ("INT", character.mod_intelligence),
+            "occultiste": ("CHA", character.mod_charisme),
+            "paladin": ("CHA", character.mod_charisme),
+            "ranger": ("WIS", character.mod_sagesse),
+            "rodeur": ("WIS", character.mod_sagesse),
+            "rôdeur": ("WIS", character.mod_sagesse),
+            "sorcerer": ("CHA", character.mod_charisme),
+            "warlock": ("CHA", character.mod_charisme),
+            "wizard": ("INT", character.mod_intelligence),
+        }
+        normalized_class = cls._normalize_class_name(character.character_class)
+        if normalized_class not in spellcasting_by_class:
+            return "", "", "", ""
+
+        ability_code, ability_mod = spellcasting_by_class[normalized_class]
+        proficiency_bonus = character.bonus_maitrise
+        save_dc = 8 + proficiency_bonus + ability_mod
+        attack_bonus = proficiency_bonus + ability_mod
+        return character.character_class or "", ability_code, str(save_dc), cls._format_mod(attack_bonus)
+
     @classmethod
     def _find_template_path(cls, upload_folder: str, template_filename: str | None = None) -> Path:
         if template_filename:
@@ -281,6 +326,8 @@ class CharacterSheetPdfService:
             if not found_field:
                 for alias in aliases:
                     normalized_alias = cls._normalize_field_name(alias)
+                    if len(normalized_alias) <= 3:
+                        continue
                     partial = [
                         real_name
                         for normalized_name, real_name in normalized_to_real.items()
@@ -348,6 +395,9 @@ class CharacterSheetPdfService:
             bonus = character.bonus_maitrise if skill_flags[skill_key] else 0
             skill_values[skill_key] = cls._format_mod(ability_mod + bonus)
 
+        spellcasting_class, spellcasting_ability, spell_save_dc, spell_attack_bonus = cls._derive_spellcasting_from_class(character)
+        proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
+
         values_by_business_key: dict[str, Any] = {
             "character_name": character.name or "",
             "class_level": f"{character.character_class or ''} {character.level or 1}".strip(),
@@ -376,6 +426,7 @@ class CharacterSheetPdfService:
             "hp_current": str(character.hp_current_effective),
             "temp_hp": str(character.temp_hp or 0),
             "languages": character.languages or "",
+            "proficiencies_languages": proficiencies_languages[:900],
             "equipment": (character.equipment or "")[:400],
             "features_traits": (character.notes or "")[:900],
             "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
@@ -391,10 +442,10 @@ class CharacterSheetPdfService:
             "additional_features_traits": (character.additional_features_traits or "")[:1200],
             "treasure": (character.treasure or character.equipment or "")[:1200],
             "symbol_name": character.symbol_name or "",
-            "spellcasting_class": character.spellcasting_class or "",
-            "spellcasting_ability": character.spellcasting_ability or "",
-            "spell_save_dc": str(character.spell_save_dc or ""),
-            "spell_attack_bonus": cls._format_mod(character.spell_attack_bonus or 0) if character.spell_attack_bonus is not None else "",
+            "spellcasting_class": spellcasting_class,
+            "spellcasting_ability": spellcasting_ability,
+            "spell_save_dc": spell_save_dc,
+            "spell_attack_bonus": spell_attack_bonus,
             "saving_throw_strength": cls._format_mod(character.sauvegarde_force),
             "saving_throw_dexterity": cls._format_mod(character.sauvegarde_dexterite),
             "saving_throw_constitution": cls._format_mod(character.sauvegarde_constitution),
@@ -417,6 +468,17 @@ class CharacterSheetPdfService:
             if business_key in resolved_mapping and value is not None
         }
 
+    @staticmethod
+    def _shrink_text_fields(writer: PdfWriter, font_size: int = 8) -> None:
+        """Reduit legerement la taille de police des champs texte pour limiter les debordements."""
+        for page in writer.pages:
+            annotations = page.get("/Annots", [])
+            for annotation_ref in annotations:
+                annotation = annotation_ref.get_object()
+                if annotation.get("/FT") != "/Tx":
+                    continue
+                annotation[NameObject("/DA")] = TextStringObject(f"/Helv {font_size} Tf 0 g")
+
     @classmethod
     def generate(cls, character, upload_folder: str, template_filename: str | None = None) -> str:
         """Genere un PDF de fiche pour un personnage et retourne le nom de fichier produit."""
@@ -436,6 +498,7 @@ class CharacterSheetPdfService:
 
         for page in writer.pages:
             writer.update_page_form_field_values(page, field_values, auto_regenerate=False)
+        cls._shrink_text_fields(writer, font_size=8)
 
         with open(output_path, "wb") as output_stream:
             writer.write(output_stream)

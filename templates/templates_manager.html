@@ -267,8 +267,15 @@
                                 </div>
                             </div>
 
-                            <label for="create-skill-proficiencies">Competences maitrisees</label>
-                            <input id="create-skill-proficiencies" type="text" name="skill_proficiencies" placeholder="Ex: Perception, Discretion, Athletisme">
+                            <label>Competences maitrisees</label>
+                            <div class="skill-proficiencies-grid" id="create-skill-proficiencies-grid">
+                                {% for skill in dnd_skill_options %}
+                                    <label class="skill-option">
+                                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}">
+                                        <span>{{ skill }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
 
                             <label for="create-character-appearance">Apparence du personnage</label>
                             <textarea id="create-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
@@ -336,26 +343,11 @@
                                 <h3>Lanceur de sorts</h3>
                                 <label for="create-spellcasting-class">Spellcasting class</label>
                                 <input id="create-spellcasting-class" type="text" name="spellcasting_class" placeholder="Ex: Wizard">
-                                <label for="create-spellcasting-ability">Spellcasting ability</label>
-                                <select id="create-spellcasting-ability" name="spellcasting_ability">
-                                    <option value="">-</option>
-                                    <option value="STR">STR</option>
-                                    <option value="DEX">DEX</option>
-                                    <option value="CON">CON</option>
-                                    <option value="INT">INT</option>
-                                    <option value="WIS">WIS</option>
-                                    <option value="CHA">CHA</option>
-                                </select>
-                                <div class="stats-grid stats-grid--funnel">
-                                    <div class="stat-input">
-                                        <label for="create-spell-save-dc">Spell save DC</label>
-                                        <input id="create-spell-save-dc" type="number" name="spell_save_dc" min="1" max="40" placeholder="Ex: 13">
-                                    </div>
-                                    <div class="stat-input">
-                                        <label for="create-spell-attack-bonus">Spell attack bonus</label>
-                                        <input id="create-spell-attack-bonus" type="number" name="spell_attack_bonus" min="-10" max="20" placeholder="Ex: 5">
-                                    </div>
-                                </div>
+                                <p class="funnel-summary-inline">
+                                    Les champs <strong>Spellcasting Ability</strong>, <strong>Spell save DC</strong> et
+                                    <strong>Spell attack bonus</strong> sont calcules automatiquement selon la classe,
+                                    le niveau et les caracteristiques D&D.
+                                </p>
                             </section>
                         </section>
                     </div>
