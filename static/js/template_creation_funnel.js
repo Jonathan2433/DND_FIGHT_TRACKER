@@ -18,6 +18,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfHelp = form.querySelector('#create-pdf-help');
     const spellcastingContainer = form.querySelector('#spellcasting-fields');
     const spellcastingClassInput = form.querySelector('#create-spellcasting-class');
+    const skillCheckboxes = Array.from(form.querySelectorAll('input[name="skill_proficiencies"]'));
+    const skillLimitSummary = form.querySelector('#create-skill-limit-summary');
+
+    const skillProficiencyLimitsByClass = {
+        artificier: 2,
+        barbarian: 2,
+        barbare: 2,
+        bard: 3,
+        barde: 3,
+        cleric: 2,
+        clerc: 2,
+        druid: 2,
+        druide: 2,
+        fighter: 2,
+        guerrier: 2,
+        monk: 2,
+        moine: 2,
+        paladin: 2,
+        ranger: 3,
+        rodeur: 3,
+        rôdeur: 3,
+        rogue: 4,
+        roublard: 4,
+        sorcerer: 2,
+        ensorceleur: 2,
+        warlock: 2,
+        occultiste: 2,
+        wizard: 2,
+        magicien: 2,
+    };
 
     const classRules = {
         Artificier: { hitDie: 8, saves: ['constitution', 'intelligence'] },
@@ -68,6 +98,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
+    const normalizeClassName = (value) => (value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    const getSkillLimitForSelectedClass = () => skillProficiencyLimitsByClass[normalizeClassName(classSelect?.value)] || 2;
+
+    const syncSkillProficiencyLimit = (changedCheckbox = null) => {
+        const selected = skillCheckboxes.filter((checkbox) => checkbox.checked);
+        const maxAllowed = getSkillLimitForSelectedClass();
+
+        if (changedCheckbox?.checked && selected.length > maxAllowed) {
+            changedCheckbox.checked = false;
+            alert(`Selon les regles D&D 5e (2024), cette classe choisit ${maxAllowed} competences maitrisees au niveau 1.`);
+        }
+
+        const selectedCount = skillCheckboxes.filter((checkbox) => checkbox.checked).length;
+        skillCheckboxes.forEach((checkbox) => {
+            checkbox.disabled = !checkbox.checked && selectedCount >= maxAllowed;
+        });
+
+        if (skillLimitSummary) {
+            const classLabel = classSelect?.value || 'Classe';
+            skillLimitSummary.textContent = `Maitrises de competences: ${selectedCount}/${maxAllowed} pour ${classLabel} (niveau 1).`;
+        }
+    };
 
     const getBackgroundBudget = () => {
         let used = 0;
@@ -401,6 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     form.addEventListener('submit', (event) => {
+        const selectedSkillsCount = skillCheckboxes.filter((checkbox) => checkbox.checked).length;
+        const maxAllowedSkills = getSkillLimitForSelectedClass();
+        if (selectedSkillsCount > maxAllowedSkills) {
+            event.preventDefault();
+            alert(`Vous ne pouvez selectionner que ${maxAllowedSkills} competences maitrisees pour cette classe.`);
+            goToStep(5, { scrollToStep: true });
+            return;
+        }
+
         const languageValues = languageInputs.map((input) => input?.value).filter(Boolean);
         const uniqueLanguages = new Set(languageValues);
         if (!languageValues.includes('Commun') || uniqueLanguages.size < 3) {
@@ -448,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
         renderClassDescription();
         syncSpellcastingFields();
+        syncSkillProficiencyLimit();
     });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', () => {
@@ -457,6 +523,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     alignmentSelect?.addEventListener('change', renderAlignment);
     generatePdfInput?.addEventListener('change', syncPdfInputMode);
+    skillCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            syncSkillProficiencyLimit(checkbox);
+        });
+    });
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -468,5 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAlignment();
     syncPdfInputMode();
     syncSpellcastingFields();
+    syncSkillProficiencyLimit();
     updateWizardUI();
 });
