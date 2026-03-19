@@ -95,6 +95,65 @@ class TemplateService:
         "guerrier": "fighter",
         "moine": "monk",
     }
+    LEVEL_ONE_SPELLS_BY_CLASS = {
+        "bard": {
+            "animal friendship", "bane", "charm person", "color spray", "command",
+            "cure wounds", "detect magic", "detect thoughts", "disguise self",
+            "dissonant whispers", "faerie fire", "feather fall", "healing word",
+            "heroism", "identify", "illusory script", "longstrider", "silent image",
+            "sleep", "speak with animals", "tasha's hideous laughter", "thunderwave",
+            "unseen servant",
+        },
+        "cleric": {
+            "bane", "bless", "command", "create or destroy water", "cure wounds",
+            "detect evil and good", "detect magic", "detect poison and disease",
+            "guiding bolt", "healing word", "inflict wounds",
+            "protection from evil and good", "purify food and drink", "sanctuary",
+            "shield of faith",
+        },
+        "druid": {
+            "animal friendship", "animal messenger", "charm person", "create or destroy water",
+            "cure wounds", "detect magic", "detect poison and disease", "entangle",
+            "faerie fire", "fog cloud", "goodberry", "healing word", "ice knife",
+            "jump", "longstrider", "purify food and drink", "thunderwave",
+        },
+        "sorcerer": {
+            "burning hands", "charm person", "chromatic orb", "color spray",
+            "detect magic", "disguise self", "expeditious retreat", "false life",
+            "feather fall", "fog cloud", "ice knife", "jump", "mage armor",
+            "magic missile", "ray of sickness", "shield", "sleep", "thunderwave",
+        },
+        "warlock": {
+            "bane", "charm person", "comprehend languages", "detect magic",
+            "expeditious retreat", "hellish rebuke", "hex", "illusory script",
+            "protection from evil and good", "speak with animals",
+            "tasha's hideous laughter", "unseen servant",
+        },
+        "wizard": {
+            "alarm", "burning hands", "charm person", "chromatic orb", "color spray",
+            "comprehend languages", "detect magic", "disguise self",
+            "expeditious retreat", "false life", "feather fall", "find familiar",
+            "fog cloud", "grease", "ice knife", "identify", "illusory script",
+            "jump", "mage armor", "magic missile", "protection from evil and good",
+            "ray of sickness", "shield", "sleep", "tasha's hideous laughter",
+            "thunderwave", "unseen servant",
+        },
+        "paladin": {
+            "bless", "command", "cure wounds", "detect evil and good", "detect magic",
+            "detect poison and disease", "divine favor", "heroism",
+            "protection from evil and good", "purify food and drink",
+            "searing smite", "shield of faith",
+        },
+        "ranger": {
+            "alarm", "animal friendship", "animal messenger", "cure wounds",
+            "detect magic", "detect poison and disease", "ensnaring strike",
+            "entangle", "fog cloud", "jump", "longstrider", "speak with animals",
+        },
+    }
+
+    @staticmethod
+    def _normalize_spell_name(value):
+        return (value or "").strip().lower().replace("’", "'").replace("`", "'")
 
     @staticmethod
     def _normalize_skill_proficiencies(form_data):
@@ -189,6 +248,17 @@ class TemplateService:
             raise ValueError(
                 f"La classe '{character_class}' ne peut choisir que {limits['level_1_spells']} sort(s) de niveau 1 au niveau 1."
             )
+
+        strict_level_one_allow_list = cls.LEVEL_ONE_SPELLS_BY_CLASS.get(class_key_canonical)
+        if strict_level_one_allow_list is not None:
+            disallowed_level_one = [
+                spell_name for spell_name in selected_level_one_names
+                if cls._normalize_spell_name(spell_name) not in strict_level_one_allow_list
+            ]
+            if disallowed_level_one:
+                raise ValueError(
+                    f"La classe '{character_class}' ne peut pas preparer ces sorts de niveau 1: {', '.join(disallowed_level_one)}."
+                )
 
         catalog_index = {spell["name"]: spell for spell in (cantrip_catalog + level_one_catalog)}
         for spell_name in selected_cantrip_names + selected_level_one_names:
