@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const levelOneSpellCheckboxes = Array.from(form.querySelectorAll('input[name="selected_level_1_spells"]'));
     const spellSelectionSummary = form.querySelector('#spell-selection-summary');
     const spellSelectionLimitsHint = form.querySelector('#spell-selection-limits');
+    const cantripSelectionBlock = form.querySelector('#cantrip-selection-block');
+    const levelOneSelectionBlock = form.querySelector('#level-one-selection-block');
     const skillCheckboxes = Array.from(form.querySelectorAll('input[name="skill_proficiencies"]'));
     const skillLimitSummary = form.querySelector('#create-skill-limit-summary');
 
@@ -445,6 +447,21 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Cette classe peut choisir au maximum ${maxAllowed} ${changedIsCantrip ? 'sort(s) mineur(s)' : 'sort(s) de niveau 1'} au niveau 1.`);
         }
         syncSpellCheckboxLimitState();
+        syncSpellSelectionBlocksVisibility();
+    };
+
+    const syncSpellSelectionBlocksVisibility = () => {
+        const limits = getSpellSelectionLimitsForSelectedClass();
+        const hasVisibleCantripOption = spellOptionLabels.some((label) => !label.hidden && label.querySelector('input[name="selected_cantrips"]'));
+        const hasVisibleLevelOneOption = spellOptionLabels.some((label) => !label.hidden && label.querySelector('input[name="selected_level_1_spells"]'));
+
+        if (cantripSelectionBlock) {
+            cantripSelectionBlock.hidden = limits.cantrips <= 0 || !hasVisibleCantripOption;
+        }
+
+        if (levelOneSelectionBlock) {
+            levelOneSelectionBlock.hidden = limits.levelOne <= 0 || !hasVisibleLevelOneOption;
+        }
     };
 
     const summarizeSpellSelection = () => {
@@ -489,6 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         syncSpellCheckboxLimitState();
+        syncSpellSelectionBlocksVisibility();
     };
 
     const isSelectedClassSpellcaster = () => {
@@ -514,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkbox.checked = false;
             });
             summarizeSpellSelection();
+            syncSpellSelectionBlocksVisibility();
             return;
         }
 
