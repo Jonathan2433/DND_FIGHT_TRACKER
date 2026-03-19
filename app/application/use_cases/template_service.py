@@ -682,12 +682,15 @@ class TemplateService:
     def update_character_template(template_id, form_data, files, upload_folder):
         """Mettre à jour un template de personnage"""
         template = CharacterTemplate.query.get_or_404(template_id)
+        immutable_pj_identity = template.character_type == 'PJ'
+        effective_character_class = template.character_class if immutable_pj_identity else form_data.get('character_class')
+        effective_character_class = effective_character_class or template.character_class
 
         # Mise à jour des données de base
         template.name = form_data['name']
-        template.character_class = form_data['character_class']
-        template.race = form_data.get('race') or template.race
-        template.background_story = TemplateService._compose_background_payload(form_data)
+        template.character_class = template.character_class if immutable_pj_identity else form_data['character_class']
+        template.race = template.race if immutable_pj_identity else (form_data.get('race') or template.race)
+        template.background_story = template.background_story if immutable_pj_identity else TemplateService._compose_background_payload(form_data)
         template.level = int(form_data['level'])
         template.hp_max = int(form_data['hp_max'])
         template.hp_current = template.hp_max if template.hp_current is None else min(template.hp_current, template.hp_max)
@@ -707,9 +710,11 @@ class TemplateService:
         template.hair = form_data.get('hair') or None
         detailed_equipment = TemplateService._compose_builder_equipment(form_data)
         template.equipment = detailed_equipment or form_data.get('equipment') or None
-        template.skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        template.skill_proficiencies = (
+            template.skill_proficiencies if immutable_pj_identity else TemplateService._normalize_skill_proficiencies(form_data)
+        )
         TemplateService._validate_skill_proficiencies_limit(
-            form_data.get('character_class') or template.character_class,
+            effective_character_class,
             template.skill_proficiencies,
         )
         template.age = int(form_data.get('age')) if form_data.get('age') else template.age
@@ -719,7 +724,7 @@ class TemplateService:
         template.treasure = form_data.get('treasure') or None
         template.symbol_name = form_data.get('symbol_name') or None
         spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
-            form_data.get('character_class') or template.character_class,
+            effective_character_class,
             form_data.get('level') or template.level,
             {
                 'force': int(form_data.get('force', template.force or 10) or 10),
@@ -730,7 +735,7 @@ class TemplateService:
                 'charisme': int(form_data.get('charisme', template.charisme or 10) or 10),
             },
         )
-        template.spellcasting_class = form_data.get('character_class') or template.character_class
+        template.spellcasting_class = effective_character_class
         template.spellcasting_ability = spellcasting_ability
         template.spell_save_dc = spell_save_dc
         template.spell_attack_bonus = spell_attack_bonus
@@ -739,7 +744,7 @@ class TemplateService:
         if 'selected_level_1_spells' in form_data:
             template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
         TemplateService._validate_equipment_mastery(
-            form_data.get('character_class') or template.character_class,
+            effective_character_class,
             form_data.get('weapon_loadout'),
             form_data.get('armor_loadout'),
         )
@@ -748,7 +753,7 @@ class TemplateService:
         TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
         TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
         TemplateService._validate_spell_selection_rules(
-            form_data.get('character_class') or template.character_class,
+            effective_character_class,
             template.selected_cantrips,
             template.selected_level_1_spells,
             cantrip_catalog,
