@@ -137,16 +137,16 @@
                 <label for="character-weapon-loadout">Armes equipees</label>
                 <select id="character-weapon-loadout" name="weapon_loadout">
                     <option value="">Aucune</option>
-                    <option value="Epee longue" {% if equipment_fields.weapon_loadout == 'Epee longue' %}selected{% endif %}>Epee longue</option>
-                    <option value="Epee courte" {% if equipment_fields.weapon_loadout == 'Epee courte' %}selected{% endif %}>Epee courte</option>
-                    <option value="Dague" {% if equipment_fields.weapon_loadout == 'Dague' %}selected{% endif %}>Dague</option>
-                    <option value="Hachette" {% if equipment_fields.weapon_loadout == 'Hachette' %}selected{% endif %}>Hachette</option>
-                    <option value="Marteau leger" {% if equipment_fields.weapon_loadout == 'Marteau leger' %}selected{% endif %}>Marteau leger</option>
-                    <option value="Lance" {% if equipment_fields.weapon_loadout == 'Lance' %}selected{% endif %}>Lance</option>
-                    <option value="Arc court" {% if equipment_fields.weapon_loadout == 'Arc court' %}selected{% endif %}>Arc court</option>
-                    <option value="Arc long" {% if equipment_fields.weapon_loadout == 'Arc long' %}selected{% endif %}>Arc long</option>
-                    <option value="Arbalete legere" {% if equipment_fields.weapon_loadout == 'Arbalete legere' %}selected{% endif %}>Arbalete legere</option>
-                    <option value="Arbalete de poing" {% if equipment_fields.weapon_loadout == 'Arbalete de poing' %}selected{% endif %}>Arbalete de poing</option>
+                    <option value="Epee longue" data-weapon-category="martial" {% if equipment_fields.weapon_loadout == 'Epee longue' %}selected{% endif %}>Epee longue</option>
+                    <option value="Epee courte" data-weapon-category="martial" data-weapon-finesse="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Epee courte' %}selected{% endif %}>Epee courte</option>
+                    <option value="Dague" data-weapon-category="simple" data-weapon-finesse="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Dague' %}selected{% endif %}>Dague</option>
+                    <option value="Hachette" data-weapon-category="simple" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Hachette' %}selected{% endif %}>Hachette</option>
+                    <option value="Marteau leger" data-weapon-category="simple" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Marteau leger' %}selected{% endif %}>Marteau leger</option>
+                    <option value="Lance" data-weapon-category="simple" {% if equipment_fields.weapon_loadout == 'Lance' %}selected{% endif %}>Lance</option>
+                    <option value="Arc court" data-weapon-category="simple" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arc court' %}selected{% endif %}>Arc court</option>
+                    <option value="Arc long" data-weapon-category="martial" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arc long' %}selected{% endif %}>Arc long</option>
+                    <option value="Arbalete legere" data-weapon-category="simple" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arbalete legere' %}selected{% endif %}>Arbalete legere</option>
+                    <option value="Arbalete de poing" data-weapon-category="martial" data-weapon-ranged="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Arbalete de poing' %}selected{% endif %}>Arbalete de poing</option>
                     {% if equipment_fields.weapon_loadout and equipment_fields.weapon_loadout not in ['', 'Epee longue', 'Epee courte', 'Dague', 'Hachette', 'Marteau leger', 'Lance', 'Arc court', 'Arc long', 'Arbalete legere', 'Arbalete de poing'] %}
                     <option value="{{ equipment_fields.weapon_loadout }}" selected>{{ equipment_fields.weapon_loadout }}</option>
                     {% endif %}
@@ -154,19 +154,19 @@
 
                 <label for="character-armor-loadout">Armure / Bouclier</label>
                 <select id="character-armor-loadout" name="armor_loadout">
-                    <option value="Sans armure" {% if not equipment_fields.armor_loadout or equipment_fields.armor_loadout == 'Sans armure' %}selected{% endif %}>Sans armure</option>
-                    <option value="Armure matelassee" {% if equipment_fields.armor_loadout == 'Armure matelassee' %}selected{% endif %}>Armure matelassee</option>
-                    <option value="Armure de cuir" {% if equipment_fields.armor_loadout == 'Armure de cuir' %}selected{% endif %}>Armure de cuir</option>
-                    <option value="Armure de cuir cloutee" {% if equipment_fields.armor_loadout == 'Armure de cuir cloutee' %}selected{% endif %}>Armure de cuir cloutee</option>
-                    <option value="Chemise de mailles" {% if equipment_fields.armor_loadout == 'Chemise de mailles' %}selected{% endif %}>Chemise de mailles</option>
-                    <option value="Cuirasse" {% if equipment_fields.armor_loadout == 'Cuirasse' %}selected{% endif %}>Cuirasse</option>
-                    <option value="Demi-plate" {% if equipment_fields.armor_loadout == 'Demi-plate' %}selected{% endif %}>Demi-plate</option>
-                    <option value="Cotte de mailles" {% if equipment_fields.armor_loadout == 'Cotte de mailles' %}selected{% endif %}>Cotte de mailles</option>
-                    <option value="Harnois" {% if equipment_fields.armor_loadout == 'Harnois' %}selected{% endif %}>Harnois</option>
-                    <option value="Bouclier" {% if equipment_fields.armor_loadout == 'Bouclier' %}selected{% endif %}>Bouclier</option>
-                    <option value="Armure de cuir + Bouclier" {% if equipment_fields.armor_loadout == 'Armure de cuir + Bouclier' %}selected{% endif %}>Armure de cuir + Bouclier</option>
-                    <option value="Chemise de mailles + Bouclier" {% if equipment_fields.armor_loadout == 'Chemise de mailles + Bouclier' %}selected{% endif %}>Chemise de mailles + Bouclier</option>
-                    <option value="Cotte de mailles + Bouclier" {% if equipment_fields.armor_loadout == 'Cotte de mailles + Bouclier' %}selected{% endif %}>Cotte de mailles + Bouclier</option>
+                    <option value="Sans armure" data-armor-category="none" {% if not equipment_fields.armor_loadout or equipment_fields.armor_loadout == 'Sans armure' %}selected{% endif %}>Sans armure</option>
+                    <option value="Armure matelassee" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure matelassee' %}selected{% endif %}>Armure matelassee</option>
+                    <option value="Armure de cuir" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure de cuir' %}selected{% endif %}>Armure de cuir</option>
+                    <option value="Armure de cuir cloutee" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure de cuir cloutee' %}selected{% endif %}>Armure de cuir cloutee</option>
+                    <option value="Chemise de mailles" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Chemise de mailles' %}selected{% endif %}>Chemise de mailles</option>
+                    <option value="Cuirasse" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Cuirasse' %}selected{% endif %}>Cuirasse</option>
+                    <option value="Demi-plate" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Demi-plate' %}selected{% endif %}>Demi-plate</option>
+                    <option value="Cotte de mailles" data-armor-category="heavy" {% if equipment_fields.armor_loadout == 'Cotte de mailles' %}selected{% endif %}>Cotte de mailles</option>
+                    <option value="Harnois" data-armor-category="heavy" {% if equipment_fields.armor_loadout == 'Harnois' %}selected{% endif %}>Harnois</option>
+                    <option value="Bouclier" data-armor-category="shield" {% if equipment_fields.armor_loadout == 'Bouclier' %}selected{% endif %}>Bouclier</option>
+                    <option value="Armure de cuir + Bouclier" data-armor-category="light+shield" {% if equipment_fields.armor_loadout == 'Armure de cuir + Bouclier' %}selected{% endif %}>Armure de cuir + Bouclier</option>
+                    <option value="Chemise de mailles + Bouclier" data-armor-category="medium+shield" {% if equipment_fields.armor_loadout == 'Chemise de mailles + Bouclier' %}selected{% endif %}>Chemise de mailles + Bouclier</option>
+                    <option value="Cotte de mailles + Bouclier" data-armor-category="heavy+shield" {% if equipment_fields.armor_loadout == 'Cotte de mailles + Bouclier' %}selected{% endif %}>Cotte de mailles + Bouclier</option>
                     {% if equipment_fields.armor_loadout and equipment_fields.armor_loadout not in ['Sans armure', 'Armure matelassee', 'Armure de cuir', 'Armure de cuir cloutee', 'Chemise de mailles', 'Cuirasse', 'Demi-plate', 'Cotte de mailles', 'Harnois', 'Bouclier', 'Armure de cuir + Bouclier', 'Chemise de mailles + Bouclier', 'Cotte de mailles + Bouclier'] %}
                     <option value="{{ equipment_fields.armor_loadout }}" selected>{{ equipment_fields.armor_loadout }}</option>
                     {% endif %}
@@ -380,4 +380,119 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/spell_selection.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const classSelect = document.getElementById('character-class');
+    const weaponSelect = document.getElementById('character-weapon-loadout');
+    const armorSelect = document.getElementById('character-armor-loadout');
+    if (!classSelect || !weaponSelect || !armorSelect) return;
+
+    const normalizeClassName = (value) => (value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    const armorMasteries = {
+        barbare: new Set(['light', 'medium', 'shield']),
+        barde: new Set(['light']),
+        clerc: new Set(['light', 'medium', 'shield']),
+        druide: new Set(['light', 'shield']),
+        guerrier: new Set(['light', 'medium', 'heavy', 'shield']),
+        moine: new Set([]),
+        paladin: new Set(['light', 'medium', 'heavy', 'shield']),
+        rodeur: new Set(['light', 'medium', 'shield']),
+        roublard: new Set(['light']),
+        ensorceleur: new Set([]),
+        occultiste: new Set(['light']),
+        magicien: new Set([]),
+        barbarian: new Set(['light', 'medium', 'shield']),
+        bard: new Set(['light']),
+        cleric: new Set(['light', 'medium', 'shield']),
+        druid: new Set(['light', 'shield']),
+        fighter: new Set(['light', 'medium', 'heavy', 'shield']),
+        monk: new Set([]),
+        ranger: new Set(['light', 'medium', 'shield']),
+        rogue: new Set(['light']),
+        sorcerer: new Set([]),
+        warlock: new Set(['light']),
+        wizard: new Set([]),
+    };
+    const weaponMasteries = {
+        barbare: { simple: true, martial: true },
+        barde: { simple: true, martial: false },
+        clerc: { simple: true, martial: false },
+        druide: { simple: true, martial: false },
+        guerrier: { simple: true, martial: true },
+        moine: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        paladin: { simple: true, martial: true },
+        rodeur: { simple: true, martial: true },
+        roublard: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        ensorceleur: { simple: true, martial: false },
+        occultiste: { simple: true, martial: false },
+        magicien: { simple: true, martial: false },
+        barbarian: { simple: true, martial: true },
+        bard: { simple: true, martial: false },
+        cleric: { simple: true, martial: false },
+        druid: { simple: true, martial: false },
+        fighter: { simple: true, martial: true },
+        monk: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        ranger: { simple: true, martial: true },
+        rogue: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        sorcerer: { simple: true, martial: false },
+        warlock: { simple: true, martial: false },
+        wizard: { simple: true, martial: false },
+    };
+
+    const isWeaponAllowed = (option, classRule) => {
+        if (!option.value) return true;
+        if (!classRule) return true;
+        const weapon = {
+            category: option.dataset.weaponCategory || 'simple',
+            finesse: option.dataset.weaponFinesse === '1',
+            ranged: option.dataset.weaponRanged === '1',
+            light: option.dataset.weaponLight === '1',
+        };
+        if (weapon.category === 'simple') return Boolean(classRule.simple);
+        if (!classRule.martial) return false;
+        if (typeof classRule.martialPredicate === 'function') {
+            return Boolean(classRule.martialPredicate(weapon));
+        }
+        return true;
+    };
+
+    const isArmorAllowed = (category, classArmorMastery) => {
+        if (!category || category === 'none') return true;
+        if (!classArmorMastery) return true;
+        const needs = category.split('+');
+        return needs.every((value) => classArmorMastery.has(value));
+    };
+
+    const syncEquipmentByClass = () => {
+        const classKey = normalizeClassName(classSelect.value);
+        const classArmorMastery = armorMasteries[classKey];
+        const classWeaponRule = weaponMasteries[classKey];
+
+        Array.from(weaponSelect.options).forEach((option) => {
+            const allowed = isWeaponAllowed(option, classWeaponRule);
+            option.hidden = !allowed;
+            option.disabled = !allowed;
+        });
+        if (weaponSelect.options[weaponSelect.selectedIndex]?.disabled) {
+            weaponSelect.value = '';
+        }
+
+        Array.from(armorSelect.options).forEach((option) => {
+            const allowed = isArmorAllowed(option.dataset.armorCategory, classArmorMastery);
+            option.hidden = !allowed;
+            option.disabled = !allowed;
+        });
+        if (armorSelect.options[armorSelect.selectedIndex]?.disabled) {
+            armorSelect.value = 'Sans armure';
+        }
+    };
+
+    classSelect.addEventListener('change', syncEquipmentByClass);
+    syncEquipmentByClass();
+});
+</script>
 {% endblock %}

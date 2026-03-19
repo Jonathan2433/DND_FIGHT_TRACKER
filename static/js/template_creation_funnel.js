@@ -116,6 +116,43 @@ document.addEventListener('DOMContentLoaded', () => {
         warlock: new Set(['light']),
         wizard: new Set([]),
     };
+    const classWeaponMasteries = {
+        barbare: { simple: true, martial: true },
+        barde: { simple: true, martial: false },
+        clerc: { simple: true, martial: false },
+        druide: { simple: true, martial: false },
+        guerrier: { simple: true, martial: true },
+        moine: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        paladin: { simple: true, martial: true },
+        rodeur: { simple: true, martial: true },
+        roublard: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        ensorceleur: { simple: true, martial: false },
+        occultiste: { simple: true, martial: false },
+        magicien: { simple: true, martial: false },
+        barbarian: { simple: true, martial: true },
+        bard: { simple: true, martial: false },
+        cleric: { simple: true, martial: false },
+        druid: { simple: true, martial: false },
+        fighter: { simple: true, martial: true },
+        monk: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        ranger: { simple: true, martial: true },
+        rogue: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        sorcerer: { simple: true, martial: false },
+        warlock: { simple: true, martial: false },
+        wizard: { simple: true, martial: false },
+    };
+    const weaponCatalog = {
+        'Epee longue': { category: 'martial', finesse: false, ranged: false, light: false },
+        'Epee courte': { category: 'martial', finesse: true, ranged: false, light: true },
+        Dague: { category: 'simple', finesse: true, ranged: false, light: true },
+        "Hache d'armes": { category: 'martial', finesse: false, ranged: false, light: false },
+        Masse: { category: 'simple', finesse: false, ranged: false, light: false },
+        'Arc court': { category: 'simple', finesse: false, ranged: true, light: false },
+        'Arc long': { category: 'martial', finesse: false, ranged: true, light: false },
+        'Arbalete legere': { category: 'simple', finesse: false, ranged: true, light: false },
+        Lance: { category: 'simple', finesse: false, ranged: false, light: false },
+        Baton: { category: 'simple', finesse: false, ranged: false, light: false },
+    };
     const armorCatalog = {
         none: { label: 'Sans armure', category: 'none', base: 10, dexCap: null },
         padded: { label: 'Matelassee', category: 'light', base: 11, dexCap: null },
@@ -320,6 +357,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const getSpellSelectionLimitsForSelectedClass = () => (
         spellSelectionLimitsByClass[normalizeClassName(classSelect?.value)] || { cantrips: 0, levelOne: 0 }
     );
+    const isWeaponAllowedForClass = (weaponKey, classKey) => {
+        if (!weaponKey || weaponKey === 'other') return true;
+        const weapon = weaponCatalog[weaponKey];
+        const rule = classWeaponMasteries[classKey];
+        if (!weapon || !rule) return true;
+        if (weapon.category === 'simple') {
+            return Boolean(rule.simple);
+        }
+        if (!rule.martial) {
+            return false;
+        }
+        if (typeof rule.martialPredicate === 'function') {
+            return Boolean(rule.martialPredicate(weapon));
+        }
+        return true;
+    };
+    const syncEquipmentOptionsForClass = () => {
+        const classKey = normalizeClassName(classSelect?.value);
+        const armorMasteries = classArmorMasteries[classKey] || null;
+        const hasShieldMastery = Boolean(armorMasteries?.has('shield'));
+
+        if (weaponLoadoutSelect) {
+            Array.from(weaponLoadoutSelect.options).forEach((option) => {
+                const allowed = isWeaponAllowedForClass(option.value, classKey);
+                option.hidden = !allowed;
+                option.disabled = !allowed;
+            });
+            const selectedWeaponOption = weaponLoadoutSelect.options[weaponLoadoutSelect.selectedIndex];
+            if (selectedWeaponOption?.disabled) {
+                weaponLoadoutSelect.value = '';
+            }
+        }
+
+        if (armorEquippedSelect) {
+            Array.from(armorEquippedSelect.options).forEach((option) => {
+                if (option.value === 'none') {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+                const armor = armorCatalog[option.value];
+                const allowed = armorMasteries ? armorMasteries.has(armor?.category) : true;
+                option.hidden = !allowed;
+                option.disabled = !allowed;
+            });
+            const selectedArmorOption = armorEquippedSelect.options[armorEquippedSelect.selectedIndex];
+            if (selectedArmorOption?.disabled) {
+                armorEquippedSelect.value = 'none';
+            }
+        }
+
+        if (shieldChoiceSelect) {
+            const shieldEnabledOption = shieldChoiceSelect.querySelector('option[value="1"]');
+            if (shieldEnabledOption) {
+                shieldEnabledOption.hidden = !hasShieldMastery;
+                shieldEnabledOption.disabled = !hasShieldMastery;
+            }
+            if (!hasShieldMastery && shieldChoiceSelect.value === '1') {
+                shieldChoiceSelect.value = '0';
+            }
+        }
+    };
     const getSkillLimitForSelectedClass = () => skillProficiencyLimitsByClass[normalizeClassName(classSelect?.value)] || 2;
     const parseDataSpellList = (value) => (value || '')
         .split(',')
@@ -1062,6 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     classSelect?.addEventListener('change', () => {
+        syncEquipmentOptionsForClass();
         render();
         renderClassDescription();
         renderEquipmentStep();
@@ -1130,6 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncAbilityMode();
     syncBackgroundBonusFields();
+    syncEquipmentOptionsForClass();
     render();
     renderBackground();
     renderClassDescription();
