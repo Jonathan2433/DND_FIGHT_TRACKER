@@ -18,6 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfHelp = form.querySelector('#create-pdf-help');
     const spellcastingContainer = form.querySelector('#spellcasting-fields');
     const spellcastingClassInput = form.querySelector('#create-spellcasting-class');
+    const spellSelectionStep = form.querySelector('#spell-selection-step');
+    const spellSearchInput = form.querySelector('#spell-search-input');
+    const spellOptionLabels = Array.from(form.querySelectorAll('.spell-option'));
+    const cantripCheckboxes = Array.from(form.querySelectorAll('input[name="selected_cantrips"]'));
+    const levelOneSpellCheckboxes = Array.from(form.querySelectorAll('input[name="selected_level_1_spells"]'));
+    const spellSelectionSummary = form.querySelector('#spell-selection-summary');
     const skillCheckboxes = Array.from(form.querySelectorAll('input[name="skill_proficiencies"]'));
     const skillLimitSummary = form.querySelector('#create-skill-limit-summary');
 
@@ -356,14 +362,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const summarizeSpellSelection = () => {
+        if (!spellSelectionSummary) return;
+        const cantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
+        const levelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
+        spellSelectionSummary.textContent = `Sorts selectionnes: ${cantripCount} sort mineur, ${levelOneCount} sort de niveau 1.`;
+    };
+
+    const filterSpellOptions = () => {
+        const term = (spellSearchInput?.value || '').trim().toLowerCase();
+        spellOptionLabels.forEach((label) => {
+            const name = (label.dataset.spellName || '').toLowerCase();
+            const visible = !term || name.includes(term);
+            label.hidden = !visible;
+        });
+    };
+
+    const isSelectedClassSpellcaster = () => {
+        const selectedClass = classSelect?.value;
+        return Object.prototype.hasOwnProperty.call(spellcasterRules, selectedClass);
+    };
+
     const syncSpellcastingFields = () => {
         if (!spellcastingContainer || !classSelect) return;
         const selectedClass = classSelect.value;
-        const isSpellcaster = Object.prototype.hasOwnProperty.call(spellcasterRules, selectedClass);
-        spellcastingContainer.hidden = !isSpellcaster;
+        const isSpellcaster = isSelectedClassSpellcaster();
+        if (spellSelectionStep) {
+            spellSelectionStep.hidden = !isSpellcaster;
+            spellSelectionStep.classList.toggle('is-disabled-step', !isSpellcaster);
+        }
 
         if (!isSpellcaster) {
             if (spellcastingClassInput) spellcastingClassInput.value = '';
+            cantripCheckboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            levelOneSpellCheckboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            summarizeSpellSelection();
             return;
         }
 
@@ -387,20 +424,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalSteps = Number.isFinite(configuredTotalSteps) && configuredTotalSteps > 0
         ? configuredTotalSteps
         : stepPanels.length;
+    const getAvailableSteps = () => {
+        if (isSelectedClassSpellcaster()) {
+            return [1, 2, 3, 4, 5, 6];
+        }
+        return [1, 2, 3, 4, 6];
+    };
+    const getLastAvailableStep = () => getAvailableSteps()[getAvailableSteps().length - 1];
+    const getPreviousStep = (step) => {
+        const available = getAvailableSteps();
+        const index = available.indexOf(step);
+        if (index <= 0) return available[0];
+        return available[index - 1];
+    };
+    const getNextStep = (step) => {
+        const available = getAvailableSteps();
+        const index = available.indexOf(step);
+        if (index === -1) return available[0];
+        if (index >= available.length - 1) return available[available.length - 1];
+        return available[index + 1];
+    };
 
     const updateWizardUI = () => {
+        const availableSteps = getAvailableSteps();
         stepPanels.forEach((panel) => {
             const step = Number(panel.dataset.step);
-            const active = step === currentStep;
+            const enabled = availableSteps.includes(step);
+            const active = enabled && step === currentStep;
             panel.hidden = !active;
             panel.classList.toggle('is-active', active);
         });
 
         stepItems.forEach((item) => {
             const step = Number(item.dataset.step);
+            const enabled = availableSteps.includes(step);
             const isActive = step === currentStep;
-            item.classList.toggle('is-active', isActive);
-            item.classList.toggle('is-complete', step < currentStep);
+            item.hidden = !enabled;
+            item.classList.toggle('is-active', enabled && isActive);
+            item.classList.toggle('is-complete', enabled && step < currentStep);
 
             const trigger = item.querySelector('.creation-step-trigger');
             if (trigger) {
@@ -408,8 +469,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const isFirstStep = currentStep === 1;
-        const isLastStep = currentStep >= totalSteps;
+        const firstStep = availableSteps[0];
+        const lastStep = availableSteps[availableSteps.length - 1];
+        const isFirstStep = currentStep === firstStep;
+        const isLastStep = currentStep >= lastStep;
 
         prevButton.disabled = isFirstStep;
 
@@ -424,6 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const goToStep = (targetStep, options = {}) => {
         if (!Number.isFinite(targetStep) || targetStep < 1 || targetStep > totalSteps) return;
+        const availableSteps = getAvailableSteps();
+        if (!availableSteps.includes(targetStep)) return;
         currentStep = targetStep;
         updateWizardUI();
 
@@ -435,22 +500,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     prevButton?.addEventListener('click', () => {
-        if (currentStep > 1) {
-            goToStep(currentStep - 1, { scrollToStep: true });
-        }
+        goToStep(getPreviousStep(currentStep), { scrollToStep: true });
     });
 
     nextButton?.addEventListener('click', () => {
-        if (currentStep < totalSteps) {
-            goToStep(currentStep + 1, { scrollToStep: true });
-        }
+        goToStep(getNextStep(currentStep), { scrollToStep: true });
     });
 
     stepItems.forEach((item) => {
         const trigger = item.querySelector('.creation-step-trigger');
         trigger?.addEventListener('click', () => {
             const targetStep = Number(trigger.dataset.stepTarget || item.dataset.step || currentStep);
-            if (targetStep <= currentStep && targetStep >= 1) {
+            if (targetStep <= currentStep && targetStep >= 1 && getAvailableSteps().includes(targetStep)) {
                 goToStep(targetStep, { scrollToStep: true });
             }
         });
@@ -462,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedSkillsCount > maxAllowedSkills) {
             event.preventDefault();
             alert(`Vous ne pouvez selectionner que ${maxAllowedSkills} competences maitrisees pour cette classe.`);
-            goToStep(5, { scrollToStep: true });
+            goToStep(6, { scrollToStep: true });
             return;
         }
 
@@ -475,9 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (currentStep !== totalSteps) {
+        const lastStep = getLastAvailableStep();
+        if (currentStep !== lastStep) {
             event.preventDefault();
-            goToStep(totalSteps, { scrollToStep: true });
+            goToStep(lastStep, { scrollToStep: true });
         }
     });
 
@@ -514,6 +576,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClassDescription();
         syncSpellcastingFields();
         syncSkillProficiencyLimit();
+        if (!getAvailableSteps().includes(currentStep)) {
+            goToStep(getLastAvailableStep());
+        } else {
+            updateWizardUI();
+        }
     });
     levelInput?.addEventListener('input', render);
     backgroundSelect?.addEventListener('change', () => {
@@ -528,6 +595,9 @@ document.addEventListener('DOMContentLoaded', () => {
             syncSkillProficiencyLimit(checkbox);
         });
     });
+    spellSearchInput?.addEventListener('input', filterSpellOptions);
+    cantripCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', summarizeSpellSelection));
+    levelOneSpellCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', summarizeSpellSelection));
 
     syncAbilityMode();
     syncBackgroundBonusFields();
@@ -539,6 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAlignment();
     syncPdfInputMode();
     syncSpellcastingFields();
+    filterSpellOptions();
+    summarizeSpellSelection();
     syncSkillProficiencyLimit();
     updateWizardUI();
 });

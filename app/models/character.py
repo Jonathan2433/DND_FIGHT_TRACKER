@@ -48,6 +48,8 @@ class CharacterTemplate(db.Model):
     spellcasting_ability = db.Column(db.String(30))  # Caracteristique de lancement de sorts
     spell_save_dc = db.Column(db.Integer)  # DD de sauvegarde des sorts
     spell_attack_bonus = db.Column(db.Integer)  # Bonus d'attaque des sorts
+    selected_cantrips = db.Column(db.Text)  # Sorts mineurs selectionnes (CSV)
+    selected_level_1_spells = db.Column(db.Text)  # Sorts de niveau 1 selectionnes (CSV)
     background_story = db.Column(db.Text)  # Histoire/background
     character_class = db.Column(db.String(50))
     race = db.Column(db.String(50))
@@ -428,6 +430,8 @@ class CharacterTemplate(db.Model):
             # Histoire et notes (complètes pour le propriétaire/MJ)
             'notes': self.notes,
             'background_story': self.background_story,
+            'selected_cantrips': self.selected_cantrips,
+            'selected_level_1_spells': self.selected_level_1_spells,
 
             # Fichiers
             'pdf_filename': self.pdf_filename,

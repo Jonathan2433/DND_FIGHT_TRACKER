@@ -168,3 +168,21 @@ UPLOAD_MAX_MB=64
 ```
 
 `UPLOAD_MAX_MB` définit la taille max acceptée côté Flask (en Mo). Pensez à aligner la limite Nginx (`client_max_body_size`) au même niveau ou au-dessus.
+
+## ✨ Base de connaissances des sorts
+
+- Le catalogue local de sorts est chargé depuis `app/data/spells_catalog.json`.
+- Lors de la création d'un PJ lanceur de sorts, une étape dédiée permet de sélectionner :
+  - des sorts mineurs (niveau 0),
+  - des sorts de niveau 1.
+- Les sélections sont persistées sur le personnage (`selected_cantrips`, `selected_level_1_spells`).
+
+### Synchroniser les sorts mineurs depuis une source en ligne
+
+Un script est fourni pour synchroniser automatiquement les sorts mineurs depuis Open5e :
+
+```bash
+python scripts/fetch_cantrips.py
+```
+
+Ce script remplace les sorts de niveau 0 du catalogue local, tout en conservant les sorts de niveau 1+.

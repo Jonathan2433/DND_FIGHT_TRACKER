@@ -141,6 +141,20 @@
                 </div>
             </section>
 
+            {% if profile.selected_cantrips is defined or profile.selected_level_1_spells is defined %}
+                <section class="char-details">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Sorts connus</h2>
+                        </div>
+                    </div>
+                    <div class="funnel-summary">
+                        <p><strong>Sorts mineurs:</strong> {{ profile.selected_cantrips or 'Aucun' }}</p>
+                        <p><strong>Sorts de niveau 1:</strong> {{ profile.selected_level_1_spells or 'Aucun' }}</p>
+                    </div>
+                </section>
+            {% endif %}
+
             {% if can_manage_combat_state and not limited_profile %}
                 <section class="profile-actions">
                     <h2>Etat de combat (persistant)</h2>

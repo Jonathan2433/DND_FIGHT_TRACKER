@@ -9,6 +9,7 @@ from app.models import CharacterTemplate, EncounterTemplate, Combatant
 from app.models.user import User
 from app.utils import MONSTER_TEMPLATES, allowed_file
 from app.utils.dnd5_rules import resolve_character_creation
+from app.utils.spell_catalog import get_cantrips, get_spells_for_level
 from app.application.use_cases.notification_service import NotificationService
 from app.application.use_cases.character_sheet_pdf_service import CharacterSheetPdfService
 
@@ -113,6 +114,25 @@ class TemplateService:
         level = int(level or 1)
         proficiency_bonus = 2 + ((max(1, level) - 1) // 4)
         return ability_code, 8 + proficiency_bonus + ability_mod, proficiency_bonus + ability_mod
+
+    @staticmethod
+    def _normalize_selected_spells(form_data, field_name):
+        selected_spells = [item.strip() for item in form_data.getlist(field_name) if item and item.strip()]
+        if selected_spells:
+            return ", ".join(dict.fromkeys(selected_spells))
+        return None
+
+    @staticmethod
+    def _validate_selected_spells_exist(normalized_spells, valid_spells, label):
+        if not normalized_spells:
+            return
+        valid_names = {spell["name"] for spell in valid_spells}
+        selected_names = [item.strip() for item in normalized_spells.split(",") if item.strip()]
+        invalid_names = [name for name in selected_names if name not in valid_names]
+        if invalid_names:
+            raise ValueError(
+                f"{label} invalides detectes dans la selection: {', '.join(invalid_names)}."
+            )
 
     @staticmethod
     def _save_uploaded_file(uploaded_file, upload_folder):
@@ -250,6 +270,10 @@ class TemplateService:
             resolved_character.get('level') or form_data.get('level'),
             resolved_character,
         )
+        selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
+        selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        TemplateService._validate_selected_spells_exist(selected_cantrips, get_cantrips(), "Sorts mineurs")
+        TemplateService._validate_selected_spells_exist(selected_level_1_spells, get_spells_for_level(1), "Sorts de niveau 1")
         selected_languages = [
             form_data.get('language_1'),
             form_data.get('language_2'),
@@ -337,6 +361,8 @@ class TemplateService:
             spellcasting_ability=spellcasting_ability,
             spell_save_dc=spell_save_dc,
             spell_attack_bonus=spell_attack_bonus,
+            selected_cantrips=selected_cantrips,
+            selected_level_1_spells=selected_level_1_spells,
             background_story=TemplateService._compose_background_payload(form_data),
             current_xp=int(form_data.get('current_xp', 0))
         )
@@ -431,6 +457,12 @@ class TemplateService:
         template.spellcasting_ability = spellcasting_ability
         template.spell_save_dc = spell_save_dc
         template.spell_attack_bonus = spell_attack_bonus
+        if 'selected_cantrips' in form_data:
+            template.selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
+        if 'selected_level_1_spells' in form_data:
+            template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        TemplateService._validate_selected_spells_exist(template.selected_cantrips, get_cantrips(), "Sorts mineurs")
+        TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, get_spells_for_level(1), "Sorts de niveau 1")
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
