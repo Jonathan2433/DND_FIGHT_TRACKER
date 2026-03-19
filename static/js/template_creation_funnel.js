@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const weaponLoadoutSelect = form.querySelector('#create-weapon-loadout-select');
     const weaponLoadoutCustomInput = form.querySelector('#create-weapon-loadout-custom');
     const weaponLoadoutField = form.querySelector('#create-weapon-loadout');
+    const rangedWeaponLoadoutSelect = form.querySelector('#create-ranged-weapon-loadout-select');
+    const rangedWeaponLoadoutCustomInput = form.querySelector('#create-ranged-weapon-loadout-custom');
+    const rangedWeaponLoadoutField = form.querySelector('#create-ranged-weapon-loadout');
     const armorLoadoutField = form.querySelector('#create-armor-loadout');
     const shieldChoiceSelect = form.querySelector('#create-shield-choice');
     const armorEquippedSelect = form.querySelector('#create-armor-equipped');
@@ -374,6 +377,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return true;
     };
+    const isWeaponMatchingType = (weaponKey, expectedType) => {
+        if (!weaponKey || weaponKey === 'other') return true;
+        const weapon = weaponCatalog[weaponKey];
+        if (!weapon) return true;
+        return expectedType === 'ranged' ? weapon.ranged : !weapon.ranged;
+    };
     const syncEquipmentOptionsForClass = () => {
         const classKey = normalizeClassName(classSelect?.value);
         const armorMasteries = classArmorMasteries[classKey] || null;
@@ -381,13 +390,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (weaponLoadoutSelect) {
             Array.from(weaponLoadoutSelect.options).forEach((option) => {
-                const allowed = isWeaponAllowedForClass(option.value, classKey);
+                const allowed = isWeaponAllowedForClass(option.value, classKey)
+                    && isWeaponMatchingType(option.value, 'melee');
                 option.hidden = !allowed;
                 option.disabled = !allowed;
             });
             const selectedWeaponOption = weaponLoadoutSelect.options[weaponLoadoutSelect.selectedIndex];
             if (selectedWeaponOption?.disabled) {
                 weaponLoadoutSelect.value = '';
+            }
+        }
+        if (rangedWeaponLoadoutSelect) {
+            Array.from(rangedWeaponLoadoutSelect.options).forEach((option) => {
+                const allowed = isWeaponAllowedForClass(option.value, classKey)
+                    && isWeaponMatchingType(option.value, 'ranged');
+                option.hidden = !allowed;
+                option.disabled = !allowed;
+            });
+            const selectedRangedWeaponOption = rangedWeaponLoadoutSelect.options[rangedWeaponLoadoutSelect.selectedIndex];
+            if (selectedRangedWeaponOption?.disabled) {
+                rangedWeaponLoadoutSelect.value = '';
             }
         }
 
@@ -678,6 +700,16 @@ document.addEventListener('DOMContentLoaded', () => {
             weaponLoadoutField.value = isCustom
                 ? (weaponLoadoutCustomInput?.value || '')
                 : selectedWeapon;
+        }
+        if (rangedWeaponLoadoutField) {
+            const selectedRangedWeapon = rangedWeaponLoadoutSelect?.value || '';
+            const isCustomRanged = selectedRangedWeapon === 'other';
+            if (rangedWeaponLoadoutCustomInput) {
+                rangedWeaponLoadoutCustomInput.hidden = !isCustomRanged;
+            }
+            rangedWeaponLoadoutField.value = isCustomRanged
+                ? (rangedWeaponLoadoutCustomInput?.value || '')
+                : selectedRangedWeapon;
         }
         if (inventoryItemsField && !inventoryItemsField.dataset.userEdited) {
             inventoryItemsField.value = selectedPackItems.join(', ');
@@ -1231,6 +1263,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     weaponLoadoutSelect?.addEventListener('change', renderEquipmentStep);
     weaponLoadoutCustomInput?.addEventListener('input', renderEquipmentStep);
+    rangedWeaponLoadoutSelect?.addEventListener('change', renderEquipmentStep);
+    rangedWeaponLoadoutCustomInput?.addEventListener('input', renderEquipmentStep);
     [equipmentField, inventoryItemsField, toolProficienciesField].forEach((field) => {
         field?.addEventListener('input', () => {
             field.dataset.userEdited = '1';

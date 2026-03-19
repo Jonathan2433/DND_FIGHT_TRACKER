@@ -295,6 +295,7 @@ class TemplateService:
         skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
         tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
         weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
+        ranged_weapon_loadout = (form_data.get('ranged_weapon_loadout') or '').strip()
         armor_loadout = (form_data.get('armor_loadout') or '').strip()
         inventory_items = (form_data.get('inventory_items') or '').strip()
         spellbook_notes = (form_data.get('spellbook_notes') or '').strip()
@@ -303,7 +304,9 @@ class TemplateService:
         if base_equipment:
             sections.append(f"Equipement principal: {base_equipment}")
         if weapon_loadout:
-            sections.append(f"Armes equipees: {weapon_loadout}")
+            sections.append(f"Arme de corps a corps equipee: {weapon_loadout}")
+        if ranged_weapon_loadout:
+            sections.append(f"Arme a distance equipee: {ranged_weapon_loadout}")
         if armor_loadout:
             sections.append(f"Armure/Bouclier: {armor_loadout}")
         if inventory_items:
@@ -325,6 +328,7 @@ class TemplateService:
         parsed = {
             "equipment": "",
             "weapon_loadout": "",
+            "ranged_weapon_loadout": "",
             "armor_loadout": "",
             "inventory_items": "",
             "skill_proficiencies": "",
@@ -337,6 +341,8 @@ class TemplateService:
         mapping = {
             "Equipement principal:": "equipment",
             "Armes equipees:": "weapon_loadout",
+            "Arme de corps a corps equipee:": "weapon_loadout",
+            "Arme a distance equipee:": "ranged_weapon_loadout",
             "Armure/Bouclier:": "armor_loadout",
             "Inventaire:": "inventory_items",
             "Competences maitrisees:": "skill_proficiencies",
