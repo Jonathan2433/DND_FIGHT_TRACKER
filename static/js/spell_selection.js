@@ -65,15 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!alwaysPreparedEl) return;
             const className = normalizeClassName(classSelector?.value);
             if (className === 'druide' || className === 'druid') {
-                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Speak with Animals.';
+                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Communication avec les animaux.';
                 return;
             }
             if (className === 'paladin') {
-                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Divine Smite.';
+                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Châtiment divin.';
                 return;
             }
             if (className === 'ranger' || className === 'rodeur' || className === 'rôdeur') {
-                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Hunter’s Mark.';
+                alwaysPreparedEl.textContent = 'Toujours préparé (hors limite): Marque du chasseur.';
                 return;
             }
             alwaysPreparedEl.textContent = '';

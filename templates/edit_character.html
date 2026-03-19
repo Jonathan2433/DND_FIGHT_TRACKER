@@ -253,6 +253,10 @@
             <label for="edit-spell-search-input">Filtrer les sorts par nom</label>
             <input id="edit-spell-search-input" type="search" data-spell-search placeholder="Ex: projectile, soin, lumiere">
 
+            <p class="funnel-summary-inline" data-spell-limits></p>
+            <p class="funnel-summary-inline" data-spell-summary></p>
+            <p class="funnel-summary-inline" data-spell-always-prepared></p>
+
             <h3>Sorts mineurs (niveau 0)</h3>
             <div class="skill-proficiencies-grid">
                 {% for spell in cantrip_catalog %}
@@ -260,7 +264,7 @@
                         class="skill-option spell-option"
                         data-spell-name="{{ spell.name|lower }}"
                         data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
-                        title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('Niveau: sort mineur | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
                     >
                         <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}" {% if spell.name in selected_cantrips %}checked{% endif %}>
                         <span>{{ spell.name }}</span>
@@ -275,17 +279,13 @@
                         class="skill-option spell-option"
                         data-spell-name="{{ spell.name|lower }}"
                         data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
-                        title="{{ spell.name }} — {{ spell.description or ('École: ' ~ (spell.school or 'n/a') ~ ' | Source: ' ~ (spell.source or 'n/a') ~ ' | Description indisponible') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
                     >
                         <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}" {% if spell.name in selected_level_one_spells %}checked{% endif %}>
                         <span>{{ spell.name }}</span>
                     </label>
                 {% endfor %}
             </div>
-
-            <p class="funnel-summary-inline" data-spell-limits></p>
-            <p class="funnel-summary-inline" data-spell-summary></p>
-            <p class="funnel-summary-inline" data-spell-always-prepared></p>
         </section>
 
         <section class="edit-section edit-section--separator">
