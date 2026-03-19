@@ -176,7 +176,7 @@
                     </div>
                 {% endif %}
 
-                <div class="public-campaigns-grid">
+<!--                <div class="public-campaigns-grid">
                     {% set ns = namespace(visible_campaigns=0) %}
                     {% for campaign in user_campaigns[:6] %}
                         {% if not featured_campaign_summary or campaign.id != featured_campaign_summary.campaign.id %}
@@ -201,6 +201,7 @@
                         {% endif %}
                     {% endfor %}
                 </div>
+-->
                 {% if featured_campaign_summary and ns.visible_campaigns == 0 %}
                     <p class="section-head__copy">
                         Cette campagne est votre seule campagne active pour le moment.
