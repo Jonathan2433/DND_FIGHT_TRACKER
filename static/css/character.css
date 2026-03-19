@@ -9,10 +9,16 @@
 }
 
 .character-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.character-hero__head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 28px;
-    align-items: center;
+    grid-template-columns: auto minmax(0, 1fr) minmax(260px, 360px);
+    gap: 24px;
+    align-items: start;
 }
 
 .character-avatar {
@@ -83,6 +89,7 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    min-width: 0;
 }
 
 .character-summary__title {
@@ -157,14 +164,9 @@
 }
 
 .character-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    display: flex;
+    flex-direction: column;
     gap: 24px;
-    align-items: start;
-}
-
-.character-layout--full {
-    grid-template-columns: minmax(0, 1fr);
 }
 
 .character-main {
@@ -362,6 +364,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    height: 100%;
 }
 
 .char-notes p,
@@ -382,8 +385,7 @@
 /* ===================== */
 
 .profile-pdf-preview {
-    position: sticky;
-    top: 110px;
+    height: 100%;
 }
 
 .profile-pdf-preview h3 {
@@ -398,10 +400,40 @@
 
 .pdf-preview {
     width: 100%;
-    min-height: 720px;
+    min-height: 640px;
     border: none;
     border-radius: 22px;
     background: var(--color-white);
+}
+
+.character-notes-pdf-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.character-notes-pdf-layout--single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.character-notes-pdf-layout__notes,
+.character-notes-pdf-layout__pdf {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.character-notes-pdf-layout__notes .char-notes {
+    flex: 1;
+}
+
+.character-notes-pdf-layout__pdf .profile-pdf-preview {
+    flex: 1;
+}
+
+.character-notes-pdf-layout > .profile-generate-pdf {
+    grid-column: 2;
 }
 
 .pdf-controls {
@@ -608,30 +640,39 @@
 /* ===================== */
 
 @media (max-width: 1200px) {
-    .character-layout {
+    .character-hero__head {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .character-hero__head .profile-actions--quick {
+        grid-column: span 2;
+    }
+
+    .character-notes-pdf-layout {
         grid-template-columns: 1fr;
     }
 
-    .profile-pdf-preview {
-        position: static;
+    .character-notes-pdf-layout > .profile-generate-pdf {
+        grid-column: auto;
     }
 }
 
 @media (max-width: 900px) {
-    .character-hero {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        text-align: center;
+    .character-hero__head {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
     }
 
-    .character-summary,
-    .character-summary__title {
-        align-items: center;
-        text-align: center;
+    .character-summary {
+        gap: 12px;
+    }
+
+    .character-summary__title h1 {
+        font-size: clamp(28px, 9vw, 42px);
     }
 
     .profile-actions__buttons {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .award-xp-form form {
@@ -683,9 +724,18 @@
 }
 
 @media (max-width: 540px) {
+    .character-hero__head {
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .character-avatar {
+        gap: 8px;
+    }
+
     .char-stats-compact,
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .profile-stats {
@@ -698,18 +748,39 @@
     }
 
     .character-avatar__frame {
-        width: 132px;
-        height: 132px;
+        width: 110px;
+        height: 110px;
+    }
+
+    .character-summary__title h1 {
+        font-size: clamp(24px, 8vw, 34px);
+        line-height: 1.05;
+    }
+
+    .character-summary__meta {
+        font-size: 14px;
+    }
+
+    .profile-actions--quick {
+        padding: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        gap: 10px;
+    }
+
+    .profile-actions--quick h2 {
+        font-size: 15px;
     }
 
     .profile-actions__buttons {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
     }
 
     .profile-actions__buttons .btn,
     .profile-actions__buttons form {
-        width: min(100%, 420px);
+        width: 100%;
     }
 
     .profile-actions__buttons form .btn {
