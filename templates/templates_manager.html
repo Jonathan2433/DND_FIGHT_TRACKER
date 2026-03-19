@@ -34,7 +34,7 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="8">
+            <div class="creation-wizard" data-total-steps="9">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
                     <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
@@ -43,7 +43,8 @@
                     <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Competences</button></li>
                     <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts mineurs</button></li>
                     <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Sorts prepares</button></li>
-                    <li data-step="8"><button type="button" class="creation-step-trigger" data-step-target="8">8. Identite</button></li>
+                    <li data-step="8"><button type="button" class="creation-step-trigger" data-step-target="8">8. Equipement</button></li>
+                    <li data-step="9"><button type="button" class="creation-step-trigger" data-step-target="9">9. Identite</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
@@ -320,7 +321,55 @@
                 </section>
 
                 <section class="wizard-step" data-step="8" hidden>
-                    <h3>Etape 8 - Identite (visibilite et medias)</h3>
+                    <h3>Etape 8 - Equipement de depart (regles 2024)</h3>
+                    <p class="section-head__copy">
+                        Choisissez le set d'historique (Option A ou 50 PO), un pack d'aventure standard, puis ajustez votre equipement.
+                    </p>
+
+                    <div class="funnel-summary">
+                        <p id="equipment-class-base-summary">Base de classe: -</p>
+                        <p id="equipment-background-choice-summary">Historique: -</p>
+                        <p id="equipment-pack-summary">Pack d'aventure: -</p>
+                        <p id="equipment-notes-summary">Notes: Colifichet gratuit, AC selon armure, charge = FOR x 15 lb.</p>
+                    </div>
+
+                    <div class="edit-grid edit-grid--spaced">
+                        <section class="edit-section">
+                            <label for="create-background-equipment-choice">Choix d'equipement d'historique</label>
+                            <select id="create-background-equipment-choice" name="background_equipment_choice">
+                                <option value="A" selected>Option A (set predefini)</option>
+                                <option value="B">Option B (50 PO fixes)</option>
+                            </select>
+
+                            <label for="create-adventure-pack">Pack d'aventure standard</label>
+                            <select id="create-adventure-pack" name="adventure_pack">
+                                <option value="Cambrioleur (Burglar)" selected>Cambrioleur (Burglar)</option>
+                                <option value="Diplomate">Diplomate</option>
+                                <option value="Explorateur (Dungeoneer)">Explorateur (Dungeoneer)</option>
+                                <option value="Artiste (Entertainer)">Artiste (Entertainer)</option>
+                                <option value="Savant (Scholar)">Savant (Scholar)</option>
+                            </select>
+
+                            <label for="create-equipment">Equipement principal (resume automatique modifiable)</label>
+                            <textarea id="create-equipment" name="equipment" rows="3" placeholder="Option historique + pack + or de depart"></textarea>
+
+                            <label for="create-weapon-loadout">Armes equipees</label>
+                            <textarea id="create-weapon-loadout" name="weapon_loadout" rows="2" placeholder="Ex: epee longue, arc court, 20 fleches"></textarea>
+
+                            <label for="create-armor-loadout">Armure / bouclier</label>
+                            <textarea id="create-armor-loadout" name="armor_loadout" rows="2" placeholder="Ex: armure de cuir, bouclier"></textarea>
+
+                            <label for="create-inventory-items">Inventaire detaille</label>
+                            <textarea id="create-inventory-items" name="inventory_items" rows="3" placeholder="Objets utilitaires, consommables, kits..."></textarea>
+
+                            <label for="create-tool-proficiencies">Outils maitrises (si applicable)</label>
+                            <input id="create-tool-proficiencies" type="text" name="tool_proficiencies" placeholder="Ex: Outils de voleur, kit d'herboristerie">
+                        </section>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="9" hidden>
+                    <h3>Etape 9 - Identite (visibilite et medias)</h3>
                     <p class="section-head__copy">
                         Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
                     </p>

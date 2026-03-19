@@ -34,6 +34,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const levelOneSelectionBlock = form.querySelector('#level-one-selection-block');
     const skillCheckboxes = Array.from(form.querySelectorAll('input[name="skill_proficiencies"]'));
     const skillLimitSummary = form.querySelector('#create-skill-limit-summary');
+    const backgroundEquipmentChoiceSelect = form.querySelector('#create-background-equipment-choice');
+    const adventurePackSelect = form.querySelector('#create-adventure-pack');
+    const equipmentField = form.querySelector('#create-equipment');
+    const weaponLoadoutField = form.querySelector('#create-weapon-loadout');
+    const armorLoadoutField = form.querySelector('#create-armor-loadout');
+    const inventoryItemsField = form.querySelector('#create-inventory-items');
+    const toolProficienciesField = form.querySelector('#create-tool-proficiencies');
+
+    const backgroundEquipmentRules = {
+        Acolyte: {
+            optionA: ['Fournitures de calligraphie', 'Livre (prieres)', 'Symbole sacre', '10 feuilles de parchemin', 'Robe', '8 PO'],
+            optionB: '50 PO',
+        },
+        Criminel: {
+            optionA: ['2 dagues', 'Outils de voleur', 'Pied-de-biche', '2 sacoches', 'Vetements de voyage', '16 PO'],
+            optionB: '50 PO',
+        },
+        Sage: {
+            optionA: ['Baton', 'Fournitures de calligraphie', 'Livre (histoire)', '8 feuilles de parchemin', 'Robe', '8 PO'],
+            optionB: '50 PO',
+        },
+        Soldat: {
+            optionA: ['Pieu (Spear)', 'Arc court', '20 fleches', 'Set de jeu au choix', "Kit d'herboristerie", 'Carquois', 'Vetements de voyage', '14 PO'],
+            optionB: '50 PO',
+        },
+    };
+    const classEquipmentBaseRules = {
+        barbare: 'Armures legeres, intermediaires, boucliers ; Armes courantes et de guerre',
+        barde: 'Armures legeres ; Armes courantes',
+        clerc: 'Armures legeres, intermediaires, boucliers ; Armes courantes. (Option Protector : Armures lourdes et armes de guerre)',
+        druide: 'Armures legeres, boucliers ; Armes courantes',
+        guerrier: 'Toutes armures, boucliers ; Armes courantes et de guerre',
+        moine: 'Aucune armure ; Armes courantes et armes de moine',
+        paladin: 'Toutes armures, boucliers ; Armes courantes et de guerre',
+        rodeur: 'Armures legeres, intermediaires, boucliers ; Armes courantes et de guerre',
+        roublard: 'Armures legeres ; Armes courantes, armes a finesse et a distance',
+        ensorceleur: 'Aucune armure ; Armes courantes',
+        occultiste: 'Armures legeres ; Armes courantes',
+        magicien: 'Aucune armure ; Armes courantes',
+        barbarian: 'Armures legeres, intermediaires, boucliers ; Armes courantes et de guerre',
+        bard: 'Armures legeres ; Armes courantes',
+        cleric: 'Armures legeres, intermediaires, boucliers ; Armes courantes. (Option Protector : Armures lourdes et armes de guerre)',
+        druid: 'Armures legeres, boucliers ; Armes courantes',
+        fighter: 'Toutes armures, boucliers ; Armes courantes et de guerre',
+        monk: 'Aucune armure ; Armes courantes et armes de moine',
+        ranger: 'Armures legeres, intermediaires, boucliers ; Armes courantes et de guerre',
+        rogue: 'Armures legeres ; Armes courantes, armes a finesse et a distance',
+        sorcerer: 'Aucune armure ; Armes courantes',
+        warlock: 'Armures legeres ; Armes courantes',
+        wizard: 'Aucune armure ; Armes courantes',
+    };
+    const adventurePacks = {
+        'Cambrioleur (Burglar)': ['Sac a dos', 'Sac de billes', 'Cloche', '10 bougies', 'Pied-de-biche', 'Lanterne sourde', "7 flacons d'huile", '5 jours de rations', 'Corde', "Boite d'allume-feu", 'Outre'],
+        Diplomate: ['Coffre', 'Vetements fins', 'Encre', '5 plumes', 'Lampe', '2 etuis a parchemin', "4 flacons d'huile", '5 feuilles de papier', '5 feuilles de parchemin', 'Parfum', "Boite d'allume-feu"],
+        'Explorateur (Dungeoneer)': ['Sac a dos', 'Chausse-trappes', 'Pied-de-biche', "2 flacons d'huile", '10 jours de rations', 'Corde', "Boite d'allume-feu", '10 torches', 'Outre'],
+        'Artiste (Entertainer)': ['Sac a dos', 'Couverture', 'Cloche', 'Lanterne a lentille', '3 costumes', 'Miroir', "8 flacons d'huile", '9 jours de rations', "Boite d'allume-feu", 'Outre'],
+        'Savant (Scholar)': ['Sac a dos', 'Livre', 'Encre', 'Plume', 'Lampe', "10 flacons d'huile", '10 feuilles de parchemin', "Boite d'allume-feu"],
+    };
 
     const skillProficiencyLimitsByClass = {
         artificier: 2,
@@ -405,6 +463,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if (proficienciesEl) proficienciesEl.textContent = `Maitrises de classe: Armures (${armors}) | Armes (${weapons})`;
     };
 
+    const renderEquipmentStep = () => {
+        const backgroundName = backgroundSelect?.value || '';
+        const backgroundRule = backgroundEquipmentRules[backgroundName];
+        const backgroundChoice = backgroundEquipmentChoiceSelect?.value || 'A';
+        const selectedPackName = adventurePackSelect?.value || '';
+        const selectedPackItems = adventurePacks[selectedPackName] || [];
+        const classBaseRule = classEquipmentBaseRules[normalizeClassName(classSelect?.value)] || '-';
+
+        const classBaseSummary = document.getElementById('equipment-class-base-summary');
+        const backgroundChoiceSummary = document.getElementById('equipment-background-choice-summary');
+        const packSummary = document.getElementById('equipment-pack-summary');
+        if (classBaseSummary) classBaseSummary.textContent = `Base de classe: ${classBaseRule}`;
+
+        let backgroundChoiceText = 'Historique non reference dans les sets automatiques (Acolyte, Criminel, Sage, Soldat).';
+        let backgroundItemsText = '';
+        if (backgroundRule) {
+            if (backgroundChoice === 'B') {
+                backgroundChoiceText = `${backgroundName} - Option B: ${backgroundRule.optionB}`;
+                backgroundItemsText = `${backgroundName} (Option B): ${backgroundRule.optionB}`;
+            } else {
+                backgroundChoiceText = `${backgroundName} - Option A: ${backgroundRule.optionA.join(', ')}`;
+                backgroundItemsText = `${backgroundName} (Option A): ${backgroundRule.optionA.join(', ')}`;
+            }
+        }
+        if (backgroundChoiceSummary) backgroundChoiceSummary.textContent = `Historique: ${backgroundChoiceText}`;
+
+        const packText = selectedPackItems.length ? `${selectedPackName}: ${selectedPackItems.join(', ')}` : '-';
+        if (packSummary) packSummary.textContent = `Pack d'aventure: ${packText}`;
+
+        if (equipmentField && !equipmentField.dataset.userEdited) {
+            const chunks = [];
+            if (backgroundItemsText) chunks.push(backgroundItemsText);
+            if (selectedPackItems.length) chunks.push(`Pack ${selectedPackName}: ${selectedPackItems.join(', ')}`);
+            if (chunks.length) chunks.push('Rappel: 1 colifichet gratuit a la creation.');
+            equipmentField.value = chunks.join(' | ');
+        }
+        if (toolProficienciesField && !toolProficienciesField.dataset.userEdited) {
+            const selectedBackground = backgroundSelect?.options?.[backgroundSelect.selectedIndex];
+            toolProficienciesField.value = selectedBackground?.dataset.tool || '';
+        }
+        if (armorLoadoutField && !armorLoadoutField.dataset.userEdited) {
+            armorLoadoutField.value = classBaseRule.includes('Aucune armure') ? 'Sans armure (10 + DEX)' : '';
+        }
+        if (weaponLoadoutField && !weaponLoadoutField.dataset.userEdited) {
+            weaponLoadoutField.value = '';
+        }
+        if (inventoryItemsField && !inventoryItemsField.dataset.userEdited) {
+            inventoryItemsField.value = selectedPackItems.join(', ');
+        }
+    };
+
     const renderSpecies = () => {
         if (!raceSelect) return;
         const selected = raceSelect.options[raceSelect.selectedIndex];
@@ -666,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const available = [1, 2, 3, 4, 5];
         if (spellSteps.cantrips) available.push(6);
         if (spellSteps.levelOne) available.push(7);
-        available.push(8);
+        available.push(8, 9);
         return available;
     };
     const getLastAvailableStep = () => getAvailableSteps()[getAvailableSteps().length - 1];
@@ -831,6 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     classSelect?.addEventListener('change', () => {
         render();
         renderClassDescription();
+        renderEquipmentStep();
         syncSpellcastingFields();
         syncSkillProficiencyLimit();
         if (!getAvailableSteps().includes(currentStep)) {
@@ -843,6 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backgroundSelect?.addEventListener('change', () => {
         syncBackgroundBonusFields();
         renderBackground();
+        renderEquipmentStep();
         render();
         syncSpellcastingFields();
         if (!getAvailableSteps().includes(currentStep)) {
@@ -868,12 +979,20 @@ document.addEventListener('DOMContentLoaded', () => {
         enforceSpellSelectionLimits(checkbox);
         summarizeSpellSelection();
     }));
+    backgroundEquipmentChoiceSelect?.addEventListener('change', renderEquipmentStep);
+    adventurePackSelect?.addEventListener('change', renderEquipmentStep);
+    [equipmentField, weaponLoadoutField, armorLoadoutField, inventoryItemsField, toolProficienciesField].forEach((field) => {
+        field?.addEventListener('input', () => {
+            field.dataset.userEdited = '1';
+        });
+    });
 
     syncAbilityMode();
     syncBackgroundBonusFields();
     render();
     renderBackground();
     renderClassDescription();
+    renderEquipmentStep();
     renderSpecies();
     renderLanguages();
     renderAlignment();
