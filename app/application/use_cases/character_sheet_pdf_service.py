@@ -238,18 +238,17 @@ class CharacterSheetPdfService:
         if not equipment_value:
             return []
 
-        melee_prefix = "Arme de corps a corps equipee:"
-        ranged_prefix = "Arme a distance equipee:"
         selected: list[str] = []
 
         chunks = [chunk.strip() for chunk in (equipment_value or "").split("|") if chunk.strip()]
         for chunk in chunks:
-            if chunk.startswith(melee_prefix):
-                name = chunk.replace(melee_prefix, "", 1).strip()
+            normalized_chunk = CharacterSheetPdfService._normalize_text_key(chunk)
+            if normalized_chunk.startswith("arme de corps a corps equipee"):
+                name = re.sub(r"^.*?:\s*", "", chunk, count=1).strip()
                 if name:
                     selected.append(name)
-            elif chunk.startswith(ranged_prefix):
-                name = chunk.replace(ranged_prefix, "", 1).strip()
+            elif normalized_chunk.startswith("arme a distance equipee"):
+                name = re.sub(r"^.*?:\s*", "", chunk, count=1).strip()
                 if name:
                     selected.append(name)
         return list(dict.fromkeys(selected))
@@ -260,11 +259,23 @@ class CharacterSheetPdfService:
         if not weapon_names:
             return ""
 
+        damage_type_short = {
+            "Tranchant": "Trch",
+            "Percant": "Perc",
+            "Contondant": "Cont",
+        }
+
+        def clamp_line(value: str, limit: int = 36) -> str:
+            text = " ".join((value or "").split())
+            if len(text) <= limit:
+                return text
+            return f"{text[:limit - 1].rstrip()}…"
+
         attack_lines: list[str] = []
-        for weapon_name in weapon_names[:3]:
+        for weapon_name in weapon_names[:5]:
             profile = cls._resolve_weapon_profile(weapon_name)
             if not profile:
-                attack_lines.append(weapon_name)
+                attack_lines.append(clamp_line(weapon_name))
                 continue
 
             if profile["is_ranged"]:
@@ -276,8 +287,9 @@ class CharacterSheetPdfService:
 
             attack_bonus = cls._format_mod(ability_mod + character.bonus_maitrise)
             damage_bonus = f"+{ability_mod}" if ability_mod >= 0 else str(ability_mod)
-            damage_block = f"{profile['damage']}{damage_bonus} {profile['damage_type']}"
-            attack_lines.append(f"{weapon_name}: {attack_bonus} | {damage_block}")
+            damage_type = damage_type_short.get(profile["damage_type"], profile["damage_type"])
+            damage_block = f"{profile['damage']}{damage_bonus} {damage_type}"
+            attack_lines.append(clamp_line(f"{weapon_name} {attack_bonus} {damage_block}"))
 
         return "\n".join(attack_lines)
 
