@@ -1,0 +1,20 @@
+{
+  "spells": [
+    {
+      "name": "Lumiere",
+      "level": 0,
+      "school": "Evocation",
+      "classes": ["Clerc", "Magicien"],
+      "source": "SRD 5.1",
+      "description": "Vous touchez un objet qui emet de la lumiere vive dans un rayon de 6 metres."
+    },
+    {
+      "name": "Projectile magique",
+      "level": 1,
+      "school": "Evocation",
+      "classes": ["Magicien", "Ensorceleur"],
+      "source": "SRD 5.1",
+      "description": "Trois dards de force touchent automatiquement des cibles visibles a portee."
+    }
+  ]
+}

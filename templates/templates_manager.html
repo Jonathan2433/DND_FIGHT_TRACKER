@@ -34,13 +34,14 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="5">
+            <div class="creation-wizard" data-total-steps="6">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
                     <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
                     <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
                     <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Finalisation</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Sorts</button></li>
+                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Finalisation</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
@@ -223,8 +224,45 @@
                     <p id="alignment-description-summary" class="funnel-summary-inline">Alignement: -</p>
                 </section>
 
-                <section class="wizard-step" data-step="5" hidden>
-                    <h3>Etape 5 - Finalisation (identite, visibilite et medias)</h3>
+                <section class="wizard-step" data-step="5" hidden id="spell-selection-step">
+                    <h3>Etape 5 - Selection des sorts</h3>
+                    <p class="section-head__copy">
+                        Cette etape apparait uniquement pour les classes lanceuses de sorts.
+                    </p>
+                    <div id="spellcasting-fields">
+                        <input type="hidden" id="create-spellcasting-class" name="spellcasting_class" value="">
+
+                        <label for="spell-search-input">Filtrer les sorts par nom</label>
+                        <input id="spell-search-input" type="search" placeholder="Ex: projectile, soin, lumiere">
+
+                        <h4>Sorts mineurs (niveau 0)</h4>
+                        <div class="skill-proficiencies-grid" id="cantrip-selection-grid">
+                            {% for spell in cantrip_catalog %}
+                                <label class="skill-option spell-option" data-spell-name="{{ spell.name|lower }}">
+                                    <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}">
+                                    <span>{{ spell.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        <h4>Sorts de niveau 1</h4>
+                        <div class="skill-proficiencies-grid" id="level-one-spell-selection-grid">
+                            {% for spell in level_one_spell_catalog %}
+                                <label class="skill-option spell-option" data-spell-name="{{ spell.name|lower }}">
+                                    <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}">
+                                    <span>{{ spell.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        <p id="spell-selection-summary" class="funnel-summary-inline">
+                            Sorts selectionnes: 0 sort mineur, 0 sort de niveau 1.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="6" hidden>
+                    <h3>Etape 6 - Finalisation (identite, visibilite et medias)</h3>
                     <p class="section-head__copy">
                         Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
                     </p>

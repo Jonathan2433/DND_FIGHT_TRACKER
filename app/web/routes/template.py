@@ -27,6 +27,7 @@ from app.utils.dnd5_rules import (
     AIDEDED_CLASS_OPTIONS,
     AIDEDED_BACKGROUND_OPTIONS,
 )
+from app.utils.spell_catalog import get_cantrips, get_spells_for_level
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
@@ -130,6 +131,8 @@ def manage_templates():
         dnd_species_rules=get_localized_species_rules(),
         dnd_alignments=ALIGNMENTS_FR,
         common_languages=COMMON_LANGUAGES,
+        cantrip_catalog=get_cantrips(),
+        level_one_spell_catalog=get_spells_for_level(1),
         can_create_pnj=can_create_pnj,
     )
 
