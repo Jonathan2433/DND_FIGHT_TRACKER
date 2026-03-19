@@ -3,12 +3,16 @@ from __future__ import annotations
 
 import re
 import os
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import NameObject, TextStringObject
+from pypdf.generic import BooleanObject, NameObject, TextStringObject
+
+
+logger = logging.getLogger(__name__)
 
 
 class CharacterSheetPdfService:
@@ -21,14 +25,14 @@ class CharacterSheetPdfService:
     )
     STATIC_UPLOADS_DIR = Path(__file__).resolve().parents[3] / "static" / "uploads"
 
-    # Mapping metier -> alias possibles dans le PDF officiel.
-    # Les alias sont resolves automatiquement vers les vrais noms de champs.
+    # Mapping metier -> noms techniques connus des champs PDF.
+    # Le premier nom correspond au template officiel 5E_CharacterSheet_Fillable.pdf.
     FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "character_name": ("CharacterName", "Character Name", "CharName"),
         "class_level": ("ClassLevel", "Class & Level", "ClassLevel1"),
         "background": ("Background",),
         "player_name": ("PlayerName", "Player Name"),
-        "race": ("Race",),
+        "race": ("Race ", "Race"),
         "alignment": ("Alignment",),
         "experience_points": ("XP", "Experience Points", "ExperiencePoints"),
         "strength": ("STR", "Strength", "StrengthScore"),
@@ -53,7 +57,7 @@ class CharacterSheetPdfService:
         "temp_hp": ("HPTemp", "Temp HP", "Temporary Hit Points"),
         "languages": ("Languages",),
         "proficiencies_languages": ("ProficienciesLang", "Proficiencies & Languages", "Proficiencies and Languages"),
-        "equipment": ("Equipment", "EquipmentNotes", "Treasure"),
+        "equipment": ("Equipment", "EquipmentNotes"),
         "features_traits": ("Features and Traits", "FeaturesTraits", "Features and Traits 1"),
         "passive_wisdom": ("Passive", "Passive Wisdom (Perception)"),
         "proficiency_checkbox": ("ProfCheckbox", "Inspiration", "Inspiration Checkbox"),
@@ -64,6 +68,10 @@ class CharacterSheetPdfService:
         "skin": ("Skin",),
         "hair": ("Hair",),
         "personality_traits": ("PersonalityTraits", "Personality Traits"),
+        "ideals": ("Ideals",),
+        "bonds": ("Bonds",),
+        "flaws": ("Flaws",),
+        "attacks_spellcasting": ("AttacksSpellcasting", "Attacks & Spellcasting"),
         "allies_organizations": ("AlliesOrganizations", "Allies & Organizations"),
         "character_appearance": ("CharacterAppearance", "CHARACTER APPEARANCE"),
         "additional_features_traits": ("AdditionalFeatandTraits", "Additional Features and Traits"),
@@ -124,53 +132,6 @@ class CharacterSheetPdfService:
     }
 
     REQUIRED_MAPPING_KEYS = ("character_name", "class_level", "race", "armor_class", "strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma")
-    FIELD_KEYWORDS: dict[str, tuple[str, ...]] = {
-        "character_name": ("character", "name"),
-        "class_level": ("class", "level"),
-        "background": ("background",),
-        "character_backstory": ("characterbackstory", "backstory"),
-        "player_name": ("player", "name"),
-        "race": ("race",),
-        "alignment": ("alignment",),
-        "experience_points": ("xp", "experience"),
-        "strength": ("str", "strength"),
-        "strength_mod": ("strmod", "strengthmod"),
-        "dexterity": ("dex", "dexterity"),
-        "dexterity_mod": ("dexmod", "dexteritymod"),
-        "constitution": ("con", "constitution"),
-        "constitution_mod": ("conmod", "constitutionmod"),
-        "intelligence": ("int", "intelligence"),
-        "intelligence_mod": ("intmod", "intelligencemod"),
-        "wisdom": ("wis", "wisdom"),
-        "wisdom_mod": ("wismod", "wisdommod"),
-        "charisma": ("cha", "charisma"),
-        "charisma_mod": ("chamod", "charismamod"),
-        "proficiency_bonus": ("prof", "proficiency"),
-        "armor_class": ("armorclass",),
-        "initiative": ("initiative",),
-        "speed": ("speed",),
-        "hp_max": ("hpmax", "hitpointmaximum"),
-        "hp_current": ("hpcurrent", "currenthp"),
-        "temp_hp": ("hptemp", "temphp", "temporaryhitpoints"),
-        "languages": ("language",),
-        "equipment": ("equipment",),
-        "features_traits": ("features", "traits"),
-        "age": ("age",),
-        "height": ("height",),
-        "weight": ("weight",),
-        "eyes": ("eyes",),
-        "skin": ("skin",),
-        "hair": ("hair",),
-        "allies_organizations": ("allies", "organizations"),
-        "character_appearance": ("appearance",),
-        "additional_features_traits": ("additional", "features", "traits"),
-        "spellcasting_class": ("spellcastingclass",),
-        "spellcasting_ability": ("spellcastingability",),
-        "spell_save_dc": ("spellsavedc",),
-        "spell_attack_bonus": ("spellatkbonus", "spellattackbonus"),
-        "armor_class_badge": ("ap", "armorclass2"),
-    }
-
     SKILL_TO_ABILITY = {
         "acrobatics": "dexterite",
         "animal_handling": "sagesse",
@@ -219,6 +180,18 @@ class CharacterSheetPdfService:
             return ""
         parts = [part.strip() for part in re.split(r"\s*(?:,|;|\|)\s*", value) if part.strip()]
         return "\n".join(parts) if parts else (value or "")
+
+    @staticmethod
+    def _normalize_multiline(value: str | None, *, width: int, max_lines: int) -> str:
+        """Normalise les blocs texte longs avec retours a la ligne maitrises."""
+        if not value:
+            return ""
+        normalized = " ".join(str(value).split())
+        if not normalized:
+            return ""
+        wrapped_lines = re.findall(rf".{{1,{width}}}(?:\s+|$)", normalized)
+        lines = [line.strip() for line in wrapped_lines if line.strip()]
+        return "\n".join(lines[:max_lines])
 
     @staticmethod
     def _split_background_payload(value: str | None) -> tuple[str, str]:
@@ -331,55 +304,16 @@ class CharacterSheetPdfService:
         """Construit le mapping metier -> vrais noms de champs PDF."""
         field_names = cls.list_pdf_fields(template_path)
         normalized_to_real = {
-            cls._normalize_field_name(field_name): field_name
-            for field_name in field_names
+            cls._normalize_field_name(field_name): field_name for field_name in field_names
         }
 
         mapping: dict[str, str] = {}
         for business_key, aliases in cls.FIELD_ALIASES.items():
-            found_field: str | None = None
-
-            # 1) correspondance exacte normalisee
             for alias in aliases:
                 normalized_alias = cls._normalize_field_name(alias)
                 if normalized_alias in normalized_to_real:
-                    found_field = normalized_to_real[normalized_alias]
+                    mapping[business_key] = normalized_to_real[normalized_alias]
                     break
-
-            # 2) fallback en recherche partielle
-            if not found_field:
-                for alias in aliases:
-                    normalized_alias = cls._normalize_field_name(alias)
-                    if len(normalized_alias) <= 3:
-                        continue
-                    partial = [
-                        real_name
-                        for normalized_name, real_name in normalized_to_real.items()
-                        if normalized_alias in normalized_name or normalized_name in normalized_alias
-                    ]
-                    if partial:
-                        found_field = partial[0]
-                        break
-
-            if found_field:
-                mapping[business_key] = found_field
-
-        if len(mapping) < len(cls.REQUIRED_MAPPING_KEYS):
-            for business_key, keywords in cls.FIELD_KEYWORDS.items():
-                if business_key in mapping:
-                    continue
-                for normalized_name, real_name in normalized_to_real.items():
-                    if business_key == "armor_class":
-                        is_armor_field = (
-                            normalized_name in {"ac", "armorclass", "armourclass"}
-                            or "armorclass" in normalized_name
-                            or "armourclass" in normalized_name
-                        )
-                        if not is_armor_field:
-                            continue
-                    if any(keyword in normalized_name for keyword in keywords):
-                        mapping[business_key] = real_name
-                        break
 
         critical_missing = [key for key in ("character_name", "class_level") if key not in mapping]
         if critical_missing:
@@ -459,9 +393,9 @@ class CharacterSheetPdfService:
             "hp_current": str(character.hp_current_effective),
             "temp_hp": str(character.temp_hp or 0),
             "languages": character.languages or "",
-            "proficiencies_languages": cls._to_multiline(proficiencies_languages)[:900],
-            "equipment": cls._to_multiline(character.equipment)[:400],
-            "features_traits": cls._to_multiline(character.notes)[:900],
+            "proficiencies_languages": cls._normalize_multiline(proficiencies_languages, width=22, max_lines=8),
+            "equipment": cls._normalize_multiline(character.equipment, width=24, max_lines=10),
+            "features_traits": cls._normalize_multiline(character.notes, width=30, max_lines=16),
             "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
             "age": str(character.age or ""),
             "height": character.height or "",
@@ -469,11 +403,15 @@ class CharacterSheetPdfService:
             "eyes": character.eyes or "",
             "skin": character.skin or "",
             "hair": character.hair or "",
-            "personality_traits": "\n".join(filter(None, [f"Genre: {character.gender}" if character.gender else "", f"Alignement: {character.alignment}" if character.alignment else ""])),
-            "allies_organizations": cls._to_multiline(character.allies_organizations)[:900],
-            "character_appearance": (character.character_appearance or "")[:900],
-            "additional_features_traits": cls._to_multiline(character.additional_features_traits)[:1200],
-            "treasure": cls._to_multiline(character.treasure or character.equipment)[:1200],
+            "personality_traits": "",
+            "ideals": "",
+            "bonds": "",
+            "flaws": "",
+            "attacks_spellcasting": "",
+            "allies_organizations": cls._normalize_multiline(character.allies_organizations, width=32, max_lines=12),
+            "character_appearance": cls._normalize_multiline(character.character_appearance, width=30, max_lines=16),
+            "additional_features_traits": cls._normalize_multiline(character.additional_features_traits, width=32, max_lines=16),
+            "treasure": cls._normalize_multiline(character.treasure, width=30, max_lines=12),
             "character_backstory": backstory_text,
             "armor_class_badge": str(character.ac_total),
             "symbol_name": character.symbol_name or "",
@@ -497,11 +435,19 @@ class CharacterSheetPdfService:
         values_by_business_key.update(skill_values)
         values_by_business_key.update({f"{skill_key}_prof": "Yes" if is_proficient else "Off" for skill_key, is_proficient in skill_flags.items()})
 
-        return {
+        resolved_values = {
             resolved_mapping[business_key]: str(value)
             for business_key, value in values_by_business_key.items()
             if business_key in resolved_mapping and value is not None
         }
+        for business_key, pdf_key in resolved_mapping.items():
+            logger.info(
+                "PDF map | app=%s | pdf=%s | value=%r",
+                business_key,
+                pdf_key,
+                resolved_values.get(pdf_key),
+            )
+        return resolved_values
 
     @staticmethod
     def _shrink_text_fields(writer: PdfWriter, font_size: int = 8) -> None:
@@ -530,6 +476,8 @@ class CharacterSheetPdfService:
         writer = PdfWriter()
         writer.clone_document_from_reader(template_reader)
         writer.set_need_appearances_writer(True)
+        if "/AcroForm" in writer._root_object:
+            writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
 
         for page in writer.pages:
             writer.update_page_form_field_values(page, field_values, auto_regenerate=False)
