@@ -34,14 +34,16 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="6">
+            <div class="creation-wizard" data-total-steps="8">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
                     <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
                     <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
                     <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Sorts</button></li>
-                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Finalisation</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Competences</button></li>
+                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts mineurs</button></li>
+                    <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Sorts prepares</button></li>
+                    <li data-step="8"><button type="button" class="creation-step-trigger" data-step-target="8">8. Identite</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
@@ -230,22 +232,41 @@
                     <p id="alignment-description-summary" class="funnel-summary-inline">Alignement: -</p>
                 </section>
 
-                <section class="wizard-step" data-step="5" hidden id="spell-selection-step">
-                    <h3>Etape 5 - Selection des sorts</h3>
+                <section class="wizard-step" data-step="5" hidden id="skill-proficiencies-step">
+                    <h3>Etape 5 - Competences maitrisees</h3>
                     <p class="section-head__copy">
-                        Cette etape apparait uniquement quand des sorts sont selectionnables.
+                        Selectionnez vos competences maitrisees selon votre classe.
+                    </p>
+                    <label>Competences maitrisees</label>
+                    <div class="skill-proficiencies-grid" id="create-skill-proficiencies-grid">
+                        {% for skill in dnd_skill_options %}
+                            <label class="skill-option">
+                                <input type="checkbox" name="skill_proficiencies" value="{{ skill }}">
+                                <span>{{ skill }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <p id="create-skill-limit-summary" class="funnel-summary-inline">
+                        Maitrises de competences: 0/2 (ajuste automatiquement selon la classe).
+                    </p>
+                </section>
+
+                <section class="wizard-step" data-step="6" hidden id="cantrip-selection-step">
+                    <h3>Etape 6 - Selection des sorts mineurs</h3>
+                    <p class="section-head__copy">
+                        Cette etape apparait uniquement quand des sorts mineurs sont selectionnables.
                     </p>
                     <div id="spellcasting-fields">
                         <input type="hidden" id="create-spellcasting-class" name="spellcasting_class" value="">
 
-                        <label for="spell-search-input">Filtrer les sorts par nom</label>
-                        <input id="spell-search-input" type="search" placeholder="Ex: projectile, soin, lumiere">
+                        <label for="cantrip-search-input">Filtrer les sorts mineurs par nom</label>
+                        <input id="cantrip-search-input" type="search" placeholder="Ex: lumiere, projectile">
 
                         <p id="spell-selection-limits" class="funnel-summary-inline">
                             Limites de classe: 0 sort mineur, 0 sort de niveau 1.
                         </p>
-                        <p id="spell-selection-summary" class="funnel-summary-inline">
-                            Sorts selectionnes: 0/0 sort(s) mineur(s), 0/0 sort(s) de niveau 1.
+                        <p id="cantrip-selection-summary" class="funnel-summary-inline">
+                            Sorts mineurs selectionnes: 0/0.
                         </p>
 
                         <div id="cantrip-selection-block">
@@ -265,27 +286,39 @@
                             </div>
                         </div>
 
-                        <div id="level-one-selection-block">
-                            <h4>Sorts de niveau 1</h4>
-                            <div class="skill-proficiencies-grid" id="level-one-spell-selection-grid">
-                                {% for spell in level_one_spell_catalog %}
-                                    <label
-                                        class="skill-option spell-option"
-                                        data-spell-name="{{ spell.name|lower }}"
-                                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
-                                        title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
-                                    >
-                                        <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}">
-                                        <span>{{ spell.name }}</span>
-                                    </label>
-                                {% endfor %}
-                            </div>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="7" hidden id="prepared-spell-selection-step">
+                    <h3>Etape 7 - Selection des sorts prepares (niveau 1)</h3>
+                    <p class="section-head__copy">
+                        Cette etape apparait uniquement quand des sorts prepares sont selectionnables.
+                    </p>
+                    <label for="level-one-search-input">Filtrer les sorts prepares par nom</label>
+                    <input id="level-one-search-input" type="search" placeholder="Ex: soin, bouclier, detection">
+                    <p id="level-one-selection-summary" class="funnel-summary-inline">
+                        Sorts prepares selectionnes: 0/0.
+                    </p>
+                    <div id="level-one-selection-block">
+                        <h4>Sorts de niveau 1</h4>
+                        <div class="skill-proficiencies-grid" id="level-one-spell-selection-grid">
+                            {% for spell in level_one_spell_catalog %}
+                                <label
+                                    class="skill-option spell-option"
+                                    data-spell-name="{{ spell.name|lower }}"
+                                    data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                                    title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
+                                >
+                                    <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}">
+                                    <span>{{ spell.name }}</span>
+                                </label>
+                            {% endfor %}
                         </div>
                     </div>
                 </section>
 
-                <section class="wizard-step" data-step="6" hidden>
-                    <h3>Etape 6 - Finalisation (identite, visibilite et medias)</h3>
+                <section class="wizard-step" data-step="8" hidden>
+                    <h3>Etape 8 - Identite (visibilite et medias)</h3>
                     <p class="section-head__copy">
                         Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
                     </p>
@@ -327,19 +360,6 @@
                                     <input id="create-hair" type="text" name="hair" placeholder="Ex: noirs">
                                 </div>
                             </div>
-
-                            <label>Competences maitrisees</label>
-                            <div class="skill-proficiencies-grid" id="create-skill-proficiencies-grid">
-                                {% for skill in dnd_skill_options %}
-                                    <label class="skill-option">
-                                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}">
-                                        <span>{{ skill }}</span>
-                                    </label>
-                                {% endfor %}
-                            </div>
-                            <p id="create-skill-limit-summary" class="funnel-summary-inline">
-                                Maitrises de competences: 0/2 (ajuste automatiquement selon la classe).
-                            </p>
 
                             <label for="create-character-appearance">Apparence du personnage</label>
                             <textarea id="create-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>

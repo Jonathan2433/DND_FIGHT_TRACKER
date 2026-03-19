@@ -18,12 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfHelp = form.querySelector('#create-pdf-help');
     const spellcastingContainer = form.querySelector('#spellcasting-fields');
     const spellcastingClassInput = form.querySelector('#create-spellcasting-class');
-    const spellSelectionStep = form.querySelector('#spell-selection-step');
-    const spellSearchInput = form.querySelector('#spell-search-input');
+    const cantripSelectionStep = form.querySelector('#cantrip-selection-step');
+    const preparedSpellSelectionStep = form.querySelector('#prepared-spell-selection-step');
+    const cantripSearchInput = form.querySelector('#cantrip-search-input');
+    const levelOneSearchInput = form.querySelector('#level-one-search-input');
     const spellOptionLabels = Array.from(form.querySelectorAll('.spell-option'));
+    const cantripOptionLabels = spellOptionLabels.filter((label) => label.querySelector('input[name="selected_cantrips"]'));
+    const levelOneOptionLabels = spellOptionLabels.filter((label) => label.querySelector('input[name="selected_level_1_spells"]'));
     const cantripCheckboxes = Array.from(form.querySelectorAll('input[name="selected_cantrips"]'));
     const levelOneSpellCheckboxes = Array.from(form.querySelectorAll('input[name="selected_level_1_spells"]'));
-    const spellSelectionSummary = form.querySelector('#spell-selection-summary');
+    const cantripSelectionSummary = form.querySelector('#cantrip-selection-summary');
+    const levelOneSelectionSummary = form.querySelector('#level-one-selection-summary');
     const spellSelectionLimitsHint = form.querySelector('#spell-selection-limits');
     const cantripSelectionBlock = form.querySelector('#cantrip-selection-block');
     const levelOneSelectionBlock = form.querySelector('#level-one-selection-block');
@@ -227,6 +232,33 @@ document.addEventListener('DOMContentLoaded', () => {
         || selectedOptionHasDefaultSpells(raceSelect)
         || selectedOptionHasDefaultSpells(backgroundSelect)
     );
+    const classAllowsSpellLabel = (label, selectedClass, levelOneAllowList) => {
+        const allowedClasses = (label.dataset.spellClasses || '')
+            .split(',')
+            .map((value) => value.trim().toLowerCase())
+            .filter(Boolean);
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
+        const name = (label.dataset.spellName || '').toLowerCase();
+        const normalizedName = normalizeSpellName(name);
+        const allowedByClassList = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
+        const allowedByJsonLevelOne = !isLevelOneSpell || (levelOneAllowList && levelOneAllowList.has(normalizedName));
+        return allowedByClassList && allowedByJsonLevelOne;
+    };
+    const getSpellStepAvailability = () => {
+        if (!isSelectedClassSpellcaster() || shouldHideSpellSelectionStep()) {
+            return { cantrips: false, levelOne: false };
+        }
+        const selectedClass = getCanonicalClassName(classSelect?.value);
+        const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
+        const limits = getSpellSelectionLimitsForSelectedClass();
+        const hasCantripOption = cantripOptionLabels.some((label) => classAllowsSpellLabel(label, selectedClass, levelOneAllowList));
+        const hasLevelOneOption = levelOneOptionLabels.some((label) => classAllowsSpellLabel(label, selectedClass, levelOneAllowList));
+        return {
+            cantrips: limits.cantrips > 0 && hasCantripOption,
+            levelOne: limits.levelOne > 0 && hasLevelOneOption,
+        };
+    };
 
     const syncSkillProficiencyLimit = (changedCheckbox = null) => {
         const selected = skillCheckboxes.filter((checkbox) => checkbox.checked);
@@ -511,8 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const syncSpellSelectionBlocksVisibility = () => {
         const limits = getSpellSelectionLimitsForSelectedClass();
-        const hasVisibleCantripOption = spellOptionLabels.some((label) => !label.hidden && label.querySelector('input[name="selected_cantrips"]'));
-        const hasVisibleLevelOneOption = spellOptionLabels.some((label) => !label.hidden && label.querySelector('input[name="selected_level_1_spells"]'));
+        const hasVisibleCantripOption = cantripOptionLabels.some((label) => !label.hidden);
+        const hasVisibleLevelOneOption = levelOneOptionLabels.some((label) => !label.hidden);
 
         if (cantripSelectionBlock) {
             cantripSelectionBlock.hidden = limits.cantrips <= 0 || !hasVisibleCantripOption;
@@ -524,11 +556,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const summarizeSpellSelection = () => {
-        if (!spellSelectionSummary) return;
         const cantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
         const levelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
         const limits = getSpellSelectionLimitsForSelectedClass();
-        spellSelectionSummary.textContent = `Sorts selectionnes: ${cantripCount}/${limits.cantrips} sort(s) mineur(s), ${levelOneCount}/${limits.levelOne} sort(s) de niveau 1.`;
+        if (cantripSelectionSummary) {
+            cantripSelectionSummary.textContent = `Sorts mineurs selectionnes: ${cantripCount}/${limits.cantrips}.`;
+        }
+        if (levelOneSelectionSummary) {
+            levelOneSelectionSummary.textContent = `Sorts prepares selectionnes: ${levelOneCount}/${limits.levelOne}.`;
+        }
         if (spellSelectionLimitsHint) {
             const classLabel = classSelect?.value || 'Classe';
             const normalizedClass = normalizeClassName(classSelect?.value);
@@ -545,21 +581,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterSpellOptions = () => {
-        const term = (spellSearchInput?.value || '').trim().toLowerCase();
+        const cantripTerm = (cantripSearchInput?.value || '').trim().toLowerCase();
+        const levelOneTerm = (levelOneSearchInput?.value || '').trim().toLowerCase();
         const selectedClass = getCanonicalClassName(classSelect?.value);
         const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
         spellOptionLabels.forEach((label) => {
             const name = (label.dataset.spellName || '').toLowerCase();
-            const normalizedName = normalizeSpellName(name);
-            const allowedClasses = (label.dataset.spellClasses || '')
-                .split(',')
-                .map((value) => value.trim().toLowerCase())
-                .filter(Boolean);
             const checkbox = label.querySelector('input[type="checkbox"]');
             const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
-            const allowedByClassList = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
-            const allowedByJsonLevelOne = !isLevelOneSpell || (levelOneAllowList && levelOneAllowList.has(normalizedName));
-            const classAllowed = allowedByClassList && allowedByJsonLevelOne;
+            const classAllowed = classAllowsSpellLabel(label, selectedClass, levelOneAllowList);
+            const term = isLevelOneSpell ? levelOneTerm : cantripTerm;
             const visible = classAllowed && (!term || name.includes(term));
             label.hidden = !visible;
             if (checkbox) {
@@ -581,10 +612,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncSpellcastingFields = () => {
         if (!spellcastingContainer || !classSelect) return;
         const selectedClass = classSelect.value;
-        const isSpellcaster = isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep();
-        if (spellSelectionStep) {
-            spellSelectionStep.hidden = !isSpellcaster;
-            spellSelectionStep.classList.toggle('is-disabled-step', !isSpellcaster);
+        const spellStepAvailability = getSpellStepAvailability();
+        const isSpellcaster = spellStepAvailability.cantrips || spellStepAvailability.levelOne;
+        if (cantripSelectionStep) {
+            cantripSelectionStep.hidden = !spellStepAvailability.cantrips;
+            cantripSelectionStep.classList.toggle('is-disabled-step', !spellStepAvailability.cantrips);
+        }
+        if (preparedSpellSelectionStep) {
+            preparedSpellSelectionStep.hidden = !spellStepAvailability.levelOne;
+            preparedSpellSelectionStep.classList.toggle('is-disabled-step', !spellStepAvailability.levelOne);
         }
 
         if (!isSpellcaster) {
@@ -623,10 +659,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ? configuredTotalSteps
         : stepPanels.length;
     const getAvailableSteps = () => {
-        if (isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep()) {
-            return [1, 2, 3, 4, 5, 6];
-        }
-        return [1, 2, 3, 4, 6];
+        const spellSteps = getSpellStepAvailability();
+        const available = [1, 2, 3, 4, 5];
+        if (spellSteps.cantrips) available.push(6);
+        if (spellSteps.levelOne) available.push(7);
+        available.push(8);
+        return available;
     };
     const getLastAvailableStep = () => getAvailableSteps()[getAvailableSteps().length - 1];
     const getPreviousStep = (step) => {
@@ -721,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedSkillsCount > maxAllowedSkills) {
             event.preventDefault();
             alert(`Vous ne pouvez selectionner que ${maxAllowedSkills} competences maitrisees pour cette classe.`);
-            goToStep(6, { scrollToStep: true });
+            goToStep(5, { scrollToStep: true });
             return;
         }
 
@@ -735,14 +773,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const lastStep = getLastAvailableStep();
-        if (isSelectedClassSpellcaster() && !shouldHideSpellSelectionStep()) {
+        if (getSpellStepAvailability().cantrips || getSpellStepAvailability().levelOne) {
             const limits = getSpellSelectionLimitsForSelectedClass();
             const selectedCantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
             const selectedLevelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
             if (selectedCantripCount > limits.cantrips || selectedLevelOneCount > limits.levelOne) {
                 event.preventDefault();
                 alert(`Votre classe autorise ${limits.cantrips} sort(s) mineur(s) et ${limits.levelOne} sort(s) de niveau 1 au niveau 1.`);
-                goToStep(5, { scrollToStep: true });
+                const spellSteps = getSpellStepAvailability();
+                goToStep(spellSteps.cantrips ? 6 : 7, { scrollToStep: true });
                 return;
             }
         }
@@ -816,7 +855,8 @@ document.addEventListener('DOMContentLoaded', () => {
             syncSkillProficiencyLimit(checkbox);
         });
     });
-    spellSearchInput?.addEventListener('input', filterSpellOptions);
+    cantripSearchInput?.addEventListener('input', filterSpellOptions);
+    levelOneSearchInput?.addEventListener('input', filterSpellOptions);
     cantripCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', () => {
         enforceSpellSelectionLimits(checkbox);
         summarizeSpellSelection();
