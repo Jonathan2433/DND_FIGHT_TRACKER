@@ -23,6 +23,9 @@ from app.utils.dnd5_rules import (
     SPECIES_RULES,
     BACKGROUND_RULES,
     AIDEDED_SKILL_OPTIONS,
+    AIDEDED_SPECIES_OPTIONS,
+    AIDEDED_CLASS_OPTIONS,
+    AIDEDED_BACKGROUND_OPTIONS,
 )
 
 # Créer le blueprint
