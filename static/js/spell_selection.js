@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             spellOptions.forEach((label) => {
                 const spellName = (label.dataset.spellName || '').toLowerCase();
                 const classes = (label.dataset.spellClasses || '').split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
-                const classAllowed = !classes.length || classes.includes(selectedClass);
+                const classAllowed = classes.length > 0 && classes.includes(selectedClass);
                 const visible = classAllowed && (!term || spellName.includes(term));
                 label.hidden = !visible;
                 const checkbox = label.querySelector('input[type="checkbox"]');
