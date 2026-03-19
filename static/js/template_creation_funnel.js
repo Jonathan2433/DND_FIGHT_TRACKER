@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cantripCheckboxes = Array.from(form.querySelectorAll('input[name="selected_cantrips"]'));
     const levelOneSpellCheckboxes = Array.from(form.querySelectorAll('input[name="selected_level_1_spells"]'));
     const spellSelectionSummary = form.querySelector('#spell-selection-summary');
+    const spellSelectionLimitsHint = form.querySelector('#spell-selection-limits');
     const skillCheckboxes = Array.from(form.querySelectorAll('input[name="skill_proficiencies"]'));
     const skillLimitSummary = form.querySelector('#create-skill-limit-summary');
 
@@ -101,6 +102,25 @@ document.addEventListener('DOMContentLoaded', () => {
         Warlock: 'CHA',
         Wizard: 'INT'
     };
+    const spellSelectionLimitsByClass = {
+        artificier: { cantrips: 2, levelOne: 2 },
+        bard: { cantrips: 2, levelOne: 4 },
+        barde: { cantrips: 2, levelOne: 4 },
+        cleric: { cantrips: 3, levelOne: 4 },
+        clerc: { cantrips: 3, levelOne: 4 },
+        druid: { cantrips: 2, levelOne: 4 },
+        druide: { cantrips: 2, levelOne: 4 },
+        sorcerer: { cantrips: 4, levelOne: 2 },
+        ensorceleur: { cantrips: 4, levelOne: 2 },
+        warlock: { cantrips: 2, levelOne: 2 },
+        occultiste: { cantrips: 2, levelOne: 2 },
+        wizard: { cantrips: 3, levelOne: 6 },
+        magicien: { cantrips: 3, levelOne: 6 },
+        paladin: { cantrips: 0, levelOne: 0 },
+        ranger: { cantrips: 0, levelOne: 0 },
+        rodeur: { cantrips: 0, levelOne: 0 },
+        rôdeur: { cantrips: 0, levelOne: 0 }
+    };
 
     const mod = (score) => Math.floor((score - 10) / 2);
     const getMode = () => form.querySelector('input[name="ability_mode"]:checked')?.value || 'standard';
@@ -109,6 +129,27 @@ document.addEventListener('DOMContentLoaded', () => {
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
+    const classAliasToEnglish = {
+        artificier: 'artificer',
+        barde: 'bard',
+        clerc: 'cleric',
+        druide: 'druid',
+        ensorceleur: 'sorcerer',
+        magicien: 'wizard',
+        occultiste: 'warlock',
+        rodeur: 'ranger',
+        roublard: 'rogue',
+        barbare: 'barbarian',
+        guerrier: 'fighter',
+        moine: 'monk',
+    };
+    const getCanonicalClassName = (value) => {
+        const normalized = normalizeClassName(value);
+        return classAliasToEnglish[normalized] || normalized;
+    };
+    const getSpellSelectionLimitsForSelectedClass = () => (
+        spellSelectionLimitsByClass[normalizeClassName(classSelect?.value)] || { cantrips: 0, levelOne: 0 }
+    );
     const getSkillLimitForSelectedClass = () => skillProficiencyLimitsByClass[normalizeClassName(classSelect?.value)] || 2;
 
     const syncSkillProficiencyLimit = (changedCheckbox = null) => {
@@ -362,20 +403,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const syncSpellCheckboxLimitState = () => {
+        const limits = getSpellSelectionLimitsForSelectedClass();
+        const selectedCantripsCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
+        const selectedLevelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
+
+        cantripCheckboxes.forEach((checkbox) => {
+            const classBlocked = checkbox.dataset.classBlocked === '1';
+            checkbox.disabled = classBlocked || (!checkbox.checked && selectedCantripsCount >= limits.cantrips);
+        });
+        levelOneSpellCheckboxes.forEach((checkbox) => {
+            const classBlocked = checkbox.dataset.classBlocked === '1';
+            checkbox.disabled = classBlocked || (!checkbox.checked && selectedLevelOneCount >= limits.levelOne);
+        });
+    };
+
+    const enforceSpellSelectionLimits = (changedCheckbox = null) => {
+        const limits = getSpellSelectionLimitsForSelectedClass();
+        const selectedCantrips = cantripCheckboxes.filter((checkbox) => checkbox.checked);
+        const selectedLevelOne = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked);
+        const changedIsCantrip = changedCheckbox && changedCheckbox.name === 'selected_cantrips';
+        const selectedCount = changedIsCantrip ? selectedCantrips.length : selectedLevelOne.length;
+        const maxAllowed = changedIsCantrip ? limits.cantrips : limits.levelOne;
+        if (changedCheckbox?.checked && selectedCount > maxAllowed) {
+            changedCheckbox.checked = false;
+            alert(`Cette classe peut choisir au maximum ${maxAllowed} ${changedIsCantrip ? 'sort(s) mineur(s)' : 'sort(s) de niveau 1'} au niveau 1.`);
+        }
+        syncSpellCheckboxLimitState();
+    };
+
     const summarizeSpellSelection = () => {
         if (!spellSelectionSummary) return;
         const cantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
         const levelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
-        spellSelectionSummary.textContent = `Sorts selectionnes: ${cantripCount} sort mineur, ${levelOneCount} sort de niveau 1.`;
+        const limits = getSpellSelectionLimitsForSelectedClass();
+        spellSelectionSummary.textContent = `Sorts selectionnes: ${cantripCount}/${limits.cantrips} sort(s) mineur(s), ${levelOneCount}/${limits.levelOne} sort(s) de niveau 1.`;
+        if (spellSelectionLimitsHint) {
+            const classLabel = classSelect?.value || 'Classe';
+            spellSelectionLimitsHint.textContent = `${classLabel}: ${limits.cantrips} sort(s) mineur(s), ${limits.levelOne} sort(s) de niveau 1 au niveau 1.`;
+        }
     };
 
     const filterSpellOptions = () => {
         const term = (spellSearchInput?.value || '').trim().toLowerCase();
+        const selectedClass = getCanonicalClassName(classSelect?.value);
         spellOptionLabels.forEach((label) => {
             const name = (label.dataset.spellName || '').toLowerCase();
-            const visible = !term || name.includes(term);
+            const allowedClasses = (label.dataset.spellClasses || '')
+                .split(',')
+                .map((value) => value.trim().toLowerCase())
+                .filter(Boolean);
+            const classAllowed = !allowedClasses.length || allowedClasses.includes(selectedClass);
+            const visible = classAllowed && (!term || name.includes(term));
             label.hidden = !visible;
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.dataset.classBlocked = classAllowed ? '0' : '1';
+                if (!classAllowed) {
+                    checkbox.checked = false;
+                }
+            }
         });
+        syncSpellCheckboxLimitState();
     };
 
     const isSelectedClassSpellcaster = () => {
@@ -412,6 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (spellcastingContainer) {
             spellcastingContainer.dataset.suggestedAbility = suggestedAbility || '';
         }
+        filterSpellOptions();
+        summarizeSpellSelection();
     };
 
     const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
@@ -537,6 +628,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const lastStep = getLastAvailableStep();
+        if (isSelectedClassSpellcaster()) {
+            const limits = getSpellSelectionLimitsForSelectedClass();
+            const selectedCantripCount = cantripCheckboxes.filter((checkbox) => checkbox.checked).length;
+            const selectedLevelOneCount = levelOneSpellCheckboxes.filter((checkbox) => checkbox.checked).length;
+            if (selectedCantripCount > limits.cantrips || selectedLevelOneCount > limits.levelOne) {
+                event.preventDefault();
+                alert(`Votre classe autorise ${limits.cantrips} sort(s) mineur(s) et ${limits.levelOne} sort(s) de niveau 1 au niveau 1.`);
+                goToStep(5, { scrollToStep: true });
+                return;
+            }
+        }
         if (currentStep !== lastStep) {
             event.preventDefault();
             goToStep(lastStep, { scrollToStep: true });
@@ -596,8 +698,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     spellSearchInput?.addEventListener('input', filterSpellOptions);
-    cantripCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', summarizeSpellSelection));
-    levelOneSpellCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', summarizeSpellSelection));
+    cantripCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', () => {
+        enforceSpellSelectionLimits(checkbox);
+        summarizeSpellSelection();
+    }));
+    levelOneSpellCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', () => {
+        enforceSpellSelectionLimits(checkbox);
+        summarizeSpellSelection();
+    }));
 
     syncAbilityMode();
     syncBackgroundBonusFields();

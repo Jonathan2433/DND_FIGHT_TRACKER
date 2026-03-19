@@ -62,6 +62,39 @@ class TemplateService:
         "warlock": "CHA",
         "wizard": "INT",
     }
+    SPELL_SELECTION_LIMITS_BY_CLASS = {
+        "artificier": {"cantrips": 2, "level_1_spells": 2},
+        "bard": {"cantrips": 2, "level_1_spells": 4},
+        "barde": {"cantrips": 2, "level_1_spells": 4},
+        "cleric": {"cantrips": 3, "level_1_spells": 4},
+        "clerc": {"cantrips": 3, "level_1_spells": 4},
+        "druid": {"cantrips": 2, "level_1_spells": 4},
+        "druide": {"cantrips": 2, "level_1_spells": 4},
+        "sorcerer": {"cantrips": 4, "level_1_spells": 2},
+        "ensorceleur": {"cantrips": 4, "level_1_spells": 2},
+        "warlock": {"cantrips": 2, "level_1_spells": 2},
+        "occultiste": {"cantrips": 2, "level_1_spells": 2},
+        "wizard": {"cantrips": 3, "level_1_spells": 6},
+        "magicien": {"cantrips": 3, "level_1_spells": 6},
+        "paladin": {"cantrips": 0, "level_1_spells": 0},
+        "ranger": {"cantrips": 0, "level_1_spells": 0},
+        "rodeur": {"cantrips": 0, "level_1_spells": 0},
+        "rôdeur": {"cantrips": 0, "level_1_spells": 0},
+    }
+    CLASS_ALIAS_TO_ENGLISH = {
+        "artificier": "artificer",
+        "barde": "bard",
+        "clerc": "cleric",
+        "druide": "druid",
+        "ensorceleur": "sorcerer",
+        "magicien": "wizard",
+        "occultiste": "warlock",
+        "rodeur": "ranger",
+        "roublard": "rogue",
+        "barbare": "barbarian",
+        "guerrier": "fighter",
+        "moine": "monk",
+    }
 
     @staticmethod
     def _normalize_skill_proficiencies(form_data):
@@ -79,6 +112,11 @@ class TemplateService:
     @staticmethod
     def _normalize_class_name(value):
         return (value or '').strip().lower().replace('ô', 'o').replace('é', 'e').replace('è', 'e')
+
+    @classmethod
+    def _canonical_class_name(cls, value):
+        normalized = cls._normalize_class_name(value)
+        return cls.CLASS_ALIAS_TO_ENGLISH.get(normalized, normalized)
 
     @classmethod
     def _validate_skill_proficiencies_limit(cls, character_class, normalized_skill_proficiencies):
@@ -133,6 +171,35 @@ class TemplateService:
             raise ValueError(
                 f"{label} invalides detectes dans la selection: {', '.join(invalid_names)}."
             )
+
+    @classmethod
+    def _validate_spell_selection_rules(cls, character_class, selected_cantrips, selected_level_1_spells, cantrip_catalog, level_one_catalog):
+        class_key = cls._normalize_class_name(character_class)
+        class_key_canonical = cls._canonical_class_name(character_class)
+        limits = cls.SPELL_SELECTION_LIMITS_BY_CLASS.get(class_key, {"cantrips": 0, "level_1_spells": 0})
+
+        selected_cantrip_names = [item.strip() for item in (selected_cantrips or '').split(',') if item.strip()]
+        selected_level_one_names = [item.strip() for item in (selected_level_1_spells or '').split(',') if item.strip()]
+
+        if len(selected_cantrip_names) > limits["cantrips"]:
+            raise ValueError(
+                f"La classe '{character_class}' ne peut choisir que {limits['cantrips']} sort(s) mineur(s) au niveau 1."
+            )
+        if len(selected_level_one_names) > limits["level_1_spells"]:
+            raise ValueError(
+                f"La classe '{character_class}' ne peut choisir que {limits['level_1_spells']} sort(s) de niveau 1 au niveau 1."
+            )
+
+        catalog_index = {spell["name"]: spell for spell in (cantrip_catalog + level_one_catalog)}
+        for spell_name in selected_cantrip_names + selected_level_one_names:
+            spell = catalog_index.get(spell_name)
+            if not spell:
+                continue
+            raw_classes = [str(item).strip().lower() for item in (spell.get("classes") or []) if str(item).strip()]
+            if raw_classes and class_key_canonical not in raw_classes:
+                raise ValueError(
+                    f"Le sort '{spell_name}' n'est pas disponible pour la classe '{character_class}'."
+                )
 
     @staticmethod
     def _save_uploaded_file(uploaded_file, upload_folder):
@@ -272,8 +339,17 @@ class TemplateService:
         )
         selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
-        TemplateService._validate_selected_spells_exist(selected_cantrips, get_cantrips(), "Sorts mineurs")
-        TemplateService._validate_selected_spells_exist(selected_level_1_spells, get_spells_for_level(1), "Sorts de niveau 1")
+        cantrip_catalog = get_cantrips()
+        level_one_catalog = get_spells_for_level(1)
+        TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
+        TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+        TemplateService._validate_spell_selection_rules(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            selected_cantrips,
+            selected_level_1_spells,
+            cantrip_catalog,
+            level_one_catalog,
+        )
         selected_languages = [
             form_data.get('language_1'),
             form_data.get('language_2'),
@@ -461,8 +537,17 @@ class TemplateService:
             template.selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         if 'selected_level_1_spells' in form_data:
             template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
-        TemplateService._validate_selected_spells_exist(template.selected_cantrips, get_cantrips(), "Sorts mineurs")
-        TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, get_spells_for_level(1), "Sorts de niveau 1")
+        cantrip_catalog = get_cantrips()
+        level_one_catalog = get_spells_for_level(1)
+        TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
+        TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+        TemplateService._validate_spell_selection_rules(
+            form_data.get('character_class') or template.character_class,
+            template.selected_cantrips,
+            template.selected_level_1_spells,
+            cantrip_catalog,
+            level_one_catalog,
+        )
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
