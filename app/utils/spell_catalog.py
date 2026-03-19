@@ -12,10 +12,10 @@ CLASS_SPELLS_LEVEL_0_1 = {
     "bard": {
         "Dancing Lights", "Message", "Mending", "Minor Illusion", "Prestidigitation", "Starry Wisp",
         "Thunderclap", "True Strike", "Vicious Mockery",
-        "Animal Friendship", "Animal Messenger", "Bane", "Bestow Curse", "Charm Person", "Color Spray",
+        "Animal Friendship", "Bane", "Charm Person", "Color Spray",
         "Command", "Cure Wounds", "Detect Magic", "Detect Thoughts", "Disguise Self", "Dissonant Whispers",
         "Faerie Fire", "Feather Fall", "Healing Word", "Heroism", "Identify", "Illusory Script",
-        "Invisibility", "Knock", "Longstrider", "Silent Image", "Sleep", "Speak with Animals",
+        "Longstrider", "Silent Image", "Sleep", "Speak with Animals",
         "Tasha’s Hideous Laughter", "Thunderwave", "Unseen Servant",
     },
     "cleric": {
@@ -29,12 +29,12 @@ CLASS_SPELLS_LEVEL_0_1 = {
         "Shillelagh", "Spare the Dying", "Starry Wisp",
         "Animal Friendship", "Animal Messenger", "Charm Person", "Create or Destroy Water", "Cure Wounds",
         "Detect Magic", "Detect Poison and Disease", "Entangle", "Faerie Fire", "Fog Cloud", "Goodberry",
-        "Healing Word", "Ice Knife", "Jump", "Longstrider", "Purify Food and Drink", "Speak with Animals",
+        "Healing Word", "Ice Knife", "Jump", "Longstrider", "Purify Food and Drink",
         "Thunderwave",
     },
     "paladin": {
         "Bless", "Command", "Cure Wounds", "Detect Evil and Good", "Detect Magic", "Detect Poison and Disease",
-        "Divine Favor", "Divine Smite", "Heroism", "Protection from Evil and Good", "Purify Food and Drink",
+        "Divine Favor", "Heroism", "Protection from Evil and Good", "Purify Food and Drink",
         "Searing Smite", "Shield of Faith",
     },
     "ranger": {
@@ -47,14 +47,14 @@ CLASS_SPELLS_LEVEL_0_1 = {
         "Mending", "Message", "Mind Spike", "Minor Illusion", "Poison Spray", "Prestidigitation",
         "Ray of Frost", "Shocking Grasp", "Sorcerous Burst", "True Strike",
         "Burning Hands", "Charm Person", "Chromatic Orb", "Color Spray", "Detect Magic", "Disguise Self",
-        "Expeditious Retreat", "False Life", "Feather Fall", "Fog Cloud", "Ice Knife", "Invisibility", "Jump",
+        "Expeditious Retreat", "False Life", "Feather Fall", "Fog Cloud", "Ice Knife", "Jump",
         "Mage Armor", "Magic Missile", "Ray of Sickness", "Shield", "Sleep", "Thunderwave",
     },
     "warlock": {
         "Chill Touch", "Eldritch Blast", "Mage Hand", "Mind Spike", "Minor Illusion", "Poison Spray",
         "Prestidigitation", "True Strike",
         "Bane", "Charm Person", "Comprehend Languages", "Detect Magic", "Expeditious Retreat",
-        "Hellish Rebuke", "Hex", "Illusory Script", "Invisibility", "Protection from Evil and Good",
+        "Hellish Rebuke", "Hex", "Illusory Script", "Protection from Evil and Good",
         "Speak with Animals", "Tasha’s Hideous Laughter", "Unseen Servant",
     },
     "wizard": {
@@ -63,7 +63,7 @@ CLASS_SPELLS_LEVEL_0_1 = {
         "Prestidigitation", "Ray of Frost", "Shocking Grasp", "True Strike",
         "Alarm", "Burning Hands", "Charm Person", "Chromatic Orb", "Color Spray", "Comprehend Languages",
         "Detect Magic", "Disguise Self", "Expeditious Retreat", "False Life", "Feather Fall", "Find Familiar",
-        "Fog Cloud", "Grease", "Ice Knife", "Identify", "Illusory Script", "Invisibility", "Jump",
+        "Fog Cloud", "Grease", "Ice Knife", "Identify", "Illusory Script", "Jump",
         "Mage Armor", "Magic Missile", "Protection from Evil and Good", "Ray of Sickness", "Shield", "Sleep",
         "Tasha’s Hideous Laughter", "Thunderwave", "Unseen Servant",
     },

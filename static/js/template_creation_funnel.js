@@ -145,6 +145,65 @@ document.addEventListener('DOMContentLoaded', () => {
         guerrier: 'fighter',
         moine: 'monk',
     };
+    const levelOneSpellsByClass = {
+        bard: new Set([
+            'animal friendship', 'bane', 'charm person', 'color spray', 'command',
+            'cure wounds', 'detect magic', 'detect thoughts', 'disguise self',
+            'dissonant whispers', 'faerie fire', 'feather fall', 'healing word',
+            'heroism', 'identify', 'illusory script', 'longstrider', 'silent image',
+            'sleep', 'speak with animals', 'tasha’s hideous laughter', 'thunderwave',
+            'unseen servant',
+        ]),
+        cleric: new Set([
+            'bane', 'bless', 'command', 'create or destroy water', 'cure wounds',
+            'detect evil and good', 'detect magic', 'detect poison and disease',
+            'guiding bolt', 'healing word', 'inflict wounds',
+            'protection from evil and good', 'purify food and drink', 'sanctuary',
+            'shield of faith',
+        ]),
+        druid: new Set([
+            'animal friendship', 'animal messenger', 'charm person', 'create or destroy water',
+            'cure wounds', 'detect magic', 'detect poison and disease', 'entangle',
+            'faerie fire', 'fog cloud', 'goodberry', 'healing word', 'ice knife',
+            'jump', 'longstrider', 'purify food and drink', 'thunderwave',
+        ]),
+        sorcerer: new Set([
+            'burning hands', 'charm person', 'chromatic orb', 'color spray',
+            'detect magic', 'disguise self', 'expeditious retreat', 'false life',
+            'feather fall', 'fog cloud', 'ice knife', 'jump', 'mage armor',
+            'magic missile', 'ray of sickness', 'shield', 'sleep', 'thunderwave',
+        ]),
+        warlock: new Set([
+            'bane', 'charm person', 'comprehend languages', 'detect magic',
+            'expeditious retreat', 'hellish rebuke', 'hex', 'illusory script',
+            'protection from evil and good', 'speak with animals',
+            'tasha’s hideous laughter', 'unseen servant',
+        ]),
+        wizard: new Set([
+            'alarm', 'burning hands', 'charm person', 'chromatic orb', 'color spray',
+            'comprehend languages', 'detect magic', 'disguise self',
+            'expeditious retreat', 'false life', 'feather fall', 'find familiar',
+            'fog cloud', 'grease', 'ice knife', 'identify', 'illusory script',
+            'jump', 'mage armor', 'magic missile', 'protection from evil and good',
+            'ray of sickness', 'shield', 'sleep', 'tasha’s hideous laughter',
+            'thunderwave', 'unseen servant',
+        ]),
+        paladin: new Set([
+            'bless', 'command', 'cure wounds', 'detect evil and good', 'detect magic',
+            'detect poison and disease', 'divine favor', 'heroism',
+            'protection from evil and good', 'purify food and drink',
+            'searing smite', 'shield of faith',
+        ]),
+        ranger: new Set([
+            'alarm', 'animal friendship', 'animal messenger', 'cure wounds',
+            'detect magic', 'detect poison and disease', 'ensnaring strike',
+            'entangle', 'fog cloud', 'jump', 'longstrider', 'speak with animals',
+        ]),
+    };
+    const normalizeSpellName = (value) => (value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[`’]/g, '\'');
     const getCanonicalClassName = (value) => {
         const normalized = normalizeClassName(value);
         return classAliasToEnglish[normalized] || normalized;
@@ -488,16 +547,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterSpellOptions = () => {
         const term = (spellSearchInput?.value || '').trim().toLowerCase();
         const selectedClass = getCanonicalClassName(classSelect?.value);
+        const levelOneAllowList = levelOneSpellsByClass[selectedClass] || null;
         spellOptionLabels.forEach((label) => {
             const name = (label.dataset.spellName || '').toLowerCase();
+            const normalizedName = normalizeSpellName(name);
             const allowedClasses = (label.dataset.spellClasses || '')
                 .split(',')
                 .map((value) => value.trim().toLowerCase())
                 .filter(Boolean);
-            const classAllowed = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            const isLevelOneSpell = checkbox?.name === 'selected_level_1_spells';
+            const allowedByClassList = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
+            const allowedByJsonLevelOne = !isLevelOneSpell || (levelOneAllowList && levelOneAllowList.has(normalizedName));
+            const classAllowed = allowedByClassList && allowedByJsonLevelOne;
             const visible = classAllowed && (!term || name.includes(term));
             label.hidden = !visible;
-            const checkbox = label.querySelector('input[type="checkbox"]');
             if (checkbox) {
                 checkbox.dataset.classBlocked = classAllowed ? '0' : '1';
                 if (!classAllowed) {
