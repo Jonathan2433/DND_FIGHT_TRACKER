@@ -354,23 +354,31 @@
                             <label for="create-equipment">Equipement principal (resume automatique modifiable)</label>
                             <textarea id="create-equipment" name="equipment" rows="3" placeholder="Option historique + pack + or de depart"></textarea>
 
-                            <label for="create-weapon-loadout-select">Armes equipees</label>
+                            <label for="create-weapon-loadout-select">Arme de corps a corps equipee</label>
                             <select id="create-weapon-loadout-select">
-                                <option value="" selected>Selectionnez une arme</option>
+                                <option value="" selected>Selectionnez une arme de corps a corps</option>
                                 <option value="Epee longue">Epee longue</option>
                                 <option value="Epee courte">Epee courte</option>
                                 <option value="Dague">Dague</option>
                                 <option value="Hache d'armes">Hache d'armes</option>
                                 <option value="Masse">Masse</option>
-                                <option value="Arc court">Arc court</option>
-                                <option value="Arc long">Arc long</option>
-                                <option value="Arbalete legere">Arbalete legere</option>
                                 <option value="Lance">Lance</option>
                                 <option value="Baton">Baton</option>
                                 <option value="other">Autre...</option>
                             </select>
                             <input id="create-weapon-loadout-custom" type="text" placeholder="Saisissez votre arme" hidden>
                             <input id="create-weapon-loadout" name="weapon_loadout" type="hidden">
+
+                            <label for="create-ranged-weapon-loadout-select">Arme a distance equipee</label>
+                            <select id="create-ranged-weapon-loadout-select">
+                                <option value="" selected>Selectionnez une arme a distance</option>
+                                <option value="Arc court">Arc court</option>
+                                <option value="Arc long">Arc long</option>
+                                <option value="Arbalete legere">Arbalete legere</option>
+                                <option value="other">Autre...</option>
+                            </select>
+                            <input id="create-ranged-weapon-loadout-custom" type="text" placeholder="Saisissez votre arme a distance" hidden>
+                            <input id="create-ranged-weapon-loadout" name="ranged_weapon_loadout" type="hidden">
 
                             <label for="create-shield-choice">Armure / bouclier</label>
                             <select id="create-shield-choice">
