@@ -255,6 +255,7 @@
                                     <label
                                         class="skill-option spell-option"
                                         data-spell-name="{{ spell.name|lower }}"
+                                        data-spell-name-en="{{ (spell.name_en or spell.name)|lower }}"
                                         data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
                                         title="{{ spell.name }} — {{ spell.description or ('Niveau: sort mineur | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
                                     >
@@ -272,6 +273,7 @@
                                     <label
                                         class="skill-option spell-option"
                                         data-spell-name="{{ spell.name|lower }}"
+                                        data-spell-name-en="{{ (spell.name_en or spell.name)|lower }}"
                                         data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
                                         title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
                                     >
