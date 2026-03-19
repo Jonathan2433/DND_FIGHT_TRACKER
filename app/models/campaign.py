@@ -20,9 +20,32 @@ class Campaign(db.Model):
     # Relations
     mj = db.relationship('User', backref=db.backref('owned_campaigns', lazy=True))
     members = db.relationship('CampaignMember', backref='campaign', cascade='all, delete-orphan')
+    scheduled_sessions = db.relationship(
+        'CampaignSession',
+        backref='campaign',
+        cascade='all, delete-orphan',
+        order_by='CampaignSession.scheduled_for.asc()',
+    )
 
     def __repr__(self):
         return f'<Campaign {self.name}>'
+
+
+class CampaignSession(db.Model):
+    """Dates planifiées pour les sessions d'une campagne."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False, index=True)
+    scheduled_for = db.Column(db.DateTime, nullable=False, index=True)
+
+    is_cancelled = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    def __repr__(self):
+        return f'<CampaignSession campaign={self.campaign_id} at={self.scheduled_for}>'
 
 
 class CampaignMember(db.Model):

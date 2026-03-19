@@ -41,6 +41,51 @@
         </div>
     </div>
 
+
+    <div class="card campaign-calendar">
+        <div class="campaign-calendar__header">
+            <h2>🗓️ Calendrier des sessions</h2>
+            {% if is_mj %}
+            <form method="POST" action="{{ url_for('campaign.create_campaign_session', campaign_id=campaign.id) }}" class="campaign-calendar__create">
+                <input type="datetime-local" name="scheduled_for" required>
+                <button type="submit" class="btn btn-primary">Planifier</button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if campaign_sessions %}
+            <div class="campaign-calendar__list">
+                {% for session_item in campaign_sessions %}
+                    <div class="campaign-calendar__item {% if session_item.is_cancelled %}is-cancelled{% endif %}">
+                        <div>
+                            <strong>{{ session_item.scheduled_for.strftime('%d/%m/%Y') }}</strong>
+                            <div>{{ session_item.scheduled_for.strftime('%Hh%M') }}</div>
+                            {% if session_item.is_cancelled %}
+                                <small>❌ Session annulée</small>
+                            {% endif %}
+                        </div>
+
+                        {% if is_mj %}
+                            <div class="campaign-calendar__actions">
+                                <form method="POST" action="{{ url_for('campaign.update_campaign_session', campaign_id=campaign.id, session_id=session_item.id) }}">
+                                    <input type="datetime-local" name="scheduled_for" value="{{ session_item.scheduled_for.strftime('%Y-%m-%dT%H:%M') }}" required>
+                                    <button type="submit" class="btn btn-secondary">Modifier</button>
+                                </form>
+                                {% if not session_item.is_cancelled %}
+                                <form method="POST" action="{{ url_for('campaign.cancel_campaign_session', campaign_id=campaign.id, session_id=session_item.id) }}" onsubmit="return confirm('Annuler cette session ?')">
+                                    <button type="submit" class="btn btn-danger">Annuler</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucune session planifiée pour le moment.</p>
+        {% endif %}
+    </div>
+
     <div class="inl-campaign-012">
         <div class="inl-campaign-013">
             <h2 class="inl-campaign-003">📖 Arcs Narratifs</h2>
