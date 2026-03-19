@@ -177,6 +177,12 @@ UPLOAD_MAX_MB=64
   - des sorts de niveau 1.
 - Les sélections sont persistées sur le personnage (`selected_cantrips`, `selected_level_1_spells`).
 
+## ⚔️ Base de connaissances des armes
+
+- Le catalogue local des armes est stocké dans `app/data/weapons_catalog.json`.
+- Il contient les dégâts de base, le type de dégâts et les propriétés pour les armes simples/de guerre, corps à corps/à distance.
+- Cette base est prévue pour alimenter plus tard la génération de fiche PDF (ex: `Épée courte -> 1d6 perçant`).
+
 ### Synchroniser les sorts mineurs depuis une source en ligne
 
 Un script est fourni pour synchroniser automatiquement les sorts mineurs depuis Open5e :
