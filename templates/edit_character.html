@@ -10,16 +10,26 @@
         <a href="{{ url_for('template.character_profile', id=character.id) }}" class="btn btn-secondary">Retour</a>
     </div>
 
-    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data" id="edit-character-form">
+        <div class="creation-wizard edit-wizard" data-total-steps="6">
+            <ol class="creation-steps-nav" aria-label="Etapes d'edition">
+                <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identite</button></li>
+                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Combat</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
+                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Details avances</button></li>
+                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Sorts</button></li>
+                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Medias & visibilite</button></li>
+            </ol>
+        </div>
         <div class="edit-grid edit-grid--spaced">
-            <section class="edit-section">
+            <section class="edit-section wizard-step is-active" data-step="1">
                 <h2>Identite</h2>
 
                 <label for="character-name">Nom</label>
                 <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
 
                 <label for="character-class">Classe</label>
-                <select id="character-class" name="character_class" required>
+                <select id="character-class" name="character_class" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
                     {% for klass in dnd_classes_catalog %}
                         <option value="{{ klass }}" {% if character.character_class == klass %}selected{% endif %}>{{ klass }}</option>
                     {% endfor %}
@@ -27,9 +37,10 @@
                         <option value="{{ character.character_class }}" selected>{{ character.character_class }}</option>
                     {% endif %}
                 </select>
+                {% if character.character_type == 'PJ' %}<small>Classe verrouillee pour un PJ.</small>{% endif %}
 
                 <label for="character-race">Race</label>
-                <select id="character-race" name="race" required>
+                <select id="character-race" name="race" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
                     {% for race in dnd_species_catalog %}
                         <option value="{{ race }}" {% if character.race == race %}selected{% endif %}>{{ race }}</option>
                     {% endfor %}
@@ -37,9 +48,10 @@
                         <option value="{{ character.race }}" selected>{{ character.race }}</option>
                     {% endif %}
                 </select>
+                {% if character.character_type == 'PJ' %}<small>Espece verrouillee pour un PJ.</small>{% endif %}
 
                 <label for="character-background">Background</label>
-                <select id="character-background" name="background_choice">
+                <select id="character-background" name="background_choice" {% if character.character_type == 'PJ' %}disabled{% endif %}>
                     <option value="">-- Non precise --</option>
                     {% for background in dnd_background_catalog %}
                         <option value="{{ background }}" {% if background_fields.background_choice == background %}selected{% endif %}>{{ background }}</option>
@@ -48,6 +60,7 @@
                         <option value="{{ background_fields.background_choice }}" selected>{{ background_fields.background_choice }}</option>
                     {% endif %}
                 </select>
+                {% if character.character_type == 'PJ' %}<small>Background verrouille pour un PJ.</small>{% endif %}
 
                 <label for="character-alignment">Alignement</label>
                 <select id="character-alignment" name="alignment">
@@ -118,7 +131,7 @@
                 <textarea id="character-player-private-notes" name="player_private_notes" rows="4" placeholder="Visible uniquement par le proprietaire du PJ">{{ character.player_private_notes or '' }}</textarea>
             </section>
 
-            <section class="edit-section">
+            <section class="edit-section wizard-step" data-step="2" hidden>
                 <h2>Combat</h2>
 
                 <label for="character-hp">PV max</label>
@@ -185,7 +198,7 @@
             </section>
         </div>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="3" hidden>
             <h2>Caracteristiques</h2>
             <div class="stats-grid">
                 <div class="stat-input">
@@ -250,18 +263,19 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="4" hidden>
             <h2>Details avances (creation PJ)</h2>
 
             <label>Competences maitrisees</label>
             <div class="skill-proficiencies-grid">
                 {% for skill in dnd_skill_options %}
                     <label class="skill-option">
-                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}" {% if skill in selected_skills %}checked{% endif %}>
+                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}" {% if skill in selected_skills %}checked{% endif %} {% if character.character_type == 'PJ' %}disabled{% endif %}>
                         <span>{{ skill }}</span>
                     </label>
                 {% endfor %}
             </div>
+            {% if character.character_type == 'PJ' %}<small>Les competences maitrisees sont verrouillees pour un PJ.</small>{% endif %}
 
             <label for="character-appearance">Apparence du personnage</label>
             <textarea id="character-appearance" name="character_appearance" rows="3">{{ character.character_appearance or '' }}</textarea>
@@ -279,7 +293,7 @@
             <textarea id="character-treasure" name="treasure" rows="3">{{ character.treasure or '' }}</textarea>
         </section>
 
-        <section class="edit-section edit-section--separator" data-spell-selection data-class-selector="#character-class">
+        <section class="edit-section edit-section--separator wizard-step" data-step="5" hidden data-spell-selection data-class-selector="#character-class">
             <h2>Sorts (niveau 1)</h2>
             <p class="funnel-summary-inline">Survolez un sort avec la souris pour voir ses details.</p>
             <input type="hidden" name="spellcasting_class" value="{{ character.spellcasting_class or character.character_class or '' }}">
@@ -322,7 +336,7 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="6" hidden>
             <h2>Medias</h2>
 
             <div class="media-preview">
@@ -349,7 +363,7 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator visibility-panel">
+        <section class="edit-section edit-section--separator visibility-panel wizard-step" data-step="6" hidden>
             <h2>Visibilite</h2>
             <label class="visibility-toggle" for="edit-is-public">
                 <input type="checkbox" id="edit-is-public" name="is_public" value="1" {% if character.is_public %}checked{% endif %}>
@@ -368,7 +382,9 @@
             </select>
         </section>
 
-        <div class="edit-actions">
+        <div class="edit-actions wizard-navigation">
+            <button type="button" class="btn btn-secondary" data-wizard-prev>Etape precedente</button>
+            <button type="button" class="btn btn-secondary" data-wizard-next>Etape suivante</button>
             <button type="submit" class="btn btn-primary btn-large">Enregistrer les modifications</button>
         </div>
     </form>
@@ -384,6 +400,52 @@
 <script src="{{ url_for('static', filename='js/spell_selection.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('edit-character-form');
+    const stepItems = Array.from(editForm?.querySelectorAll('.creation-steps-nav li') || []);
+    const stepPanels = Array.from(editForm?.querySelectorAll('.wizard-step') || []);
+    const prevButton = editForm?.querySelector('[data-wizard-prev]');
+    const nextButton = editForm?.querySelector('[data-wizard-next]');
+    const submitButton = editForm?.querySelector('button[type="submit"]');
+    let currentStep = 1;
+
+    const syncWizard = () => {
+        stepPanels.forEach((panel) => {
+            const panelStep = Number(panel.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            panel.hidden = !isActive;
+            panel.classList.toggle('is-active', isActive);
+        });
+        stepItems.forEach((item) => {
+            const panelStep = Number(item.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            item.classList.toggle('is-active', isActive);
+            item.classList.toggle('is-complete', panelStep < currentStep);
+            const trigger = item.querySelector('.creation-step-trigger');
+            if (trigger) {
+                trigger.setAttribute('aria-current', isActive ? 'step' : 'false');
+            }
+        });
+        if (prevButton) prevButton.hidden = currentStep <= 1;
+        if (nextButton) nextButton.hidden = currentStep >= 6;
+        if (submitButton) submitButton.hidden = currentStep < 6;
+    };
+
+    stepItems.forEach((item) => {
+        item.querySelector('.creation-step-trigger')?.addEventListener('click', () => {
+            currentStep = Number(item.dataset.step || currentStep);
+            syncWizard();
+        });
+    });
+    prevButton?.addEventListener('click', () => {
+        currentStep = Math.max(1, currentStep - 1);
+        syncWizard();
+    });
+    nextButton?.addEventListener('click', () => {
+        currentStep = Math.min(6, currentStep + 1);
+        syncWizard();
+    });
+    syncWizard();
+
     const classSelect = document.getElementById('character-class');
     const weaponSelect = document.getElementById('character-weapon-loadout');
     const armorSelect = document.getElementById('character-armor-loadout');
