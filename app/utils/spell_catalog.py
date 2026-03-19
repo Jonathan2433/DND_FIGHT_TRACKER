@@ -8,6 +8,90 @@ from typing import Any
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "app" / "data" / "spells_catalog.json"
 
 
+CLASS_SPELLS_LEVEL_0_1 = {
+    "bard": {
+        "Dancing Lights", "Message", "Mending", "Minor Illusion", "Prestidigitation", "Starry Wisp",
+        "Thunderclap", "True Strike", "Vicious Mockery",
+        "Animal Friendship", "Animal Messenger", "Bane", "Bestow Curse", "Charm Person", "Color Spray",
+        "Command", "Cure Wounds", "Detect Magic", "Detect Thoughts", "Disguise Self", "Dissonant Whispers",
+        "Faerie Fire", "Feather Fall", "Healing Word", "Heroism", "Identify", "Illusory Script",
+        "Invisibility", "Knock", "Longstrider", "Silent Image", "Sleep", "Speak with Animals",
+        "Tasha’s Hideous Laughter", "Thunderwave", "Unseen Servant",
+    },
+    "cleric": {
+        "Guidance", "Light", "Mending", "Resistance", "Sacred Flame", "Spare the Dying", "Thaumaturgy",
+        "Bane", "Bless", "Command", "Create or Destroy Water", "Cure Wounds", "Detect Evil and Good",
+        "Detect Magic", "Detect Poison and Disease", "Guiding Bolt", "Healing Word", "Inflict Wounds",
+        "Protection from Evil and Good", "Purify Food and Drink", "Sanctuary", "Shield of Faith",
+    },
+    "druid": {
+        "Druidcraft", "Elementalism", "Guidance", "Mending", "Poison Spray", "Produce Flame", "Resistance",
+        "Shillelagh", "Spare the Dying", "Starry Wisp",
+        "Animal Friendship", "Animal Messenger", "Charm Person", "Create or Destroy Water", "Cure Wounds",
+        "Detect Magic", "Detect Poison and Disease", "Entangle", "Faerie Fire", "Fog Cloud", "Goodberry",
+        "Healing Word", "Ice Knife", "Jump", "Longstrider", "Purify Food and Drink", "Speak with Animals",
+        "Thunderwave",
+    },
+    "paladin": {
+        "Bless", "Command", "Cure Wounds", "Detect Evil and Good", "Detect Magic", "Detect Poison and Disease",
+        "Divine Favor", "Divine Smite", "Heroism", "Protection from Evil and Good", "Purify Food and Drink",
+        "Searing Smite", "Shield of Faith",
+    },
+    "ranger": {
+        "Alarm", "Animal Friendship", "Animal Messenger", "Cure Wounds", "Detect Magic",
+        "Detect Poison and Disease", "Ensnaring Strike", "Entangle", "Fog Cloud", "Hunter’s Mark", "Jump",
+        "Longstrider", "Speak with Animals",
+    },
+    "sorcerer": {
+        "Acid Splash", "Chill Touch", "Dancing Lights", "Elementalism", "Fire Bolt", "Light", "Mage Hand",
+        "Mending", "Message", "Mind Spike", "Minor Illusion", "Poison Spray", "Prestidigitation",
+        "Ray of Frost", "Shocking Grasp", "Sorcerous Burst", "True Strike",
+        "Burning Hands", "Charm Person", "Chromatic Orb", "Color Spray", "Detect Magic", "Disguise Self",
+        "Expeditious Retreat", "False Life", "Feather Fall", "Fog Cloud", "Ice Knife", "Invisibility", "Jump",
+        "Mage Armor", "Magic Missile", "Ray of Sickness", "Shield", "Sleep", "Thunderwave",
+    },
+    "warlock": {
+        "Chill Touch", "Eldritch Blast", "Mage Hand", "Mind Spike", "Minor Illusion", "Poison Spray",
+        "Prestidigitation", "True Strike",
+        "Bane", "Charm Person", "Comprehend Languages", "Detect Magic", "Expeditious Retreat",
+        "Hellish Rebuke", "Hex", "Illusory Script", "Invisibility", "Protection from Evil and Good",
+        "Speak with Animals", "Tasha’s Hideous Laughter", "Unseen Servant",
+    },
+    "wizard": {
+        "Acid Splash", "Chill Touch", "Dancing Lights", "Elementalism", "Fire Bolt", "Guidance", "Light",
+        "Mage Hand", "Mending", "Message", "Mind Spike", "Minor Illusion", "Poison Spray",
+        "Prestidigitation", "Ray of Frost", "Shocking Grasp", "True Strike",
+        "Alarm", "Burning Hands", "Charm Person", "Chromatic Orb", "Color Spray", "Comprehend Languages",
+        "Detect Magic", "Disguise Self", "Expeditious Retreat", "False Life", "Feather Fall", "Find Familiar",
+        "Fog Cloud", "Grease", "Ice Knife", "Identify", "Illusory Script", "Invisibility", "Jump",
+        "Mage Armor", "Magic Missile", "Protection from Evil and Good", "Ray of Sickness", "Shield", "Sleep",
+        "Tasha’s Hideous Laughter", "Thunderwave", "Unseen Servant",
+    },
+}
+
+
+def _normalize_spell_name(value: str) -> str:
+    return (
+        (value or "")
+        .strip()
+        .lower()
+        .replace("’", "'")
+        .replace("`", "'")
+    )
+
+
+def _build_spell_class_overrides() -> dict[str, set[str]]:
+    overrides: dict[str, set[str]] = {}
+    for class_name, spell_names in CLASS_SPELLS_LEVEL_0_1.items():
+        for spell_name in spell_names:
+            key = _normalize_spell_name(spell_name)
+            overrides.setdefault(key, set()).add(class_name)
+    return overrides
+
+
+SPELL_CLASS_OVERRIDES = _build_spell_class_overrides()
+
+
 def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
     """Normaliser un sort pour l'UI."""
     raw_level = raw_spell.get("level", raw_spell.get("Lvl", 0))
@@ -16,6 +100,9 @@ def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
     except (TypeError, ValueError):
         level = 0
 
+    english_name = str(raw_spell.get("name") or raw_spell.get("Spell") or "").strip()
+    french_name = str(raw_spell.get("name_fr") or raw_spell.get("Spell_FR") or "").strip()
+
     classes = raw_spell.get("classes")
     if not classes:
         classes = raw_spell.get("Classes")
@@ -23,6 +110,19 @@ def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
         classes = [item.strip() for item in classes.split(",") if item.strip()]
     elif not isinstance(classes, list):
         classes = []
+    normalized_classes = {
+        str(item).strip().lower()
+        for item in classes
+        if str(item).strip()
+    }
+
+    override_classes = (
+        SPELL_CLASS_OVERRIDES.get(_normalize_spell_name(english_name))
+        or SPELL_CLASS_OVERRIDES.get(_normalize_spell_name(french_name))
+    )
+    if override_classes:
+        normalized_classes = set(override_classes)
+    classes = sorted(normalized_classes)
 
     description = (
         raw_spell.get("description")
@@ -41,7 +141,7 @@ def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "name": str(display_name).strip(),
-        "name_en": str(raw_spell.get("name") or raw_spell.get("Spell") or "").strip(),
+        "name_en": english_name,
         "level": level,
         "school": str(raw_spell.get("school") or raw_spell.get("School") or "").strip(),
         "classes": classes,

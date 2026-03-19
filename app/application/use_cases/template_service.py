@@ -196,7 +196,7 @@ class TemplateService:
             if not spell:
                 continue
             raw_classes = [str(item).strip().lower() for item in (spell.get("classes") or []) if str(item).strip()]
-            if raw_classes and class_key_canonical not in raw_classes:
+            if not raw_classes or class_key_canonical not in raw_classes:
                 raise ValueError(
                     f"Le sort '{spell_name}' n'est pas disponible pour la classe '{character_class}'."
                 )

@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .split(',')
                 .map((value) => value.trim().toLowerCase())
                 .filter(Boolean);
-            const classAllowed = !allowedClasses.length || allowedClasses.includes(selectedClass);
+            const classAllowed = allowedClasses.length > 0 && allowedClasses.includes(selectedClass);
             const visible = classAllowed && (!term || name.includes(term));
             label.hidden = !visible;
             const checkbox = label.querySelector('input[type="checkbox"]');
