@@ -45,6 +45,7 @@ class CharacterSheetPdfService:
         "charisma_mod": ("CHamod", "CHAmod", "CharismaMod", "Cha Modifier"),
         "proficiency_bonus": ("ProfBonus", "Proficiency Bonus", "PB"),
         "armor_class": ("AC", "Armor Class"),
+        "armor_class_badge": ("AP", "ArmorClass2", "Armor Class 2"),
         "initiative": ("Initiative",),
         "speed": ("Speed",),
         "hp_max": ("HPMax", "HP Max", "Hit Point Maximum"),
@@ -127,6 +128,7 @@ class CharacterSheetPdfService:
         "character_name": ("character", "name"),
         "class_level": ("class", "level"),
         "background": ("background",),
+        "character_backstory": ("characterbackstory", "backstory"),
         "player_name": ("player", "name"),
         "race": ("race",),
         "alignment": ("alignment",),
@@ -166,6 +168,7 @@ class CharacterSheetPdfService:
         "spellcasting_ability": ("spellcastingability",),
         "spell_save_dc": ("spellsavedc",),
         "spell_attack_bonus": ("spellatkbonus", "spellattackbonus"),
+        "armor_class_badge": ("ap", "armorclass2"),
     }
 
     SKILL_TO_ABILITY = {
@@ -208,6 +211,27 @@ class CharacterSheetPdfService:
             .replace("à", "a")
             .replace("ï", "i")
         )
+
+    @staticmethod
+    def _to_multiline(value: str | None) -> str:
+        """Transforme les listes compactes en lignes lisibles pour les zones PDF."""
+        if not value:
+            return ""
+        parts = [part.strip() for part in re.split(r"\s*(?:,|;|\|)\s*", value) if part.strip()]
+        return "\n".join(parts) if parts else (value or "")
+
+    @staticmethod
+    def _split_background_payload(value: str | None) -> tuple[str, str]:
+        """Retourne (background court, backstory libre) depuis la valeur stockee."""
+        raw = (value or "").strip()
+        if not raw:
+            return "", ""
+        lines = [line.strip() for line in raw.splitlines() if line.strip()]
+        if not lines:
+            return "", ""
+        if len(lines) == 1:
+            return lines[0], ""
+        return lines[0], "\n".join(lines[1:])
 
     @classmethod
     def _derive_spellcasting_from_class(cls, character) -> tuple[str, str, str, str]:
@@ -405,11 +429,12 @@ class CharacterSheetPdfService:
 
         spellcasting_class, spellcasting_ability, spell_save_dc, spell_attack_bonus = cls._derive_spellcasting_from_class(character)
         proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
+        background_name, backstory_text = cls._split_background_payload(character.background_story)
 
         values_by_business_key: dict[str, Any] = {
             "character_name": character.name or "",
             "class_level": f"{character.character_class or ''} {character.level or 1}".strip(),
-            "background": character.background_story or "",
+            "background": background_name,
             "player_name": character.player_name or "",
             "race": character.race or "",
             "alignment": character.alignment or "",
@@ -434,9 +459,9 @@ class CharacterSheetPdfService:
             "hp_current": str(character.hp_current_effective),
             "temp_hp": str(character.temp_hp or 0),
             "languages": character.languages or "",
-            "proficiencies_languages": proficiencies_languages[:900],
-            "equipment": (character.equipment or "")[:400],
-            "features_traits": (character.notes or "")[:900],
+            "proficiencies_languages": cls._to_multiline(proficiencies_languages)[:900],
+            "equipment": cls._to_multiline(character.equipment)[:400],
+            "features_traits": cls._to_multiline(character.notes)[:900],
             "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
             "age": str(character.age or ""),
             "height": character.height or "",
@@ -445,10 +470,12 @@ class CharacterSheetPdfService:
             "skin": character.skin or "",
             "hair": character.hair or "",
             "personality_traits": "\n".join(filter(None, [f"Genre: {character.gender}" if character.gender else "", f"Alignement: {character.alignment}" if character.alignment else ""])),
-            "allies_organizations": (character.allies_organizations or "")[:900],
+            "allies_organizations": cls._to_multiline(character.allies_organizations)[:900],
             "character_appearance": (character.character_appearance or "")[:900],
-            "additional_features_traits": (character.additional_features_traits or "")[:1200],
-            "treasure": (character.treasure or character.equipment or "")[:1200],
+            "additional_features_traits": cls._to_multiline(character.additional_features_traits)[:1200],
+            "treasure": cls._to_multiline(character.treasure or character.equipment)[:1200],
+            "character_backstory": backstory_text,
+            "armor_class_badge": str(character.ac_total),
             "symbol_name": character.symbol_name or "",
             "spellcasting_class": spellcasting_class,
             "spellcasting_ability": spellcasting_ability,

@@ -155,6 +155,19 @@ class TemplateService:
         return " | ".join(sections)
 
     @staticmethod
+    def _compose_background_payload(form_data):
+        """Conserve le background mecanique + le backstory libre dans un seul champ DB."""
+        background_choice = (form_data.get('background_choice') or form_data.get('background_story') or '').strip()
+        backstory_text = (form_data.get('backstory_text') or '').strip()
+        if not background_choice and not backstory_text:
+            return None
+        if not background_choice:
+            return backstory_text
+        if not backstory_text:
+            return background_choice
+        return f"{background_choice}\n\n{backstory_text}"
+
+    @staticmethod
     def create_character_template(form_data, files, upload_folder, current_user_id=None, campaign_id=None):
         """Créer un nouveau template de personnage"""
         image = files.get("image")
@@ -277,7 +290,7 @@ class TemplateService:
             spellcasting_ability=spellcasting_ability,
             spell_save_dc=spell_save_dc,
             spell_attack_bonus=spell_attack_bonus,
-            background_story=form_data.get('background_story') or None,
+            background_story=TemplateService._compose_background_payload(form_data),
             current_xp=int(form_data.get('current_xp', 0))
         )
 
@@ -324,7 +337,7 @@ class TemplateService:
         template.name = form_data['name']
         template.character_class = form_data['character_class']
         template.race = form_data.get('race') or template.race
-        template.background_story = form_data.get('background_story') or None
+        template.background_story = TemplateService._compose_background_payload(form_data)
         template.level = int(form_data['level'])
         template.hp_max = int(form_data['hp_max'])
         template.hp_current = template.hp_max if template.hp_current is None else min(template.hp_current, template.hp_max)
