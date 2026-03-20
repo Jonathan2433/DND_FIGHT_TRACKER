@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
 from app.application.use_cases import TemplateService
 from app.application.use_cases.campaign_service import CampaignService
-from app.models import CharacterTemplate, EncounterTemplate, Combatant
+from app.models import CharacterTemplate, EncounterTemplate, Combatant, CombatLog
 from app.domain.policies import EncounterTemplatePolicy
 from app.utils.decorators import login_required
 from app.models.campaign import Campaign
@@ -28,6 +28,7 @@ from app.utils.dnd5_rules import (
     AIDEDED_BACKGROUND_OPTIONS,
 )
 from app.utils.spell_catalog import get_cantrips, get_spells_for_level
+from app.web.routes.main import _slugify_spell_name
 
 # Créer le blueprint
 bp = Blueprint('template', __name__, url_prefix='/template')
@@ -71,6 +72,44 @@ def _get_character_live_combat_context(character_id):
     ordered = sorted(linked_combatants, key=sort_key, reverse=False)
     combat_ids = [combatant.combat_id for combatant in ordered]
     return combat_ids, ordered[0]
+
+
+def _split_spell_names(raw_spells):
+    return [spell.strip() for spell in (raw_spells or '').split(',') if spell.strip()]
+
+
+def _build_known_spells(character_id, profile):
+    cantrips = _split_spell_names(profile.get('selected_cantrips')) if profile else []
+    level_one_spells = _split_spell_names(profile.get('selected_level_1_spells')) if profile else []
+    known_spells = []
+
+    for spell_name in cantrips:
+        known_spells.append({
+            'name': spell_name,
+            'level_label': 'Sort mineur',
+            'slug': _slugify_spell_name(spell_name),
+            'href': url_for(
+                'main.spell_detail',
+                spell_slug=_slugify_spell_name(spell_name),
+                return_to=url_for('template.character_profile', id=character_id),
+                return_label='Retour personnage',
+            ),
+        })
+
+    for spell_name in level_one_spells:
+        known_spells.append({
+            'name': spell_name,
+            'level_label': 'Niveau 1',
+            'slug': _slugify_spell_name(spell_name),
+            'href': url_for(
+                'main.spell_detail',
+                spell_slug=_slugify_spell_name(spell_name),
+                return_to=url_for('template.character_profile', id=character_id),
+                return_label='Retour personnage',
+            ),
+        })
+
+    return known_spells
 
 
 @bp.route('/manage')
@@ -298,6 +337,19 @@ def character_profile(id):
     )
 
     combats_played = TemplateService.get_character_combat_count(character.name)
+    total_damage_dealt = (
+        db.session.query(db.func.coalesce(db.func.sum(CombatLog.value), 0))
+        .join(Combatant, Combatant.id == CombatLog.actor_id)
+        .filter(
+            Combatant.character_template_id == character.id,
+            CombatLog.action_type == 'damage',
+        )
+        .scalar()
+    ) or 0
+    species_rules = get_localized_species_rules()
+    species_key = (visible_payload['data'].get('race') if visible_payload else None) or character.race
+    speed_value = species_rules.get(species_key, {}).get('speed')
+    known_spells = _build_known_spells(character.id, visible_payload['data'] if visible_payload else {})
     can_award_xp = False
     can_view_xp = False
     is_campaign_mj = False
@@ -325,6 +377,9 @@ def character_profile(id):
         visibility_mode=visibility_mode,
         limited_profile=limited_profile,
         combats_played=combats_played,
+        total_damage_dealt=total_damage_dealt,
+        speed_value=speed_value,
+        known_spells=known_spells,
         can_edit=character.can_be_edited_by(current_user) if current_user else False,
         can_view_xp=can_view_xp,
         can_award_xp=can_award_xp,

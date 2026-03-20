@@ -23,41 +23,57 @@
                 <div class="character-summary__title">
                     <span class="section-eyebrow">{{ character.character_type }}</span>
                     <h1>{{ profile.name or character.name }}</h1>
-                    <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.race is defined or character.race %} - {{ profile.race if profile.race is defined else character.race }}{% endif %}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
+                    {% set raw_background = profile.background_story if profile.background_story is defined else '' %}
+                    {% set background_name = raw_background.split('\n\n')[0].strip() if raw_background else '' %}
+                    <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.race is defined or character.race %} - {{ profile.race if profile.race is defined else character.race }}{% endif %}{% if background_name %} - {{ background_name }}{% endif %}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
+                    <p class="character-summary__meta">Alignement : {{ profile.alignment if profile.alignment is defined and profile.alignment else 'Non renseigne' }}</p>
                     {% if character.campaign %}
                         <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
                     {% endif %}
                 </div>
             </div>
 
-            {% if can_edit %}
-                <div class="profile-actions profile-actions--quick">
-                    <h2>Actions rapides</h2>
-                    <div class="profile-actions__buttons">
-                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                            </a>
-                        {% endif %}
-
-                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
-
-                        {% if current_user and character.owner_id == current_user.id %}
-                            <form method="POST"
-                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                  class="inl-character-004">
-                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                            </form>
-                        {% endif %}
+            <div class="hero-side-column">
+                <div class="profile-stats profile-stats--combat-overview">
+                    <div class="stat-box">
+                        <strong>Combats joues</strong>
+                        <span>{{ combats_played }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Degats infliges</strong>
+                        <span>{{ total_damage_dealt }}</span>
                     </div>
                 </div>
-            {% elif current_user %}
-                <div class="profile-actions profile-actions--quick">
-                    <h2>Consultation</h2>
-                    <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
-                </div>
-            {% endif %}
+
+                {% if can_edit %}
+                    <div class="profile-actions profile-actions--quick">
+                        <h2>Actions rapides</h2>
+                        <div class="profile-actions__buttons">
+                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                                </a>
+                            {% endif %}
+
+                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
+
+                            {% if current_user and character.owner_id == current_user.id %}
+                                <form method="POST"
+                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                      class="inl-character-004">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% elif current_user %}
+                    <div class="profile-actions profile-actions--quick">
+                        <h2>Consultation</h2>
+                        <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
         <div class="profile-stats">
@@ -91,8 +107,8 @@
                 <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
             </div>
             <div class="stat-box">
-                <strong>Combats joues</strong>
-                <span>{{ combats_played }}</span>
+                <strong>Vitesse</strong>
+                <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
             </div>
         </div>
     </section>
@@ -141,16 +157,20 @@
                 </div>
             </section>
 
-            {% if profile.selected_cantrips is defined or profile.selected_level_1_spells is defined %}
+            {% if known_spells %}
                 <section class="char-details">
                     <div class="section-head">
                         <div class="section-head__content">
                             <h2 class="section-head__title">Sorts connus</h2>
                         </div>
                     </div>
-                    <div class="funnel-summary">
-                        <p><strong>Sorts mineurs:</strong> {{ profile.selected_cantrips or 'Aucun' }}</p>
-                        <p><strong>Sorts de niveau 1:</strong> {{ profile.selected_level_1_spells or 'Aucun' }}</p>
+                    <div class="known-spells-grid">
+                        {% for spell in known_spells %}
+                            <a class="spell-card spell-card--interactive known-spell-card" href="{{ spell.href }}">
+                                <h3>{{ spell.name }}</h3>
+                                <p class="spell-card__meta">{{ spell.level_label }}</p>
+                            </a>
+                        {% endfor %}
                     </div>
                 </section>
             {% endif %}
@@ -281,7 +301,7 @@
         </div>
     </div>
 
-    <div class="character-notes-pdf-layout {% if not character.pdf_filename %}character-notes-pdf-layout--single{% endif %}">
+    <div class="character-notes-pdf-layout {% if not character.pdf_filename and not can_edit %}character-notes-pdf-layout--single{% endif %}">
         {% if not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
             <div class="character-notes-pdf-layout__notes">
                 <section class="char-notes">
@@ -292,9 +312,18 @@
                         </div>
                     </div>
 
-                    {% if character.notes %}
-                        <p>{{ character.notes }}</p>
-                    {% endif %}
+                    <div class="notes-visibility-layout">
+                        <div>
+                            {% if character.notes %}
+                                <p>{{ character.notes }}</p>
+                            {% endif %}
+                        </div>
+                        <aside class="notes-visibility-card">
+                            <h3>Statut de visibilite</h3>
+                            <p>{{ 'Public' if character.is_public else 'Prive' }}</p>
+                            <p>Niveau : {{ visibility_mode }}</p>
+                        </aside>
+                    </div>
 
                     {% if current_user and character.player_private_notes and character.owner_id == current_user.id %}
                         <div class="mj-private-notes">
@@ -313,27 +342,24 @@
             </div>
         {% endif %}
 
-        {% if can_edit and not limited_profile %}
-            <section class="profile-generate-pdf card">
-                <h2>Fiche PDF DD5</h2>
-                <p class="section-head__copy">Generez une fiche officielle pre-remplie a partir des informations du personnage.</p>
-                <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
-                    <button type="submit" class="btn btn-secondary">{{ 'Regenerer la fiche PDF' if character.pdf_filename else 'Generer la fiche PDF' }}</button>
-                </form>
-            </section>
-        {% endif %}
-
         {% if not limited_profile and character.pdf_filename %}
             <div class="character-notes-pdf-layout__pdf">
                 <aside class="profile-pdf-preview">
                     <h2>Fiche officielle</h2>
                     <div class="pdf-preview-container">
-                        <button type="button"
-                                class="btn btn-secondary"
-                                data-load-pdf-preview
-                                data-pdf-url="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
-                            Afficher l'aperçu PDF
-                        </button>
+                        <div class="pdf-actions-row">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-load-pdf-preview
+                                    data-pdf-url="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
+                                Afficher l'aperçu PDF
+                            </button>
+                            {% if can_edit %}
+                                <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                                    <button type="submit" class="btn btn-secondary">Regenerer la fiche PDF</button>
+                                </form>
+                            {% endif %}
+                        </div>
                         <embed type="application/pdf"
                                class="pdf-preview"
                                data-pdf-embed
@@ -345,6 +371,16 @@
                             </a>
                         </div>
                     </div>
+                </aside>
+            </div>
+        {% elif can_edit and not limited_profile %}
+            <div class="character-notes-pdf-layout__pdf">
+                <aside class="profile-pdf-preview">
+                    <h2>Fiche officielle</h2>
+                    <p class="section-head__copy">Aucun PDF pour ce personnage.</p>
+                    <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                        <button type="submit" class="btn btn-secondary">Generer la fiche PDF</button>
+                    </form>
                 </aside>
             </div>
         {% endif %}

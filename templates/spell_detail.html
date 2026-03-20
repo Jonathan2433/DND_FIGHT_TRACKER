@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="spell-library">
-    <a class="spell-detail__back-link" href="{{ url_for('main.spell_library') }}">← Retour à la bibliothèque</a>
+    <a class="spell-detail__back-link" href="{{ return_to }}">← {{ return_label }}</a>
 
     <article class="spell-card spell-card--detail">
         <h1>{{ spell.name }}</h1>
