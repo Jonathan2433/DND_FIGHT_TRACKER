@@ -23,31 +23,102 @@
                     ⛶ Plein écran battle map
                 </button>
             </div>
-            <div class="battlemap-board battlemap-board--readonly">
-                {% if combat.battlemap_media_filename %}
-                    {% if combat.battlemap_media_type == 'video' %}
-                        <video class="battlemap-media" autoplay muted loop playsinline>
-                            <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
-                        </video>
-                    {% else %}
-                        <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
-                    {% endif %}
-                {% else %}
-                    <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
-                {% endif %}
-
-                {% for c in combatants %}
-                    {% set token_pos = battlemap_tokens.get(c.id|string) %}
-                    <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}"
-                         data-token-id="{{ c.id }}"
-                         style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
-                        {% if c.notes %}
-                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+            <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
+                <div class="battlemap-board battlemap-board--readonly">
+                    {% if combat.battlemap_media_filename %}
+                        {% if combat.battlemap_media_type == 'video' %}
+                            <video class="battlemap-media" autoplay muted loop playsinline>
+                                <source src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}">
+                            </video>
                         {% else %}
-                            <span>{{ c.token_label }}</span>
+                            <img class="battlemap-media" src="{{ url_for('static', filename='uploads/' + combat.battlemap_media_filename) }}" alt="Battle map">
                         {% endif %}
+                    {% else %}
+                        <div class="battlemap-empty">Aucune battle map configurée par le MJ.</div>
+                    {% endif %}
+
+                    {% for c in combatants %}
+                        {% set token_pos = battlemap_tokens.get(c.id|string) %}
+                        <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}"
+                             data-token-id="{{ c.id }}"
+                             style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
+                            {% if c.notes %}
+                                <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                            {% else %}
+                                <span>{{ c.token_label }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <aside class="battlemap-fullscreen-initiative">
+                    <h4>🎯 Initiative</h4>
+                    <div id="battlemap-fullscreen-initiative-list" class="battlemap-fullscreen-initiative-list">
+                        {% for p in combatants %}
+                            <div class="simple-initiative-card {% if p == current_actor %}active-init{% endif %} {% if p.is_dead %}dead-init{% endif %} {% if p.has_fled %}fled-init{% endif %}"
+                                 data-fullscreen-init-id="{{ p.id }}">
+                                <div class="init-name-status">
+                                    <span class="init-name">{% if p.is_dead %}💀 {% elif p.has_fled %}🏃 {% endif %}{{ p.name }}</span>
+                                </div>
+                                <span class="init-initiative">{{ p.initiative }}</span>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </aside>
+
+                <div class="battlemap-fullscreen-pj-bar">
+                    <h4>🧙‍♂️ Personnages Joueurs</h4>
+                    <div id="battlemap-fullscreen-pj-list" class="pj-portraits-container">
+                        {% for c in combatants if c.type == 'PJ' %}
+                            <div class="pj-portrait {% if c == current_actor %}pj-active{% endif %} {% if c.is_dead %}pj-dead{% endif %} {% if c.has_fled %}pj-fled{% endif %}"
+                                 data-fullscreen-pj-id="{{ c.id }}">
+                                <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
+                                    {% if c.notes %}
+                                        <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
+                                    {% else %}
+                                        <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="pj-name">{{ c.name }}</div>
+                                <div class="pj-ac">CA {{ c.ac_total }}</div>
+
+                                <div class="pj-hp-container">
+                                    {% set ratio = c.hp_current / c.hp_max %}
+                                    <div class="pj-hp-bar">
+                                        <div class="pj-hp-fill js-width {% if ratio > 0.6 %}hp-green{% elif ratio > 0.3 %}hp-yellow{% elif ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                                             data-width="{{ (ratio * 100)|round(1) }}%"></div>
+
+                                        {% if c.temp_hp > 0 %}
+                                            <div class="pj-temp-hp js-width"
+                                                 data-width="{{ ((c.temp_hp / c.hp_max) * 100)|round(1) }}%"></div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="pj-hp-text">
+                                        {{ c.hp_current }}/{{ c.hp_max }}
+                                        {% if c.temp_hp > 0 %}(+{{ c.temp_hp }}){% endif %}
+                                    </div>
+                                </div>
+
+                                {% if c.is_dead %}
+                                    <div class="pj-status-text">💀 Mort</div>
+                                {% elif c.has_fled %}
+                                    <div class="pj-status-text">🏃 En fuite</div>
+                                {% endif %}
+
+                                {% if c.conditions %}
+                                    <div class="pj-conditions">
+                                        {% for cond in c.conditions.split(",") %}
+                                            {% if cond.strip() %}
+                                                <span class="pj-condition-tag">{{ cond.strip() }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -237,7 +308,7 @@
                         <!-- ✅ MODIFICATION ICI -->
                         <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
                             {% if c.notes %}
-                                <img src="{{ url_for('static', filename='uploads/' + c.notes) }}"
+                                <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}"
                                      alt="{{ c.name }}" class="hud-pj-img">
                             {% else %}
                                 <div class="pj-avatar">
@@ -579,7 +650,11 @@ function scrollToActiveInitiative(currentActorId) {
 let lastCombatantCount = {{ combatants|length }};
 
 function getBattlemapMediaUrl(filename) {
-    return filename ? `/static/uploads/${filename}` : '';
+    if (!filename) return '';
+    if (filename.startsWith('http://') || filename.startsWith('https://')) {
+        return filename;
+    }
+    return `/static/uploads/${filename}`;
 }
 
 function updateBattlemap(combatState) {
@@ -647,8 +722,8 @@ function updateBattlemap(combatState) {
 }
 
 function canControlToken(combatState, combatantId) {
-    const controlledIds = combatState.player_controlled_ids || playerControlledIds;
-    return controlledIds.includes(combatantId) && combatState.current_actor_id === combatantId;
+    const controlledIds = (combatState.player_controlled_ids || playerControlledIds).map((id) => Number(id));
+    return controlledIds.includes(Number(combatantId)) && Number(combatState.current_actor_id) === Number(combatantId);
 }
 
 async function savePlayerTokenPosition(tokenId, x, y) {
@@ -706,6 +781,7 @@ function setupPlayerTokenDragging(combatState) {
     board.onmousemove = (event) => updateDragPosition(event.clientX, event.clientY);
     board.ontouchmove = (event) => {
         if (!dragState || !event.touches[0]) return;
+        event.preventDefault();
         updateDragPosition(event.touches[0].clientX, event.touches[0].clientY);
     };
 
@@ -721,6 +797,7 @@ function setupPlayerTokenDragging(combatState) {
     board.onmouseup = finishDrag;
     board.onmouseleave = finishDrag;
     board.ontouchend = finishDrag;
+    board.ontouchcancel = finishDrag;
 }
 
 // ✅ Fonction pour mettre à jour l'affichage avec synchronisation
@@ -751,6 +828,7 @@ async function updateCombatDisplay() {
 
         // Mettre à jour le panel d'initiative
         updateSimpleInitiativePanel(orderedCombatants, data.current_actor_id);
+        updateBattlemapFullscreenHud(orderedCombatants, data.current_actor_id);
 
         // Mettre à jour les combattants principaux
         rebuildCombatantsGrid(orderedCombatants, data.current_actor_id);
@@ -865,6 +943,62 @@ function updateSimpleInitiativePanel(combatants, currentActorId) {
         const card = createSimpleInitiativeCard(combatant, currentActorId);
         simpleList.appendChild(card);
     });
+}
+
+
+function updateBattlemapFullscreenHud(combatants, currentActorId) {
+    const initiativeList = document.getElementById('battlemap-fullscreen-initiative-list');
+    if (initiativeList) {
+        initiativeList.innerHTML = '';
+        combatants.forEach((combatant) => {
+            const card = createSimpleInitiativeCard(combatant, currentActorId);
+            card.dataset.fullscreenInitId = combatant.id;
+            initiativeList.appendChild(card);
+        });
+    }
+
+    const pjList = document.getElementById('battlemap-fullscreen-pj-list');
+    if (pjList) {
+        pjList.innerHTML = '';
+        combatants
+            .filter((combatant) => combatant.type === 'PJ')
+            .forEach((combatant) => {
+                const ratio = combatant.hp_current / combatant.hp_max;
+                const hpColor = ratio > 0.6 ? 'hp-green' : ratio > 0.3 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red';
+                const conditions = Array.isArray(combatant.conditions) ? combatant.conditions : [];
+                const portrait = document.createElement('div');
+                portrait.className = `pj-portrait ${combatant.id === currentActorId ? 'pj-active' : ''} ${combatant.is_dead ? 'pj-dead' : ''} ${combatant.has_fled ? 'pj-fled' : ''}`;
+                portrait.dataset.fullscreenPjId = combatant.id;
+                portrait.innerHTML = `
+                    <div class="pj-portrait-frame ${combatant.notes ? 'has-image' : 'no-image'}">
+                        ${combatant.notes
+                            ? `<img src="${getBattlemapMediaUrl(combatant.notes)}" alt="${combatant.name}" class="hud-pj-img">`
+                            : `<div class="pj-avatar">${combatant.name.substring(0, 2).toUpperCase()}</div>`}
+                    </div>
+                    <div class="pj-name">${combatant.name}</div>
+                    <div class="pj-ac">CA ${combatant.ac_total}</div>
+                    <div class="pj-hp-container">
+                        <div class="pj-hp-bar">
+                            <div class="pj-hp-fill js-width ${hpColor}" data-width="${(ratio * 100).toFixed(1)}%"></div>
+                            ${combatant.temp_hp > 0
+                                ? `<div class="pj-temp-hp js-width" data-width="${((combatant.temp_hp / combatant.hp_max) * 100).toFixed(1)}%"></div>`
+                                : ''}
+                        </div>
+                        <div class="pj-hp-text">
+                            ${combatant.hp_current}/${combatant.hp_max}${combatant.temp_hp > 0 ? ` (+${combatant.temp_hp})` : ''}
+                        </div>
+                    </div>
+                    ${combatant.is_dead ? '<div class="pj-status-text">💀 Mort</div>' : ''}
+                    ${combatant.has_fled ? '<div class="pj-status-text">🏃 En fuite</div>' : ''}
+                    ${conditions.length > 0
+                        ? `<div class="pj-conditions">
+                            ${conditions.map((condition) => condition.trim() ? `<span class="pj-condition-tag">${condition.trim()}</span>` : '').join('')}
+                          </div>`
+                        : ''}
+                `;
+                pjList.appendChild(portrait);
+            });
+    }
 }
 
 function createSimpleInitiativeCard(combatant, currentActorId) {
@@ -1116,26 +1250,58 @@ socket.on('disconnect', () => {
 
 
 function initializeBattlemapFullscreen() {
-    const battlemapBoard = document.querySelector('.battlemap-board');
-    const mapCard = battlemapBoard ? battlemapBoard.closest('.card') : null;
+    const battlemapFullscreenTarget = document.getElementById('battlemap-fullscreen-target');
     const headerToggle = document.querySelector('[data-battlemap-fullscreen-toggle]');
     const floatingToggle = document.getElementById('battlemap-player-fullscreen');
+    const mobileExpandedClass = 'battlemap-mobile-expanded';
 
-    if (!battlemapBoard || !mapCard) {
+    if (!battlemapFullscreenTarget) {
         return;
     }
 
     const toggleButtons = [headerToggle, floatingToggle].filter(Boolean);
 
+    const isMobileExpanded = () => document.body.classList.contains(mobileExpandedClass);
+
+    const updateToggleText = () => {
+        const isNativeFullscreen = document.fullscreenElement === battlemapFullscreenTarget;
+        const expanded = isNativeFullscreen || isMobileExpanded();
+        toggleButtons.forEach((button) => {
+            button.textContent = expanded ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
+        });
+    };
+
+    const enterMobileExpandedMode = () => {
+        document.body.classList.add(mobileExpandedClass);
+    };
+
+    const exitMobileExpandedMode = () => {
+        document.body.classList.remove(mobileExpandedClass);
+    };
+
     const toggleBattlemapFullscreen = async () => {
         try {
-            if (document.fullscreenElement === mapCard) {
+            if (document.fullscreenElement === battlemapFullscreenTarget) {
                 await document.exitFullscreen();
+                return;
+            }
+
+            if (isMobileExpanded()) {
+                exitMobileExpandedMode();
+                updateToggleText();
+                return;
+            }
+
+            if (battlemapFullscreenTarget.requestFullscreen) {
+                await battlemapFullscreenTarget.requestFullscreen();
             } else {
-                await mapCard.requestFullscreen();
+                enterMobileExpandedMode();
             }
         } catch (error) {
-            console.error('Impossible de basculer le plein ecran de la battle map', error);
+            console.warn('Plein écran natif indisponible, bascule mobile activée.', error);
+            enterMobileExpandedMode();
+        } finally {
+            updateToggleText();
         }
     };
 
@@ -1144,11 +1310,20 @@ function initializeBattlemapFullscreen() {
     });
 
     document.addEventListener('fullscreenchange', () => {
-        const isFullscreen = document.fullscreenElement === mapCard;
-        toggleButtons.forEach((button) => {
-            button.textContent = isFullscreen ? '🡼 Quitter le plein écran' : '⛶ Battle map plein écran';
-        });
+        if (document.fullscreenElement !== battlemapFullscreenTarget) {
+            exitMobileExpandedMode();
+        }
+        updateToggleText();
     });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isMobileExpanded()) {
+            exitMobileExpandedMode();
+            updateToggleText();
+        }
+    });
+
+    updateToggleText();
 }
 
 function initializeEvents() {

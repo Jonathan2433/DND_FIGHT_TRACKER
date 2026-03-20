@@ -7,6 +7,8 @@ from app.domain.policies import CombatPolicy, EncounterTemplatePolicy
 from app.utils import CONDITIONS_LIST, CONDITIONS_DESCRIPTIONS, MONSTER_TEMPLATES, get_initiative_order, get_current_actor
 from werkzeug.utils import secure_filename
 from uuid import uuid4
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 import os
 import json
 from app.utils.decorators import login_required
@@ -43,6 +45,42 @@ def _save_uploaded_media(file_storage, allowed_extensions):
     filename = f"{uuid4().hex}_{secure_filename(file_storage.filename)}"
     file_storage.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
     return filename
+
+
+def _save_remote_image(image_url, allowed_extensions):
+    if not image_url:
+        return None
+
+    trimmed_url = image_url.strip()
+    parsed = urlparse(trimmed_url)
+    if parsed.scheme not in {'http', 'https'} or not parsed.netloc:
+        return None
+
+    try:
+        request_obj = Request(trimmed_url, headers={'User-Agent': 'DND-Fight-Tracker/1.0'})
+        with urlopen(request_obj, timeout=8) as response:
+            content_type = (response.headers.get('Content-Type') or '').split(';')[0].strip().lower()
+            extension_from_type = {
+                'image/png': 'png',
+                'image/jpeg': 'jpg',
+                'image/webp': 'webp',
+            }.get(content_type)
+
+            path_extension = parsed.path.rsplit('.', 1)[-1].lower() if '.' in parsed.path else ''
+            extension = extension_from_type or path_extension
+            if extension == 'jpeg':
+                extension = 'jpg'
+
+            if extension not in allowed_extensions:
+                return None
+
+            filename = f"{uuid4().hex}_remote.{extension}"
+            destination = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            with open(destination, 'wb') as output_file:
+                output_file.write(response.read())
+            return filename
+    except Exception:
+        return None
 
 
 
@@ -379,7 +417,13 @@ def add_template(combat_id):
     quantity = int(request.form['quantity'])
     manual_initiative = request.form.get('initiative')
     monster_image = request.files.get('monster_image')
-    monster_image_filename = _save_uploaded_media(monster_image, {'png', 'jpg', 'jpeg', 'webp'}) if monster_image else None
+    monster_image_url = request.form.get('monster_image_url', '').strip()
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'webp'}
+
+    monster_image_filename = _save_uploaded_media(monster_image, allowed_extensions) if monster_image else None
+    if not monster_image_filename and monster_image_url:
+        downloaded_image_filename = _save_remote_image(monster_image_url, allowed_extensions)
+        monster_image_filename = downloaded_image_filename or monster_image_url
 
     TemplateService.add_monster_template_to_combat(
         combat_id,

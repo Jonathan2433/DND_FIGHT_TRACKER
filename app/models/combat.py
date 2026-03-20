@@ -42,6 +42,7 @@ class Combatant(db.Model):
     """Modèle pour un combattant dans un combat"""
     id = db.Column(db.Integer, primary_key=True)
     combat_id = db.Column(db.Integer, db.ForeignKey('combat.id'), nullable=False)
+    character_template_id = db.Column(db.Integer, db.ForeignKey('character_template.id'), nullable=True)
 
     # Informations de base
     name = db.Column(db.String(100), nullable=False)
@@ -70,6 +71,7 @@ class Combatant(db.Model):
 
     # Divers
     notes = db.Column(db.Text)
+    character_template = db.relationship('CharacterTemplate', backref=db.backref('combat_instances', lazy=True))
 
     @property
     def ac_total(self):

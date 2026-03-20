@@ -100,6 +100,22 @@
         text-align: left;
     }
 
+    .site-nav__link--mobile-only {
+        display: inline-flex;
+    }
+
+    .site-notification__menu-icon {
+        display: none;
+    }
+
+    .site-notification__icon {
+        display: inline;
+    }
+
+    .site-notification__account-links {
+        display: none;
+    }
+
     .home-hero,
     .campaign-page__hero {
         grid-template-columns: 1fr;
@@ -110,6 +126,10 @@
 
     .home-quick-access__progression {
         grid-template-columns: 1fr;
+    }
+
+    .home-hero__panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .home-quick-access__step::after {
@@ -223,6 +243,18 @@
         flex-direction: column;
         justify-content: stretch;
         gap: 12px;
+    }
+
+    .templates-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .templates-header-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .site-brand__title {

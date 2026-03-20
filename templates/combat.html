@@ -114,7 +114,7 @@
                     {% set token_pos = battlemap_tokens.get(c.id|string) %}
                     <div class="battlemap-token {% if c == current_actor %}battlemap-token--active{% endif %} {% if c.is_dead or c.has_fled %}battlemap-token--inactive{% endif %}" data-token-id="{{ c.id }}" style="left: {{ token_pos.x if token_pos else (8 + loop.index0 * 6) }}%; top: {{ token_pos.y if token_pos else (10 + (loop.index0 % 5) * 15) }}%;">
                         {% if c.notes %}
-                            <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
+                            <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}">
                         {% else %}
                             <span>{{ c.token_label }}</span>
                         {% endif %}
@@ -145,7 +145,7 @@
                                  data-fullscreen-pj-id="{{ c.id }}">
                                 <div class="pj-portrait-frame {% if c.notes %}has-image{% else %}no-image{% endif %}">
                                     {% if c.notes %}
-                                        <img src="{{ url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
+                                        <img src="{{ c.notes if c.notes and c.notes.startswith('http') else url_for('static', filename='uploads/' + c.notes) }}" alt="{{ c.name }}" class="hud-pj-img">
                                     {% else %}
                                         <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
                                     {% endif %}
@@ -246,14 +246,19 @@
                   class="grid-form">
 
                 <select name="template">
-                    {% for name in MONSTER_TEMPLATES.keys() %}
-                        <option>{{ name }}</option>
+                    {% for name, template in MONSTER_TEMPLATES.items() %}
+                        <option value="{{ name }}" data-image="{{ template.image }}">{{ template.display_name or name }}</option>
                     {% endfor %}
                 </select>
+
+                <div class="monster-template-preview">
+                    <img src="" alt="Portrait du monstre" data-monster-template-preview hidden>
+                </div>
 
                 <input type="number" name="quantity" value="1" min="1">
                 <input type="number" name="initiative" placeholder="Initiative (optionnel)">
                 <input type="file" name="monster_image" accept="image/*">
+                <input type="url" name="monster_image_url" placeholder="URL image (https://...)">
 
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
@@ -499,6 +504,33 @@ document.addEventListener("DOMContentLoaded", function() {
     const socket = window.io ? io() : null;
     const copyButton = document.querySelector('[data-copy-combat-link]');
     const linkInput = document.querySelector('[data-combat-invite-link]');
+    const templateSelect = document.querySelector('select[name="template"]');
+    const templatePreview = document.querySelector('[data-monster-template-preview]');
+
+    const updateMonsterTemplatePreview = () => {
+        if (!templateSelect || !templatePreview) {
+            return;
+        }
+
+        const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+        const imageFilename = selectedOption?.dataset?.image;
+
+        if (!imageFilename) {
+            templatePreview.hidden = true;
+            templatePreview.removeAttribute('src');
+            return;
+        }
+
+        templatePreview.src = imageFilename.startsWith('http://') || imageFilename.startsWith('https://')
+            ? imageFilename
+            : `/static/uploads/${imageFilename}`;
+        templatePreview.hidden = false;
+    };
+
+    if (templateSelect && templatePreview) {
+        templateSelect.addEventListener('change', updateMonsterTemplatePreview);
+        updateMonsterTemplatePreview();
+    }
 
     if (copyButton && linkInput) {
         copyButton.addEventListener('click', async () => {
@@ -668,28 +700,53 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         };
 
+        let dragState = null;
+
+        const updateDragPosition = (clientX, clientY) => {
+            if (!dragState) return;
+            const rect = board.getBoundingClientRect();
+            const x = ((clientX - rect.left) / rect.width) * 100;
+            const y = ((clientY - rect.top) / rect.height) * 100;
+            dragState.token.style.left = `${Math.max(0, Math.min(100, x))}%`;
+            dragState.token.style.top = `${Math.max(0, Math.min(100, y))}%`;
+        };
+
+        const finishDrag = async () => {
+            if (!dragState) return;
+            dragState = null;
+            isDraggingToken = false;
+            await savePositions();
+        };
+
         tokens.forEach((token) => {
-            let drag = false;
-            token.addEventListener('mousedown', () => {
-                drag = true;
+            const startDrag = (event, clientX, clientY) => {
+                event.preventDefault();
+                dragState = {token};
                 isDraggingToken = true;
+                updateDragPosition(clientX, clientY);
+            };
+
+            token.addEventListener('mousedown', (event) => {
+                startDrag(event, event.clientX, event.clientY);
             });
-            document.addEventListener('mouseup', () => {
-                if (drag) {
-                    drag = false;
-                    isDraggingToken = false;
-                    savePositions();
-                }
-            });
-            board.addEventListener('mousemove', (event) => {
-                if (!drag) return;
-                const rect = board.getBoundingClientRect();
-                const x = ((event.clientX - rect.left) / rect.width) * 100;
-                const y = ((event.clientY - rect.top) / rect.height) * 100;
-                token.style.left = `${Math.max(0, Math.min(100, x))}%`;
-                token.style.top = `${Math.max(0, Math.min(100, y))}%`;
-            });
+
+            token.addEventListener('touchstart', (event) => {
+                if (!event.touches[0]) return;
+                startDrag(event, event.touches[0].clientX, event.touches[0].clientY);
+            }, {passive: false});
         });
+
+        board.addEventListener('mousemove', (event) => updateDragPosition(event.clientX, event.clientY));
+        board.addEventListener('touchmove', (event) => {
+            if (!dragState || !event.touches[0]) return;
+            event.preventDefault();
+            updateDragPosition(event.touches[0].clientX, event.touches[0].clientY);
+        }, {passive: false});
+
+        document.addEventListener('mouseup', finishDrag);
+        board.addEventListener('mouseleave', finishDrag);
+        document.addEventListener('touchend', finishDrag);
+        document.addEventListener('touchcancel', finishDrag);
 
         if (socket) {
             socket.emit('join_combat', { combat_id: combatId });

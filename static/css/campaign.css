@@ -548,3 +548,48 @@
     }
 }
 
+
+.campaign-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.campaign-calendar__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.campaign-calendar__create,
+.campaign-calendar__actions,
+.campaign-calendar__actions form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.campaign-calendar__list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.campaign-calendar__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.campaign-calendar__item.is-cancelled {
+    opacity: 0.7;
+    border-color: var(--danger-a30);
+}

@@ -11,9 +11,14 @@
                 mais ils apparaissent aussi dans votre gestionnaire si vous en etes proprietaire.
             </p>
         </div>
-        <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
-            Nouveau PJ
-        </button>
+        <div class="templates-header-actions">
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
+                Nouveau PJ
+            </button>
+            {% if can_create_pnj and pnj_campaign_context %}
+                <a class="btn btn-secondary" href="{{ url_for('pnj.create_pnj', campaign_id=pnj_campaign_context.id) }}">Nouveau PNJ</a>
+            {% endif %}
+        </div>
     </div>
 
     <div id="create-form" class="card template-create-form inl-core-004">
@@ -29,28 +34,41 @@
                 <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
             {% endif %}
 
-            <div class="creation-wizard" data-total-steps="5">
+            <div class="creation-wizard" data-total-steps="9">
                 <ol class="creation-steps-nav" aria-label="Etapes de creation">
                     <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Classe</button></li>
-                    <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Race</button></li>
-                    <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Background</button></li>
-                    <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Caracteristiques</button></li>
-                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Identite & medias</button></li>
+                    <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Origines</button></li>
+                    <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
+                    <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Alignement</button></li>
+                    <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Competences</button></li>
+                    <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts mineurs</button></li>
+                    <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Sorts prepares</button></li>
+                    <li data-step="8"><button type="button" class="creation-step-trigger" data-step-target="8">8. Equipement</button></li>
+                    <li data-step="9"><button type="button" class="creation-step-trigger" data-step-target="9">9. Identite</button></li>
                 </ol>
 
                 <section class="wizard-step is-active" data-step="1">
                     <h3>Etape 1 - Choix de la classe</h3>
-                    <p class="section-head__copy">Choisissez votre classe DnD 5e pour appliquer automatiquement les sauvegardes maitrisees et les points de vie de base.</p>
 
                     <label for="create-class">Classe DnD 5e</label>
                     <select id="create-class" name="character_class" required>
-                        {% for klass in dnd_classes %}
-                            <option value="{{ klass }}" data-description="{{ dnd_class_descriptions.get(klass, '') }}" {% if klass == 'Guerrier' %}selected{% endif %}>{{ klass }}</option>
+                        {% for klass in dnd_classes_catalog %}
+                            {% set class_data = dnd_class_rules.get(klass, {}) %}
+                            <option
+                                value="{{ klass }}"
+                                data-description="{{ class_data.get('description', '') }}"
+                                data-armors="{{ class_data.get('proficiencies', {}).get('armors', [])|join(', ') }}"
+                                data-weapons="{{ class_data.get('proficiencies', {}).get('weapons', [])|join(', ') }}"
+                                data-default-cantrips="{{ class_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ class_data.get('default_spells', [])|join(', ') }}"
+                                {% if klass in ['Fighter', 'Guerrier'] %}selected{% endif %}
+                            >{{ dnd_class_labels.get(klass, klass) }}</option>
                         {% endfor %}
                     </select>
 
                     <div class="funnel-summary">
                         <p id="class-description-summary">Description: -</p>
+                        <p id="class-proficiencies-summary">Maitrises de classe: -</p>
                     </div>
 
                     <label for="create-level">Niveau</label>
@@ -58,40 +76,89 @@
                 </section>
 
                 <section class="wizard-step" data-step="2" hidden>
-                    <h3>Etape 2 - Choix de la race</h3>
-                    <p class="section-head__copy">Choisissez la race pour appliquer les bonus raciaux automatiquement sur les caracteristiques finales.</p>
+                    <h3>Etape 2 - Origines (espece, background, langues)</h3>
 
-                    <label for="create-race">Race DnD 5e</label>
+                    <label for="create-race">Espece DnD 5e 2024</label>
                     <select id="create-race" name="race" required>
-                        {% for race in dnd_races %}
-                            <option value="{{ race }}" {% if race == 'Humain' %}selected{% endif %}>{{ race }}</option>
+                        {% for race in dnd_species_catalog %}
+                            {% set species_data = dnd_species_rules.get(race, {}) %}
+                            <option
+                                value="{{ race }}"
+                                data-speed="{{ species_data.get('speed', 'non specifie') }}"
+                                data-proficiencies="{{ species_data.get('proficiencies', [])|join(', ') }}"
+                                data-traits="{{ species_data.get('traits', [])|join(', ') }}"
+                                data-extra-origin-feat="{{ '1' if species_data.get('extra_origin_feat') else '0' }}"
+                                data-default-cantrips="{{ species_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ species_data.get('default_spells', [])|join(', ') }}"
+                                {% if race in ['Human', 'Humain'] %}selected{% endif %}
+                            >{{ dnd_species_labels.get(race, race) }}</option>
                         {% endfor %}
                     </select>
 
-                    <p id="race-bonus-summary" class="funnel-summary-inline">Bonus raciaux: +1 partout</p>
-                </section>
-
-                <section class="wizard-step" data-step="3" hidden>
-                    <h3>Etape 3 - Origine / Antecedent (Background)</h3>
-                    <p class="section-head__copy">Selectionnez un background officiel DnD 5e. Il enrichit le roleplay et propose des competences suggerees.</p>
+                    <p id="race-bonus-summary" class="funnel-summary-inline">Bonus d'espece: aucun modificateur de caracteristiques (regles 2024)</p>
+                    <p id="race-traits-summary" class="funnel-summary-inline">Traits d'espece: -</p>
+                    <p id="race-proficiencies-summary" class="funnel-summary-inline">Maitrises d'espece: -</p>
 
                     <label for="create-background">Background</label>
-                    <select id="create-background" name="background_story" required>
-                        {% for background_name, background_data in dnd_backgrounds.items() %}
-                            <option value="{{ background_name }}" data-feature="{{ background_data.feature }}" data-skills="{{ background_data.skills|join(', ') }}" data-description="{{ background_data.description }}" {% if loop.first %}selected{% endif %}>{{ background_name }}</option>
+                    <select id="create-background" name="background_choice" required>
+                        {% for background_name in dnd_background_catalog %}
+                            {% set background_data = dnd_backgrounds.get(background_name, {}) %}
+                            <option
+                                value="{{ background_name }}"
+                                data-feature="{{ background_data.get('feature', '') }}"
+                                data-skills="{{ background_data.get('skills', [])|join(', ') }}"
+                                data-description="{{ background_data.get('description', '') }}"
+                                data-origin-feat="{{ background_data.get('origin_feat', '') }}"
+                                data-tool="{{ background_data.get('tool', '') }}"
+                                data-ability-options="{{ background_data.get('ability_options', [])|join(',') }}"
+                                data-default-cantrips="{{ background_data.get('default_cantrips', [])|join(', ') }}"
+                                data-default-spells="{{ background_data.get('default_spells', [])|join(', ') }}"
+                                {% if loop.first %}selected{% endif %}
+                            >{{ dnd_background_labels.get(background_name, background_name) }}</option>
                         {% endfor %}
                     </select>
 
                     <div class="funnel-summary">
                         <p id="background-feature-summary">Trait: -</p>
+                        <p id="background-feat-summary">Don d'origine: -</p>
+                        <p id="background-ability-options-summary">Caracteristiques autorisees: -</p>
+                        <p id="background-tool-summary">Maitrise d'outil: -</p>
                         <p id="background-skills-summary">Competences suggerees: -</p>
                         <p id="background-description-summary">Description: -</p>
                     </div>
+
+                    <div class="stats-grid stats-grid--funnel">
+                        <div class="stat-input">
+                            <label for="create-language-1">Langue 1 (Commun recommande)</label>
+                            <select id="create-language-1" name="language_1" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Commun' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="stat-input">
+                            <label for="create-language-2">Langue 2</label>
+                            <select id="create-language-2" name="language_2" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Elfique' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="stat-input">
+                            <label for="create-language-3">Langue 3</label>
+                            <select id="create-language-3" name="language_3" required>
+                                {% for language in common_languages %}
+                                    <option value="{{ language }}" {% if language == 'Nain' %}selected{% endif %}>{{ language }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <p id="language-summary" class="funnel-summary-inline">Langues: Commun + 2 langues au choix.</p>
                 </section>
 
-                <section class="wizard-step" data-step="4" hidden>
-                    <h3>Etape 4 - Caracteristiques</h3>
-                    <p class="section-head__copy">Choisissez le mode de saisie des caracteristiques. Les bonus raciaux, les jets de sauvegarde de classe, les PV, la CA et l'initiative sont calcules automatiquement.</p>
+                <section class="wizard-step" data-step="3" hidden>
+                    <h3>Etape 3 - Caracteristiques</h3>
+                    <p class="section-head__copy">Choisissez entre tableau standard et saisie libre.</p>
 
                     <div class="ability-mode-toggle" role="radiogroup" aria-label="Mode de saisie des caracteristiques">
                         <label for="ability-mode-standard">
@@ -128,33 +195,290 @@
                     </div>
 
                     <div class="funnel-summary">
+                        <p id="background-bonus-instructions">Bonus de background (2024): depensez 3 points sur les 3 caracteristiques autorisees (max +2 par stat).</p>
+                    </div>
+
+                    <div class="stats-grid stats-grid--funnel">
+                        {% for ability_key, ability_label in abilities %}
+                            <div class="stat-input">
+                                <label for="create-bg-{{ ability_key }}">{{ ability_label }} (bonus background)</label>
+                                <select id="create-bg-{{ ability_key }}" name="{{ ability_key }}_bg_bonus" class="ability-bg-bonus" data-ability-key="{{ ability_key }}">
+                                    <option value="0" selected>+0</option>
+                                    <option value="1">+1</option>
+                                    <option value="2">+2</option>
+                                </select>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="funnel-summary">
+                        <p id="ability-mode-summary">Mode: tableau standard.</p>
+                        <p id="background-bonus-summary">Points background: 0 / 3</p>
                         <p id="saving-throws-summary">Maitrises de sauvegarde: Force, Constitution</p>
                         <p id="derived-stats-summary">PV, CA et initiative calcules automatiquement a la creation.</p>
                     </div>
                 </section>
 
-                <section class="wizard-step" data-step="5" hidden>
-                    <h3>Etape 5 - Identite, visibilite et medias</h3>
+                <section class="wizard-step" data-step="4" hidden>
+                    <h3>Etape 4 - Alignement</h3>
+                    <p class="section-head__copy">Choix optionnel mais recommande pour cadrer le roleplay.</p>
+                    <label for="create-alignment">Alignement</label>
+                    <select id="create-alignment" name="alignment">
+                        {% for alignment in dnd_alignments %}
+                            <option value="{{ alignment.value }}" data-description="{{ alignment.description }}" {% if loop.first %}selected{% endif %}>
+                                {{ alignment.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <p id="alignment-description-summary" class="funnel-summary-inline">Alignement: -</p>
+                </section>
+
+                <section class="wizard-step" data-step="5" hidden id="skill-proficiencies-step">
+                    <h3>Etape 5 - Competences maitrisees</h3>
+                    <p class="section-head__copy">
+                        Selectionnez vos competences maitrisees selon votre classe.
+                    </p>
+                    <label>Competences maitrisees</label>
+                    <div class="skill-proficiencies-grid" id="create-skill-proficiencies-grid">
+                        {% for skill in dnd_skill_options %}
+                            <label class="skill-option">
+                                <input type="checkbox" name="skill_proficiencies" value="{{ skill }}">
+                                <span>{{ skill }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <p id="create-skill-limit-summary" class="funnel-summary-inline">
+                        Maitrises de competences: 0/2 (ajuste automatiquement selon la classe).
+                    </p>
+                </section>
+
+                <section class="wizard-step" data-step="6" hidden id="cantrip-selection-step">
+                    <h3>Etape 6 - Selection des sorts mineurs</h3>
+                    <p class="section-head__copy">
+                        Cette etape apparait uniquement quand des sorts mineurs sont selectionnables.
+                    </p>
+                    <div id="spellcasting-fields">
+                        <input type="hidden" id="create-spellcasting-class" name="spellcasting_class" value="">
+
+                        <label for="cantrip-search-input">Filtrer les sorts mineurs par nom</label>
+                        <input id="cantrip-search-input" type="search" placeholder="Ex: lumiere, projectile">
+
+                        <p id="spell-selection-limits" class="funnel-summary-inline">
+                            Limites de classe: 0 sort mineur, 0 sort de niveau 1.
+                        </p>
+                        <p id="cantrip-selection-summary" class="funnel-summary-inline">
+                            Sorts mineurs selectionnes: 0/0.
+                        </p>
+
+                        <div id="cantrip-selection-block">
+                            <h4>Sorts mineurs (niveau 0)</h4>
+                            <div class="skill-proficiencies-grid" id="cantrip-selection-grid">
+                                {% for spell in cantrip_catalog %}
+                                    <label
+                                        class="skill-option spell-option"
+                                        data-spell-name="{{ spell.name|lower }}"
+                                        data-spell-name-en="{{ (spell.name_en or spell.name)|lower }}"
+                                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                                        title="{{ spell.name }} — {{ spell.description or ('Niveau: sort mineur | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
+                                    >
+                                        <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}">
+                                        <span>{{ spell.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="7" hidden id="prepared-spell-selection-step">
+                    <h3>Etape 7 - Selection des sorts prepares (niveau 1)</h3>
+                    <p class="section-head__copy">
+                        Cette etape apparait uniquement quand des sorts prepares sont selectionnables.
+                    </p>
+                    <label for="level-one-search-input">Filtrer les sorts prepares par nom</label>
+                    <input id="level-one-search-input" type="search" placeholder="Ex: soin, bouclier, detection">
+                    <p id="level-one-selection-summary" class="funnel-summary-inline">
+                        Sorts prepares selectionnes: 0/0.
+                    </p>
+                    <div id="level-one-selection-block">
+                        <h4>Sorts de niveau 1</h4>
+                        <div class="skill-proficiencies-grid" id="level-one-spell-selection-grid">
+                            {% for spell in level_one_spell_catalog %}
+                                <label
+                                    class="skill-option spell-option"
+                                    data-spell-name="{{ spell.name|lower }}"
+                                    data-spell-name-en="{{ (spell.name_en or spell.name)|lower }}"
+                                    data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                                    title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
+                                >
+                                    <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}">
+                                    <span>{{ spell.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="8" hidden>
+                    <h3>Etape 8 - Equipement de depart (regles 2024)</h3>
+                    <p class="section-head__copy">
+                        Choisissez le set d'historique (Option A ou 50 PO), un pack d'aventure standard, puis ajustez votre equipement.
+                    </p>
+
+                    <div class="funnel-summary">
+                        <p id="equipment-class-base-summary">Base de classe: -</p>
+                        <p id="equipment-background-choice-summary">Historique: -</p>
+                        <p id="equipment-pack-summary">Pack d'aventure: -</p>
+                        <p id="equipment-armor-summary">Armure portee: sans armure.</p>
+                        <p id="equipment-notes-summary">Notes: Colifichet gratuit, AC selon armure, charge = FOR x 15 lb.</p>
+                    </div>
+
+                    <div class="edit-grid edit-grid--spaced">
+                        <section class="edit-section">
+                            <label for="create-background-equipment-choice">Choix d'equipement d'historique</label>
+                            <select id="create-background-equipment-choice" name="background_equipment_choice">
+                                <option value="A" selected>Option A (set predefini)</option>
+                                <option value="B">Option B (50 PO fixes)</option>
+                            </select>
+
+                            <label for="create-adventure-pack">Pack d'aventure standard</label>
+                            <select id="create-adventure-pack" name="adventure_pack">
+                                <option value="Cambrioleur (Burglar)" selected>Cambrioleur (Burglar)</option>
+                                <option value="Diplomate">Diplomate</option>
+                                <option value="Explorateur (Dungeoneer)">Explorateur (Dungeoneer)</option>
+                                <option value="Artiste (Entertainer)">Artiste (Entertainer)</option>
+                                <option value="Savant (Scholar)">Savant (Scholar)</option>
+                            </select>
+
+                            <label for="create-equipment">Equipement principal (resume automatique modifiable)</label>
+                            <textarea id="create-equipment" name="equipment" rows="3" placeholder="Option historique + pack + or de depart"></textarea>
+
+                            <label for="create-weapon-loadout-select">Arme de corps a corps equipee</label>
+                            <select id="create-weapon-loadout-select">
+                                <option value="" selected>Selectionnez une arme de corps a corps</option>
+                                <option value="Epee longue">Epee longue</option>
+                                <option value="Epee courte">Epee courte</option>
+                                <option value="Dague">Dague</option>
+                                <option value="Hache d'armes">Hache d'armes</option>
+                                <option value="Masse">Masse</option>
+                                <option value="Lance">Lance</option>
+                                <option value="Baton">Baton</option>
+                                <option value="other">Autre...</option>
+                            </select>
+                            <input id="create-weapon-loadout-custom" type="text" placeholder="Saisissez votre arme" hidden>
+                            <input id="create-weapon-loadout" name="weapon_loadout" type="hidden">
+
+                            <label for="create-ranged-weapon-loadout-select">Arme a distance equipee</label>
+                            <select id="create-ranged-weapon-loadout-select">
+                                <option value="" selected>Selectionnez une arme a distance</option>
+                                <option value="Arc court">Arc court</option>
+                                <option value="Arc long">Arc long</option>
+                                <option value="Arbalete legere">Arbalete legere</option>
+                                <option value="other">Autre...</option>
+                            </select>
+                            <input id="create-ranged-weapon-loadout-custom" type="text" placeholder="Saisissez votre arme a distance" hidden>
+                            <input id="create-ranged-weapon-loadout" name="ranged_weapon_loadout" type="hidden">
+
+                            <label for="create-shield-choice">Armure / bouclier</label>
+                            <select id="create-shield-choice">
+                                <option value="0" selected>Sans bouclier</option>
+                                <option value="1">Avec bouclier</option>
+                            </select>
+                            <input id="create-armor-loadout" name="armor_loadout" type="hidden">
+
+                            <label for="create-armor-equipped">Port d'armure</label>
+                            <select id="create-armor-equipped" name="armor_equipped">
+                                <option value="none" selected>Sans armure</option>
+                                <option value="padded">Matelassee (11 + DEX)</option>
+                                <option value="leather">Cuir (11 + DEX)</option>
+                                <option value="studded_leather">Cuir cloute (12 + DEX)</option>
+                                <option value="hide">Peau (12 + DEX max +2)</option>
+                                <option value="chain_shirt">Chemise de mailles (13 + DEX max +2)</option>
+                                <option value="scale_mail">Clibanion (14 + DEX max +2)</option>
+                                <option value="breastplate">Cuirasse (14 + DEX max +2)</option>
+                                <option value="half_plate">Demi-plate (15 + DEX max +2)</option>
+                                <option value="ring_mail">Broigne (14)</option>
+                                <option value="chain_mail">Cotte de mailles (16)</option>
+                                <option value="splint">Clibanion (17)</option>
+                                <option value="plate">Harnois (18)</option>
+                            </select>
+                            <label class="inline-checkbox" for="create-shield-equipped" hidden>
+                                <input id="create-shield-equipped" type="checkbox" name="shield_equipped" value="1">
+                                Bouclier equipe (+2 CA)
+                            </label>
+                            <input id="create-ac-base-hidden" type="hidden" name="ac_base" value="10">
+
+                            <label for="create-inventory-items">Inventaire detaille</label>
+                            <textarea id="create-inventory-items" name="inventory_items" rows="3" placeholder="Objets utilitaires, consommables, kits..."></textarea>
+
+                            <label for="create-tool-proficiencies">Outils maitrises (si applicable)</label>
+                            <input id="create-tool-proficiencies" type="text" name="tool_proficiencies" placeholder="Ex: Outils de voleur, kit d'herboristerie">
+                        </section>
+                    </div>
+                </section>
+
+                <section class="wizard-step" data-step="9" hidden>
+                    <h3>Etape 9 - Identite (visibilite et medias)</h3>
+                    <p class="section-head__copy">
+                        Derniere etape pour les metadonnees du personnage, la visibilite et les medias.
+                    </p>
 
                     <div class="edit-grid edit-grid--spaced">
                         <section class="edit-section">
                             <label for="create-name">Nom</label>
                             <input id="create-name" type="text" name="name" required>
 
-                            <label for="create-first-name">Prenom</label>
-                            <input id="create-first-name" type="text" name="first_name" placeholder="Optionnel">
-
                             <label for="create-gender">Genre</label>
-                            <input id="create-gender" type="text" name="genre" placeholder="Ex: Non-binaire, Femme, Homme...">
-
-                            <label for="create-alignment">Alignement</label>
-                            <input id="create-alignment" type="text" name="alignment" placeholder="Ex: Loyal bon, Neutre...">
+                            <select id="create-gender" name="genre">
+                                <option value="" selected>Non precise</option>
+                                <option value="Femme">Femme</option>
+                                <option value="Homme">Homme</option>
+                                <option value="Non-binaire">Non-binaire</option>
+                                <option value="Autre">Autre</option>
+                            </select>
 
                             <label for="create-age">Age</label>
                             <input id="create-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
 
+                            <label for="create-height">Taille</label>
+                            <input id="create-height" type="text" name="height" placeholder="Ex: 1m82">
+
                             <label for="create-weight">Poids</label>
                             <input id="create-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+
+                            <div class="stats-grid stats-grid--funnel">
+                                <div class="stat-input">
+                                    <label for="create-eyes">Yeux</label>
+                                    <input id="create-eyes" type="text" name="eyes" placeholder="Ex: verts">
+                                </div>
+                                <div class="stat-input">
+                                    <label for="create-skin">Peau</label>
+                                    <input id="create-skin" type="text" name="skin" placeholder="Ex: halee">
+                                </div>
+                                <div class="stat-input">
+                                    <label for="create-hair">Cheveux</label>
+                                    <input id="create-hair" type="text" name="hair" placeholder="Ex: noirs">
+                                </div>
+                            </div>
+
+                            <label for="create-character-appearance">Apparence du personnage</label>
+                            <textarea id="create-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
+
+                            <label for="create-allies-organizations">Allies & organisations</label>
+                            <textarea id="create-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
+
+                            <label for="create-symbol-name">Nom du symbole</label>
+                            <input id="create-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
+
+                            <label for="create-additional-features">Traits supplementaires</label>
+                            <textarea id="create-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
+
+                            <label for="create-treasure">Tresor</label>
+                            <textarea id="create-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
+
+                            <label for="create-backstory">Backstory du personnage</label>
+                            <textarea id="create-backstory" name="backstory_text" rows="3" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
 
                             <label for="create-notes">Notes partagees</label>
                             <textarea id="create-notes" name="notes" rows="3"></textarea>
@@ -189,12 +513,23 @@
                                 <div>
                                     <label for="create-pdf">Fiche PDF</label>
                                     <input id="create-pdf" type="file" name="pdf" accept=".pdf">
+                                    <small id="create-pdf-help">
+                                        Si "Generer automatiquement la fiche DD5 PDF" est active, la fiche generee remplacera ce fichier.
+                                    </small>
                                 </div>
                             </div>
+
+                            <label class="visibility-toggle" for="create-generate-pdf">
+                                <input type="checkbox" id="create-generate-pdf" name="generate_pdf_sheet" checked>
+                                <span>
+                                    <strong>Generer automatiquement la fiche DD5 PDF</strong>
+                                    <small>Utilise le template officiel et pre-remplit les informations connues du funnel de creation.</small>
+                                </span>
+                            </label>
+
                         </section>
                     </div>
                 </section>
-
                 <div class="wizard-actions">
                     <button type="button" class="btn btn-secondary" id="wizard-prev" disabled>Etape precedente</button>
                     <button type="button" class="btn btn-primary" id="wizard-next">Etape suivante</button>

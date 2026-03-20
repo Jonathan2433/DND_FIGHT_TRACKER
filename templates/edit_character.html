@@ -10,19 +10,119 @@
         <a href="{{ url_for('template.character_profile', id=character.id) }}" class="btn btn-secondary">Retour</a>
     </div>
 
-    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data" id="edit-character-form">
+        <div class="creation-wizard edit-wizard" data-total-steps="6">
+            <ol class="creation-steps-nav" aria-label="Etapes d'edition">
+                <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identite</button></li>
+                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Combat</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
+                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Details avances</button></li>
+                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Sorts</button></li>
+                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Medias & visibilite</button></li>
+            </ol>
+        </div>
         <div class="edit-grid edit-grid--spaced">
-            <section class="edit-section">
+            <section class="edit-section wizard-step is-active" data-step="1">
                 <h2>Identite</h2>
 
                 <label for="character-name">Nom</label>
                 <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
 
                 <label for="character-class">Classe</label>
-                <input id="character-class" type="text" name="character_class" value="{{ character.character_class }}" required>
+                <select id="character-class" name="character_class" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
+                    {% for klass in dnd_classes_catalog %}
+                        <option value="{{ klass }}" {% if character.character_class == klass %}selected{% endif %}>{{ klass }}</option>
+                    {% endfor %}
+                    {% if character.character_class and character.character_class not in dnd_classes_catalog %}
+                        <option value="{{ character.character_class }}" selected>{{ character.character_class }}</option>
+                    {% endif %}
+                </select>
+                {% if character.character_type == 'PJ' %}<small>Classe verrouillee pour un PJ.</small>{% endif %}
+
+                <label for="character-race">Race</label>
+                <select id="character-race" name="race" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
+                    {% for race in dnd_species_catalog %}
+                        <option value="{{ race }}" {% if character.race == race %}selected{% endif %}>{{ race }}</option>
+                    {% endfor %}
+                    {% if character.race and character.race not in dnd_species_catalog %}
+                        <option value="{{ character.race }}" selected>{{ character.race }}</option>
+                    {% endif %}
+                </select>
+                {% if character.character_type == 'PJ' %}<small>Espece verrouillee pour un PJ.</small>{% endif %}
+
+                <label for="character-background">Background</label>
+                <select id="character-background" name="background_choice" {% if character.character_type == 'PJ' %}disabled{% endif %}>
+                    <option value="">-- Non precise --</option>
+                    {% for background in dnd_background_catalog %}
+                        <option value="{{ background }}" {% if background_fields.background_choice == background %}selected{% endif %}>{{ background }}</option>
+                    {% endfor %}
+                    {% if background_fields.background_choice and background_fields.background_choice not in dnd_background_catalog %}
+                        <option value="{{ background_fields.background_choice }}" selected>{{ background_fields.background_choice }}</option>
+                    {% endif %}
+                </select>
+                {% if character.character_type == 'PJ' %}<small>Background verrouille pour un PJ.</small>{% endif %}
+
+                <label for="character-alignment">Alignement</label>
+                <select id="character-alignment" name="alignment">
+                    {% for alignment in dnd_alignments %}
+                        <option value="{{ alignment.value }}" {% if (character.alignment or '') == alignment.value %}selected{% endif %}>{{ alignment.label }}</option>
+                    {% endfor %}
+                    {% if character.alignment and character.alignment not in dnd_alignments|map(attribute='value')|list %}
+                        <option value="{{ character.alignment }}" selected>{{ character.alignment }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-languages">Langues</label>
+                <input id="character-languages" type="text" name="languages" list="character-languages-list" value="{{ character.languages or '' }}" placeholder="Ex: Commun, Elfique, Nain">
+                <datalist id="character-languages-list">
+                    {% for language in common_languages %}
+                        <option value="{{ language }}">
+                    {% endfor %}
+                </datalist>
 
                 <label for="character-level">Niveau</label>
                 <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
+
+                <label for="character-gender">Genre</label>
+                <select id="character-gender" name="gender">
+                    <option value="" {% if not character.gender %}selected{% endif %}>Non precise</option>
+                    <option value="Femme" {% if character.gender == 'Femme' %}selected{% endif %}>Femme</option>
+                    <option value="Homme" {% if character.gender == 'Homme' %}selected{% endif %}>Homme</option>
+                    <option value="Non-binaire" {% if character.gender == 'Non-binaire' %}selected{% endif %}>Non-binaire</option>
+                    <option value="Autre" {% if character.gender == 'Autre' %}selected{% endif %}>Autre</option>
+                </select>
+
+                <label for="character-age">Age</label>
+                <input id="character-age" type="number" name="age" min="1" max="10000" value="{{ character.age or '' }}">
+
+                <div class="stats-grid">
+                    <div class="stat-input">
+                        <label for="character-height">Taille</label>
+                        <input id="character-height" type="text" name="height" value="{{ character.height or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-weight">Poids</label>
+                        <input id="character-weight" type="text" name="weight" value="{{ character.weight or '' }}">
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-input">
+                        <label for="character-eyes">Yeux</label>
+                        <input id="character-eyes" type="text" name="eyes" value="{{ character.eyes or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-skin">Peau</label>
+                        <input id="character-skin" type="text" name="skin" value="{{ character.skin or '' }}">
+                    </div>
+                    <div class="stat-input">
+                        <label for="character-hair">Cheveux</label>
+                        <input id="character-hair" type="text" name="hair" value="{{ character.hair or '' }}">
+                    </div>
+                </div>
+
+                <label for="character-backstory">Backstory du personnage</label>
+                <textarea id="character-backstory" name="backstory_text" rows="3">{{ background_fields.backstory_text }}</textarea>
 
                 <label for="character-notes">Notes partagees</label>
                 <textarea id="character-notes" name="notes" rows="5">{{ character.notes }}</textarea>
@@ -31,7 +131,7 @@
                 <textarea id="character-player-private-notes" name="player_private_notes" rows="4" placeholder="Visible uniquement par le proprietaire du PJ">{{ character.player_private_notes or '' }}</textarea>
             </section>
 
-            <section class="edit-section">
+            <section class="edit-section wizard-step" data-step="2" hidden>
                 <h2>Combat</h2>
 
                 <label for="character-hp">PV max</label>
@@ -42,10 +142,63 @@
 
                 <label for="character-init">Bonus initiative</label>
                 <input id="character-init" type="number" name="initiative_bonus" value="{{ character.initiative_bonus }}">
+
+                <h3>Equipement (comme a la creation)</h3>
+                <label for="character-equipment">Equipement principal</label>
+                <textarea id="character-equipment" name="equipment" rows="2">{{ equipment_fields.equipment }}</textarea>
+
+                <label for="character-weapon-loadout">Armes equipees</label>
+                <select id="character-weapon-loadout" name="weapon_loadout">
+                    <option value="">Aucune</option>
+                    <option value="Epee longue" data-weapon-category="martial" {% if equipment_fields.weapon_loadout == 'Epee longue' %}selected{% endif %}>Epee longue</option>
+                    <option value="Epee courte" data-weapon-category="martial" data-weapon-finesse="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Epee courte' %}selected{% endif %}>Epee courte</option>
+                    <option value="Dague" data-weapon-category="simple" data-weapon-finesse="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Dague' %}selected{% endif %}>Dague</option>
+                    <option value="Hachette" data-weapon-category="simple" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Hachette' %}selected{% endif %}>Hachette</option>
+                    <option value="Marteau leger" data-weapon-category="simple" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Marteau leger' %}selected{% endif %}>Marteau leger</option>
+                    <option value="Lance" data-weapon-category="simple" {% if equipment_fields.weapon_loadout == 'Lance' %}selected{% endif %}>Lance</option>
+                    <option value="Arc court" data-weapon-category="simple" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arc court' %}selected{% endif %}>Arc court</option>
+                    <option value="Arc long" data-weapon-category="martial" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arc long' %}selected{% endif %}>Arc long</option>
+                    <option value="Arbalete legere" data-weapon-category="simple" data-weapon-ranged="1" {% if equipment_fields.weapon_loadout == 'Arbalete legere' %}selected{% endif %}>Arbalete legere</option>
+                    <option value="Arbalete de poing" data-weapon-category="martial" data-weapon-ranged="1" data-weapon-light="1" {% if equipment_fields.weapon_loadout == 'Arbalete de poing' %}selected{% endif %}>Arbalete de poing</option>
+                    {% if equipment_fields.weapon_loadout and equipment_fields.weapon_loadout not in ['', 'Epee longue', 'Epee courte', 'Dague', 'Hachette', 'Marteau leger', 'Lance', 'Arc court', 'Arc long', 'Arbalete legere', 'Arbalete de poing'] %}
+                    <option value="{{ equipment_fields.weapon_loadout }}" selected>{{ equipment_fields.weapon_loadout }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-armor-loadout">Armure / Bouclier</label>
+                <select id="character-armor-loadout" name="armor_loadout">
+                    <option value="Sans armure" data-armor-category="none" {% if not equipment_fields.armor_loadout or equipment_fields.armor_loadout == 'Sans armure' %}selected{% endif %}>Sans armure</option>
+                    <option value="Armure matelassee" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure matelassee' %}selected{% endif %}>Armure matelassee</option>
+                    <option value="Armure de cuir" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure de cuir' %}selected{% endif %}>Armure de cuir</option>
+                    <option value="Armure de cuir cloutee" data-armor-category="light" {% if equipment_fields.armor_loadout == 'Armure de cuir cloutee' %}selected{% endif %}>Armure de cuir cloutee</option>
+                    <option value="Chemise de mailles" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Chemise de mailles' %}selected{% endif %}>Chemise de mailles</option>
+                    <option value="Cuirasse" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Cuirasse' %}selected{% endif %}>Cuirasse</option>
+                    <option value="Demi-plate" data-armor-category="medium" {% if equipment_fields.armor_loadout == 'Demi-plate' %}selected{% endif %}>Demi-plate</option>
+                    <option value="Cotte de mailles" data-armor-category="heavy" {% if equipment_fields.armor_loadout == 'Cotte de mailles' %}selected{% endif %}>Cotte de mailles</option>
+                    <option value="Harnois" data-armor-category="heavy" {% if equipment_fields.armor_loadout == 'Harnois' %}selected{% endif %}>Harnois</option>
+                    <option value="Bouclier" data-armor-category="shield" {% if equipment_fields.armor_loadout == 'Bouclier' %}selected{% endif %}>Bouclier</option>
+                    <option value="Armure de cuir + Bouclier" data-armor-category="light+shield" {% if equipment_fields.armor_loadout == 'Armure de cuir + Bouclier' %}selected{% endif %}>Armure de cuir + Bouclier</option>
+                    <option value="Chemise de mailles + Bouclier" data-armor-category="medium+shield" {% if equipment_fields.armor_loadout == 'Chemise de mailles + Bouclier' %}selected{% endif %}>Chemise de mailles + Bouclier</option>
+                    <option value="Cotte de mailles + Bouclier" data-armor-category="heavy+shield" {% if equipment_fields.armor_loadout == 'Cotte de mailles + Bouclier' %}selected{% endif %}>Cotte de mailles + Bouclier</option>
+                    {% if equipment_fields.armor_loadout and equipment_fields.armor_loadout not in ['Sans armure', 'Armure matelassee', 'Armure de cuir', 'Armure de cuir cloutee', 'Chemise de mailles', 'Cuirasse', 'Demi-plate', 'Cotte de mailles', 'Harnois', 'Bouclier', 'Armure de cuir + Bouclier', 'Chemise de mailles + Bouclier', 'Cotte de mailles + Bouclier'] %}
+                    <option value="{{ equipment_fields.armor_loadout }}" selected>{{ equipment_fields.armor_loadout }}</option>
+                    {% endif %}
+                </select>
+
+                <label for="character-inventory-items">Inventaire</label>
+                <textarea id="character-inventory-items" name="inventory_items" rows="2">{{ equipment_fields.inventory_items }}</textarea>
+
+                <label for="character-tool-proficiencies">Outils maitrises</label>
+                <input id="character-tool-proficiencies" type="text" name="tool_proficiencies" value="{{ equipment_fields.tool_proficiencies }}">
+
+                <div data-spellbook-notes-field>
+                    <label for="character-spellbook-notes">Sorts / Aptitudes</label>
+                    <textarea id="character-spellbook-notes" name="spellbook_notes" rows="2">{{ equipment_fields.spellbook_notes }}</textarea>
+                </div>
             </section>
         </div>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="3" hidden>
             <h2>Caracteristiques</h2>
             <div class="stats-grid">
                 <div class="stat-input">
@@ -110,7 +263,80 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="4" hidden>
+            <h2>Details avances (creation PJ)</h2>
+
+            <label>Competences maitrisees</label>
+            <div class="skill-proficiencies-grid">
+                {% for skill in dnd_skill_options %}
+                    <label class="skill-option">
+                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}" {% if skill in selected_skills %}checked{% endif %} {% if character.character_type == 'PJ' %}disabled{% endif %}>
+                        <span>{{ skill }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            {% if character.character_type == 'PJ' %}<small>Les competences maitrisees sont verrouillees pour un PJ.</small>{% endif %}
+
+            <label for="character-appearance">Apparence du personnage</label>
+            <textarea id="character-appearance" name="character_appearance" rows="3">{{ character.character_appearance or '' }}</textarea>
+
+            <label for="character-allies-organizations">Allies & organisations</label>
+            <textarea id="character-allies-organizations" name="allies_organizations" rows="3">{{ character.allies_organizations or '' }}</textarea>
+
+            <label for="character-symbol-name">Nom du symbole</label>
+            <input id="character-symbol-name" type="text" name="symbol_name" value="{{ character.symbol_name or '' }}">
+
+            <label for="character-additional-features">Traits supplementaires</label>
+            <textarea id="character-additional-features" name="additional_features_traits" rows="3">{{ character.additional_features_traits or '' }}</textarea>
+
+            <label for="character-treasure">Tresor</label>
+            <textarea id="character-treasure" name="treasure" rows="3">{{ character.treasure or '' }}</textarea>
+        </section>
+
+        <section class="edit-section edit-section--separator wizard-step" data-step="5" hidden data-spell-selection data-class-selector="#character-class">
+            <h2>Sorts (niveau 1)</h2>
+            <p class="funnel-summary-inline">Survolez un sort avec la souris pour voir ses details.</p>
+            <input type="hidden" name="spellcasting_class" value="{{ character.spellcasting_class or character.character_class or '' }}">
+
+            <label for="edit-spell-search-input">Filtrer les sorts par nom</label>
+            <input id="edit-spell-search-input" type="search" data-spell-search placeholder="Ex: projectile, soin, lumiere">
+
+            <p class="funnel-summary-inline" data-spell-limits></p>
+            <p class="funnel-summary-inline" data-spell-summary></p>
+            <p class="funnel-summary-inline" data-spell-always-prepared></p>
+
+            <h3>Sorts mineurs (niveau 0)</h3>
+            <div class="skill-proficiencies-grid">
+                {% for spell in cantrip_catalog %}
+                    <label
+                        class="skill-option spell-option"
+                        data-spell-name="{{ spell.name|lower }}"
+                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('Niveau: sort mineur | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
+                    >
+                        <input type="checkbox" name="selected_cantrips" value="{{ spell.name }}" {% if spell.name in selected_cantrips %}checked{% endif %}>
+                        <span>{{ spell.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <h3>Sorts de niveau 1</h3>
+            <div class="skill-proficiencies-grid">
+                {% for spell in level_one_spell_catalog %}
+                    <label
+                        class="skill-option spell-option"
+                        data-spell-name="{{ spell.name|lower }}"
+                        data-spell-classes="{{ (spell.classes or [])|map('lower')|join(',') }}"
+                        title="{{ spell.name }} — {{ spell.description or ('Niveau: 1 | École: ' ~ (spell.school or 'non renseignée') ~ ' | Classes: ' ~ ((spell.classes or [])|join(', ') or 'non renseignées') ~ ' | Source: ' ~ (spell.source or 'non renseignée') ~ ' | Description: indisponible') }}"
+                    >
+                        <input type="checkbox" name="selected_level_1_spells" value="{{ spell.name }}" {% if spell.name in selected_level_one_spells %}checked{% endif %}>
+                        <span>{{ spell.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="edit-section edit-section--separator wizard-step" data-step="6" hidden>
             <h2>Medias</h2>
 
             <div class="media-preview">
@@ -137,7 +363,7 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator visibility-panel">
+        <section class="edit-section edit-section--separator visibility-panel wizard-step" data-step="6" hidden>
             <h2>Visibilite</h2>
             <label class="visibility-toggle" for="edit-is-public">
                 <input type="checkbox" id="edit-is-public" name="is_public" value="1" {% if character.is_public %}checked{% endif %}>
@@ -156,7 +382,9 @@
             </select>
         </section>
 
-        <div class="edit-actions">
+        <div class="edit-actions wizard-navigation">
+            <button type="button" class="btn btn-secondary" data-wizard-prev>Etape precedente</button>
+            <button type="button" class="btn btn-secondary" data-wizard-next>Etape suivante</button>
             <button type="submit" class="btn btn-primary btn-large">Enregistrer les modifications</button>
         </div>
     </form>
@@ -169,4 +397,201 @@
     </section>
 </div>
 
+<script src="{{ url_for('static', filename='js/spell_selection.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('edit-character-form');
+    const stepItems = Array.from(editForm?.querySelectorAll('.creation-steps-nav li') || []);
+    const stepPanels = Array.from(editForm?.querySelectorAll('.wizard-step') || []);
+    const prevButton = editForm?.querySelector('[data-wizard-prev]');
+    const nextButton = editForm?.querySelector('[data-wizard-next]');
+    const submitButton = editForm?.querySelector('button[type="submit"]');
+    let currentStep = 1;
+
+    const syncWizard = () => {
+        stepPanels.forEach((panel) => {
+            const panelStep = Number(panel.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            panel.hidden = !isActive;
+            panel.classList.toggle('is-active', isActive);
+        });
+        stepItems.forEach((item) => {
+            const panelStep = Number(item.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            item.classList.toggle('is-active', isActive);
+            item.classList.toggle('is-complete', panelStep < currentStep);
+            const trigger = item.querySelector('.creation-step-trigger');
+            if (trigger) {
+                trigger.setAttribute('aria-current', isActive ? 'step' : 'false');
+            }
+        });
+        if (prevButton) prevButton.hidden = currentStep <= 1;
+        if (nextButton) nextButton.hidden = currentStep >= 6;
+        if (submitButton) submitButton.hidden = currentStep < 6;
+    };
+
+    stepItems.forEach((item) => {
+        item.querySelector('.creation-step-trigger')?.addEventListener('click', () => {
+            currentStep = Number(item.dataset.step || currentStep);
+            syncWizard();
+        });
+    });
+    prevButton?.addEventListener('click', () => {
+        currentStep = Math.max(1, currentStep - 1);
+        syncWizard();
+    });
+    nextButton?.addEventListener('click', () => {
+        currentStep = Math.min(6, currentStep + 1);
+        syncWizard();
+    });
+    syncWizard();
+
+    const classSelect = document.getElementById('character-class');
+    const weaponSelect = document.getElementById('character-weapon-loadout');
+    const armorSelect = document.getElementById('character-armor-loadout');
+    const spellSection = document.querySelector('[data-spell-selection]');
+    const spellbookField = document.querySelector('[data-spellbook-notes-field]');
+    if (!classSelect || !weaponSelect || !armorSelect) return;
+
+    const normalizeClassName = (value) => (value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    const armorMasteries = {
+        barbare: new Set(['light', 'medium', 'shield']),
+        barde: new Set(['light']),
+        clerc: new Set(['light', 'medium', 'shield']),
+        druide: new Set(['light', 'shield']),
+        guerrier: new Set(['light', 'medium', 'heavy', 'shield']),
+        moine: new Set([]),
+        paladin: new Set(['light', 'medium', 'heavy', 'shield']),
+        rodeur: new Set(['light', 'medium', 'shield']),
+        roublard: new Set(['light']),
+        ensorceleur: new Set([]),
+        occultiste: new Set(['light']),
+        magicien: new Set([]),
+        barbarian: new Set(['light', 'medium', 'shield']),
+        bard: new Set(['light']),
+        cleric: new Set(['light', 'medium', 'shield']),
+        druid: new Set(['light', 'shield']),
+        fighter: new Set(['light', 'medium', 'heavy', 'shield']),
+        monk: new Set([]),
+        ranger: new Set(['light', 'medium', 'shield']),
+        rogue: new Set(['light']),
+        sorcerer: new Set([]),
+        warlock: new Set(['light']),
+        wizard: new Set([]),
+    };
+    const weaponMasteries = {
+        barbare: { simple: true, martial: true },
+        barde: { simple: true, martial: false },
+        clerc: { simple: true, martial: false },
+        druide: { simple: true, martial: false },
+        guerrier: { simple: true, martial: true },
+        moine: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        paladin: { simple: true, martial: true },
+        rodeur: { simple: true, martial: true },
+        roublard: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        ensorceleur: { simple: true, martial: false },
+        occultiste: { simple: true, martial: false },
+        magicien: { simple: true, martial: false },
+        barbarian: { simple: true, martial: true },
+        bard: { simple: true, martial: false },
+        cleric: { simple: true, martial: false },
+        druid: { simple: true, martial: false },
+        fighter: { simple: true, martial: true },
+        monk: { simple: true, martial: true, martialPredicate: (weapon) => weapon.light },
+        ranger: { simple: true, martial: true },
+        rogue: { simple: true, martial: true, martialPredicate: (weapon) => weapon.finesse || weapon.ranged },
+        sorcerer: { simple: true, martial: false },
+        warlock: { simple: true, martial: false },
+        wizard: { simple: true, martial: false },
+    };
+    const spellcastingClasses = new Set([
+        'artificier', 'bard', 'barde', 'cleric', 'clerc', 'druid', 'druide',
+        'sorcerer', 'ensorceleur', 'warlock', 'occultiste', 'wizard', 'magicien',
+        'paladin', 'ranger', 'rodeur',
+    ]);
+
+    const isWeaponAllowed = (option, classRule) => {
+        if (!option.value) return true;
+        if (!classRule) return true;
+        const weapon = {
+            category: option.dataset.weaponCategory || 'simple',
+            finesse: option.dataset.weaponFinesse === '1',
+            ranged: option.dataset.weaponRanged === '1',
+            light: option.dataset.weaponLight === '1',
+        };
+        if (weapon.category === 'simple') return Boolean(classRule.simple);
+        if (!classRule.martial) return false;
+        if (typeof classRule.martialPredicate === 'function') {
+            return Boolean(classRule.martialPredicate(weapon));
+        }
+        return true;
+    };
+
+    const isArmorAllowed = (category, classArmorMastery) => {
+        if (!category || category === 'none') return true;
+        if (!classArmorMastery) return true;
+        const needs = category.split('+');
+        return needs.every((value) => classArmorMastery.has(value));
+    };
+
+    const syncEquipmentByClass = () => {
+        const classKey = normalizeClassName(classSelect.value);
+        const classArmorMastery = armorMasteries[classKey];
+        const classWeaponRule = weaponMasteries[classKey];
+
+        Array.from(weaponSelect.options).forEach((option) => {
+            const allowed = isWeaponAllowed(option, classWeaponRule);
+            option.hidden = !allowed;
+            option.disabled = !allowed;
+        });
+        if (weaponSelect.options[weaponSelect.selectedIndex]?.disabled) {
+            weaponSelect.value = '';
+        }
+
+        Array.from(armorSelect.options).forEach((option) => {
+            const allowed = isArmorAllowed(option.dataset.armorCategory, classArmorMastery);
+            option.hidden = !allowed;
+            option.disabled = !allowed;
+        });
+        if (armorSelect.options[armorSelect.selectedIndex]?.disabled) {
+            armorSelect.value = 'Sans armure';
+        }
+    };
+
+    const syncClassSpecificVisibility = () => {
+        const classKey = normalizeClassName(classSelect.value);
+        const isSpellcaster = spellcastingClasses.has(classKey);
+
+        if (spellSection) {
+            spellSection.hidden = !isSpellcaster;
+            if (!isSpellcaster) {
+                spellSection.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                    input.checked = false;
+                });
+                const spellSearch = spellSection.querySelector('[data-spell-search]');
+                if (spellSearch) spellSearch.value = '';
+            }
+        }
+
+        if (spellbookField) {
+            spellbookField.hidden = !isSpellcaster;
+            if (!isSpellcaster) {
+                const spellbookTextarea = spellbookField.querySelector('textarea[name="spellbook_notes"]');
+                if (spellbookTextarea) spellbookTextarea.value = '';
+            }
+        }
+    };
+
+    classSelect.addEventListener('change', () => {
+        syncEquipmentByClass();
+        syncClassSpecificVisibility();
+    });
+    syncEquipmentByClass();
+    syncClassSpecificVisibility();
+});
+</script>
 {% endblock %}

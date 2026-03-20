@@ -173,6 +173,10 @@ body {
     transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
+.site-nav__link--mobile-only {
+    display: none;
+}
+
 .site-nav__link:hover {
     text-decoration: none;
     transform: translateY(-1px);
@@ -415,11 +419,23 @@ hr {
     position: relative;
     width: 40px;
     height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 12px;
     border: 1px solid var(--overlay-white-10);
     background: var(--overlay-white-05);
     color: var(--color-text-primary);
     cursor: pointer;
+}
+
+.site-notification__menu-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.site-notification__icon {
+    display: none;
 }
 
 .site-notification__badge {
@@ -464,6 +480,33 @@ hr {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
+}
+
+.site-notification__account-links {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--overlay-white-10);
+}
+
+.site-notification__account-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-03);
+    color: var(--color-text-primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.site-notification__account-link:hover {
+    text-decoration: none;
+    border-color: var(--primary-a30);
+    background: var(--overlay-white-05);
 }
 
 .site-notification__all {

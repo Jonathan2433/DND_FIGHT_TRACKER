@@ -15,13 +15,15 @@
     </section>
 
     <section class="card">
-        <h2 class="section-head__title">Resume partage (MJ + joueurs)</h2>
+        <h2 class="section-head__title">Informations de l'episode</h2>
         {% if is_mj %}
-            <form method="POST" action="{{ url_for('episode.update_shared_summary', episode_id=episode.id) }}">
-                <textarea name="summary_shared" class="form-control" rows="6" placeholder="Resume visible par tous">{{ episode.summary_shared or '' }}</textarea>
-                <button type="submit" class="btn btn-primary" style="margin-top: 0.75rem;">Enregistrer le resume partage</button>
+            <form method="POST" action="{{ url_for('episode.update_episode', episode_id=episode.id) }}">
+                <input id="episode-title" type="text" name="title" class="form-control" value="{{ episode.title }}" required>
+                <textarea name="summary_shared" class="form-control" rows="6" placeholder="Resume visible par tous" style="margin-top: 0.75rem;">{{ episode.summary_shared or '' }}</textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top: 0.75rem;">Enregistrer les modifications</button>
             </form>
         {% else %}
+            <h3>{{ episode.title }}</h3>
             <p class="section-copy">{{ episode.summary_shared or "Aucun resume partage pour le moment." }}</p>
         {% endif %}
     </section>

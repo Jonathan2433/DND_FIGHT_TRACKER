@@ -3,13 +3,35 @@
 from flask import Blueprint, render_template, session, g
 
 from app.application.use_cases.campaign_service import CampaignService
-from app.models import Combat, CharacterTemplate, Campaign
+from app.models import Combat, CharacterTemplate, Campaign, User
 from app.models.story_arc import StoryArc
 from app.models.episode import Episode
 from app.utils import format_duration
 
 
 bp = Blueprint('main', __name__)
+
+
+def _build_campaign_summary(campaign):
+    arcs = sorted(campaign.story_arcs, key=lambda arc: arc.order_index)
+    current_arc = next((arc for arc in arcs if arc.status == 'en_cours'), None)
+    if not current_arc:
+        current_arc = next((arc for arc in arcs if arc.status == 'à_venir'), None)
+    if not current_arc and arcs:
+        current_arc = arcs[-1]
+
+    latest_episode = (
+        Episode.query.join(StoryArc, Episode.story_arc_id == StoryArc.id)
+        .filter(StoryArc.campaign_id == campaign.id)
+        .order_by(Episode.created_at.desc(), Episode.order_index.desc())
+        .first()
+    )
+
+    return {
+        'campaign': campaign,
+        'current_arc': current_arc,
+        'latest_episode': latest_episode,
+    }
 
 
 @bp.route('/')
@@ -20,6 +42,7 @@ def index():
     total_combats = Combat.query.count()
     total_campaigns = Campaign.query.count()
     total_pj = CharacterTemplate.query.filter_by(character_type='PJ', is_active=True).count()
+    total_users = User.query.count()
 
     combat_cards = []
     for combat in combats:
@@ -41,6 +64,7 @@ def index():
     user_campaigns = []
     user_characters = []
     featured_campaign_summary = None
+    mj_campaign_summaries = []
 
     if user_is_connected:
         user_campaigns = g.current_user.get_campaigns()
@@ -57,37 +81,26 @@ def index():
                 key=lambda campaign: campaign.created_at,
                 reverse=True,
             )[0]
+            featured_campaign_summary = _build_campaign_summary(featured_campaign)
 
-            arcs = sorted(featured_campaign.story_arcs, key=lambda arc: arc.order_index)
-            current_arc = next((arc for arc in arcs if arc.status == 'en_cours'), None)
-            if not current_arc:
-                current_arc = next((arc for arc in arcs if arc.status == 'à_venir'), None)
-            if not current_arc and arcs:
-                current_arc = arcs[-1]
-
-            latest_episode = (
-                Episode.query.join(StoryArc, Episode.story_arc_id == StoryArc.id)
-                .filter(StoryArc.campaign_id == featured_campaign.id)
-                .order_by(Episode.created_at.desc(), Episode.order_index.desc())
-                .first()
-            )
-
-            featured_campaign_summary = {
-                'campaign': featured_campaign,
-                'current_arc': current_arc,
-                'latest_episode': latest_episode,
-            }
+            mj_campaigns = [campaign for campaign in user_campaigns if campaign.mj_id == g.current_user.id]
+            mj_campaign_summaries = [
+                _build_campaign_summary(campaign)
+                for campaign in sorted(mj_campaigns, key=lambda campaign: campaign.created_at, reverse=True)
+            ]
 
     return render_template(
         'index.html',
         total_campaigns=total_campaigns,
         total_combats=total_combats,
         total_pj=total_pj,
+        total_users=total_users,
         combat_cards=combat_cards,
         user_is_connected=user_is_connected,
         user_campaigns=user_campaigns,
         user_characters=user_characters,
         featured_campaign_summary=featured_campaign_summary,
+        mj_campaign_summaries=mj_campaign_summaries,
     )
 
 

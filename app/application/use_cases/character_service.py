@@ -13,6 +13,10 @@ class CharacterService:
         """Créer un nouveau personnage"""
         character_data = kwargs.copy()
         character_data['owner_id'] = owner_id
+        hp_max = int(character_data.get('hp_max', 1))
+        character_data.setdefault('hp_max', hp_max)
+        character_data.setdefault('hp_current', hp_max)
+        character_data.setdefault('ac_bonus', 0)
 
         character = CharacterTemplate(**character_data)
         db.session.add(character)
@@ -39,6 +43,10 @@ class CharacterService:
 
         # Ajouter tous les autres paramètres
         pnj_data.update(kwargs)
+        hp_max = int(pnj_data.get('hp_max', 1))
+        pnj_data.setdefault('hp_max', hp_max)
+        pnj_data.setdefault('hp_current', hp_max)
+        pnj_data.setdefault('ac_bonus', 0)
 
         pnj = CharacterTemplate(**pnj_data)
 

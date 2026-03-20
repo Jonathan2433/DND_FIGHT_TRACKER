@@ -770,6 +770,7 @@
     color: var(--color-white);
     font-weight: bold;
     z-index: 3;
+    touch-action: none;
 }
 
 .battlemap-board--readonly .battlemap-token {
@@ -906,6 +907,134 @@
     border-width: 3px;
 }
 
+body.battlemap-mobile-expanded {
+    overflow: hidden;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    padding: 10px;
+    z-index: 9999;
+    background: radial-gradient(circle at top, var(--bg-primary), var(--bg-dark));
+    border-radius: 0;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-board {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100dvh - 20px);
+    border-width: 3px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(94vw, 620px);
+    max-height: 96px;
+    overflow: hidden;
+    display: block;
+    background: var(--bg-alt-a95);
+    border: 2px solid var(--primary-a60);
+    border-radius: 14px;
+    padding: 8px 10px;
+    z-index: 5;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative-list {
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;
+    z-index: 5;
+    display: block;
+    background: linear-gradient(135deg, var(--bg-alt-a95), var(--surface-a95));
+    border: 2px solid var(--primary-a60);
+    border-radius: 14px;
+    padding: 8px 10px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 25px var(--overlay-black-80);
+    max-width: 95vw;
+    overflow-x: auto;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative h4,
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar h4 {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar h4 {
+    display: none;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative .simple-initiative-card {
+    min-width: 115px;
+    padding: 6px 8px;
+    border-left-width: 3px;
+    flex: 0 0 auto;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative .init-name {
+    max-width: 88px;
+    font-size: 11px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative .init-initiative {
+    font-size: 12px;
+    padding: 2px 6px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar .pj-portraits-container {
+    gap: 8px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar .pj-portrait {
+    min-width: 78px;
+    padding: 6px;
+    border-radius: 10px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar .pj-portrait-frame {
+    width: 36px;
+    height: 36px;
+    border-width: 2px;
+    margin-bottom: 5px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar .pj-name {
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar .pj-ac {
+    font-size: 9px;
+    margin-bottom: 0;
+    padding: 1px 4px;
+}
+
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-pj-bar h4,
+body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscreen-initiative h4 {
+    margin: 0;
+    color: var(--color-primary);
+}
+
 .combat-invite-card {
     margin-top: 18px;
 }
@@ -972,4 +1101,18 @@
     background: var(--overlay-white-05);
     color: var(--color-text-primary);
     padding: 0 12px;
+}
+
+.monster-template-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.monster-template-preview img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--overlay-white-30);
 }

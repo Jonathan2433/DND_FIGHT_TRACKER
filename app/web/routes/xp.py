@@ -108,15 +108,13 @@ def xp_history(character_id):
         flash("Vous n'etes pas autorise a voir l'historique de ce personnage.", 'error')
         return redirect(url_for('main.index'))
 
-    has_campaign_binding = bool(character.campaign or character.campaigns)
     is_campaign_mj = bool(
         (character.campaign and g.current_user.is_mj_of(character.campaign))
         or any(g.current_user.is_mj_of(campaign) for campaign in character.campaigns)
     )
     can_view_xp = (
         g.current_user.role == 'Admin'
-        or (has_campaign_binding and is_campaign_mj)
-        or (not has_campaign_binding and character.owner_id == g.current_user.id)
+        or is_campaign_mj
     )
 
     if not can_view_xp:
