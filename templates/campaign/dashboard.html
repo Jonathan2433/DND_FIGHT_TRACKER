@@ -48,24 +48,32 @@
 
     <div class="card">
         <h2>✨ Pot d'inspiration de la campagne</h2>
-        <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
-
         {% if is_mj %}
-            <form method="POST" action="{{ url_for('campaign.update_inspiration_points', campaign_id=campaign.id) }}" class="campaign-inspiration-form">
-                <label for="episode_id">Épisode lié :</label>
-                <select id="episode_id" name="episode_id" required>
-                    <option value="">-- Sélectionnez un épisode --</option>
-                    {% for episode in campaign_episodes %}
-                        <option value="{{ episode.id }}">{{ episode.story_arc.name }} — {{ episode.title }}</option>
-                    {% endfor %}
-                </select>
+            <div class="campaign-inspiration-layout">
+                <div>
+                    <form method="POST" action="{{ url_for('campaign.update_inspiration_points', campaign_id=campaign.id) }}" class="campaign-inspiration-form">
+                        <label for="episode_id">Épisode lié :</label>
+                        <select id="episode_id" name="episode_id" required>
+                            <option value="">-- Sélectionnez un épisode --</option>
+                            {% for episode in campaign_episodes %}
+                                <option value="{{ episode.id }}">{{ episode.story_arc.name }} — {{ episode.title }}</option>
+                            {% endfor %}
+                        </select>
 
-                <label for="delta">Ajustement (positif ou négatif) :</label>
-                <input id="delta" name="delta" type="number" required min="-99" max="99">
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-            </form>
-            <p class="pj-meta">Seul le MJ peut modifier le total. Un gain ou une dépense est toujours relié à un épisode.</p>
+                        <label for="delta">Ajustement (positif ou négatif) :</label>
+                        <input id="delta" name="delta" type="number" required min="-99" max="99">
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                    <p class="pj-meta">Seul le MJ peut modifier le total. Un gain ou une dépense est toujours relié à un épisode.</p>
+                </div>
+
+                <div class="campaign-inspiration-recap">
+                    <p>Points disponibles pour toute l'équipe :</p>
+                    <strong>{{ campaign.inspiration_points }}</strong>
+                </div>
+            </div>
         {% else %}
+            <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
             <p class="pj-meta">Le MJ met à jour ce pot commun. Les joueurs peuvent suivre le total et l'historique ci-dessous.</p>
         {% endif %}
 
