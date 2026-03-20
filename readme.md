@@ -1,146 +1,129 @@
-# D&D Combat Tracker - README
+# ExalQuest — Gestionnaire de campagnes et combats D&D
 
-## 📦 Installation
+ExalQuest est une application web Flask pensée pour les tables **Dungeons & Dragons** (MJ + joueurs).  
+Elle centralise la préparation, le suivi et l’historique d’une campagne : personnages, arcs narratifs, épisodes, combats, expérience, notifications et rappels.
+
+---
+
+## 🎯 But de l’application
+
+L’objectif d’ExalQuest est de fournir un **espace unique** pour :
+
+- préparer une campagne (structure narrative + personnages),
+- piloter les sessions en temps réel (combats, état des PJ/PNJ),
+- conserver un historique exploitable après partie,
+- fluidifier la collaboration entre MJ et joueurs.
+
+En pratique, l’application évite de disperser les infos entre notes papier, feuilles PDF, messagerie et tableurs.
+
+---
+
+## ✅ Ce que vous pouvez faire avec ExalQuest
+
+### 1) Comptes & accès
+- Créer un compte / se connecter.
+- Gérer son profil.
+- Distinguer les capacités MJ et joueur selon le contexte campagne.
+
+### 2) Campagnes
+- Créer une campagne.
+- Rejoindre une campagne (invitation / lien).
+- Consulter ses campagnes (MJ et joueur).
+- Paramétrer la campagne (dont calendrier de sessions).
+
+### 3) Narration (arcs & épisodes)
+- Créer et éditer des **arcs narratifs**.
+- Créer et consulter des **épisodes** liés aux arcs.
+- Conserver des notes de suivi (dont notes privées MJ/PJ selon les écrans).
+
+### 4) Personnages, templates et PNJ
+- Créer des personnages via templates.
+- Gérer une bibliothèque de templates de PJ.
+- Gérer les PNJ et leurs notes associées.
+- Préparer les fiches avec champs enrichis (stats, infos complémentaires, etc.).
+
+### 5) Combats temps réel
+- Créer un combat et y associer les bons participants.
+- Suivre initiative, tours, rounds et états.
+- Mettre à jour PV, PV temporaires, CA, conditions, fuite.
+- Utiliser des vues séparées MJ / joueurs.
+- Afficher un résumé post-combat.
+
+### 6) Progression & XP
+- Gérer l’historique d’expérience.
+- Suivre la progression de personnages/campagne.
+
+### 7) Notifications & rappels
+- Notifications in-app (centre de notifications + compteur non lu).
+- Rappels de session via email (commande CLI dédiée à J-7).
+
+### 8) Base de connaissances D&D
+- Catalogue local des sorts (`app/data/spells_catalog.json`).
+- Catalogue local des armes (`app/data/weapons_catalog.json`).
+- Synchronisation des sorts mineurs via script (`scripts/fetch_cantrips.py`).
+
+---
+
+## 🧱 Architecture (mise à jour)
+
+Le backend suit une organisation en couches :
+
+- `app/web` : routes HTTP + événements Socket.IO,
+- `app/application` : cas d’usage métier,
+- `app/domain` : règles métier pures,
+- `app/infrastructure` : persistance/technique,
+- `app/shared` : composants transverses.
+
+Des wrappers de compatibilité existent encore dans `app/services` et `app/routes`.
+
+---
+
+## ⚙️ Installation locale
 
 ### Prérequis
 - Python 3.10+
-- pip (gestionnaire de paquets Python)
+- pip
 
-### Installation
+### Étapes
 
-1. **Créer un dossier pour l'application**
 ```bash
-mkdir dnd_combat_tracker
-cd dnd_combat_tracker
+# 1) Cloner le projet
+# git clone <url-du-repo>
+cd DND_FIGHT_TRACKER
 
+# 2) Créer et activer un environnement virtuel
 python -m venv venv
-source venv/bin/activate  # Pour Linux/Mac
-venv\Scripts\activate     # Pour Windows
+source venv/bin/activate      # Linux / macOS
+# venv\Scripts\activate      # Windows PowerShell
 
-pip install flask flask_sqlalchemy
+# 3) Installer les dépendances
+pip install -r requirements.txt
 
-python app.py
+# 4) Lancer l’application
+python run.py
 ```
 
-L'application sera accessible à : http://127.0.0.1:5000
+Application disponible sur : `http://127.0.0.1:5000`
 
 ---
 
-## 🎮 Fonctionnalités
+## 🐳 Option Docker
 
-### Gestion des Combats
-- Création et gestion de plusieurs combats
-- Suivi du temps (combat/round/tour)
-- Vue Maître du jeu et Vue joueurs séparée
-- Résumé détaillé post-combat
+Le projet inclut :
 
-### Gestion des Combattants
-- Ajout manuel de combattants
-- Templates de monstres prédéfinis
-- Templates de PJ personnalisables
-- Gestion des groupes
-- Suivi des :
-  - Points de vie (PV)
-  - PV temporaires
-  - Classe d'armure (CA)
-  - États et conditions
-  - Fuite
+- `docker-compose.yml`
+- `docker-compose.preprod.yml`
+- `Dockerfile`
 
-### Interface Combat
-- Ordre d'initiative automatique
-- Barre latérale d'initiative
-- Mise en évidence du tour actif
-- Chronomètre intégré
-- Auto-scroll sur le combattant actif
+Vous pouvez donc exécuter l’app en environnement conteneurisé selon votre contexte (local / préprod).
 
 ---
 
-## 💡 Comment Utiliser
+## 🔐 Variables d’environnement utiles
 
-### Démarrer un Combat
-- Cliquer sur "Nouveau combat"
-- Nommer votre combat
-- Ajouter vos combattants :
-  - Manuellement
-  - Via templates
-  - Via encounters prédéfinis
+Créez un fichier `.env` à la racine.
 
-### Pendant le Combat
-- Cliquer "Lancer le combat"
-- Utiliser "Tour suivant" pour la progression
-- Gérer :
-  - Points de vie (dégâts/soins)
-  - États (conditions)
-  - CA et PV temporaires
-  - Fuites éventuelles
-
-### Fin de Combat
-- Cliquer "Clôturer le combat"
-- Consulter le résumé détaillé
-- Accéder à l'historique complet
-
-### Vue Joueurs
-- Accessible via bouton dédié
-- Rafraîchissement automatique
-- Affichage adapté aux joueurs (sans PV des ennemis)
-
----
-
-## 📁 Structure du Projet
-
-```
-dnd_tracker/
-├── app.py              # Application principale
-├── requirements.txt    # Dépendances
-├── /templates         # Templates HTML
-│   ├── base.html
-│   ├── index.html
-│   ├── combat.html
-│   └── combat_summary.html
-└── /static           # Fichiers statiques
-    └── style.css
-```
-
----
-
-## ℹ️ Notes
-- Application locale (pas de serveur distant)
-- Sauvegarde automatique en SQLite
-- Compatible D&D 2024
-- Conçu pour une utilisation à table
-
----
-
-## 🐛 Résolution de problèmes
-- En cas d'erreur de base de données : supprimer `tracker.db` et redémarrer
-- Si la vue joueur ne se met pas à jour : rafraîchir la page
-- Pour réinitialiser : redémarrer l'application
-
----
-
-## 🔧 Développement
-Pour contribuer ou modifier :
-- Forker le projet
-- Créer une branche
-- Faire les modifications
-- Soumettre une pull request
-
-### Workflow dev / preprod / prod
-
-Un guide complet est disponible ici :
-
-- `docs/deployment/git-flow-preprod-prod.md`
-
-Résumé rapide:
-
-- `develop` pour le dev local
-- `preprod` pour déployer sur la préprod VPS privée
-- `master` pour déployer la production VPS
----
-
-## 📧 Configuration email (Hostinger)
-
-Créez un fichier `.env` à la racine avec au minimum :
+### Email (Hostinger)
 
 ```env
 MAIL_SERVER=smtp.hostinger.com
@@ -152,12 +135,7 @@ MAIL_PASSWORD=VOTRE_MOT_DE_PASSE_EMAIL
 MAIL_DEFAULT_SENDER=no-reply@jonathan-dupau.com
 ```
 
-Notes importantes :
-- `MAIL_USERNAME` doit être la boîte email complète Hostinger.
-- `MAIL_DEFAULT_SENDER` doit généralement être la même adresse (ou un alias autorisé par Hostinger).
-- Utilisez `MAIL_PORT=465`, `MAIL_USE_TLS=false`, `MAIL_USE_SSL=true` si vous préférez SSL implicite.
-
-Variables utiles en complément :
+### App / sécurité / upload
 
 ```env
 SECRET_KEY=change-me
@@ -167,28 +145,72 @@ SESSION_COOKIE_SECURE=false
 UPLOAD_MAX_MB=64
 ```
 
-`UPLOAD_MAX_MB` définit la taille max acceptée côté Flask (en Mo). Pensez à aligner la limite Nginx (`client_max_body_size`) au même niveau ou au-dessus.
+> `UPLOAD_MAX_MB` doit être cohérent avec la limite serveur (ex: Nginx `client_max_body_size`).
 
-## ✨ Base de connaissances des sorts
+---
 
-- Le catalogue local de sorts est chargé depuis `app/data/spells_catalog.json`.
-- Lors de la création d'un PJ lanceur de sorts, une étape dédiée permet de sélectionner :
-  - des sorts mineurs (niveau 0),
-  - des sorts de niveau 1.
-- Les sélections sont persistées sur le personnage (`selected_cantrips`, `selected_level_1_spells`).
+## 🛠️ Commandes utiles
 
-## ⚔️ Base de connaissances des armes
+### Rappels de sessions (J-7)
 
-- Le catalogue local des armes est stocké dans `app/data/weapons_catalog.json`.
-- Il contient les dégâts de base, le type de dégâts et les propriétés pour les armes simples/de guerre, corps à corps/à distance.
-- Cette base est prévue pour alimenter plus tard la génération de fiche PDF (ex: `Épée courte -> 1d6 perçant`).
+```bash
+flask send-session-reminders
+```
 
-### Synchroniser les sorts mineurs depuis une source en ligne
-
-Un script est fourni pour synchroniser automatiquement les sorts mineurs depuis Open5e :
+### Synchroniser les sorts mineurs
 
 ```bash
 python scripts/fetch_cantrips.py
 ```
 
-Ce script remplace les sorts de niveau 0 du catalogue local, tout en conservant les sorts de niveau 1+.
+---
+
+## 📂 Structure du projet (vue rapide)
+
+```text
+DND_FIGHT_TRACKER/
+├── app/
+│   ├── web/
+│   ├── application/
+│   ├── domain/
+│   ├── infrastructure/
+│   └── shared/
+├── migrations/
+├── templates/
+├── static/
+├── scripts/
+├── docs/
+├── run.py
+└── requirements.txt
+```
+
+---
+
+## 🚀 Workflow de déploiement
+
+Consultez le guide :
+
+- `docs/deployment/git-flow-preprod-prod.md`
+
+Résumé :
+- `develop` : développement local,
+- `preprod` : déploiement préproduction,
+- `master` : déploiement production.
+
+---
+
+## 🧪 Dépannage rapide
+
+- Problème de base locale : vérifier `DATABASE_URL` et l’état des migrations.
+- Upload bloqué : vérifier `UPLOAD_MAX_MB` et la config reverse proxy.
+- Emails non envoyés : vérifier identifiants SMTP + port/TLS.
+- Vue joueur désynchronisée : vérifier la connexion Socket.IO.
+
+---
+
+## 🤝 Contribution
+
+1. Créer une branche.
+2. Implémenter la modification.
+3. Vérifier (tests / checks).
+4. Ouvrir une Pull Request.
