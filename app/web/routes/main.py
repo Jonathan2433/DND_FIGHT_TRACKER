@@ -3,7 +3,7 @@
 import re
 import unicodedata
 
-from flask import Blueprint, abort, render_template, session, g
+from flask import Blueprint, abort, render_template, session, g, request, url_for
 
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import Combat, CharacterTemplate, Campaign, User
@@ -144,4 +144,11 @@ def spell_detail(spell_slug):
     )
     if spell is None:
         abort(404)
-    return render_template('spell_detail.html', spell=spell)
+    return_to = request.args.get('return_to') or url_for('main.spell_library')
+    return_label = request.args.get('return_label') or 'Retour à la bibliothèque'
+    return render_template(
+        'spell_detail.html',
+        spell=spell,
+        return_to=return_to,
+        return_label=return_label,
+    )
