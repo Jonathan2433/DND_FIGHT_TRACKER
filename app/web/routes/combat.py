@@ -566,6 +566,8 @@ def combat_state(combat_id):
                 'temp_hp': c.temp_hp,
                 'initiative': c.initiative,
                 'ac_total': c.ac_total,
+                'ac_base': c.ac_base,
+                'ac_bonus': c.ac_bonus or 0,
                 'is_dead': c.is_dead,
                 'has_fled': c.has_fled,
                 'conditions': c.conditions.split(',') if c.conditions else [],
