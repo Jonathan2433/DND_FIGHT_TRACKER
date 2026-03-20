@@ -187,27 +187,28 @@
     width: 100%;
 }
 
-.profile-stats--hero-compact {
+.profile-stats--hero {
     margin-top: 12px;
-    grid-template-columns: repeat(4, minmax(110px, 1fr));
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
 
-.profile-stats--hero-compact .stat-box {
+.profile-stats--hero .stat-box {
     padding: 12px;
     gap: 6px;
     border-radius: 12px;
 }
 
-.profile-stats--hero-compact .stat-box strong {
+.profile-stats--hero .stat-box strong {
     font-size: 11px;
 }
 
-.profile-stats--hero-compact .stat-box span {
+.profile-stats--hero .stat-box span {
     font-size: 22px;
 }
 
-.profile-stats--hero-compact .stat-box__helper {
+.profile-stats--hero .stat-box__helper {
     font-size: 11px;
 }
 
@@ -717,6 +718,27 @@
     gap: 16px;
 }
 
+.combat-state-layout--wide {
+    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.6fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.combat-state-form--horizontal {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(130px, 1fr)) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.combat-state-form--horizontal .combat-state-input {
+    margin-bottom: 0;
+}
+
+.combat-state-form--horizontal .btn {
+    min-height: 44px;
+}
+
 .combat-state-form input {
     padding: 12px 14px;
     border-radius: 12px;
@@ -1137,8 +1159,9 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .profile-stats--hero-compact {
+    .profile-stats--hero {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
     }
 
     .character-notes-pdf-layout {
@@ -1177,8 +1200,9 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .profile-stats--hero-compact {
+    .profile-stats--hero {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
     }
 
     .award-xp-form form {
@@ -1212,9 +1236,21 @@
         grid-template-columns: minmax(360px, 1fr) minmax(360px, 1.6fr);
         gap: 16px;
     }
+
+    .combat-state-layout--wide {
+        grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.6fr);
+    }
 }
 
 @media (max-width: 768px) {
+    .combat-state-layout--wide {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-state-form--horizontal {
+        grid-template-columns: 1fr;
+    }
+
     .edit-grid {
         grid-template-columns: 1fr;
     }
@@ -1271,7 +1307,7 @@
         grid-template-columns: 1fr;
     }
 
-    .profile-stats--hero-compact {
+    .profile-stats--hero {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
