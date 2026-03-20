@@ -6,10 +6,6 @@
         <div>
             <span class="section-eyebrow">Personnages</span>
             <h1 class="section-title templates-title">Gestion des personnages</h1>
-            <p class="section-copy">
-                Retrouvez ici vos PJ et vos autres personnages. Les PNJ de campagne gardent leur creation dediee,
-                mais ils apparaissent aussi dans votre gestionnaire si vous en etes proprietaire.
-            </p>
         </div>
         <div class="templates-header-actions">
             <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
@@ -23,11 +19,6 @@
 
     <div id="create-form" class="card template-create-form inl-core-004">
         <h2>Creer un personnage joueur</h2>
-        {% if campaign_context %}
-            <p class="section-head__copy">
-                Ce PJ sera automatiquement associe a la campagne <strong>{{ campaign_context.name }}</strong>.
-            </p>
-        {% endif %}
 
         <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data" id="character-create-form">
             {% if campaign_context %}
@@ -158,7 +149,6 @@
 
                 <section class="wizard-step" data-step="3" hidden>
                     <h3>Etape 3 - Caracteristiques</h3>
-                    <p class="section-head__copy">Choisissez entre tableau standard et saisie libre.</p>
 
                     <div class="ability-mode-toggle" role="radiogroup" aria-label="Mode de saisie des caracteristiques">
                         <label for="ability-mode-standard">
@@ -221,7 +211,6 @@
 
                 <section class="wizard-step" data-step="4" hidden>
                     <h3>Etape 4 - Alignement</h3>
-                    <p class="section-head__copy">Choix optionnel mais recommande pour cadrer le roleplay.</p>
                     <label for="create-alignment">Alignement</label>
                     <select id="create-alignment" name="alignment">
                         {% for alignment in dnd_alignments %}
@@ -235,9 +224,6 @@
 
                 <section class="wizard-step" data-step="5" hidden id="skill-proficiencies-step">
                     <h3>Etape 5 - Competences maitrisees</h3>
-                    <p class="section-head__copy">
-                        Selectionnez vos competences maitrisees selon votre classe.
-                    </p>
                     <label>Competences maitrisees</label>
                     <div class="skill-proficiencies-grid" id="create-skill-proficiencies-grid">
                         {% for skill in dnd_skill_options %}
@@ -254,9 +240,6 @@
 
                 <section class="wizard-step" data-step="6" hidden id="cantrip-selection-step">
                     <h3>Etape 6 - Selection des sorts mineurs</h3>
-                    <p class="section-head__copy">
-                        Cette etape apparait uniquement quand des sorts mineurs sont selectionnables.
-                    </p>
                     <div id="spellcasting-fields">
                         <input type="hidden" id="create-spellcasting-class" name="spellcasting_class" value="">
 
@@ -544,7 +527,6 @@
         <div class="section-head">
             <div class="section-head__content">
                 <h2 class="section-head__title">Mes PJ</h2>
-                <p class="section-head__copy">Vos personnages joueurs principaux, avec acces rapide a la fiche complete.</p>
             </div>
         </div>
 
@@ -597,7 +579,6 @@
         <div class="section-head">
             <div class="section-head__content">
                 <h2 class="section-head__title">Autres personnages</h2>
-                <p class="section-head__copy">Vos PNJ, boss et autres fiches rattachees a votre compte.</p>
             </div>
         </div>
 

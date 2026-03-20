@@ -12,7 +12,6 @@
             {% endif %}
             <a href="{{ url_for('summary.campaign_stats', campaign_id=campaign.id) }}" class="btn btn-secondary">Stats campagne</a>
             {% if is_mj %}
-                <span class="inl-campaign-044">Créez les combats depuis un arc narratif.</span>
             {% endif %}
         </div>
     </div>
@@ -68,7 +67,6 @@
                         <input id="delta" name="delta" type="number" required min="-99" max="99">
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
                     </form>
-                    <p class="pj-meta">Seul le MJ peut modifier le total. Un gain ou une dépense est toujours relié à un épisode.</p>
                 </div>
 
                 <div>
@@ -97,7 +95,6 @@
             </div>
         {% else %}
             <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
-            <p class="pj-meta">Le MJ met à jour ce pot commun. Les joueurs peuvent suivre le total et l'historique ci-dessous.</p>
             {% if inspiration_logs %}
                 <div class="campaign-calendar__list">
                     {% for log in inspiration_logs %}
@@ -417,7 +414,6 @@
         <div class="inl-campaign-031">
             {% if is_mj %}
                 <p>🎭 Aucun PNJ créé</p>
-                <p class="inl-campaign-032">Les PNJ enrichissent votre monde et peuvent être partagés avec vos joueurs selon différents niveaux de visibilité.</p>
                 <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
                     ➕ Créer votre premier PNJ
                 </a>
