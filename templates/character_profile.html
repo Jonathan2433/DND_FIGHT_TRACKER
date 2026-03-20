@@ -84,8 +84,8 @@
             </div>
 
             <div class="hero-side-column">
-                <div class="hero-side-row">
-                    <div class="profile-stats profile-stats--combat-overview">
+                <div class="hero-tools-grid {% if can_manage_combat_state and not limited_profile %}hero-tools-grid--three{% else %}hero-tools-grid--two{% endif %}">
+                    <div class="profile-stats profile-stats--combat-overview profile-actions">
                         <div class="stat-box">
                             <strong>Combats joues</strong>
                             <span>{{ combats_played }}</span>
@@ -95,6 +95,30 @@
                             <span>{{ total_damage_dealt }}</span>
                         </div>
                     </div>
+
+                    {% if can_manage_combat_state and not limited_profile %}
+                        <section class="profile-actions profile-actions--combat-top"
+                                 data-live-character-context
+                                 data-character-id="{{ character.id }}"
+                                 data-active-combat-ids='{{ active_combat_ids|tojson }}'>
+                            <h2>Ajustements rapides de combat</h2>
+                            <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
+                                <label class="combat-state-input">
+                                    <span>Modifier PV actuels</span>
+                                    <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                                </label>
+                                <label class="combat-state-input">
+                                    <span>Modifier PV temporaires</span>
+                                    <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                                </label>
+                                <label class="combat-state-input">
+                                    <span>Modifier CA</span>
+                                    <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                                </label>
+                                <button type="submit" class="btn btn-primary">Appliquer</button>
+                            </form>
+                        </section>
+                    {% endif %}
 
                     {% if can_edit %}
                         <div class="profile-actions profile-actions--quick">
@@ -125,30 +149,6 @@
                         </div>
                     {% endif %}
                 </div>
-
-                {% if can_manage_combat_state and not limited_profile %}
-                    <section class="profile-actions profile-actions--combat-top"
-                             data-live-character-context
-                             data-character-id="{{ character.id }}"
-                             data-active-combat-ids='{{ active_combat_ids|tojson }}'>
-                        <h2>Ajustements rapides de combat</h2>
-                        <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
-                            <label class="combat-state-input">
-                                <span>Modifier PV actuels</span>
-                                <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier PV temporaires</span>
-                                <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier CA</span>
-                                <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
-                            </label>
-                            <button type="submit" class="btn btn-primary">Appliquer</button>
-                        </form>
-                    </section>
-                {% endif %}
             </div>
         </div>
 
@@ -230,7 +230,7 @@
                     <div class="combat-skill-section">
                         <article class="combat-skill-panel">
                             <h3>Saving throws</h3>
-                            <div class="combat-skill-grid">
+                            <div class="combat-skill-grid combat-skill-grid--saves">
                                 {% for save_name, save_value, is_mastered in saving_throws %}
                                     <div class="combat-skill-item">
                                         <span>{{ save_name }}</span>
@@ -244,7 +244,7 @@
                         </article>
                         <article class="combat-skill-panel">
                             <h3>Skills</h3>
-                            <div class="combat-skill-grid">
+                            <div class="combat-skill-grid combat-skill-grid--skills">
                                 {% for skill in all_skills %}
                                     {% set is_proficient = skill in selected_skills %}
                                     {% set ability_key = skill_ability_map.get(skill, 'sagesse') %}
@@ -372,8 +372,9 @@
         </div>
     </div>
 
-    <div class="character-notes-pdf-layout {% if not character.pdf_filename and not can_edit %}character-notes-pdf-layout--single{% endif %}">
-        {% if not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
+    {% set has_notes_content = not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
+    <div class="character-notes-pdf-layout {% if not has_notes_content %}character-notes-pdf-layout--single{% endif %}">
+        {% if has_notes_content %}
             <div class="character-notes-pdf-layout__notes">
                 <section class="char-notes">
                     <div class="section-head">
@@ -412,19 +413,23 @@
                 </section>
             </div>
         {% endif %}
+
+        {% if not limited_profile %}
+            <div class="character-notes-pdf-layout__pdf">
+                <section class="char-details character-lore-panel character-lore-panel--backstory">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Backstory</h2>
+                        </div>
+                    </div>
+                    <p class="character-lore-text">{{ character.background_story or 'Non renseigne' }}</p>
+                </section>
+            </div>
+        {% endif %}
     </div>
 
     {% if not limited_profile %}
         <div class="character-lore-grid">
-            <section class="char-details character-lore-panel character-lore-panel--wide">
-                <div class="section-head">
-                    <div class="section-head__content">
-                        <h2 class="section-head__title">Backstory</h2>
-                    </div>
-                </div>
-                <p class="character-lore-text">{{ character.background_story or 'Non renseigne' }}</p>
-            </section>
-
             <section class="char-details character-lore-panel">
                 <h2 class="section-head__title">Allies et organisations</h2>
                 <p class="character-lore-text">{{ character.allies_organizations or 'Non renseigne' }}</p>
