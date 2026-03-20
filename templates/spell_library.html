@@ -60,8 +60,9 @@
 
     <div id="spell-grid" class="spell-library__grid">
         {% for spell in spells %}
-            <article
-                class="spell-card"
+            <a
+                class="spell-card spell-card--interactive"
+                href="{{ url_for('main.spell_detail', spell_slug=spell.slug) }}"
                 data-name="{{ spell.name|lower }}"
                 data-school="{{ spell.school }}"
                 data-casting-time="{{ spell.casting_time }}"
@@ -86,8 +87,7 @@
                     <li><strong>Concentration :</strong> {{ spell.concentration }}</li>
                     <li><strong>Rituel :</strong> {{ spell.ritual }}</li>
                 </ul>
-                <p class="spell-card__description">{{ spell.description or 'Aucune description disponible.' }}</p>
-            </article>
+            </a>
         {% endfor %}
     </div>
 </section>
