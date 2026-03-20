@@ -29,16 +29,9 @@
 
 .hero-tools-grid {
     display: grid;
+    grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr);
     gap: 14px;
     align-items: stretch;
-}
-
-.hero-tools-grid--three {
-    grid-template-columns: repeat(3, minmax(170px, 1fr));
-}
-
-.hero-tools-grid--two {
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
 }
 
 .profile-stats--combat-overview.profile-actions {
@@ -52,6 +45,10 @@
 .profile-actions--quick,
 .profile-actions--combat-top {
     height: 100%;
+}
+
+.profile-actions--quick {
+    min-width: 0;
 }
 
 .profile-actions--quick .profile-actions__buttons {
@@ -160,6 +157,10 @@
     gap: 14px;
 }
 
+.profile-stats--headline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+}
+
 .profile-stats--combat-overview {
     grid-template-columns: 1fr;
 }
@@ -215,6 +216,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.profile-actions--quick .award-xp-form {
+    margin: 0;
 }
 
 .character-layout {
@@ -902,7 +907,8 @@
         grid-column: span 2;
     }
 
-    .hero-tools-grid {
+    .hero-tools-grid,
+    .profile-stats--headline {
         grid-template-columns: 1fr;
     }
 

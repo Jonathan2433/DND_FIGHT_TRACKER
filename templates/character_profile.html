@@ -81,10 +81,46 @@
                         <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
                     {% endif %}
                 </div>
+
+                <div class="profile-stats profile-stats--headline">
+                    <div class="stat-box" data-live-hp-block>
+                        <strong>Points de vie</strong>
+                        {% if profile.hp_current is defined and profile.hp_max is defined %}
+                            <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                            {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                                <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
+                            {% else %}
+                                <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
+                            {% endif %}
+                        {% elif profile.hp_max is defined %}
+                            <span>{{ profile.hp_max }}</span>
+                        {% else %}
+                            <span>—</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-box" data-live-ac-block>
+                        <strong>Classe d'armure</strong>
+                        {% if profile.ac_total is defined %}
+                            <span data-live-ac-text>{{ profile.ac_total }}</span>
+                        {% elif profile.ac_base is defined %}
+                            <span>{{ profile.ac_base }}</span>
+                        {% else %}
+                            <span>—</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-box">
+                        <strong>Initiative</strong>
+                        <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Vitesse</strong>
+                        <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-side-column">
-                <div class="hero-tools-grid {% if can_manage_combat_state and not limited_profile %}hero-tools-grid--three{% else %}hero-tools-grid--two{% endif %}">
+                <div class="hero-tools-grid">
                     <div class="profile-stats profile-stats--combat-overview profile-actions">
                         <div class="stat-box">
                             <strong>Combats joues</strong>
@@ -96,33 +132,29 @@
                         </div>
                     </div>
 
-                    {% if can_manage_combat_state and not limited_profile %}
-                        <section class="profile-actions profile-actions--combat-top"
-                                 data-live-character-context
-                                 data-character-id="{{ character.id }}"
-                                 data-active-combat-ids='{{ active_combat_ids|tojson }}'>
-                            <h2>Ajustements rapides de combat</h2>
-                            <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
-                                <label class="combat-state-input">
-                                    <span>Modifier PV actuels</span>
-                                    <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
-                                </label>
-                                <label class="combat-state-input">
-                                    <span>Modifier PV temporaires</span>
-                                    <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
-                                </label>
-                                <label class="combat-state-input">
-                                    <span>Modifier CA</span>
-                                    <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
-                                </label>
-                                <button type="submit" class="btn btn-primary">Appliquer</button>
-                            </form>
-                        </section>
-                    {% endif %}
-
                     {% if can_edit %}
-                        <div class="profile-actions profile-actions--quick">
+                        <div class="profile-actions profile-actions--quick"
+                             {% if can_manage_combat_state and not limited_profile %}data-live-character-context
+                             data-character-id="{{ character.id }}"
+                             data-active-combat-ids='{{ active_combat_ids|tojson }}'{% endif %}>
                             <h2>Actions rapides</h2>
+                            {% if can_manage_combat_state and not limited_profile %}
+                                <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV actuels</span>
+                                        <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV temporaires</span>
+                                        <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier CA</span>
+                                        <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                                    </label>
+                                    <button type="submit" class="btn btn-primary">Appliquer</button>
+                                </form>
+                            {% endif %}
                             <div class="profile-actions__buttons">
                                 {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
                                     <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
@@ -149,42 +181,6 @@
                         </div>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-
-        <div class="profile-stats">
-            <div class="stat-box" data-live-hp-block>
-                <strong>Points de vie</strong>
-                {% if profile.hp_current is defined and profile.hp_max is defined %}
-                    <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
-                    {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
-                        <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
-                    {% else %}
-                        <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
-                    {% endif %}
-                {% elif profile.hp_max is defined %}
-                    <span>{{ profile.hp_max }}</span>
-                {% else %}
-                    <span>—</span>
-                {% endif %}
-            </div>
-            <div class="stat-box" data-live-ac-block>
-                <strong>Classe d'armure</strong>
-                {% if profile.ac_total is defined %}
-                    <span data-live-ac-text>{{ profile.ac_total }}</span>
-                {% elif profile.ac_base is defined %}
-                    <span>{{ profile.ac_base }}</span>
-                {% else %}
-                    <span>—</span>
-                {% endif %}
-            </div>
-            <div class="stat-box">
-                <strong>Initiative</strong>
-                <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
-            </div>
-            <div class="stat-box">
-                <strong>Vitesse</strong>
-                <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
             </div>
         </div>
     </section>
