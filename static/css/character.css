@@ -175,6 +175,31 @@
     width: 100%;
 }
 
+.profile-stats--hero-compact {
+    margin-top: 12px;
+    grid-template-columns: repeat(4, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.profile-stats--hero-compact .stat-box {
+    padding: 12px;
+    gap: 6px;
+    border-radius: 12px;
+}
+
+.profile-stats--hero-compact .stat-box strong {
+    font-size: 11px;
+}
+
+.profile-stats--hero-compact .stat-box span {
+    font-size: 22px;
+}
+
+.profile-stats--hero-compact .stat-box__helper {
+    font-size: 11px;
+}
+
+
 .stat-box {
     display: flex;
     flex-direction: column;
@@ -1082,6 +1107,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .profile-stats--hero-compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .character-notes-pdf-layout {
         grid-template-columns: 1fr;
     }
@@ -1119,6 +1148,10 @@
     }
 
     .profile-stats--vitals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profile-stats--hero-compact {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -1210,6 +1243,10 @@
 
     .profile-stats--vitals {
         grid-template-columns: 1fr;
+    }
+
+    .profile-stats--hero-compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .xp-info {
