@@ -860,7 +860,7 @@ class TemplateService:
             hp_max=template.hp_max,
             hp_current=template.hp_current_effective,
             ac_base=template.ac_base,
-            ac_bonus=template.ac_bonus or 0,
+            ac_bonus=0,
             initiative=initiative,
             notes=template.image_filename  # Pour stocker le nom de l'image
         )
