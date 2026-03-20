@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="campaign-actions">
-                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.view_combat_player', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
+                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.join_combat', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
                         </div>
                     </article>
                 {% endfor %}

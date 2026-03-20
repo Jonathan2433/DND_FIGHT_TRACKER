@@ -158,7 +158,7 @@ def view_combat(combat_id):
     combat = Combat.query.get_or_404(combat_id)
     if not _can_manage_combat(combat):
         flash('Seul le MJ proprietaire peut acceder a la gestion du combat.', 'error')
-        return redirect(url_for('combat.view_combat_player', combat_id=combat_id))
+        return redirect(url_for('combat.join_combat', combat_id=combat_id))
 
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     character_templates = CharacterTemplate.query.all()
