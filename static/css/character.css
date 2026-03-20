@@ -27,6 +27,13 @@
     gap: 14px;
 }
 
+.hero-side-row {
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
 .character-avatar {
     display: flex;
     flex-direction: column;
@@ -121,7 +128,7 @@
 }
 
 .profile-stats--combat-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
 }
 
 .stat-box {
@@ -165,6 +172,10 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.profile-actions--combat-top .award-xp-form {
+    margin: 0;
 }
 
 .profile-actions__buttons {
@@ -241,6 +252,39 @@
     font-size: 12px;
     color: var(--color-text-secondary);
     line-height: 1.5;
+}
+
+.skill-proficiency-reminder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--overlay-white-10);
+    background: rgba(11, 13, 29, 0.28);
+}
+
+.skill-proficiency-reminder strong {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+}
+
+.skill-proficiency-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-proficiency-tag {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--primary-a20);
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
 }
 
 /* ===================== */
@@ -475,6 +519,30 @@
     flex: 1;
 }
 
+.character-sheet-sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.character-sheet-field {
+    border: 1px solid var(--overlay-white-10);
+    background: rgba(11, 13, 29, 0.28);
+    border-radius: 16px;
+    padding: 14px;
+}
+
+.character-sheet-field h3 {
+    margin-bottom: 8px;
+}
+
+.character-sheet-field p {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
 .character-notes-pdf-layout > .profile-generate-pdf {
     grid-column: 2;
 }
@@ -695,6 +763,10 @@
         grid-column: span 2;
     }
 
+    .hero-side-row {
+        grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    }
+
     .character-notes-pdf-layout {
         grid-template-columns: 1fr;
     }
@@ -712,6 +784,10 @@
 
     .character-summary {
         gap: 12px;
+    }
+
+    .hero-side-row {
+        grid-template-columns: 1fr;
     }
 
     .character-summary__title h1 {
