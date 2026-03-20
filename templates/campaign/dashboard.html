@@ -46,11 +46,15 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card campaign-inspiration-card">
         <h2>✨ Pot d'inspiration de la campagne</h2>
         {% if is_mj %}
             <div class="campaign-inspiration-layout">
                 <div>
+                    <div class="campaign-inspiration-recap">
+                        <p>Points disponibles pour toute l'équipe :</p>
+                        <strong>{{ campaign.inspiration_points }}</strong>
+                    </div>
                     <form method="POST" action="{{ url_for('campaign.update_inspiration_points', campaign_id=campaign.id) }}" class="campaign-inspiration-form">
                         <label for="episode_id">Épisode lié :</label>
                         <select id="episode_id" name="episode_id" required>
@@ -67,35 +71,53 @@
                     <p class="pj-meta">Seul le MJ peut modifier le total. Un gain ou une dépense est toujours relié à un épisode.</p>
                 </div>
 
-                <div class="campaign-inspiration-recap">
-                    <p>Points disponibles pour toute l'équipe :</p>
-                    <strong>{{ campaign.inspiration_points }}</strong>
+                <div>
+                    <h3>Historique</h3>
+                    {% if inspiration_logs %}
+                        <div class="campaign-calendar__list">
+                            {% for log in inspiration_logs %}
+                                <div class="campaign-calendar__item">
+                                    <div>
+                                        <strong>
+                                            {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
+                                        </strong>
+                                        <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
+                                        <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
+                                    </div>
+                                    <div class="pj-meta">
+                                        Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Aucun mouvement de points d'inspiration pour le moment.</p>
+                    {% endif %}
                 </div>
             </div>
         {% else %}
             <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
             <p class="pj-meta">Le MJ met à jour ce pot commun. Les joueurs peuvent suivre le total et l'historique ci-dessous.</p>
-        {% endif %}
-
-        {% if inspiration_logs %}
-            <div class="campaign-calendar__list">
-                {% for log in inspiration_logs %}
-                    <div class="campaign-calendar__item">
-                        <div>
-                            <strong>
-                                {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
-                            </strong>
-                            <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
-                            <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
+            {% if inspiration_logs %}
+                <div class="campaign-calendar__list">
+                    {% for log in inspiration_logs %}
+                        <div class="campaign-calendar__item">
+                            <div>
+                                <strong>
+                                    {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
+                                </strong>
+                                <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
+                                <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
+                            </div>
+                            <div class="pj-meta">
+                                Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
+                            </div>
                         </div>
-                        <div class="pj-meta">
-                            Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>Aucun mouvement de points d'inspiration pour le moment.</p>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Aucun mouvement de points d'inspiration pour le moment.</p>
+            {% endif %}
         {% endif %}
     </div>
 

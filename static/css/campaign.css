@@ -213,12 +213,17 @@
     display: grid;
     gap: 10px;
     margin: 14px 0;
-    max-width: 460px;
+    max-width: 520px;
+}
+
+.campaign-inspiration-card {
+    background: rgba(154, 161, 176, 0.18);
+    border-color: rgba(170, 178, 196, 0.45);
 }
 
 .campaign-inspiration-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 20px;
     align-items: start;
 }
