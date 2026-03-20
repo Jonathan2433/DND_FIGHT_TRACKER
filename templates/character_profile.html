@@ -76,7 +76,13 @@
                             <h1>{{ profile.name or character.name }}</h1>
                             {% set raw_background = profile.background_story if profile.background_story is defined else '' %}
                             {% set background_name = raw_background.split('\n\n')[0].strip() if raw_background else '' %}
-                            <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.race is defined or character.race %} - {{ profile.race if profile.race is defined else character.race }}{% endif %}{% if background_name %} - {{ background_name }}{% endif %}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
+                            <p class="character-summary__meta">
+                                {% if limited_profile and visibility_mode == 'reduced' %}
+                                    Informations de profil limitees
+                                {% else %}
+                                    {{ profile.character_class or 'Inconnu' }}{% if profile.race is defined and profile.race %} - {{ profile.race }}{% endif %}{% if background_name %} - {{ background_name }}{% endif %}{% if profile.level is defined and profile.level %} - Niveau {{ profile.level }}{% endif %}
+                                {% endif %}
+                            </p>
                             <p class="character-summary__meta">Alignement : {{ profile.alignment if profile.alignment is defined and profile.alignment else 'Non renseigne' }}</p>
                             {% if character.campaign %}
                                 <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
@@ -104,9 +110,9 @@
                                     {% if profile.ac_total is defined %}
                                         <span data-live-ac-text>{{ profile.ac_total }}</span>
                                     {% elif profile.ac_base is defined %}
-                                        <span data-live-ac-text>{{ character.ac_total }}</span>
+                                        <span data-live-ac-text>{{ profile.ac_base }}</span>
                                     {% else %}
-                                        <span data-live-ac-text>{{ character.ac_total if character.ac_total is not none else '—' }}</span>
+                                        <span data-live-ac-text>—</span>
                                     {% endif %}
                                 </div>
                                 <div class="stat-box stat-box--highlight">
