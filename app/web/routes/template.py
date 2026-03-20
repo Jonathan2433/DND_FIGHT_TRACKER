@@ -417,7 +417,8 @@ def update_character_combat_state(id):
 
     flash(
         f'Valeurs mises a jour : HP {character.hp_current}/{character.hp_max}, '
-        f'PV temporaires {character.temp_hp}, CA {character.ac_total} (base {character.ac_base}).',
+        f'PV temporaires {character.temp_hp}, CA {character.ac_total} '
+        f'(base {character.ac_base}, bonus/malus temp {character.ac_bonus or 0}).',
         'success'
     )
     return redirect(url_for('template.character_profile', id=id))
