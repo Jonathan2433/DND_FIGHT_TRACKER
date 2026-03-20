@@ -81,6 +81,42 @@
                             <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
                         {% endif %}
                     </div>
+
+                    <div class="profile-stats profile-stats--hero-compact">
+                        <div class="stat-box stat-box--highlight" data-live-hp-block>
+                            <strong>Points de vie</strong>
+                            {% if profile.hp_current is defined and profile.hp_max is defined %}
+                                <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                                {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                                    <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
+                                {% else %}
+                                    <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
+                                {% endif %}
+                            {% elif profile.hp_max is defined %}
+                                <span>{{ profile.hp_max }}</span>
+                            {% else %}
+                                <span>—</span>
+                            {% endif %}
+                        </div>
+                        <div class="stat-box stat-box--highlight" data-live-ac-block>
+                            <strong>Classe d'armure</strong>
+                            {% if profile.ac_total is defined %}
+                                <span data-live-ac-text>{{ profile.ac_total }}</span>
+                            {% elif profile.ac_base is defined %}
+                                <span>{{ profile.ac_base }}</span>
+                            {% else %}
+                                <span>—</span>
+                            {% endif %}
+                        </div>
+                        <div class="stat-box stat-box--highlight">
+                            <strong>Initiative</strong>
+                            <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
+                        </div>
+                        <div class="stat-box stat-box--highlight">
+                            <strong>Vitesse</strong>
+                            <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -111,40 +147,7 @@
         </div>
 
         <div class="character-hero-details">
-            <div class="profile-stats profile-stats--vitals">
-                <div class="stat-box stat-box--highlight" data-live-hp-block>
-                    <strong>Points de vie</strong>
-                    {% if profile.hp_current is defined and profile.hp_max is defined %}
-                        <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
-                        {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
-                            <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
-                        {% else %}
-                            <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
-                        {% endif %}
-                    {% elif profile.hp_max is defined %}
-                        <span>{{ profile.hp_max }}</span>
-                    {% else %}
-                        <span>—</span>
-                    {% endif %}
-                </div>
-                <div class="stat-box stat-box--highlight" data-live-ac-block>
-                    <strong>Classe d'armure</strong>
-                    {% if profile.ac_total is defined %}
-                        <span data-live-ac-text>{{ profile.ac_total }}</span>
-                    {% elif profile.ac_base is defined %}
-                        <span>{{ profile.ac_base }}</span>
-                    {% else %}
-                        <span>—</span>
-                    {% endif %}
-                </div>
-                <div class="stat-box stat-box--highlight">
-                    <strong>Initiative</strong>
-                    <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
-                </div>
-                <div class="stat-box stat-box--highlight">
-                    <strong>Vitesse</strong>
-                    <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
-                </div>
+            <div class="profile-stats profile-stats--combat-overview">
                 <div class="stat-box stat-box--highlight">
                     <strong>Nombre de combats</strong>
                     <span>{{ combats_played }}</span>
