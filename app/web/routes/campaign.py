@@ -7,8 +7,16 @@ from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
 from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required, mj_or_admin_required
-from app.models.campaign import Campaign, CampaignSession, CampaignMember, CampaignInvitation, JoinRequest
+from app.models.campaign import (
+    Campaign,
+    CampaignSession,
+    CampaignMember,
+    CampaignInvitation,
+    JoinRequest,
+    CampaignInspirationLog,
+)
 from app.models.combat import Combat
+from app.models.episode import Episode
 from app.models.user import User
 from app.models import CharacterTemplate
 from app.extensions import db
@@ -75,6 +83,13 @@ def view_campaign(campaign_id):
     campaign_sessions = CampaignSession.query.filter_by(campaign_id=campaign.id).order_by(
         CampaignSession.scheduled_for.asc()
     ).all()
+    campaign_episodes = Episode.query.join(Episode.story_arc).filter(
+        Episode.story_arc.has(campaign_id=campaign.id)
+    ).order_by(Episode.created_at.desc()).all()
+
+    inspiration_logs = CampaignInspirationLog.query.filter_by(
+        campaign_id=campaign.id
+    ).order_by(CampaignInspirationLog.created_at.desc()).limit(20).all()
 
     # PJ du joueur courant pouvant être ajoutés à cette campagne
     available_player_pjs = []
@@ -121,10 +136,69 @@ def view_campaign(campaign_id):
         combats_count=combats_count,
         current_arc=current_arc,
         campaign_sessions=campaign_sessions,
+        campaign_episodes=campaign_episodes,
+        inspiration_logs=inspiration_logs,
         available_player_pjs=available_player_pjs,
         player_campaign_pjs=player_campaign_pjs,
         visible_campaign_pnjs=visible_campaign_pnjs
     )
+
+
+@bp.route('/<int:campaign_id>/inspiration/update', methods=['POST'])
+@login_required
+def update_inspiration_points(campaign_id):
+    """Ajuster les points d'inspiration communs (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Campagne non trouvée ou accès interdit.', 'error')
+        return redirect(url_for('main.index'))
+
+    if not g.current_user.is_mj_of(campaign):
+        flash("Seul le MJ peut modifier les points d'inspiration.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    episode_id = request.form.get('episode_id', type=int)
+    delta = request.form.get('delta', type=int)
+
+    if episode_id is None or delta is None:
+        flash('Episode et ajustement obligatoires.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    if delta == 0:
+        flash("L'ajustement doit être différent de 0.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    episode = Episode.query.join(Episode.story_arc).filter(
+        Episode.id == episode_id,
+        Episode.story_arc.has(campaign_id=campaign.id)
+    ).first()
+    if not episode:
+        flash("L'épisode sélectionné n'appartient pas à cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    previous_total = campaign.inspiration_points or 0
+    new_total = previous_total + delta
+    if new_total < 0:
+        flash("Impossible d'avoir un total de points d'inspiration négatif.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    campaign.inspiration_points = new_total
+    db.session.add(CampaignInspirationLog(
+        campaign_id=campaign.id,
+        episode_id=episode.id,
+        adjusted_by_user_id=g.current_user.id,
+        delta=delta,
+        previous_total=previous_total,
+        new_total=new_total,
+    ))
+    db.session.commit()
+
+    if delta > 0:
+        flash(f'+{delta} point(s) d’inspiration ajouté(s) au pot commun.', 'success')
+    else:
+        flash(f'{abs(delta)} point(s) d’inspiration retiré(s) du pot commun.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
 
 
 @bp.route('/<int:campaign_id>/invite', methods=['POST'])
