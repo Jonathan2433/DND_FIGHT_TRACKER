@@ -275,3 +275,47 @@ class EmailService:
         )
 
         return EmailService._send_message(msg, "email invitation combat")
+
+    @staticmethod
+    def send_campaign_session_reminder(user_email, username, campaign_name, scheduled_for):
+        """Envoyer un email de rappel de session de campagne à J-7."""
+        session_label = scheduled_for.strftime('%d/%m/%Y à %Hh%M')
+        campaign_url = f"{current_app.config.get('BASE_URL', '').rstrip('/')}/campaign/"
+        subject = f"🗓️ Rappel session dans 7 jours : {campaign_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Rappel de session",
+            intro=f"Salut {username}, votre prochaine aventure approche.",
+            cta_label="🎲 Voir la campagne",
+            cta_url=campaign_url,
+            body_content=(
+                "La prochaine session de la campagne "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{campaign_name}&nbsp;&raquo;</strong> "
+                f"est prévue le <strong>{session_label}</strong>."
+            ),
+            footer_content=(
+                "Ce rappel automatique est envoyé 7 jours avant la date de session. "
+                "Si la session est modifiée ou annulée, la date affichée peut évoluer."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Rappel de session
+
+        Salut {username},
+
+        La prochaine session de la campagne "{campaign_name}" est prévue le {session_label}.
+
+        Retrouve la campagne ici :
+        {campaign_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email rappel session campagne")

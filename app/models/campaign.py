@@ -70,6 +70,7 @@ class CampaignSession(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    reminder_sent_at = db.Column(db.DateTime, nullable=True, index=True)
 
     def __repr__(self):
         return f'<CampaignSession campaign={self.campaign_id} at={self.scheduled_for}>'
