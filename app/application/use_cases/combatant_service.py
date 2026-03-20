@@ -20,7 +20,6 @@ class CombatantService:
             return
 
         character.hp_current = max(0, min(combatant.hp_current, character.hp_max))
-        character.ac_bonus = combatant.ac_bonus or 0
 
     @staticmethod
     def add_combatant(combat_id, name, type, hp_max, hp_current, initiative, ac_base):
