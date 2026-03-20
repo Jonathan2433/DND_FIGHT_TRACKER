@@ -535,7 +535,7 @@ class CharacterSheetPdfService:
             "player_name": character.player_name or "",
             "race": character.race or "",
             "alignment": character.alignment or "",
-            "experience_points": str(character.current_xp or 0),
+            "experience_points": "",
             "strength": str(character.force or 10),
             "strength_mod": cls._format_mod(character.mod_force),
             "dexterity": str(character.dexterite or 10),

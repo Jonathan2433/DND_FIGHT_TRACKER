@@ -388,17 +388,10 @@
                         </div>
                     </div>
 
-                    <div class="notes-visibility-layout">
-                        <div>
-                            {% if character.notes %}
-                                <p>{{ character.notes }}</p>
-                            {% endif %}
-                        </div>
-                        <aside class="notes-visibility-card">
-                            <h3>Statut de visibilite</h3>
-                            <p>{{ 'Public' if character.is_public else 'Prive' }}</p>
-                            <p>Niveau : {{ visibility_mode }}</p>
-                        </aside>
+                    <div>
+                        {% if character.notes %}
+                            <p>{{ character.notes }}</p>
+                        {% endif %}
                     </div>
 
                     {% if current_user and character.player_private_notes and character.owner_id == current_user.id %}
