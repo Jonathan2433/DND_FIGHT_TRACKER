@@ -104,9 +104,9 @@
                                     {% if profile.ac_total is defined %}
                                         <span data-live-ac-text>{{ profile.ac_total }}</span>
                                     {% elif profile.ac_base is defined %}
-                                        <span>{{ profile.ac_base }}</span>
+                                        <span data-live-ac-text>{{ character.ac_total }}</span>
                                     {% else %}
-                                        <span>—</span>
+                                        <span data-live-ac-text>{{ character.ac_total if character.ac_total is not none else '—' }}</span>
                                     {% endif %}
                                 </div>
                                 <div class="stat-box stat-box--highlight">
