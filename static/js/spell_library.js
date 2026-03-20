@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const cards = Array.from(grid.querySelectorAll('.spell-card'));
-    const filterIds = ['school', 'casting_time', 'range', 'duration'];
+    const filterIds = ['school', 'casting_time', 'range', 'duration', 'level'];
 
     const toOptionValue = (value) => (value || '').trim();
 
@@ -26,20 +26,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        Array.from(values)
-            .sort((a, b) => a.localeCompare(b, 'fr'))
-            .forEach((value) => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = value;
-                select.appendChild(option);
-            });
+        const sortedValues = Array.from(values).sort((a, b) => {
+            if (filterId === 'level') {
+                return Number(a) - Number(b);
+            }
+            return a.localeCompare(b, 'fr');
+        });
+
+        sortedValues.forEach((value) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = filterId === 'level'
+                ? (Number(value) === 0 ? 'Sort mineur (Niveau 0)' : `Niveau ${value}`)
+                : value;
+            select.appendChild(option);
+        });
     });
 
     const refresh = () => {
         const filters = {
             name: (form.elements.name.value || '').toLowerCase().trim(),
             school: form.elements.school.value,
+            level: form.elements.level.value,
             castingTime: form.elements.casting_time.value,
             range: form.elements.range.value,
             duration: form.elements.duration.value,
@@ -53,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const matches =
                 (!filters.name || card.dataset.name.includes(filters.name)) &&
                 (!filters.school || card.dataset.school === filters.school) &&
+                (!filters.level || card.dataset.level === filters.level) &&
                 (!filters.castingTime || card.dataset.castingTime === filters.castingTime) &&
                 (!filters.range || card.dataset.range === filters.range) &&
                 (!filters.duration || card.dataset.duration === filters.duration) &&
