@@ -15,6 +15,7 @@ class Campaign(db.Model):
     # Status
     is_active = db.Column(db.Boolean, default=True)
     is_public = db.Column(db.Boolean, default=False)
+    inspiration_points = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
@@ -29,6 +30,32 @@ class Campaign(db.Model):
 
     def __repr__(self):
         return f'<Campaign {self.name}>'
+
+
+class CampaignInspirationLog(db.Model):
+    """Historique des ajustements de points d'inspiration d'une campagne."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False, index=True)
+    episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'), nullable=False, index=True)
+    adjusted_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+
+    delta = db.Column(db.Integer, nullable=False)
+    previous_total = db.Column(db.Integer, nullable=False)
+    new_total = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    campaign = db.relationship(
+        'Campaign',
+        backref=db.backref(
+            'inspiration_logs',
+            lazy=True,
+            cascade='all, delete-orphan',
+            order_by='CampaignInspirationLog.created_at.desc()'
+        )
+    )
+    episode = db.relationship('Episode')
+    adjusted_by = db.relationship('User')
 
 
 class CampaignSession(db.Model):

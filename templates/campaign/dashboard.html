@@ -39,6 +39,56 @@
             <h3 class="inl-campaign-009">📖 Arc Actuel</h3>
             <p class="inl-campaign-011">{{ current_arc.name if current_arc else "Aucun" }}</p>
         </div>
+
+        <div class="inl-campaign-008">
+            <h3 class="inl-campaign-009">✨ Inspiration</h3>
+            <p class="inl-campaign-010">{{ campaign.inspiration_points }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✨ Pot d'inspiration de la campagne</h2>
+        <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
+
+        {% if is_mj %}
+            <form method="POST" action="{{ url_for('campaign.update_inspiration_points', campaign_id=campaign.id) }}" class="campaign-inspiration-form">
+                <label for="episode_id">Épisode lié :</label>
+                <select id="episode_id" name="episode_id" required>
+                    <option value="">-- Sélectionnez un épisode --</option>
+                    {% for episode in campaign_episodes %}
+                        <option value="{{ episode.id }}">{{ episode.story_arc.name }} — {{ episode.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="delta">Ajustement (positif ou négatif) :</label>
+                <input id="delta" name="delta" type="number" required min="-99" max="99">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </form>
+            <p class="pj-meta">Seul le MJ peut modifier le total. Un gain ou une dépense est toujours relié à un épisode.</p>
+        {% else %}
+            <p class="pj-meta">Le MJ met à jour ce pot commun. Les joueurs peuvent suivre le total et l'historique ci-dessous.</p>
+        {% endif %}
+
+        {% if inspiration_logs %}
+            <div class="campaign-calendar__list">
+                {% for log in inspiration_logs %}
+                    <div class="campaign-calendar__item">
+                        <div>
+                            <strong>
+                                {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
+                            </strong>
+                            <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
+                            <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
+                        </div>
+                        <div class="pj-meta">
+                            Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucun mouvement de points d'inspiration pour le moment.</p>
+        {% endif %}
     </div>
 
 
