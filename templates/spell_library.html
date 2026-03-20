@@ -21,6 +21,12 @@
             </select>
         </div>
         <div class="spell-library__filter">
+            <label for="spell-filter-level">Niveau</label>
+            <select id="spell-filter-level" name="level">
+                <option value="">Tous</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
             <label for="spell-filter-casting-time">Temps d'incantation</label>
             <select id="spell-filter-casting-time" name="casting_time">
                 <option value="">Tous</option>
@@ -70,6 +76,7 @@
                 data-duration="{{ spell.duration }}"
                 data-concentration="{{ spell.concentration }}"
                 data-ritual="{{ spell.ritual }}"
+                data-level="{{ spell.level }}"
             >
                 <h2>{{ spell.name }}</h2>
                 <p class="spell-card__meta">
