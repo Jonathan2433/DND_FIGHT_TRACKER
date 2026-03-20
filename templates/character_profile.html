@@ -466,17 +466,18 @@
         </div>
     {% endif %}
 
+    {% if not limited_profile %}
+        <section class="char-details character-lore-panel">
+            <h2 class="section-head__title">Apparence</h2>
+            <p class="character-lore-text">{{ character.character_appearance or 'Non renseigne' }}</p>
+        </section>
+    {% endif %}
+
     <div class="character-pdf-layout {% if not character.pdf_filename and not can_edit %}character-pdf-layout--single{% endif %}">
         {% if not limited_profile %}
             <div class="character-pdf-layout__pdf">
                 <aside class="profile-pdf-preview">
                     <h2>Fiche du personnage</h2>
-                    <div class="character-sheet-sections">
-                        <article class="character-sheet-field">
-                            <h3>Apparence</h3>
-                            <p>{{ character.character_appearance or 'Non renseigne' }}</p>
-                        </article>
-                    </div>
 
                     {% if character.pdf_filename %}
                         <div class="pdf-preview-container">
