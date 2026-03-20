@@ -41,7 +41,7 @@
 
 .character-hero-details {
     display: grid;
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     align-items: start;
 }
@@ -173,15 +173,6 @@
     grid-template-columns: repeat(2, minmax(170px, 1fr));
 }
 
-.profile-stats--combat-overview {
-    grid-template-columns: 1fr;
-}
-
-.profile-stats--combat-overview .stat-box {
-    min-height: 112px;
-    justify-content: center;
-}
-
 .profile-stats--vitals {
     grid-template-columns: repeat(3, minmax(120px, 1fr));
     width: 100%;
@@ -189,7 +180,7 @@
 
 .profile-stats--hero {
     margin-top: 12px;
-    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 10px;
 }
 
@@ -1401,7 +1392,6 @@
         text-align: left;
     }
 
-    .profile-stats--combat-overview,
     .profile-stats--headline {
         grid-template-columns: 1fr;
     }
