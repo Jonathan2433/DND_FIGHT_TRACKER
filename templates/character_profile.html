@@ -34,44 +34,70 @@
             </div>
 
             <div class="hero-side-column">
-                <div class="profile-stats profile-stats--combat-overview">
-                    <div class="stat-box">
-                        <strong>Combats joues</strong>
-                        <span>{{ combats_played }}</span>
-                    </div>
-                    <div class="stat-box">
-                        <strong>Degats infliges</strong>
-                        <span>{{ total_damage_dealt }}</span>
-                    </div>
-                </div>
-
-                {% if can_edit %}
-                    <div class="profile-actions profile-actions--quick">
-                        <h2>Actions rapides</h2>
-                        <div class="profile-actions__buttons">
-                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                                </a>
-                            {% endif %}
-
-                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
-
-                            {% if current_user and character.owner_id == current_user.id %}
-                                <form method="POST"
-                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                      class="inl-character-004">
-                                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                                </form>
-                            {% endif %}
+                <div class="hero-side-row">
+                    <div class="profile-stats profile-stats--combat-overview">
+                        <div class="stat-box">
+                            <strong>Combats joues</strong>
+                            <span>{{ combats_played }}</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Degats infliges</strong>
+                            <span>{{ total_damage_dealt }}</span>
                         </div>
                     </div>
-                {% elif current_user %}
-                    <div class="profile-actions profile-actions--quick">
-                        <h2>Consultation</h2>
-                        <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
-                    </div>
+
+                    {% if can_edit %}
+                        <div class="profile-actions profile-actions--quick">
+                            <h2>Actions rapides</h2>
+                            <div class="profile-actions__buttons">
+                                {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                                    <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                        {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
+
+                                {% if current_user and character.owner_id == current_user.id %}
+                                    <form method="POST"
+                                          action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                          onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                          class="inl-character-004">
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% elif current_user %}
+                        <div class="profile-actions profile-actions--quick">
+                            <h2>Consultation</h2>
+                            <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if can_manage_combat_state and not limited_profile %}
+                    <section class="profile-actions profile-actions--combat-top"
+                             data-live-character-context
+                             data-character-id="{{ character.id }}"
+                             data-active-combat-ids='{{ active_combat_ids|tojson }}'>
+                        <h2>Ajustements rapides de combat</h2>
+                        <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
+                            <label class="combat-state-input">
+                                <span>Modifier PV actuels</span>
+                                <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                            </label>
+                            <label class="combat-state-input">
+                                <span>Modifier PV temporaires</span>
+                                <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                            </label>
+                            <label class="combat-state-input">
+                                <span>Modifier CA</span>
+                                <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                            </label>
+                            <button type="submit" class="btn btn-primary">Appliquer</button>
+                        </form>
+                    </section>
                 {% endif %}
             </div>
         </div>
@@ -155,6 +181,17 @@
                         <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                 </div>
+
+                {% if not limited_profile and character.skill_proficiencies %}
+                    <div class="skill-proficiency-reminder">
+                        <strong>Maitrises de competences</strong>
+                        <div class="skill-proficiency-list">
+                            {% for skill in character.skill_proficiencies.split(',') if skill.strip() %}
+                                <span class="skill-proficiency-tag">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             </section>
 
             {% if known_spells %}
@@ -174,58 +211,6 @@
                     </div>
                 </section>
             {% endif %}
-
-            {% if can_manage_combat_state and not limited_profile %}
-                <section class="profile-actions">
-                    <h2>Etat de combat (persistant)</h2>
-                    <p class="section-head__copy">
-                        Suivez ici les valeurs actuelles du personnage et appliquez des deltas (+/-) pour les modifier.
-                        Ces valeurs restent visibles sur la fiche apres le combat.
-                    </p>
-                    <div class="combat-state-layout">
-                        <div class="combat-state-summary"
-                             data-live-character-context
-                             data-character-id="{{ character.id }}"
-                             data-active-combat-ids='{{ active_combat_ids|tojson }}'>
-                            <article class="combat-state-summary__card">
-                                <span class="combat-state-summary__label">PV actuels</span>
-                                <strong data-live-combat-hp>{{ profile.hp_current if profile.hp_current is defined else '—' }}</strong>
-                            </article>
-                            <article class="combat-state-summary__card">
-                                <span class="combat-state-summary__label">PV maximum</span>
-                                <strong data-live-combat-hp-max>{{ profile.hp_max if profile.hp_max is defined else '—' }}</strong>
-                            </article>
-                            <article class="combat-state-summary__card">
-                                <span class="combat-state-summary__label">PV temporaires</span>
-                                <strong data-live-combat-temp-hp>{{ profile.temp_hp if profile.temp_hp is defined else 0 }}</strong>
-                            </article>
-                            <article class="combat-state-summary__card">
-                                <span class="combat-state-summary__label">CA actuelle</span>
-                                <strong data-live-combat-ac>{{ profile.ac_total if profile.ac_total is defined else '—' }}</strong>
-                            </article>
-                        </div>
-                        <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
-                            <label class="combat-state-input">
-                                <span>Modifier PV actuels</span>
-                                <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier PV temporaires</span>
-                                <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier CA</span>
-                                <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
-                            </label>
-                            <button type="submit" class="btn btn-primary">Appliquer</button>
-                        </form>
-                    </div>
-                    {% if profile.ac_base is defined and profile.ac_bonus is defined %}
-                        <p class="section-head__copy">CA actuelle : {{ profile.ac_total }} (base {{ profile.ac_base }}, mod {{ profile.ac_bonus }}).</p>
-                    {% endif %}
-                </section>
-            {% endif %}
- 
 
             {% if not limited_profile and can_view_xp %}
             <section class="xp-section">
@@ -342,45 +327,75 @@
             </div>
         {% endif %}
 
-        {% if not limited_profile and character.pdf_filename %}
+        {% if not limited_profile %}
             <div class="character-notes-pdf-layout__pdf">
                 <aside class="profile-pdf-preview">
-                    <h2>Fiche officielle</h2>
-                    <div class="pdf-preview-container">
-                        <div class="pdf-actions-row">
-                            <button type="button"
-                                    class="btn btn-secondary"
-                                    data-load-pdf-preview
-                                    data-pdf-url="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
-                                Afficher l'aperçu PDF
-                            </button>
-                            {% if can_edit %}
-                                <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
-                                    <button type="submit" class="btn btn-secondary">Regenerer la fiche PDF</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                        <embed type="application/pdf"
-                               class="pdf-preview"
-                               data-pdf-embed
-                               hidden>
-                        <div class="pdf-controls">
-                            <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                               target="_blank" class="btn btn-primary btn-pdf">
-                                Ouvrir le PDF complet
-                            </a>
-                        </div>
+                    <h2>Fiche du personnage</h2>
+                    <div class="character-sheet-sections">
+                        <article class="character-sheet-field">
+                            <h3>Equipements</h3>
+                            <p>{{ character.equipment or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Apparence</h3>
+                            <p>{{ character.character_appearance or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Backstory</h3>
+                            <p>{{ character.background_story or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Allies et organisations</h3>
+                            <p>{{ character.allies_organizations or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Tresors</h3>
+                            <p>{{ character.treasure or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Supplementaire</h3>
+                            <p>{{ character.additional_features_traits or 'Non renseigne' }}</p>
+                        </article>
+                        <article class="character-sheet-field">
+                            <h3>Description du personnage</h3>
+                            <p>{{ character.notes or 'Non renseigne' }}</p>
+                        </article>
                     </div>
-                </aside>
-            </div>
-        {% elif can_edit and not limited_profile %}
-            <div class="character-notes-pdf-layout__pdf">
-                <aside class="profile-pdf-preview">
-                    <h2>Fiche officielle</h2>
-                    <p class="section-head__copy">Aucun PDF pour ce personnage.</p>
-                    <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
-                        <button type="submit" class="btn btn-secondary">Generer la fiche PDF</button>
-                    </form>
+
+                    {% if character.pdf_filename %}
+                        <div class="pdf-preview-container">
+                            <h3>Fiche PDF</h3>
+                            <div class="pdf-actions-row">
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-load-pdf-preview
+                                        data-pdf-url="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
+                                    Afficher l'aperçu PDF
+                                </button>
+                                {% if can_edit %}
+                                    <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                                        <button type="submit" class="btn btn-secondary">Regenerer la fiche PDF</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            <embed type="application/pdf"
+                                   class="pdf-preview"
+                                   data-pdf-embed
+                                   hidden>
+                            <div class="pdf-controls">
+                                <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                                   target="_blank" class="btn btn-primary btn-pdf">
+                                    Ouvrir le PDF complet
+                                </a>
+                            </div>
+                        </div>
+                    {% elif can_edit %}
+                        <h3>Fiche PDF</h3>
+                        <p class="section-head__copy">Aucun PDF pour ce personnage.</p>
+                        <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                            <button type="submit" class="btn btn-secondary">Generer la fiche PDF</button>
+                        </form>
+                    {% endif %}
                 </aside>
             </div>
         {% endif %}
