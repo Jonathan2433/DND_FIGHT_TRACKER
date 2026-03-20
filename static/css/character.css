@@ -16,6 +16,7 @@
         radial-gradient(circle at top right, rgba(122, 93, 255, 0.16), transparent 55%),
         radial-gradient(circle at bottom left, rgba(255, 61, 172, 0.1), transparent 48%),
         var(--surface-a95);
+    padding-bottom: 50px;
 }
 
 .character-hero-shell {
