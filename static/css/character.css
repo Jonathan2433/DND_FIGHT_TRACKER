@@ -16,7 +16,7 @@
 
 .character-hero__head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) minmax(260px, 360px);
+    grid-template-columns: auto minmax(0, 1fr) minmax(560px, 720px);
     gap: 24px;
     align-items: start;
 }
@@ -34,11 +34,11 @@
 }
 
 .hero-tools-grid--three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(170px, 1fr));
 }
 
 .hero-tools-grid--two {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
 }
 
 .profile-stats--combat-overview.profile-actions {
