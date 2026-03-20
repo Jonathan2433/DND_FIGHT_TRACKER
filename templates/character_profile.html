@@ -435,6 +435,11 @@
     {% if not limited_profile %}
         <div class="character-lore-grid">
             <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Equipements</h2>
+                <p class="character-lore-text">{{ character.equipment or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
                 <h2 class="section-head__title">Allies et organisations</h2>
                 <p class="character-lore-text">{{ character.allies_organizations or 'Non renseigne' }}</p>
             </section>
@@ -467,10 +472,6 @@
                 <aside class="profile-pdf-preview">
                     <h2>Fiche du personnage</h2>
                     <div class="character-sheet-sections">
-                        <article class="character-sheet-field">
-                            <h3>Equipements</h3>
-                            <p>{{ character.equipment or 'Non renseigne' }}</p>
-                        </article>
                         <article class="character-sheet-field">
                             <h3>Apparence</h3>
                             <p>{{ character.character_appearance or 'Non renseigne' }}</p>
