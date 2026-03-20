@@ -17,7 +17,7 @@
             <ol class="creation-steps-nav" aria-label="Etapes d'edition">
                 <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identite</button></li>
                 <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Equipement</button></li>
-                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Alignement</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Details perso</button></li>
                 <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Sorts</button></li>
                 <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Medias & visibilite</button></li>
             </ol>
@@ -302,19 +302,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextButton = editForm?.querySelector('[data-wizard-next]');
     const submitButton = editForm?.querySelector('button[type="submit"]');
     let currentStep = 1;
+    let isSpellcasterClass = false;
+
+    const canDisplayPanelForClass = (panel) => {
+        if (!panel) return false;
+        if (panel.dataset.step !== '4') return true;
+        return isSpellcasterClass;
+    };
 
     const syncWizard = () => {
         stepPanels.forEach((panel) => {
             const panelStep = Number(panel.dataset.step || 1);
-            const isActive = panelStep === currentStep;
+            const isActive = panelStep === currentStep && canDisplayPanelForClass(panel);
             panel.hidden = !isActive;
             panel.classList.toggle('is-active', isActive);
         });
         stepItems.forEach((item) => {
             const panelStep = Number(item.dataset.step || 1);
-            const isActive = panelStep === currentStep;
+            const panel = stepPanels.find((candidate) => Number(candidate.dataset.step || 1) === panelStep);
+            const canDisplay = canDisplayPanelForClass(panel);
+            const isActive = panelStep === currentStep && canDisplay;
             item.classList.toggle('is-active', isActive);
             item.classList.toggle('is-complete', panelStep < currentStep);
+            item.hidden = !canDisplay;
             const trigger = item.querySelector('.creation-step-trigger');
             if (trigger) {
                 trigger.setAttribute('aria-current', isActive ? 'step' : 'false');
@@ -460,9 +470,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncClassSpecificVisibility = () => {
         const classKey = normalizeClassName(classSelect.value);
         const isSpellcaster = spellcastingClasses.has(classKey);
+        isSpellcasterClass = isSpellcaster;
 
         if (spellSection) {
-            spellSection.hidden = !isSpellcaster;
             if (!isSpellcaster) {
                 spellSection.querySelectorAll('input[type="checkbox"]').forEach((input) => {
                     input.checked = false;
@@ -479,6 +489,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (spellbookTextarea) spellbookTextarea.value = '';
             }
         }
+
+        if (!isSpellcaster && currentStep === 4) {
+            currentStep = 3;
+        }
+        syncWizard();
     };
 
     classSelect.addEventListener('change', () => {
