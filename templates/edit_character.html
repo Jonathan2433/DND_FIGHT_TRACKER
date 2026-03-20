@@ -11,14 +11,15 @@
     </div>
 
     <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data" id="edit-character-form">
-        <div class="creation-wizard edit-wizard" data-total-steps="6">
+        <input type="hidden" name="character_class" value="{{ character.character_class or '' }}">
+        <input type="hidden" name="race" value="{{ character.race or '' }}">
+        <div class="creation-wizard edit-wizard" data-total-steps="5">
             <ol class="creation-steps-nav" aria-label="Etapes d'edition">
                 <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identite</button></li>
-                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Combat</button></li>
-                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Caracteristiques</button></li>
-                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Details avances</button></li>
-                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Sorts</button></li>
-                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Medias & visibilite</button></li>
+                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Equipement</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Alignement</button></li>
+                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Sorts</button></li>
+                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Medias & visibilite</button></li>
             </ol>
         </div>
         <div class="edit-grid edit-grid--spaced">
@@ -27,28 +28,6 @@
 
                 <label for="character-name">Nom</label>
                 <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
-
-                <label for="character-class">Classe</label>
-                <select id="character-class" name="character_class" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
-                    {% for klass in dnd_classes_catalog %}
-                        <option value="{{ klass }}" {% if character.character_class == klass %}selected{% endif %}>{{ klass }}</option>
-                    {% endfor %}
-                    {% if character.character_class and character.character_class not in dnd_classes_catalog %}
-                        <option value="{{ character.character_class }}" selected>{{ character.character_class }}</option>
-                    {% endif %}
-                </select>
-                {% if character.character_type == 'PJ' %}<small>Classe verrouillee pour un PJ.</small>{% endif %}
-
-                <label for="character-race">Race</label>
-                <select id="character-race" name="race" required {% if character.character_type == 'PJ' %}disabled{% endif %}>
-                    {% for race in dnd_species_catalog %}
-                        <option value="{{ race }}" {% if character.race == race %}selected{% endif %}>{{ race }}</option>
-                    {% endfor %}
-                    {% if character.race and character.race not in dnd_species_catalog %}
-                        <option value="{{ character.race }}" selected>{{ character.race }}</option>
-                    {% endif %}
-                </select>
-                {% if character.character_type == 'PJ' %}<small>Espece verrouillee pour un PJ.</small>{% endif %}
 
                 <label for="character-background">Background</label>
                 <select id="character-background" name="background_choice" {% if character.character_type == 'PJ' %}disabled{% endif %}>
@@ -82,15 +61,6 @@
 
                 <label for="character-level">Niveau</label>
                 <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
-
-                <label for="character-gender">Genre</label>
-                <select id="character-gender" name="gender">
-                    <option value="" {% if not character.gender %}selected{% endif %}>Non precise</option>
-                    <option value="Femme" {% if character.gender == 'Femme' %}selected{% endif %}>Femme</option>
-                    <option value="Homme" {% if character.gender == 'Homme' %}selected{% endif %}>Homme</option>
-                    <option value="Non-binaire" {% if character.gender == 'Non-binaire' %}selected{% endif %}>Non-binaire</option>
-                    <option value="Autre" {% if character.gender == 'Autre' %}selected{% endif %}>Autre</option>
-                </select>
 
                 <label for="character-age">Age</label>
                 <input id="character-age" type="number" name="age" min="1" max="10000" value="{{ character.age or '' }}">
@@ -199,83 +169,7 @@
         </div>
 
         <section class="edit-section edit-section--separator wizard-step" data-step="3" hidden>
-            <h2>Caracteristiques</h2>
-            <div class="stats-grid">
-                <div class="stat-input">
-                    <label for="force">Force</label>
-                    <input id="force" type="number" name="force" value="{{ character.force }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_force" {% if character.maitrise_force %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_force }} - Sauvegarde : {{ character.sauvegarde_force }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="dexterite">Dexterite</label>
-                    <input id="dexterite" type="number" name="dexterite" value="{{ character.dexterite }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_dexterite" {% if character.maitrise_dexterite %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_dexterite }} - Sauvegarde : {{ character.sauvegarde_dexterite }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="constitution">Constitution</label>
-                    <input id="constitution" type="number" name="constitution" value="{{ character.constitution }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_constitution" {% if character.maitrise_constitution %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_constitution }} - Sauvegarde : {{ character.sauvegarde_constitution }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="intelligence">Intelligence</label>
-                    <input id="intelligence" type="number" name="intelligence" value="{{ character.intelligence }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_intelligence" {% if character.maitrise_intelligence %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_intelligence }} - Sauvegarde : {{ character.sauvegarde_intelligence }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="sagesse">Sagesse</label>
-                    <input id="sagesse" type="number" name="sagesse" value="{{ character.sagesse }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_sagesse" {% if character.maitrise_sagesse %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_sagesse }} - Sauvegarde : {{ character.sauvegarde_sagesse }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="charisme">Charisme</label>
-                    <input id="charisme" type="number" name="charisme" value="{{ character.charisme }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_charisme" {% if character.maitrise_charisme %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_charisme }} - Sauvegarde : {{ character.sauvegarde_charisme }}</small>
-                </div>
-            </div>
-        </section>
-
-        <section class="edit-section edit-section--separator wizard-step" data-step="4" hidden>
             <h2>Details avances (creation PJ)</h2>
-
-            <label>Competences maitrisees</label>
-            <div class="skill-proficiencies-grid">
-                {% for skill in dnd_skill_options %}
-                    <label class="skill-option">
-                        <input type="checkbox" name="skill_proficiencies" value="{{ skill }}" {% if skill in selected_skills %}checked{% endif %} {% if character.character_type == 'PJ' %}disabled{% endif %}>
-                        <span>{{ skill }}</span>
-                    </label>
-                {% endfor %}
-            </div>
-            {% if character.character_type == 'PJ' %}<small>Les competences maitrisees sont verrouillees pour un PJ.</small>{% endif %}
 
             <label for="character-appearance">Apparence du personnage</label>
             <textarea id="character-appearance" name="character_appearance" rows="3">{{ character.character_appearance or '' }}</textarea>
@@ -293,9 +187,10 @@
             <textarea id="character-treasure" name="treasure" rows="3">{{ character.treasure or '' }}</textarea>
         </section>
 
-        <section class="edit-section edit-section--separator wizard-step" data-step="5" hidden data-spell-selection data-class-selector="#character-class">
+        <section class="edit-section edit-section--separator wizard-step" data-step="4" hidden data-spell-selection data-class-selector="#character-class-value">
             <h2>Sorts (niveau 1)</h2>
             <p class="funnel-summary-inline">Survolez un sort avec la souris pour voir ses details.</p>
+            <input id="character-class-value" type="hidden" value="{{ character.character_class or '' }}">
             <input type="hidden" name="spellcasting_class" value="{{ character.spellcasting_class or character.character_class or '' }}">
 
             <label for="edit-spell-search-input">Filtrer les sorts par nom</label>
@@ -336,7 +231,7 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator wizard-step" data-step="6" hidden>
+        <section class="edit-section edit-section--separator wizard-step" data-step="5" hidden>
             <h2>Medias</h2>
 
             <div class="media-preview">
@@ -363,7 +258,7 @@
             </div>
         </section>
 
-        <section class="edit-section edit-section--separator visibility-panel wizard-step" data-step="6" hidden>
+        <section class="edit-section edit-section--separator visibility-panel wizard-step" data-step="5" hidden>
             <h2>Visibilite</h2>
             <label class="visibility-toggle" for="edit-is-public">
                 <input type="checkbox" id="edit-is-public" name="is_public" value="1" {% if character.is_public %}checked{% endif %}>
@@ -426,8 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         if (prevButton) prevButton.hidden = currentStep <= 1;
-        if (nextButton) nextButton.hidden = currentStep >= 6;
-        if (submitButton) submitButton.hidden = currentStep < 6;
+        if (nextButton) nextButton.hidden = currentStep >= 5;
+        if (submitButton) submitButton.hidden = currentStep < 5;
     };
 
     stepItems.forEach((item) => {
@@ -441,12 +336,12 @@ document.addEventListener('DOMContentLoaded', () => {
         syncWizard();
     });
     nextButton?.addEventListener('click', () => {
-        currentStep = Math.min(6, currentStep + 1);
+        currentStep = Math.min(5, currentStep + 1);
         syncWizard();
     });
     syncWizard();
 
-    const classSelect = document.getElementById('character-class');
+    const classSelect = document.getElementById('character-class-value');
     const weaponSelect = document.getElementById('character-weapon-loadout');
     const armorSelect = document.getElementById('character-armor-loadout');
     const spellSection = document.querySelector('[data-spell-selection]');
