@@ -118,6 +118,14 @@
                                     <strong>Vitesse</strong>
                                     <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
                                 </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Nombre de combats</strong>
+                                    <span>{{ combats_played }}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Degats infliges</strong>
+                                    <span>{{ total_damage_dealt }}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -151,17 +159,6 @@
         </div>
 
         <div class="character-hero-details">
-            <div class="profile-stats profile-stats--combat-overview">
-                <div class="stat-box stat-box--highlight">
-                    <strong>Nombre de combats</strong>
-                    <span>{{ combats_played }}</span>
-                </div>
-                <div class="stat-box stat-box--highlight">
-                    <strong>Degats infliges</strong>
-                    <span>{{ total_damage_dealt }}</span>
-                </div>
-            </div>
-
             {% if can_edit %}
                 <aside class="character-hero-card__panel profile-actions profile-actions--quick character-hero-quick"
                      {% if can_manage_combat_state and not limited_profile %}data-live-character-context
