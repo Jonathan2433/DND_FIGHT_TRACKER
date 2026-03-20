@@ -1,6 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
 {% set profile = visible_character if visible_character else {} %}
+{% set ability_mods = {
+    'force': character.mod_force,
+    'dexterite': character.mod_dexterite,
+    'constitution': character.mod_constitution,
+    'intelligence': character.mod_intelligence,
+    'sagesse': character.mod_sagesse,
+    'charisme': character.mod_charisme
+} %}
+{% set saving_throws = [
+    ('Force', character.sauvegarde_force, character.maitrise_force),
+    ('Dexterite', character.sauvegarde_dexterite, character.maitrise_dexterite),
+    ('Constitution', character.sauvegarde_constitution, character.maitrise_constitution),
+    ('Intelligence', character.sauvegarde_intelligence, character.maitrise_intelligence),
+    ('Sagesse', character.sauvegarde_sagesse, character.maitrise_sagesse),
+    ('Charisme', character.sauvegarde_charisme, character.maitrise_charisme)
+] %}
+{% set skill_ability_map = {
+    'Acrobaties': 'dexterite',
+    'Acrobatics': 'dexterite',
+    'Arcanes': 'intelligence',
+    'Arcana': 'intelligence',
+    'Athletisme': 'force',
+    'Athletics': 'force',
+    'Dressage': 'sagesse',
+    'Animal Handling': 'sagesse',
+    "Escamotage": 'dexterite',
+    'Sleight of Hand': 'dexterite',
+    'Discretion': 'dexterite',
+    'Stealth': 'dexterite',
+    'Histoire': 'intelligence',
+    'History': 'intelligence',
+    'Intimidation': 'charisme',
+    'Investigation': 'intelligence',
+    'Medecine': 'sagesse',
+    'Medicine': 'sagesse',
+    'Nature': 'intelligence',
+    'Perception': 'sagesse',
+    'Perspicacite': 'sagesse',
+    'Insight': 'sagesse',
+    'Representation': 'charisme',
+    'Performance': 'charisme',
+    'Persuasion': 'charisme',
+    'Religion': 'intelligence',
+    'Survie': 'sagesse',
+    'Survival': 'sagesse',
+    'Tromperie': 'charisme',
+    'Deception': 'charisme'
+} %}
+{% set all_skills = ['Acrobaties', 'Arcanes', 'Athletisme', 'Dressage', 'Discretion', 'Escamotage', 'Histoire', 'Intimidation', 'Investigation', 'Medecine', 'Nature', 'Perception', 'Perspicacite', 'Persuasion', 'Religion', 'Representation', 'Survie', 'Tromperie'] %}
+{% set selected_skills = character.skill_proficiencies.split(',')|map('trim')|reject('equalto', '')|list if character.skill_proficiencies else [] %}
 
 <div class="character-profile">
     <section class="character-hero card">
@@ -153,41 +203,77 @@
                     <div class="char-stat">
                         <span class="stat-name">Force</span>
                         <span class="stat-value">{{ profile.force if profile.force is defined else '—' }}{% if profile.mod_force is defined %} ({{ profile.mod_force }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_force }}{% if character.maitrise_force %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Dexterite</span>
                         <span class="stat-value">{{ profile.dexterite if profile.dexterite is defined else '—' }}{% if profile.mod_dexterite is defined %} ({{ profile.mod_dexterite }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Constitution</span>
                         <span class="stat-value">{{ profile.constitution if profile.constitution is defined else '—' }}{% if profile.mod_constitution is defined %} ({{ profile.mod_constitution }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_constitution }}{% if character.maitrise_constitution %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Intelligence</span>
                         <span class="stat-value">{{ profile.intelligence if profile.intelligence is defined else '—' }}{% if profile.mod_intelligence is defined %} ({{ profile.mod_intelligence }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Sagesse</span>
                         <span class="stat-value">{{ profile.sagesse if profile.sagesse is defined else '—' }}{% if profile.mod_sagesse is defined %} ({{ profile.mod_sagesse }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Charisme</span>
                         <span class="stat-value">{{ profile.charisme if profile.charisme is defined else '—' }}{% if profile.mod_charisme is defined %} ({{ profile.mod_charisme }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                 </div>
+
+                {% if not limited_profile %}
+                    <div class="combat-skill-section">
+                        <article class="combat-skill-panel">
+                            <h3>Saving throws</h3>
+                            <div class="combat-skill-grid">
+                                {% for save_name, save_value, is_mastered in saving_throws %}
+                                    <div class="combat-skill-item">
+                                        <span>{{ save_name }}</span>
+                                        <strong>{% if save_value >= 0 %}+{% endif %}{{ save_value }}</strong>
+                                        {% if is_mastered %}
+                                            <small>Maitrise</small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                        <article class="combat-skill-panel">
+                            <h3>Skills</h3>
+                            <div class="combat-skill-grid">
+                                {% for skill in all_skills %}
+                                    {% set is_proficient = skill in selected_skills %}
+                                    {% set ability_key = skill_ability_map.get(skill, 'sagesse') %}
+                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise if is_proficient else 0) %}
+                                    <div class="combat-skill-item">
+                                        <span>{{ skill }}</span>
+                                        <strong>{% if total_skill >= 0 %}+{% endif %}{{ total_skill }}</strong>
+                                        {% if is_proficient %}
+                                            <small>Maitrise</small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+                {% endif %}
 
                 {% if not limited_profile and character.skill_proficiencies %}
                     <div class="skill-proficiency-reminder">
                         <strong>Maitrises de competences</strong>
                         <div class="skill-proficiency-list">
                             {% for skill in character.skill_proficiencies.split(',') if skill.strip() %}
-                                <span class="skill-proficiency-tag">{{ skill.strip() }}</span>
+                                {% set skill_name = skill.strip() %}
+                                {% set ability_key = skill_ability_map.get(skill_name, 'sagesse') %}
+                                {% set skill_total = ability_mods.get(ability_key, 0) + character.bonus_maitrise %}
+                                <span class="skill-proficiency-tag"
+                                      title="Bonus total : {% if skill_total >= 0 %}+{% endif %}{{ skill_total }} (modificateur + maitrise)">
+                                    {{ skill_name }}
+                                </span>
                             {% endfor %}
                         </div>
                     </div>
@@ -326,9 +412,49 @@
                 </section>
             </div>
         {% endif %}
+    </div>
 
+    {% if not limited_profile %}
+        <div class="character-lore-grid">
+            <section class="char-details character-lore-panel character-lore-panel--wide">
+                <div class="section-head">
+                    <div class="section-head__content">
+                        <h2 class="section-head__title">Backstory</h2>
+                    </div>
+                </div>
+                <p class="character-lore-text">{{ character.background_story or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Allies et organisations</h2>
+                <p class="character-lore-text">{{ character.allies_organizations or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Tresors</h2>
+                <p class="character-lore-text">{{ character.treasure or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Supplementaire</h2>
+                <p class="character-lore-text">{{ character.additional_features_traits or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Description du personnage</h2>
+                <div class="character-description-list">
+                    <p>Genre : {{ character.gender or 'Non renseigne' }}</p>
+                    <p>Alignement : {{ profile.alignment if profile.alignment is defined and profile.alignment else 'Non renseigne' }}</p>
+                    <p>Poids : {{ character.weight or 'Non renseigne' }}</p>
+                    <p>Langues : {{ character.languages or 'Non renseigne' }}</p>
+                </div>
+            </section>
+        </div>
+    {% endif %}
+
+    <div class="character-pdf-layout {% if not character.pdf_filename and not can_edit %}character-pdf-layout--single{% endif %}">
         {% if not limited_profile %}
-            <div class="character-notes-pdf-layout__pdf">
+            <div class="character-pdf-layout__pdf">
                 <aside class="profile-pdf-preview">
                     <h2>Fiche du personnage</h2>
                     <div class="character-sheet-sections">
@@ -339,26 +465,6 @@
                         <article class="character-sheet-field">
                             <h3>Apparence</h3>
                             <p>{{ character.character_appearance or 'Non renseigne' }}</p>
-                        </article>
-                        <article class="character-sheet-field">
-                            <h3>Backstory</h3>
-                            <p>{{ character.background_story or 'Non renseigne' }}</p>
-                        </article>
-                        <article class="character-sheet-field">
-                            <h3>Allies et organisations</h3>
-                            <p>{{ character.allies_organizations or 'Non renseigne' }}</p>
-                        </article>
-                        <article class="character-sheet-field">
-                            <h3>Tresors</h3>
-                            <p>{{ character.treasure or 'Non renseigne' }}</p>
-                        </article>
-                        <article class="character-sheet-field">
-                            <h3>Supplementaire</h3>
-                            <p>{{ character.additional_features_traits or 'Non renseigne' }}</p>
-                        </article>
-                        <article class="character-sheet-field">
-                            <h3>Description du personnage</h3>
-                            <p>{{ character.notes or 'Non renseigne' }}</p>
                         </article>
                     </div>
 

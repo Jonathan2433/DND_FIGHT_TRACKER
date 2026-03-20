@@ -287,6 +287,56 @@
     font-weight: 700;
 }
 
+.combat-skill-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.combat-skill-panel {
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--overlay-white-10);
+    background: rgba(11, 13, 29, 0.28);
+}
+
+.combat-skill-panel h3 {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: var(--color-primary);
+}
+
+.combat-skill-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.combat-skill-item {
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--overlay-white-10);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.combat-skill-item span {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.combat-skill-item strong {
+    font-size: 18px;
+}
+
+.combat-skill-item small {
+    font-size: 11px;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
 /* ===================== */
 /* XP */
 /* ===================== */
@@ -545,6 +595,48 @@
 
 .character-notes-pdf-layout > .profile-generate-pdf {
     grid-column: 2;
+}
+
+.character-lore-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.character-lore-panel {
+    gap: 12px;
+}
+
+.character-lore-panel--wide {
+    grid-column: 1 / -1;
+}
+
+.character-lore-text {
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+.character-description-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.character-description-list p {
+    color: var(--color-text-secondary);
+}
+
+.character-pdf-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+}
+
+.character-pdf-layout__pdf {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .pdf-controls {
@@ -806,6 +898,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .combat-skill-section {
+        grid-template-columns: 1fr;
+    }
+
     .combat-state-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: repeat(2, minmax(0, 1fr));
@@ -846,6 +942,10 @@
     }
 
     .notes-visibility-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .character-lore-grid {
         grid-template-columns: 1fr;
     }
 }
