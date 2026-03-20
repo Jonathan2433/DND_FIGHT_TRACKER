@@ -83,57 +83,64 @@
                         {% endif %}
                     </div>
 
-                    <div class="profile-stats profile-stats--headline">
-                        <div class="stat-box stat-box--highlight" data-live-hp-block>
-                            <strong>Points de vie</strong>
-                            {% if profile.hp_current is defined and profile.hp_max is defined %}
-                                <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
-                                {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
-                                    <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
-                                {% else %}
-                                    <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
-                                {% endif %}
-                            {% elif profile.hp_max is defined %}
-                                <span>{{ profile.hp_max }}</span>
-                            {% else %}
-                                <span>—</span>
+                    {% if can_edit %}
+                        <div class="profile-actions__buttons profile-actions__buttons--identity">
+                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                                </a>
                             {% endif %}
-                        </div>
-                        <div class="stat-box stat-box--highlight" data-live-ac-block>
-                            <strong>Classe d'armure</strong>
-                            {% if profile.ac_total is defined %}
-                                <span data-live-ac-text>{{ profile.ac_total }}</span>
-                            {% elif profile.ac_base is defined %}
-                                <span>{{ profile.ac_base }}</span>
-                            {% else %}
-                                <span>—</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <aside class="hero-column hero-column--stats profile-actions profile-actions--stats">
-                <h2>Statistiques</h2>
-                <div class="profile-stats profile-stats--combat-overview">
-                    <div class="stat-box">
-                        <strong>Combats joues</strong>
-                        <span>{{ combats_played }}</span>
+                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
+
+                            {% if current_user and character.owner_id == current_user.id %}
+                                <form method="POST"
+                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                      class="inl-character-004">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="profile-stats profile-stats--vitals">
+                    <div class="stat-box stat-box--highlight" data-live-hp-block>
+                        <strong>Points de vie</strong>
+                        {% if profile.hp_current is defined and profile.hp_max is defined %}
+                            <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                            {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                                <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
+                            {% else %}
+                                <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
+                            {% endif %}
+                        {% elif profile.hp_max is defined %}
+                            <span>{{ profile.hp_max }}</span>
+                        {% else %}
+                            <span>—</span>
+                        {% endif %}
                     </div>
-                    <div class="stat-box">
-                        <strong>Degats infliges</strong>
-                        <span>{{ total_damage_dealt }}</span>
+                    <div class="stat-box stat-box--highlight" data-live-ac-block>
+                        <strong>Classe d'armure</strong>
+                        {% if profile.ac_total is defined %}
+                            <span data-live-ac-text>{{ profile.ac_total }}</span>
+                        {% elif profile.ac_base is defined %}
+                            <span>{{ profile.ac_base }}</span>
+                        {% else %}
+                            <span>—</span>
+                        {% endif %}
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box stat-box--highlight">
                         <strong>Initiative</strong>
                         <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box stat-box--highlight">
                         <strong>Vitesse</strong>
                         <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
                     </div>
                 </div>
-            </aside>
+            </div>
 
             {% if can_edit %}
                 <div class="hero-column hero-column--quick profile-actions profile-actions--quick profile-actions--inline"
@@ -159,24 +166,6 @@
                                 <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
                             </form>
                         {% endif %}
-                        <div class="profile-actions__buttons">
-                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                                </a>
-                            {% endif %}
-
-                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
-
-                            {% if current_user and character.owner_id == current_user.id %}
-                                <form method="POST"
-                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                      class="inl-character-004">
-                                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                                </form>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
             {% elif current_user %}
