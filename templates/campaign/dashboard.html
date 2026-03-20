@@ -357,7 +357,7 @@
     {% if recent_pnjs %}
         <div class="pj-dashboard-grid inl-campaign-023">
             {% for pnj in recent_pnjs[:6] %}
-                <div class="pj-dashboard-card inl-campaign-024">
+                <a href="{{ url_for('template.character_profile', id=pnj.id) }}" class="pj-dashboard-card inl-campaign-024">
                     <div class="template-avatar-container {% if pnj.image_filename %}has-image{% endif %}">
                         {% if pnj.image_filename %}
                             <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}" class="pj-dashboard-img inl-campaign-025" alt="{{ pnj.name }}">
@@ -379,7 +379,7 @@
                             <div class="inl-campaign-028">👁️ {{ pnj.visibility_level }}</div>
                         {% endif %}
                     {% endif %}
-                </div>
+                </a>
             {% endfor %}
         </div>
 
