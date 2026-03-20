@@ -45,9 +45,9 @@
         </div>
     </div>
 
+    {% if is_mj %}
     <div class="card campaign-inspiration-card">
         <h2>✨ Pot d'inspiration de la campagne</h2>
-        {% if is_mj %}
             <div class="campaign-inspiration-layout">
                 <div>
                     <div class="campaign-inspiration-recap">
@@ -93,30 +93,8 @@
                     {% endif %}
                 </div>
             </div>
-        {% else %}
-            <p>Points disponibles pour toute l'équipe : <strong>{{ campaign.inspiration_points }}</strong></p>
-            {% if inspiration_logs %}
-                <div class="campaign-calendar__list">
-                    {% for log in inspiration_logs %}
-                        <div class="campaign-calendar__item">
-                            <div>
-                                <strong>
-                                    {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
-                                </strong>
-                                <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
-                                <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
-                            </div>
-                            <div class="pj-meta">
-                                Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p>Aucun mouvement de points d'inspiration pour le moment.</p>
-            {% endif %}
-        {% endif %}
     </div>
+    {% endif %}
 
 
     <div class="card campaign-calendar">
