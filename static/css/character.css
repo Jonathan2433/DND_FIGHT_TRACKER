@@ -25,10 +25,7 @@
 }
 
 .character-hero-card__top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
-    gap: 18px;
-    align-items: stretch;
+    display: block;
 }
 
 .character-hero-card__identity {
@@ -41,11 +38,20 @@
     background: linear-gradient(140deg, rgba(10, 15, 36, 0.8), rgba(15, 23, 55, 0.5));
 }
 
+.character-hero-card__identity--with-actions {
+    grid-template-columns: auto minmax(0, 1fr) minmax(260px, 320px);
+    align-items: stretch;
+}
+
 .character-hero-card__bottom {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
     gap: 18px;
     align-items: stretch;
+}
+
+.character-hero-card__bottom > * {
+    min-height: 100%;
 }
 
 .character-hero-card__panel {
@@ -300,6 +306,12 @@
 
 .profile-actions--identity-actions {
     align-self: stretch;
+    height: 100%;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(8, 12, 30, 0.55);
+    border-color: var(--overlay-white-15);
+    box-shadow: none;
 }
 
 .profile-actions__content {
@@ -334,6 +346,20 @@
 
 .profile-actions--inline .profile-actions__buttons .btn {
     width: 100%;
+}
+
+.profile-actions--inline .profile-actions__content {
+    display: flex;
+    flex: 1;
+}
+
+.profile-actions--inline .award-xp-form {
+    gap: 14px;
+    justify-content: flex-start;
+}
+
+.profile-actions--inline .profile-actions__apply {
+    margin-top: 8px;
 }
 
 .profile-actions__apply {
@@ -1066,6 +1092,10 @@
     .character-hero-card__identity {
         grid-template-columns: 1fr;
         gap: 14px;
+    }
+
+    .character-hero-card__identity--with-actions {
+        grid-template-columns: 1fr;
     }
 
     .character-summary {
