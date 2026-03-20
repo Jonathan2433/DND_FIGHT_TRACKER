@@ -54,7 +54,7 @@
 
 <div class="character-profile">
     <section class="character-hero card">
-        <div class="character-hero__head">
+        <div class="character-hero__head {% if can_edit %}character-hero__head--editable{% endif %}">
             <div class="hero-column hero-column--identity">
                 <div class="character-avatar">
                     <div class="character-avatar__frame {% if character.image_filename %}has-image{% endif %}">
@@ -83,26 +83,6 @@
                         {% endif %}
                     </div>
 
-                    {% if can_edit %}
-                        <div class="profile-actions__buttons profile-actions__buttons--identity">
-                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                                </a>
-                            {% endif %}
-
-                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
-
-                            {% if current_user and character.owner_id == current_user.id %}
-                                <form method="POST"
-                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                      class="inl-character-004">
-                                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    {% endif %}
                 </div>
 
                 <div class="profile-stats profile-stats--vitals">
@@ -139,8 +119,39 @@
                         <strong>Vitesse</strong>
                         <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
                     </div>
+                    <div class="stat-box stat-box--highlight">
+                        <strong>Nombre de combats</strong>
+                        <span>{{ combats_played }}</span>
+                    </div>
+                    <div class="stat-box stat-box--highlight">
+                        <strong>Degats infliges</strong>
+                        <span>{{ total_damage_dealt }}</span>
+                    </div>
                 </div>
             </div>
+
+            {% if can_edit %}
+                <div class="hero-column hero-column--identity-actions profile-actions profile-actions--identity-actions">
+                    <div class="profile-actions__buttons profile-actions__buttons--identity">
+                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
+
+                        {% if current_user and character.owner_id == current_user.id %}
+                            <form method="POST"
+                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                  class="inl-character-004">
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
 
             {% if can_edit %}
                 <div class="hero-column hero-column--quick profile-actions profile-actions--quick profile-actions--inline"
