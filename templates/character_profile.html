@@ -108,7 +108,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="profile-stats profile-stats--hero-compact">
+                    <div class="profile-stats profile-stats--hero">
                         <div class="stat-box stat-box--highlight" data-live-hp-block>
                             <strong>Points de vie</strong>
                             {% if profile.hp_current is defined and profile.hp_max is defined %}
@@ -164,24 +164,53 @@
                      {% if can_manage_combat_state and not limited_profile %}data-live-character-context
                      data-character-id="{{ character.id }}"
                      data-active-combat-ids='{{ active_combat_ids|tojson }}'{% endif %}>
-                    <h2>Actions rapides</h2>
+                    <h2>Etat de combat (persistant)</h2>
                     <div class="profile-actions__content">
                         {% if can_manage_combat_state and not limited_profile %}
-                            <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
-                                <label class="combat-state-input">
-                                    <span>Modifier PV actuels</span>
-                                    <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
-                                </label>
-                                <label class="combat-state-input">
-                                    <span>Modifier PV temporaires</span>
-                                    <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
-                                </label>
-                                <label class="combat-state-input">
-                                    <span>Modifier CA</span>
-                                    <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
-                                </label>
-                                <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
-                            </form>
+                            <div class="combat-state-layout combat-state-layout--wide">
+                                <div class="combat-state-summary">
+                                    <div class="combat-state-summary__card" data-live-hp-block>
+                                        <span class="combat-state-summary__label">Points de vie</span>
+                                        {% if profile.hp_current is defined and profile.hp_max is defined %}
+                                            <strong data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</strong>
+                                        {% elif profile.hp_max is defined %}
+                                            <strong>{{ profile.hp_max }}</strong>
+                                        {% else %}
+                                            <strong>—</strong>
+                                        {% endif %}
+                                        {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                                            <small data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
+                                        {% else %}
+                                            <small data-live-temp-hp>Aucun PV temporaire</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="combat-state-summary__card" data-live-ac-block>
+                                        <span class="combat-state-summary__label">Classe d'armure</span>
+                                        {% if profile.ac_total is defined %}
+                                            <strong data-live-ac-text>{{ profile.ac_total }}</strong>
+                                        {% elif profile.ac_base is defined %}
+                                            <strong>{{ profile.ac_base }}</strong>
+                                        {% else %}
+                                            <strong>—</strong>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form combat-state-form--horizontal">
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV actuels</span>
+                                        <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV temporaires</span>
+                                        <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier CA</span>
+                                        <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                                    </label>
+                                    <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
+                                </form>
+                            </div>
                         {% endif %}
                     </div>
                 </aside>
