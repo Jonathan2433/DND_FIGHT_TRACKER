@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Bibliothèque des sorts{% endblock %}
+
+{% block content %}
+<section class="spell-library">
+    <header class="spell-library__header">
+        <h1>Bibliothèque des sorts</h1>
+        <p>Explorez tous les sorts disponibles, puis triez-les selon vos besoins de jeu.</p>
+    </header>
+
+    <form class="spell-library__filters" id="spell-filters" autocomplete="off">
+        <div class="spell-library__filter">
+            <label for="spell-filter-name">Nom</label>
+            <input id="spell-filter-name" name="name" type="text" placeholder="Rechercher un sort...">
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-school">École</label>
+            <select id="spell-filter-school" name="school">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-level">Niveau</label>
+            <select id="spell-filter-level" name="level">
+                <option value="">Tous</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-casting-time">Temps d'incantation</label>
+            <select id="spell-filter-casting-time" name="casting_time">
+                <option value="">Tous</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-class">Classe</label>
+            <select id="spell-filter-class" name="class">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-duration">Durée</label>
+            <select id="spell-filter-duration" name="duration">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-concentration">Concentration</label>
+            <select id="spell-filter-concentration" name="concentration">
+                <option value="">Toutes</option>
+                <option value="Oui">Oui</option>
+                <option value="Non">Non</option>
+            </select>
+        </div>
+        <div class="spell-library__filter">
+            <label for="spell-filter-ritual">Rituel</label>
+            <select id="spell-filter-ritual" name="ritual">
+                <option value="">Tous</option>
+                <option value="Oui">Oui</option>
+                <option value="Non">Non</option>
+            </select>
+        </div>
+    </form>
+
+    <p id="spell-count" class="spell-library__count"></p>
+
+    <div id="spell-grid" class="spell-library__grid">
+        {% for spell in spells %}
+            <a
+                class="spell-card spell-card--interactive"
+                href="{{ url_for('main.spell_detail', spell_slug=spell.slug) }}"
+                data-name="{{ spell.name|lower }}"
+                data-school="{{ spell.school }}"
+                data-casting-time="{{ spell.casting_time }}"
+                data-classes="{{ spell.classes|join(',') }}"
+                data-duration="{{ spell.duration }}"
+                data-concentration="{{ spell.concentration }}"
+                data-ritual="{{ spell.ritual }}"
+                data-level="{{ spell.level }}"
+            >
+                <h2>{{ spell.name }}</h2>
+                <p class="spell-card__meta">
+                    {% if spell.level == 0 %}
+                        Sort mineur
+                    {% else %}
+                        Niveau {{ spell.level }}
+                    {% endif %}
+                    · {{ spell.school or 'École non renseignée' }}
+                </p>
+                <ul class="spell-card__facts">
+                    <li><strong>Temps d'incantation :</strong> {{ spell.casting_time or '—' }}</li>
+                    <li><strong>Portée :</strong> {{ spell.range or '—' }}</li>
+                    <li><strong>Durée :</strong> {{ spell.duration or '—' }}</li>
+                    <li><strong>Concentration :</strong> {{ spell.concentration }}</li>
+                    <li><strong>Rituel :</strong> {{ spell.ritual }}</li>
+                </ul>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/spell_library.js') }}"></script>
+{% endblock %}

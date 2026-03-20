@@ -430,6 +430,7 @@ class CharacterTemplate(db.Model):
             # Histoire et notes (complètes pour le propriétaire/MJ)
             'notes': self.notes,
             'background_story': self.background_story,
+            'alignment': self.alignment,
             'selected_cantrips': self.selected_cantrips,
             'selected_level_1_spells': self.selected_level_1_spells,
 

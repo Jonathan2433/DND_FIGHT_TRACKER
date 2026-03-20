@@ -208,6 +208,42 @@
 .campaign-settings-card--danger {
     border-color: var(--danger-a30);
 }
+
+.campaign-inspiration-form {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0;
+    max-width: 520px;
+}
+
+.campaign-inspiration-card {
+    background: rgba(154, 161, 176, 0.18);
+    border-color: rgba(170, 178, 196, 0.45);
+}
+
+.campaign-inspiration-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.campaign-inspiration-recap {
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.campaign-inspiration-recap p {
+    margin: 0 0 8px;
+}
+
+.campaign-inspiration-recap strong {
+    font-size: 28px;
+    line-height: 1;
+    color: var(--color-primary);
+}
 /* ===================== */
 /* CRÉATION DE CAMPAGNE */
 /* ===================== */
@@ -477,7 +513,6 @@
     padding: 20px;
     border-radius: var(--radius-lg);
     border-left: 4px solid var(--color-primary);
-    margin-top: 20px;
 }
 
 .profile-actions h3 {
@@ -544,6 +579,12 @@
     }
     
     .combat-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .campaign-inspiration-layout {
         grid-template-columns: 1fr;
     }
 }

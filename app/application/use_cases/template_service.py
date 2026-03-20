@@ -765,20 +765,38 @@ class TemplateService:
         template.visibility_level = form_data.get('visibility_level', 'private')
 
         # Mise à jour des caractéristiques
-        template.force = int(form_data.get('force', 10))
-        template.dexterite = int(form_data.get('dexterite', 10))
-        template.constitution = int(form_data.get('constitution', 10))
-        template.intelligence = int(form_data.get('intelligence', 10))
-        template.sagesse = int(form_data.get('sagesse', 10))
-        template.charisme = int(form_data.get('charisme', 10))
+        template.force = int(form_data.get('force', template.force or 10))
+        template.dexterite = int(form_data.get('dexterite', template.dexterite or 10))
+        template.constitution = int(form_data.get('constitution', template.constitution or 10))
+        template.intelligence = int(form_data.get('intelligence', template.intelligence or 10))
+        template.sagesse = int(form_data.get('sagesse', template.sagesse or 10))
+        template.charisme = int(form_data.get('charisme', template.charisme or 10))
 
-        # Mise à jour des maîtrises
-        template.maitrise_force = 'maitrise_force' in form_data
-        template.maitrise_dexterite = 'maitrise_dexterite' in form_data
-        template.maitrise_constitution = 'maitrise_constitution' in form_data
-        template.maitrise_intelligence = 'maitrise_intelligence' in form_data
-        template.maitrise_sagesse = 'maitrise_sagesse' in form_data
-        template.maitrise_charisme = 'maitrise_charisme' in form_data
+        # Mise à jour des maîtrises (préserve les valeurs si la section n'est pas présente dans le formulaire)
+        mastery_fields_present = any(
+            field in form_data
+            for field in (
+                'maitrise_force',
+                'maitrise_dexterite',
+                'maitrise_constitution',
+                'maitrise_intelligence',
+                'maitrise_sagesse',
+                'maitrise_charisme',
+                'force',
+                'dexterite',
+                'constitution',
+                'intelligence',
+                'sagesse',
+                'charisme',
+            )
+        )
+        if mastery_fields_present:
+            template.maitrise_force = 'maitrise_force' in form_data
+            template.maitrise_dexterite = 'maitrise_dexterite' in form_data
+            template.maitrise_constitution = 'maitrise_constitution' in form_data
+            template.maitrise_intelligence = 'maitrise_intelligence' in form_data
+            template.maitrise_sagesse = 'maitrise_sagesse' in form_data
+            template.maitrise_charisme = 'maitrise_charisme' in form_data
 
         # Gestion des fichiers
         image = files.get("image")
@@ -860,7 +878,7 @@ class TemplateService:
             hp_max=template.hp_max,
             hp_current=template.hp_current_effective,
             ac_base=template.ac_base,
-            ac_bonus=template.ac_bonus or 0,
+            ac_bonus=0,
             initiative=initiative,
             notes=template.image_filename  # Pour stocker le nom de l'image
         )

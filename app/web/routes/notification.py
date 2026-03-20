@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, g, flash, jsoni
 
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.notification_service import NotificationService
+from app.models import Combat
 from app.utils.decorators import login_required
 
 
@@ -27,6 +28,9 @@ CAMPAIGN_NOTIFICATION_KINDS = {
     'player_pj_updated',
     'player_pj_deleted',
     'story_arc_created',
+    'campaign_session_created',
+    'campaign_session_updated',
+    'campaign_session_cancelled',
     'xp_awarded',
 }
 
@@ -55,6 +59,9 @@ def _notification_target(user_id, notification):
     if notification.kind.startswith('combat_invitation:'):
         combat_id = notification.kind.split(':', 1)[1]
         if combat_id.isdigit():
+            combat = Combat.query.get(int(combat_id))
+            if combat and combat.is_closed:
+                return url_for('summary.combat_summary', combat_id=combat.id)
             return url_for('combat.view_combat_player', combat_id=int(combat_id))
 
     if notification.kind.startswith('player_'):

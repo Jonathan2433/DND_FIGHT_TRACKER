@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exp_history.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/campaign.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notes_mj_pj.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spell_library.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/core-inline.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/auth-inline.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/campaign-inline.css') }}">
@@ -58,6 +59,7 @@
                     <div class="site-nav__links">
                         <a href="{{ url_for('main.index') }}" class="site-nav__link">Accueil</a>
                         <a href="{{ url_for('campaign.list_campaigns') }}" class="site-nav__link">Campagnes</a>
+                        <a href="{{ url_for('main.spell_library') }}" class="site-nav__link">Sorts</a>
 
                         {% if session.user_id %}
                             <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
@@ -163,6 +165,7 @@
                 <div class="site-footer__links">
                     <a href="{{ url_for('main.index') }}">Accueil</a>
                     <a href="{{ url_for('campaign.list_campaigns') }}">Campagnes</a>
+                    <a href="{{ url_for('main.spell_library') }}">Sorts</a>
                     {% if session.user_id %}
                         <a href="{{ url_for('template.manage_templates') }}">Personnages</a>
                         <a href="{{ url_for('auth.profile') }}">Profil</a>

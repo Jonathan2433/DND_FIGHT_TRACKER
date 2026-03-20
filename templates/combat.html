@@ -368,10 +368,7 @@
             </div>
 
             <div>
-                CA : {{ c.ac_total }}
-                {% if c.ac_bonus != 0 %}
-                    (Base {{ c.ac_base }} + {{ c.ac_bonus }})
-                {% endif %}
+                CA : {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})
             </div>
 
             <form method="POST"

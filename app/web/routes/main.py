@@ -1,15 +1,27 @@
 # Migrated to app.web.routes
 """Routes principales."""
-from flask import Blueprint, render_template, session, g
+import re
+import unicodedata
+
+from flask import Blueprint, abort, render_template, session, g, request, url_for
 
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import Combat, CharacterTemplate, Campaign, User
 from app.models.story_arc import StoryArc
 from app.models.episode import Episode
 from app.utils import format_duration
+from app.utils.spell_catalog import load_spell_catalog
 
 
 bp = Blueprint('main', __name__)
+
+
+def _slugify_spell_name(name):
+    normalized = unicodedata.normalize('NFKD', name or '')
+    ascii_name = normalized.encode('ascii', 'ignore').decode('ascii')
+    lowered = ascii_name.lower()
+    cleaned = re.sub(r'[^a-z0-9]+', '-', lowered).strip('-')
+    return cleaned or 'sort'
 
 
 def _build_campaign_summary(campaign):
@@ -109,3 +121,34 @@ def public_campaigns():
     """Lister les campagnes publiques."""
     campaigns = CampaignService.get_public_campaigns()
     return render_template('campaign/public_campaigns.html', public_campaigns=campaigns)
+
+
+@bp.route('/bibliotheque-des-sorts')
+def spell_library():
+    """Bibliothèque publique de sorts."""
+    spells = sorted(load_spell_catalog(), key=lambda spell: spell.get('name', '').lower())
+    for spell in spells:
+        spell['slug'] = _slugify_spell_name(spell.get('name', ''))
+    return render_template('spell_library.html', spells=spells)
+
+
+@bp.route('/bibliotheque-des-sorts/<spell_slug>')
+def spell_detail(spell_slug):
+    """Détail d'un sort avec son contenu complet."""
+    spell = next(
+        (
+            candidate for candidate in load_spell_catalog()
+            if _slugify_spell_name(candidate.get('name', '')) == spell_slug
+        ),
+        None,
+    )
+    if spell is None:
+        abort(404)
+    return_to = request.args.get('return_to') or url_for('main.spell_library')
+    return_label = request.args.get('return_label') or 'Retour à la bibliothèque'
+    return render_template(
+        'spell_detail.html',
+        spell=spell,
+        return_to=return_to,
+        return_label=return_label,
+    )

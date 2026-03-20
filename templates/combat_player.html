@@ -80,7 +80,7 @@
                                     {% endif %}
                                 </div>
                                 <div class="pj-name">{{ c.name }}</div>
-                                <div class="pj-ac">CA {{ c.ac_total }}</div>
+                                <div class="pj-ac">CA {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})</div>
 
                                 <div class="pj-hp-container">
                                     {% set ratio = c.hp_current / c.hp_max %}
@@ -138,10 +138,7 @@
 
                 {% if c.type == "PJ" %}
                 <div class="ac-info">
-                    CA : {{ c.ac_total }}
-                    {% if c.ac_bonus != 0 %}
-                        (Base {{ c.ac_base }} + {{ c.ac_bonus }})
-                    {% endif %}
+                    CA : {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})
                 </div>
                 {% endif %}
 
@@ -322,7 +319,7 @@
                         </div>
 
                         <div class="pj-name">{{ c.name }}</div>
-                        <div class="pj-ac">CA {{ c.ac_total }}</div>
+                        <div class="pj-ac">CA {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})</div>
 
                         <div class="pj-hp-container">
                             {% set ratio = c.hp_current / c.hp_max %}
@@ -372,7 +369,7 @@
 </div>
 
 <!-- ✅ Boutons flottants (CORRIGER le problème de clic) -->
-<div class="floating-hud">
+<div class="floating-hud" style="display: none;">
     <button class="btn btn-capture btn-primary mobile-hidden" id="capture-button">🎥 Partager écran</button>
     <button class="btn btn-switch-display btn-primary inl-combat-002" onclick="enterHudMode()">🖥️ Switch Display</button>
     <button class="btn btn-primary" id="battlemap-player-fullscreen">⛶ Battle map plein écran</button>
@@ -531,7 +528,7 @@ function exitHudMode() {
 
     // Réafficher la vue normale
     document.getElementById('normal-view').style.display = 'grid';
-    document.querySelector('.floating-hud').style.display = 'flex';
+    document.querySelector('.floating-hud').style.display = 'none';
 
     console.log('Mode HUD désactivé');
 }
@@ -869,6 +866,20 @@ function sortCombatantsByInitiative(combatants) {
 }
 
 // ✅ NOUVEAU : Mettre à jour les informations de round
+
+function formatAcDisplay(combatant) {
+    const acBase = Number.isFinite(combatant.ac_base) ? combatant.ac_base : (combatant.ac_total - (combatant.ac_bonus || 0));
+    const acBonus = Number.isFinite(combatant.ac_bonus) ? combatant.ac_bonus : 0;
+    const acTotal = Number.isFinite(combatant.ac_total) ? combatant.ac_total : acBase + acBonus;
+
+    if (acBonus === 0) {
+        return `CA ${acTotal} (base ${acBase})`;
+    }
+
+    const operator = acBonus > 0 ? '+' : '-';
+    return `CA ${acTotal} (base ${acBase} ${operator} ${Math.abs(acBonus)} temp)`;
+}
+
 function updateRoundInfo(combatState) {
     // Mettre à jour le numéro de round dans le header
     const roundElements = document.querySelectorAll('h1[data-round], h1');
@@ -904,7 +915,7 @@ function updatePJBar(combatState) {
                     ${isActive ? '<div class="pj-turn-indicator"></div>' : ''}
                 </div>
                 <div class="pj-name">${c.name}</div>
-                <div class="pj-ac">CA ${c.ac_total}</div>
+                <div class="pj-ac">${formatAcDisplay(c)}</div>
                 <div class="pj-hp-container">
                     <div class="pj-hp-bar">
                         <div class="pj-hp-fill js-width ${hpColor}" data-width="${(ratio * 100).toFixed(1)}%"></div>
@@ -976,7 +987,7 @@ function updateBattlemapFullscreenHud(combatants, currentActorId) {
                             : `<div class="pj-avatar">${combatant.name.substring(0, 2).toUpperCase()}</div>`}
                     </div>
                     <div class="pj-name">${combatant.name}</div>
-                    <div class="pj-ac">CA ${combatant.ac_total}</div>
+                    <div class="pj-ac">${formatAcDisplay(combatant)}</div>
                     <div class="pj-hp-container">
                         <div class="pj-hp-bar">
                             <div class="pj-hp-fill js-width ${hpColor}" data-width="${(ratio * 100).toFixed(1)}%"></div>
@@ -1203,7 +1214,7 @@ function createHudPjPortrait(combatant, currentActorId) {
             ${combatant.id === currentActorId ? '<div class="hud-pj-turn-indicator"></div>' : ''}
         </div>
         <div class="hud-pj-name">${combatant.name}</div>
-        <div class="hud-pj-ac">CA ${combatant.ac_total}</div>
+        <div class="hud-pj-ac">${formatAcDisplay(combatant)}</div>
         <div class="hud-pj-hp">
             <div class="hud-pj-hp-bar">
                 <div class="hud-pj-hp-fill js-width ${ratio > 0.75 ? 'hp-green' : ratio > 0.4 ? 'hp-yellow' : ratio > 0.1 ? 'hp-orange' : 'hp-red'}"

@@ -158,7 +158,7 @@ def view_combat(combat_id):
     combat = Combat.query.get_or_404(combat_id)
     if not _can_manage_combat(combat):
         flash('Seul le MJ proprietaire peut acceder a la gestion du combat.', 'error')
-        return redirect(url_for('combat.view_combat_player', combat_id=combat_id))
+        return redirect(url_for('combat.join_combat', combat_id=combat_id))
 
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     character_templates = CharacterTemplate.query.all()
@@ -198,6 +198,9 @@ def view_combat_player(combat_id):
     if not _can_view_player_combat(combat):
         flash('Acces non autorise a ce combat.', 'error')
         return redirect(url_for('main.index'))
+
+    if combat.is_closed:
+        return redirect(url_for('summary.combat_summary', combat_id=combat_id))
 
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     combatants_sorted = get_initiative_order(combat.combatants)
@@ -305,6 +308,9 @@ def join_combat(combat_id):
     if not _can_view_player_combat(combat):
         flash('Acces non autorise a ce combat.', 'error')
         return redirect(url_for('main.index'))
+
+    if combat.is_closed:
+        return redirect(url_for('summary.combat_summary', combat_id=combat_id))
 
     return redirect(url_for('combat.view_combat_player', combat_id=combat_id))
 
@@ -566,6 +572,8 @@ def combat_state(combat_id):
                 'temp_hp': c.temp_hp,
                 'initiative': c.initiative,
                 'ac_total': c.ac_total,
+                'ac_base': c.ac_base,
+                'ac_bonus': c.ac_bonus or 0,
                 'is_dead': c.is_dead,
                 'has_fled': c.has_fled,
                 'conditions': c.conditions.split(',') if c.conditions else [],
