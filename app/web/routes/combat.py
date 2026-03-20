@@ -199,6 +199,9 @@ def view_combat_player(combat_id):
         flash('Acces non autorise a ce combat.', 'error')
         return redirect(url_for('main.index'))
 
+    if combat.is_closed:
+        return redirect(url_for('summary.combat_summary', combat_id=combat_id))
+
     combat_data = CombatService.get_combat_with_organized_data(combat_id)
     combatants_sorted = get_initiative_order(combat.combatants)
     current_actor = get_current_actor(combat)
@@ -305,6 +308,9 @@ def join_combat(combat_id):
     if not _can_view_player_combat(combat):
         flash('Acces non autorise a ce combat.', 'error')
         return redirect(url_for('main.index'))
+
+    if combat.is_closed:
+        return redirect(url_for('summary.combat_summary', combat_id=combat_id))
 
     return redirect(url_for('combat.view_combat_player', combat_id=combat_id))
 

@@ -369,7 +369,7 @@
 </div>
 
 <!-- ✅ Boutons flottants (CORRIGER le problème de clic) -->
-<div class="floating-hud">
+<div class="floating-hud" style="display: none;">
     <button class="btn btn-capture btn-primary mobile-hidden" id="capture-button">🎥 Partager écran</button>
     <button class="btn btn-switch-display btn-primary inl-combat-002" onclick="enterHudMode()">🖥️ Switch Display</button>
     <button class="btn btn-primary" id="battlemap-player-fullscreen">⛶ Battle map plein écran</button>
@@ -528,7 +528,7 @@ function exitHudMode() {
 
     // Réafficher la vue normale
     document.getElementById('normal-view').style.display = 'grid';
-    document.querySelector('.floating-hud').style.display = 'flex';
+    document.querySelector('.floating-hud').style.display = 'none';
 
     console.log('Mode HUD désactivé');
 }
