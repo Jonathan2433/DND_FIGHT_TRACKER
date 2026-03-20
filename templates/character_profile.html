@@ -463,14 +463,12 @@
                     <p>Langues : {{ character.languages or 'Non renseigne' }}</p>
                 </div>
             </section>
-        </div>
-    {% endif %}
 
-    {% if not limited_profile %}
-        <section class="char-details character-lore-panel">
-            <h2 class="section-head__title">Apparence</h2>
-            <p class="character-lore-text">{{ character.character_appearance or 'Non renseigne' }}</p>
-        </section>
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Apparence</h2>
+                <p class="character-lore-text">{{ character.character_appearance or 'Non renseigne' }}</p>
+            </section>
+        </div>
     {% endif %}
 
     <div class="character-pdf-layout {% if not character.pdf_filename and not can_edit %}character-pdf-layout--single{% endif %}">
