@@ -17,9 +17,7 @@
 .character-hero__head {
     display: grid;
     grid-template-columns: 2.4fr 1fr;
-    grid-template-areas:
-        "identity stats"
-        "quick quick";
+    grid-template-areas: "identity quick";
     gap: 20px;
     align-items: start;
 }
@@ -31,10 +29,6 @@
 
 .hero-column--identity {
     grid-area: identity;
-}
-
-.hero-column--stats {
-    grid-area: stats;
 }
 
 .hero-column--quick {
@@ -68,7 +62,7 @@
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
         "avatar summary"
-        "stats stats";
+        "vitals summary";
     align-items: start;
     column-gap: 20px;
     row-gap: 12px;
@@ -170,12 +164,18 @@
 }
 
 .profile-stats--headline {
-    grid-area: stats;
+    grid-area: vitals;
     grid-template-columns: repeat(2, minmax(170px, 1fr));
 }
 
 .profile-stats--combat-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-stats--vitals {
+    grid-area: vitals;
+    grid-template-columns: 1fr;
+    width: 100%;
 }
 
 .stat-box {
@@ -254,12 +254,6 @@
     margin: 0;
 }
 
-.profile-actions__buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
 .profile-actions .btn-primary {
     background: linear-gradient(135deg, #ff3dac, #7a5dff);
     box-shadow: 0 12px 24px rgba(122, 93, 255, 0.28);
@@ -290,6 +284,9 @@
 
 .profile-actions--quick .award-xp-form {
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .profile-actions--inline {
@@ -297,22 +294,37 @@
 }
 
 .profile-actions__content {
-    display: grid;
-    grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr);
-    gap: 16px;
+    display: block;
+}
+
+.profile-actions__buttons {
+    display: flex;
+    flex-direction: column;
     align-items: stretch;
+    width: 100%;
+    max-width: 420px;
+    gap: 12px;
+}
+
+.profile-actions__buttons--identity {
+    margin-top: 8px;
+}
+
+.profile-actions__buttons .btn,
+.profile-actions__buttons form,
+.profile-actions__buttons form .btn {
+    width: 100%;
 }
 
 .profile-actions--inline .profile-actions__buttons {
-    display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     align-content: flex-start;
     gap: 12px;
 }
 
 .profile-actions--inline .profile-actions__buttons .btn {
-    width: auto;
+    width: 100%;
 }
 
 .profile-actions__apply {
@@ -1023,7 +1035,6 @@
         grid-template-columns: 1fr;
         grid-template-areas:
             "identity"
-            "stats"
             "quick";
     }
 
@@ -1032,15 +1043,11 @@
         grid-template-areas:
             "avatar"
             "summary"
-            "stats";
+            "vitals";
     }
 
     .profile-stats--headline {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .profile-actions__content {
-        grid-template-columns: 1fr;
     }
 
     .character-notes-pdf-layout {
@@ -1057,7 +1064,6 @@
         grid-template-columns: 1fr;
         grid-template-areas:
             "identity"
-            "stats"
             "quick";
     }
 
@@ -1074,7 +1080,7 @@
     }
 
     .profile-actions--inline .profile-actions__buttons {
-        flex-direction: row;
+        flex-direction: column;
         justify-content: flex-start;
     }
 
