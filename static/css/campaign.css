@@ -208,6 +208,13 @@
 .campaign-settings-card--danger {
     border-color: var(--danger-a30);
 }
+
+.campaign-inspiration-form {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0;
+    max-width: 460px;
+}
 /* ===================== */
 /* CRÉATION DE CAMPAGNE */
 /* ===================== */
