@@ -71,6 +71,7 @@ def create_app(config_name='default'):
 
     register_blueprints(app)
     register_socketio_events()
+    register_cli_commands(app)
 
     return app
 
@@ -86,3 +87,26 @@ def register_socketio_events():
     from app.extensions import socketio
     from app.web.sockets import register_all_socketio_events as register_web_socket_events
     register_web_socket_events(socketio)
+
+
+def register_cli_commands(app):
+    """Enregistrer les commandes CLI applicatives."""
+
+    @app.cli.command('send-session-reminders')
+    def send_session_reminders_command():
+        """Envoyer les emails de rappel de session à J-7."""
+        from app.application.use_cases.campaign_session_reminder_service import CampaignSessionReminderService
+
+        result = CampaignSessionReminderService.send_weekly_session_reminders()
+        app.logger.info(
+            'Rappels sessions: cible=%s, trouvées=%s, envoyées=%s, échecs=%s',
+            result['target_date'],
+            result['sessions_found'],
+            result['sessions_sent'],
+            result['sessions_failed'],
+        )
+
+        print(
+            f"Session reminders => target={result['target_date']} "
+            f"found={result['sessions_found']} sent={result['sessions_sent']} failed={result['sessions_failed']}"
+        )

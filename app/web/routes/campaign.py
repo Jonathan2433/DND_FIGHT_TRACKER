@@ -557,6 +557,7 @@ def update_campaign_session(campaign_id, session_id):
     session_entry.scheduled_for = new_scheduled_for
     session_entry.is_cancelled = False
     session_entry.cancelled_at = None
+    session_entry.reminder_sent_at = None
     db.session.commit()
 
     NotificationService.create_campaign_notification(
@@ -592,6 +593,7 @@ def cancel_campaign_session(campaign_id, session_id):
 
     session_entry.is_cancelled = True
     session_entry.cancelled_at = datetime.utcnow()
+    session_entry.reminder_sent_at = None
     db.session.commit()
 
     NotificationService.create_campaign_notification(
