@@ -7,7 +7,6 @@ down_revision = "5df9ffc02c20"
 branch_labels = None
 depends_on = None
 
-
 def upgrade():
     bind = op.get_bind()
     inspector = sa.inspect(bind)
