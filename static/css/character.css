@@ -1271,6 +1271,10 @@
 }
 
 @media (max-width: 768px) {
+    .combat-state-summary {
+        display: none;
+    }
+
     .combat-state-layout--wide {
         grid-template-columns: 1fr;
     }
