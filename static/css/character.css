@@ -20,7 +20,7 @@
 
 .character-hero-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     align-items: stretch;
 }
@@ -41,9 +41,9 @@
 
 .character-hero-details {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-columns: minmax(220px, 280px) minmax(220px, 280px) minmax(300px, 1fr);
     gap: 18px;
-    align-items: stretch;
+    align-items: start;
 }
 
 .character-hero-card__panel {
@@ -138,6 +138,13 @@
     gap: 6px;
 }
 
+.character-summary__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 330px);
+    gap: 14px;
+    align-items: start;
+}
+
 .character-summary__title h1 {
     font-size: clamp(34px, 4vw, 50px);
     line-height: 1.08;
@@ -167,7 +174,12 @@
 }
 
 .profile-stats--combat-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+}
+
+.profile-stats--combat-overview .stat-box {
+    min-height: 112px;
+    justify-content: center;
 }
 
 .profile-stats--vitals {
@@ -340,6 +352,20 @@
     background: rgba(8, 12, 30, 0.55);
     border-color: var(--overlay-white-15);
     box-shadow: none;
+}
+
+.profile-actions--identity-inline {
+    padding: 14px;
+    border-radius: 14px;
+    border-color: var(--overlay-white-15);
+    background: rgba(8, 12, 30, 0.55);
+    box-shadow: none;
+    gap: 10px;
+}
+
+.profile-actions--identity-inline h2 {
+    font-size: 18px;
+    margin: 0;
 }
 
 .profile-actions__content {
@@ -1099,6 +1125,10 @@
         grid-template-columns: 1fr;
     }
 
+    .character-summary__top {
+        grid-template-columns: 1fr;
+    }
+
     .profile-stats--headline {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1141,10 +1171,6 @@
     .profile-actions--inline .profile-actions__buttons {
         flex-direction: column;
         justify-content: flex-start;
-    }
-
-    .profile-stats--combat-overview {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .profile-stats--vitals {
@@ -1270,6 +1296,10 @@
 
     .profile-actions--quick h2 {
         font-size: 15px;
+    }
+
+    .profile-actions--identity-inline {
+        padding: 12px;
     }
 
     .profile-actions__buttons {
