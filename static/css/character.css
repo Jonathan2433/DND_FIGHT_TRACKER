@@ -12,73 +12,53 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(122, 93, 255, 0.2), transparent 55%),
+        radial-gradient(circle at bottom left, rgba(255, 61, 172, 0.16), transparent 48%),
+        var(--surface-a95);
 }
 
-.character-hero__head {
+.character-hero-card {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.character-hero-card__top {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
-    grid-template-areas: "identity quick";
-    gap: 20px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 18px;
+    align-items: stretch;
 }
 
-.character-hero__head--editable {
-    grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr) minmax(280px, 1fr);
-    grid-template-areas: "identity identity-actions quick";
-}
-
-.hero-column {
-    min-width: 0;
-    height: 100%;
-}
-
-.hero-column--identity {
-    grid-area: identity;
-}
-
-.hero-column--quick {
-    grid-area: quick;
-}
-
-.hero-column--identity-actions {
-    grid-area: identity-actions;
-}
-
-.profile-actions--quick,
-.profile-actions--combat-top {
-    height: 100%;
-}
-
-.profile-actions--quick {
-    min-width: 0;
-}
-
-.profile-actions--quick .profile-actions__buttons {
-    margin-top: auto;
-}
-
-.profile-actions--combat-top .award-xp-form {
-    height: 100%;
-}
-
-.hero-side-row {
-    gap: 14px;
-    align-items: start;
-}
-
-.hero-column--identity {
+.character-hero-card__identity {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-        "avatar summary"
-        "vitals summary";
-    align-items: start;
-    column-gap: 20px;
-    row-gap: 12px;
+    gap: 20px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    border: 1px solid var(--overlay-white-10);
+    background: linear-gradient(140deg, rgba(10, 15, 36, 0.8), rgba(15, 23, 55, 0.5));
+}
+
+.character-hero-card__bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 18px;
+    align-items: stretch;
+}
+
+.character-hero-card__panel {
+    min-width: 0;
+    height: 100%;
+}
+
+.character-hero-card__panel h2 {
+    font-size: 22px;
+    margin-bottom: 2px;
 }
 
 .character-avatar {
-    grid-area: avatar;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -143,10 +123,10 @@
 }
 
 .character-summary {
-    grid-area: summary;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    justify-content: center;
+    gap: 14px;
     min-width: 0;
 }
 
@@ -182,8 +162,7 @@
 }
 
 .profile-stats--vitals {
-    grid-area: vitals;
-    grid-template-columns: repeat(6, minmax(120px, 1fr));
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
     width: 100%;
 }
 
@@ -247,6 +226,23 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.profile-actions--quick,
+.profile-actions--combat-top {
+    height: 100%;
+}
+
+.profile-actions--quick {
+    min-width: 0;
+}
+
+.profile-actions--quick .profile-actions__buttons {
+    margin-top: auto;
+}
+
+.profile-actions--combat-top .award-xp-form {
+    height: 100%;
 }
 
 .profile-actions h2 {
@@ -1044,26 +1040,9 @@
 /* ===================== */
 
 @media (max-width: 1200px) {
-    .character-hero__head {
+    .character-hero-card__top,
+    .character-hero-card__bottom {
         grid-template-columns: 1fr;
-        grid-template-areas:
-            "identity"
-            "quick";
-    }
-
-    .character-hero__head--editable {
-        grid-template-areas:
-            "identity"
-            "identity-actions"
-            "quick";
-    }
-
-    .hero-column--identity {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-            "avatar"
-            "summary"
-            "vitals";
     }
 
     .profile-stats--headline {
@@ -1071,7 +1050,7 @@
     }
 
     .profile-stats--vitals {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .character-notes-pdf-layout {
@@ -1084,18 +1063,9 @@
 }
 
 @media (max-width: 900px) {
-    .character-hero__head {
+    .character-hero-card__identity {
         grid-template-columns: 1fr;
-        grid-template-areas:
-            "identity"
-            "quick";
-    }
-
-    .character-hero__head--editable {
-        grid-template-areas:
-            "identity"
-            "identity-actions"
-            "quick";
+        gap: 14px;
     }
 
     .character-summary {
@@ -1188,9 +1158,12 @@
 }
 
 @media (max-width: 540px) {
-    .character-hero__head {
-        grid-template-columns: 1fr;
-        gap: 14px;
+    .character-hero-card {
+        gap: 16px;
+    }
+
+    .character-hero-card__identity {
+        padding: 14px;
     }
 
     .character-avatar {
