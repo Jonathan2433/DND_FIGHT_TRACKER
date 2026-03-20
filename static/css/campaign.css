@@ -215,6 +215,30 @@
     margin: 14px 0;
     max-width: 460px;
 }
+
+.campaign-inspiration-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 20px;
+    align-items: start;
+}
+
+.campaign-inspiration-recap {
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.campaign-inspiration-recap p {
+    margin: 0 0 8px;
+}
+
+.campaign-inspiration-recap strong {
+    font-size: 28px;
+    line-height: 1;
+    color: var(--color-primary);
+}
 /* ===================== */
 /* CRÉATION DE CAMPAGNE */
 /* ===================== */
@@ -551,6 +575,12 @@
     }
     
     .combat-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .campaign-inspiration-layout {
         grid-template-columns: 1fr;
     }
 }
