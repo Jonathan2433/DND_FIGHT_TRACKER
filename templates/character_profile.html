@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <aside class="hero-column hero-column--stats profile-actions">
+            <aside class="hero-column hero-column--stats profile-actions profile-actions--stats">
                 <h2>Statistiques</h2>
                 <div class="profile-stats profile-stats--combat-overview">
                     <div class="stat-box">
@@ -136,45 +136,47 @@
             </aside>
 
             {% if can_edit %}
-                <div class="hero-column profile-actions profile-actions--quick"
+                <div class="hero-column hero-column--quick profile-actions profile-actions--quick profile-actions--inline"
                      {% if can_manage_combat_state and not limited_profile %}data-live-character-context
                      data-character-id="{{ character.id }}"
                      data-active-combat-ids='{{ active_combat_ids|tojson }}'{% endif %}>
                     <h2>Actions rapides</h2>
-                    {% if can_manage_combat_state and not limited_profile %}
-                        <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
-                            <label class="combat-state-input">
-                                <span>Modifier PV actuels</span>
-                                <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier PV temporaires</span>
-                                <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
-                            </label>
-                            <label class="combat-state-input">
-                                <span>Modifier CA</span>
-                                <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
-                            </label>
-                            <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
-                        </form>
-                    {% endif %}
-                    <div class="profile-actions__buttons">
-                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                            </a>
-                        {% endif %}
-
-                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
-
-                        {% if current_user and character.owner_id == current_user.id %}
-                            <form method="POST"
-                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                  class="inl-character-004">
-                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                    <div class="profile-actions__content">
+                        {% if can_manage_combat_state and not limited_profile %}
+                            <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form">
+                                <label class="combat-state-input">
+                                    <span>Modifier PV actuels</span>
+                                    <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                                </label>
+                                <label class="combat-state-input">
+                                    <span>Modifier PV temporaires</span>
+                                    <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                                </label>
+                                <label class="combat-state-input">
+                                    <span>Modifier CA</span>
+                                    <input type="number" name="ac_delta" placeholder="ex: +1, -1" value="0" required>
+                                </label>
+                                <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
                             </form>
                         {% endif %}
+                        <div class="profile-actions__buttons">
+                            {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                                <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                    {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                                </a>
+                            {% endif %}
+
+                            <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
+
+                            {% if current_user and character.owner_id == current_user.id %}
+                                <form method="POST"
+                                      action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                      class="inl-character-004">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% elif current_user %}
