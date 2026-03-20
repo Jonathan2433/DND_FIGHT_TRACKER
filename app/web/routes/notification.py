@@ -27,6 +27,9 @@ CAMPAIGN_NOTIFICATION_KINDS = {
     'player_pj_updated',
     'player_pj_deleted',
     'story_arc_created',
+    'campaign_session_created',
+    'campaign_session_updated',
+    'campaign_session_cancelled',
     'xp_awarded',
 }
 
