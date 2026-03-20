@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const cards = Array.from(grid.querySelectorAll('.spell-card'));
-    const filterIds = ['school', 'casting_time', 'range', 'duration', 'level'];
+    const filterIds = ['school', 'casting_time', 'class', 'duration', 'level'];
 
     const toOptionValue = (value) => (value || '').trim();
 
@@ -21,9 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
         cards.forEach((card) => {
             const key = filterId === 'casting_time' ? 'castingTime' : filterId;
             const raw = card.dataset[key];
-            if (raw) {
-                values.add(toOptionValue(raw));
+            if (!raw) {
+                return;
             }
+
+            if (filterId === 'class') {
+                raw
+                    .split(',')
+                    .map((value) => toOptionValue(value))
+                    .filter(Boolean)
+                    .forEach((value) => values.add(value));
+                return;
+            }
+
+            values.add(toOptionValue(raw));
         });
 
         const sortedValues = Array.from(values).sort((a, b) => {
@@ -49,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             school: form.elements.school.value,
             level: form.elements.level.value,
             castingTime: form.elements.casting_time.value,
-            range: form.elements.range.value,
+            class: form.elements['class'].value,
             duration: form.elements.duration.value,
             concentration: form.elements.concentration.value,
             ritual: form.elements.ritual.value,
@@ -63,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 (!filters.school || card.dataset.school === filters.school) &&
                 (!filters.level || card.dataset.level === filters.level) &&
                 (!filters.castingTime || card.dataset.castingTime === filters.castingTime) &&
-                (!filters.range || card.dataset.range === filters.range) &&
+                (!filters.class || (card.dataset.classes || '').split(',').includes(filters.class)) &&
                 (!filters.duration || card.dataset.duration === filters.duration) &&
                 (!filters.concentration || card.dataset.concentration === filters.concentration) &&
                 (!filters.ritual || card.dataset.ritual === filters.ritual);

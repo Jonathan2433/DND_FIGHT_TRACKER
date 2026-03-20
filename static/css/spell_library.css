@@ -98,6 +98,7 @@
 .spell-card--interactive:hover,
 .spell-card--interactive:focus-visible {
     border-color: rgba(236, 72, 153, 0.55);
+    text-decoration: none;
     box-shadow:
         0 16px 28px rgba(37, 99, 235, 0.22),
         0 0 0 1px rgba(236, 72, 153, 0.25),

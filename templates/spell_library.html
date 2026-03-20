@@ -33,8 +33,8 @@
             </select>
         </div>
         <div class="spell-library__filter">
-            <label for="spell-filter-range">Portée</label>
-            <select id="spell-filter-range" name="range">
+            <label for="spell-filter-class">Classe</label>
+            <select id="spell-filter-class" name="class">
                 <option value="">Toutes</option>
             </select>
         </div>
@@ -72,7 +72,7 @@
                 data-name="{{ spell.name|lower }}"
                 data-school="{{ spell.school }}"
                 data-casting-time="{{ spell.casting_time }}"
-                data-range="{{ spell.range }}"
+                data-classes="{{ spell.classes|join(',') }}"
                 data-duration="{{ spell.duration }}"
                 data-concentration="{{ spell.concentration }}"
                 data-ritual="{{ spell.ritual }}"
