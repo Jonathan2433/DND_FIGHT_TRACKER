@@ -513,7 +513,6 @@
     padding: 20px;
     border-radius: var(--radius-lg);
     border-left: 4px solid var(--color-primary);
-    margin-top: 20px;
 }
 
 .profile-actions h3 {
