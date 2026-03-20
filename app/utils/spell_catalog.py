@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -143,11 +144,78 @@ def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
         "name": str(display_name).strip(),
         "name_en": english_name,
         "level": level,
-        "school": str(raw_spell.get("school") or raw_spell.get("School") or "").strip(),
+        "school": _translate_school(str(raw_spell.get("school") or raw_spell.get("School") or "").strip()),
         "classes": classes,
         "source": str(raw_spell.get("source") or raw_spell.get("Source") or "").strip(),
         "description": str(description).strip(),
+        "casting_time": _translate_casting_time(str(raw_spell.get("casting_time") or raw_spell.get("Casting Time") or "").strip()),
+        "range": _translate_range(str(raw_spell.get("range") or raw_spell.get("Range") or "").strip()),
+        "duration": _translate_duration(str(raw_spell.get("duration") or raw_spell.get("Duration") or "").strip()),
+        "concentration": _normalize_boolean_label(raw_spell.get("concentration") or raw_spell.get("Concentration")),
+        "ritual": _normalize_boolean_label(raw_spell.get("ritual") or raw_spell.get("Ritual")),
     }
+
+
+def _normalize_boolean_label(value: Any) -> str:
+    normalized = str(value or "").strip().lower()
+    if normalized in {"oui", "yes", "y", "true", "1"}:
+        return "Oui"
+    if not normalized:
+        return "Non"
+    return "Oui"
+
+
+def _translate_school(school: str) -> str:
+    labels = {
+        "abjuration": "Abjuration",
+        "conjuration": "Conjuration",
+        "divination": "Divination",
+        "enchantment": "Enchantement",
+        "evocation": "Évocation",
+        "illusion": "Illusion",
+        "necromancy": "Nécromancie",
+        "transmutation": "Transmutation",
+    }
+    key = school.strip().lower()
+    return labels.get(key, school)
+
+
+def _translate_casting_time(value: str) -> str:
+    translated = value.strip()
+    translated = re.sub(r"\b[Bb]onus [Aa]ction\b", "__BONUS_ACTION__", translated)
+    translated = re.sub(r"\b[Rr]eaction\b", "1 réaction", translated)
+    translated = re.sub(r"\b[Aa]ction\b", "1 action", translated)
+    translated = translated.replace("__BONUS_ACTION__", "1 action bonus")
+    translated = re.sub(r"\b[Rr]itual\b", "Rituel", translated)
+    translated = re.sub(r"\bor\b", "ou", translated)
+    return translated
+
+
+def _translate_range(value: str) -> str:
+    translated = value.replace("Self", "Personnel").replace("Touch", "Contact")
+    translated = translated.replace("Unlimited", "Illimitée")
+    translated = translated.replace(" ft", " pieds")
+    return translated
+
+
+def _translate_duration(value: str) -> str:
+    translated = value
+    mapping = {
+        "Instantaneous": "Instantané",
+        "Until dispelled": "Jusqu'à dissipation",
+        "Special": "Spéciale",
+        "Round": "round",
+        "rounds": "rounds",
+        "minute": "minute",
+        "minutes": "minutes",
+        "hour": "heure",
+        "hours": "heures",
+        "day": "jour",
+        "days": "jours",
+    }
+    for english, french in mapping.items():
+        translated = translated.replace(english, french)
+    return translated
 
 
 def load_spell_catalog() -> list[dict[str, Any]]:

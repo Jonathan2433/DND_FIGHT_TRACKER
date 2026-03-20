@@ -7,6 +7,7 @@ from app.models import Combat, CharacterTemplate, Campaign, User
 from app.models.story_arc import StoryArc
 from app.models.episode import Episode
 from app.utils import format_duration
+from app.utils.spell_catalog import load_spell_catalog
 
 
 bp = Blueprint('main', __name__)
@@ -109,3 +110,10 @@ def public_campaigns():
     """Lister les campagnes publiques."""
     campaigns = CampaignService.get_public_campaigns()
     return render_template('campaign/public_campaigns.html', public_campaigns=campaigns)
+
+
+@bp.route('/bibliotheque-des-sorts')
+def spell_library():
+    """Bibliothèque publique de sorts."""
+    spells = sorted(load_spell_catalog(), key=lambda spell: spell.get('name', '').lower())
+    return render_template('spell_library.html', spells=spells)
