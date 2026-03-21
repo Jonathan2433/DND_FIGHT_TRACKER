@@ -1,0 +1,137 @@
+[
+  {
+    "id": "strength",
+    "name_fr": "Force",
+    "name_en": "Strength",
+    "short_fr": "FOR",
+    "short_en": "STR",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 1,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "melee_attack_and_damage_with_non_finesse_weapons",
+      "athletics_checks",
+      "strength_saving_throws",
+      "carrying_capacity",
+      "push_drag_lift"
+    ]
+  },
+  {
+    "id": "dexterity",
+    "name_fr": "Dextérité",
+    "name_en": "Dexterity",
+    "short_fr": "DEX",
+    "short_en": "DEX",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 2,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "initiative",
+      "armor_class_with_armor_or_unarmored_rules",
+      "ranged_attack_and_damage_with_ranged_weapons",
+      "attack_and_damage_with_finesse_weapons_if_chosen",
+      "acrobatics_checks",
+      "sleight_of_hand_checks",
+      "stealth_checks",
+      "dexterity_saving_throws"
+    ]
+  },
+  {
+    "id": "constitution",
+    "name_fr": "Constitution",
+    "name_en": "Constitution",
+    "short_fr": "CON",
+    "short_en": "CON",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 3,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "hit_points",
+      "constitution_saving_throws",
+      "concentration_checks",
+      "endurance_related_checks"
+    ]
+  },
+  {
+    "id": "intelligence",
+    "name_fr": "Intelligence",
+    "name_en": "Intelligence",
+    "short_fr": "INT",
+    "short_en": "INT",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 4,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "arcana_checks",
+      "history_checks",
+      "investigation_checks",
+      "nature_checks",
+      "religion_checks",
+      "intelligence_saving_throws",
+      "wizard_spellcasting",
+      "some_species_or_feat_spellcasting_choices"
+    ]
+  },
+  {
+    "id": "wisdom",
+    "name_fr": "Sagesse",
+    "name_en": "Wisdom",
+    "short_fr": "SAG",
+    "short_en": "WIS",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 5,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "animal_handling_checks",
+      "insight_checks",
+      "medicine_checks",
+      "perception_checks",
+      "survival_checks",
+      "wisdom_saving_throws",
+      "cleric_spellcasting",
+      "druid_spellcasting",
+      "ranger_spellcasting",
+      "monk_unarmored_defense"
+    ]
+  },
+  {
+    "id": "charisma",
+    "name_fr": "Charisme",
+    "name_en": "Charisma",
+    "short_fr": "CHA",
+    "short_en": "CHA",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "ability",
+    "sort_order": 6,
+    "derived": {
+      "modifier_formula": "floor((score - 10) / 2)"
+    },
+    "used_for": [
+      "deception_checks",
+      "intimidation_checks",
+      "performance_checks",
+      "persuasion_checks",
+      "charisma_saving_throws",
+      "bard_spellcasting",
+      "paladin_spellcasting",
+      "sorcerer_spellcasting",
+      "warlock_spellcasting",
+      "some_species_or_feat_spellcasting_choices"
+    ]
+  }
+]

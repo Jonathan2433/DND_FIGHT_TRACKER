@@ -1,0 +1,299 @@
+[
+  {
+    "species_id": "aasimar",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "aasimar_size_choice",
+        "choice_type": "size",
+        "required": true,
+        "choose": 1,
+        "options": ["small", "medium"],
+        "duplicates_not_allowed": true
+      }
+    ],
+    "deferred_choices": [
+      {
+        "id": "aasimar_celestial_revelation_future",
+        "unlock_at_character_level": 3,
+        "notes": "Aucun choix de révélation n'est résolu au niveau 1 dans ce builder."
+      }
+    ]
+  },
+  {
+    "species_id": "dragonborn",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "dragonborn_draconic_ancestry",
+        "choice_type": "species_trait_option",
+        "required": true,
+        "choose": 1,
+        "trait_id": "draconic_ancestry",
+        "options": [
+          "black",
+          "blue",
+          "brass",
+          "bronze",
+          "copper",
+          "gold",
+          "green",
+          "red",
+          "silver",
+          "white"
+        ],
+        "duplicates_not_allowed": true,
+        "applies_to": [
+          "breath_weapon.damage_type",
+          "damage_resistance"
+        ]
+      }
+    ],
+    "deferred_choices": [
+      {
+        "id": "dragonborn_draconic_flight_future",
+        "unlock_at_character_level": 5,
+        "notes": "Draconic Flight n'est pas actif à la création niveau 1."
+      }
+    ]
+  },
+  {
+    "species_id": "dwarf",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": []
+  },
+  {
+    "species_id": "elf",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "elf_elven_lineage",
+        "choice_type": "species_trait_option",
+        "required": true,
+        "choose": 1,
+        "trait_id": "elven_lineage",
+        "options": [
+          "drow",
+          "high_elf",
+          "wood_elf"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "elf_elven_lineage_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true,
+        "applies_to": [
+          "elven_lineage_granted_spells"
+        ]
+      },
+      {
+        "id": "elf_keen_senses_skill",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "insight",
+          "perception",
+          "survival"
+        ],
+        "duplicates_not_allowed": true
+      }
+    ],
+    "deferred_choices": [
+      {
+        "id": "elf_future_lineage_spells",
+        "unlock_at_character_levels": [3, 5],
+        "notes": "Les sorts de lignage de niveau 3 et 5 restent enregistrés mais non actifs au niveau 1."
+      }
+    ]
+  },
+  {
+    "species_id": "gnome",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "gnome_gnomish_lineage",
+        "choice_type": "species_trait_option",
+        "required": true,
+        "choose": 1,
+        "trait_id": "gnomish_lineage",
+        "options": [
+          "forest_gnome",
+          "rock_gnome"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "gnome_gnomish_lineage_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true,
+        "applies_to": [
+          "gnomish_lineage_granted_spells"
+        ]
+      }
+    ]
+  },
+  {
+    "species_id": "goliath",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "goliath_giant_ancestry",
+        "choice_type": "species_trait_option",
+        "required": true,
+        "choose": 1,
+        "trait_id": "giant_ancestry",
+        "options": [
+          "cloud_giant",
+          "fire_giant",
+          "frost_giant",
+          "hill_giant",
+          "stone_giant",
+          "storm_giant"
+        ],
+        "duplicates_not_allowed": true
+      }
+    ],
+    "deferred_choices": [
+      {
+        "id": "goliath_large_form_future",
+        "unlock_at_character_level": 5,
+        "notes": "Large Form n'est pas actif à la création niveau 1."
+      }
+    ]
+  },
+  {
+    "species_id": "halfling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": []
+  },
+  {
+    "species_id": "human",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "human_size_choice",
+        "choice_type": "size",
+        "required": true,
+        "choose": 1,
+        "options": ["small", "medium"],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "human_bonus_skill",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 1,
+        "from_catalog": "any_skill",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "human_bonus_origin_feat",
+        "choice_type": "origin_feat",
+        "required": true,
+        "choose": 1,
+        "filter": {
+          "feat_category": "origin",
+          "available_at_character_level_1": true
+        },
+        "exclude_if_already_owned": true,
+        "duplicates_not_allowed": true,
+        "notes": "Le feat d'origine supplémentaire de Human doit être différent de celui déjà accordé par le background."
+      }
+    ]
+  },
+  {
+    "species_id": "orc",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": []
+  },
+  {
+    "species_id": "tiefling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "tiefling_size_choice",
+        "choice_type": "size",
+        "required": true,
+        "choose": 1,
+        "options": ["small", "medium"],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "tiefling_fiendish_legacy",
+        "choice_type": "species_trait_option",
+        "required": true,
+        "choose": 1,
+        "trait_id": "fiendish_legacy",
+        "options": [
+          "abyssal",
+          "chthonic",
+          "infernal"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "tiefling_fiendish_legacy_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true,
+        "applies_to": [
+          "fiendish_legacy_granted_spells",
+          "otherworldly_presence"
+        ]
+      }
+    ],
+    "deferred_choices": [
+      {
+        "id": "tiefling_future_legacy_spells",
+        "unlock_at_character_levels": [3, 5],
+        "notes": "Les sorts supplémentaires de Fiendish Legacy sont mémorisés mais non actifs au niveau 1."
+      }
+    ]
+  }
+]
+
+
+
+

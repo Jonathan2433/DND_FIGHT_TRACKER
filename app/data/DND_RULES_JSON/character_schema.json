@@ -1,0 +1,276 @@
+{
+  "id": "character_schema",
+  "rules_version": "dnd_5_2024",
+  "entity_type": "builder_output_schema",
+  "builder_scope": "level_1_character_creation_only",
+  "description_fr": "Structure finale d'un personnage D&D 5 2024 niveau 1 généré par le builder.",
+
+  "root_object": {
+    "character_id": "string",
+    "character_name": "string",
+    "player_name": "string|null",
+    "created_at": "iso_datetime_string",
+    "updated_at": "iso_datetime_string|null",
+    "rules_version": "string",
+    "level": "integer",
+    "proficiency_bonus": "integer",
+
+    "identity": {
+      "class_id": "string",
+      "background_id": "string",
+      "species_id": "string",
+      "size": "string",
+      "creature_type": "string",
+      "speed": {
+        "walk": "integer"
+      },
+      "languages": [
+        "string"
+      ]
+    },
+
+    "abilities": {
+      "strength": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      },
+      "dexterity": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      },
+      "constitution": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      },
+      "intelligence": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      },
+      "wisdom": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      },
+      "charisma": {
+        "score": "integer",
+        "modifier": "integer",
+        "base_score_before_origin": "integer"
+      }
+    },
+
+    "origin": {
+      "background_ability_choices_applied": [
+        {
+          "ability_id": "string",
+          "increase": "integer"
+        }
+      ],
+      "origin_feat_id": "string",
+      "bonus_origin_feat_id": "string|null"
+    },
+
+    "proficiencies": {
+      "saving_throws": [
+        "string"
+      ],
+      "skills": [
+        {
+          "skill_id": "string",
+          "has_expertise": "boolean"
+        }
+      ],
+      "tools": [
+        "string"
+      ],
+      "weapons": [
+        "string"
+      ],
+      "armor": [
+        "string"
+      ],
+      "shields": [
+        "string"
+      ],
+      "languages": [
+        "string"
+      ]
+    },
+
+    "features": {
+      "class_features": [
+        {
+          "feature_id": "string",
+          "source_class_id": "string",
+          "resolved_options": [
+            {
+              "option_id": "string",
+              "value": "string"
+            }
+          ]
+        }
+      ],
+      "species_traits": [
+        {
+          "trait_id": "string",
+          "resolved_options": [
+            {
+              "option_id": "string",
+              "value": "string"
+            }
+          ]
+        }
+      ],
+      "feats": [
+        {
+          "feat_id": "string",
+          "source": "string",
+          "resolved_choices": [
+            {
+              "choice_id": "string",
+              "selected_ids": [
+                "string"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    "combat": {
+      "hit_points": {
+        "max": "integer",
+        "current": "integer",
+        "formula": "string"
+      },
+      "armor_class": {
+        "value": "integer",
+        "formula": "string"
+      },
+      "initiative_modifier": "integer",
+      "weapon_masteries": [
+        {
+          "weapon_id": "string",
+          "mastery_id": "string"
+        }
+      ]
+    },
+
+    "equipment": {
+      "currency": {
+        "cp": "integer",
+        "sp": "integer",
+        "ep": "integer",
+        "gp": "integer",
+        "pp": "integer"
+      },
+      "equipped_items": [
+        {
+          "item_id": "string",
+          "quantity": "integer"
+        }
+      ],
+      "inventory_items": [
+        {
+          "item_id": "string",
+          "quantity": "integer",
+          "contained_items": [
+            {
+              "item_id": "string",
+              "quantity": "integer"
+            }
+          ]
+        }
+      ],
+      "starting_equipment_sources": [
+        {
+          "source_type": "string",
+          "source_id": "string",
+          "option_id": "string"
+        }
+      ]
+    },
+
+    "spellcasting": {
+      "is_spellcaster": "boolean",
+      "spellcasting_ability": "string|null",
+      "spell_save_dc": "integer|null",
+      "spell_attack_bonus": "integer|null",
+      "focus_options": [
+        "string"
+      ],
+      "spell_slots": {
+        "1": "integer"
+      },
+      "pact_magic": {
+        "enabled": "boolean",
+        "pact_slots": "integer|null",
+        "pact_slot_level": "integer|null"
+      },
+      "cantrips_known": [
+        "string"
+      ],
+      "prepared_spells": [
+        "string"
+      ],
+      "always_prepared_spells": [
+        "string"
+      ],
+      "spellbook_spells": [
+        "string"
+      ],
+      "species_granted_spells": [
+        {
+          "spell_id": "string",
+          "source_trait_id": "string",
+          "available_now": "boolean",
+          "unlock_level": "integer|null"
+        }
+      ],
+      "feat_granted_spells": [
+        {
+          "spell_id": "string",
+          "source_feat_id": "string",
+          "casting_ability": "string|null",
+          "available_now": "boolean",
+          "free_cast_uses": "integer|null",
+          "recharge": "string|null"
+        }
+      ]
+    },
+
+    "builder_metadata": {
+      "ability_generation_method_id": "string",
+      "validation_status": "string",
+      "validation_errors": [
+        {
+          "code": "string",
+          "message": "string",
+          "path": "string"
+        }
+      ],
+      "sources_used": [
+        "string"
+      ]
+    }
+  },
+
+  "required_fields": [
+    "character_id",
+    "rules_version",
+    "level",
+    "proficiency_bonus",
+    "identity",
+    "abilities",
+    "origin",
+    "proficiencies",
+    "features",
+    "combat",
+    "equipment",
+    "spellcasting",
+    "builder_metadata"
+  ]
+}

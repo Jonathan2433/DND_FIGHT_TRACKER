@@ -1,0 +1,979 @@
+[
+  {
+    "id": "barbarian",
+    "name_fr": "Barbare",
+    "name_en": "Barbarian",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "strength"
+    ],
+    "hit_die": 12,
+    "saving_throw_proficiencies": [
+      "strength",
+      "constitution"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "animal_handling",
+        "athletics",
+        "intimidation",
+        "nature",
+        "perception",
+        "survival"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor",
+      "medium_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "barbarian_option_a",
+        "label": "Option A",
+        "items": [
+          "greataxe",
+          "handaxe",
+          "handaxe",
+          "handaxe",
+          "handaxe",
+          "explorers_pack"
+        ],
+        "gold": 15
+      },
+      {
+        "id": "barbarian_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 75
+      }
+    ],
+    "level_1_features": [
+      "rage",
+      "unarmored_defense",
+      "weapon_mastery"
+    ],
+    "level_1_feature_data": {
+      "rage_uses": 2,
+      "rage_damage_bonus": 2,
+      "weapon_mastery_choices": 2
+    },
+    "spellcasting": null,
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Barbarian",
+        "source_ref": "turn640515search1"
+      }
+    ]
+  },
+  {
+    "id": "bard",
+    "name_fr": "Barde",
+    "name_en": "Bard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "charisma"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "dexterity",
+      "charisma"
+    ],
+    "skill_proficiencies": {
+      "choose": 3,
+      "from": [
+        "acrobatics",
+        "animal_handling",
+        "arcana",
+        "athletics",
+        "deception",
+        "history",
+        "insight",
+        "intimidation",
+        "investigation",
+        "medicine",
+        "nature",
+        "perception",
+        "performance",
+        "persuasion",
+        "religion",
+        "sleight_of_hand",
+        "stealth",
+        "survival"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": {
+      "choose": 3,
+      "from_tags": [
+        "musical_instrument"
+      ]
+    },
+    "armor_training": [
+      "light_armor"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "bard_option_a",
+        "label": "Option A",
+        "items": [
+          "leather_armor",
+          "dagger",
+          "dagger",
+          "musical_instrument",
+          "entertainers_pack"
+        ],
+        "gold": 19
+      },
+      {
+        "id": "bard_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 90
+      }
+    ],
+    "level_1_features": [
+      "bardic_inspiration",
+      "spellcasting"
+    ],
+    "level_1_feature_data": {
+      "bardic_inspiration_die": "d6",
+      "cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "charisma",
+      "spell_list_id": "bard"
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Bard",
+        "source_ref": "turn283754search0"
+      }
+    ]
+  },
+  {
+    "id": "cleric",
+    "name_fr": "Clerc",
+    "name_en": "Cleric",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "wisdom"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "wisdom",
+      "charisma"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "history",
+        "insight",
+        "medicine",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor",
+      "medium_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "cleric_option_a",
+        "label": "Option A",
+        "items": [
+          "chain_shirt",
+          "shield",
+          "mace",
+          "holy_symbol",
+          "priests_pack"
+        ],
+        "gold": 7
+      },
+      {
+        "id": "cleric_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 110
+      }
+    ],
+    "level_1_features": [
+      "spellcasting",
+      "divine_order"
+    ],
+    "level_1_feature_data": {
+      "cantrips_known": 3,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "wisdom",
+      "spell_list_id": "cleric"
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Cleric",
+        "source_ref": "turn283754search1"
+      }
+    ]
+  },
+  {
+    "id": "druid",
+    "name_fr": "Druide",
+    "name_en": "Druid",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "wisdom"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "intelligence",
+      "wisdom"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "animal_handling",
+        "arcana",
+        "insight",
+        "medicine",
+        "nature",
+        "perception",
+        "religion",
+        "survival"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": [
+      "herbalism_kit"
+    ],
+    "armor_training": [
+      "light_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "druid_option_a",
+        "label": "Option A",
+        "items": [
+          "leather_armor",
+          "shield",
+          "sickle",
+          "druidic_focus_quarterstaff",
+          "explorers_pack",
+          "herbalism_kit"
+        ],
+        "gold": 9
+      },
+      {
+        "id": "druid_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 50
+      }
+    ],
+    "level_1_features": [
+      "spellcasting",
+      "druidic",
+      "primal_order"
+    ],
+    "level_1_feature_data": {
+      "cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "wisdom",
+      "spell_list_id": "druid"
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Druid",
+        "source_ref": "turn283754search4"
+      }
+    ]
+  },
+  {
+    "id": "fighter",
+    "name_fr": "Guerrier",
+    "name_en": "Fighter",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "strength",
+      "dexterity"
+    ],
+    "hit_die": 10,
+    "saving_throw_proficiencies": [
+      "strength",
+      "constitution"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "acrobatics",
+        "animal_handling",
+        "athletics",
+        "history",
+        "insight",
+        "intimidation",
+        "persuasion",
+        "perception",
+        "survival"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor",
+      "medium_armor",
+      "heavy_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "fighter_option_a",
+        "label": "Option A",
+        "items": [
+          "chain_mail",
+          "greatsword",
+          "flail",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "dungeoneers_pack"
+        ],
+        "gold": 4
+      },
+      {
+        "id": "fighter_option_b",
+        "label": "Option B",
+        "items": [
+          "studded_leather_armor",
+          "scimitar",
+          "shortsword",
+          "longbow",
+          "arrows_20",
+          "quiver",
+          "dungeoneers_pack"
+        ],
+        "gold": 11
+      },
+      {
+        "id": "fighter_option_c",
+        "label": "Option C",
+        "items": [],
+        "gold": 155
+      }
+    ],
+    "level_1_features": [
+      "fighting_style",
+      "second_wind",
+      "weapon_mastery"
+    ],
+    "level_1_feature_data": {
+      "second_wind_uses": 2,
+      "weapon_mastery_choices": 3
+    },
+    "spellcasting": null,
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Fighter",
+        "source_ref": "turn640515search0"
+      }
+    ]
+  },
+  {
+    "id": "monk",
+    "name_fr": "Moine",
+    "name_en": "Monk",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "dexterity",
+      "wisdom"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "strength",
+      "dexterity"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "acrobatics",
+        "athletics",
+        "history",
+        "insight",
+        "religion",
+        "stealth"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_light_only"
+    ],
+    "tool_proficiencies": {
+      "choose": 1,
+      "from_tags": [
+        "artisans_tools",
+        "musical_instrument"
+      ]
+    },
+    "armor_training": [],
+    "starting_equipment_options": [
+      {
+        "id": "monk_option_a",
+        "label": "Option A",
+        "items": [
+          "spear",
+          "dagger",
+          "dagger",
+          "dagger",
+          "dagger",
+          "dagger",
+          "chosen_monk_tool_or_instrument",
+          "explorers_pack"
+        ],
+        "gold": 11
+      },
+      {
+        "id": "monk_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 50
+      }
+    ],
+    "level_1_features": [
+      "martial_arts",
+      "unarmored_defense"
+    ],
+    "level_1_feature_data": {
+      "martial_arts_die": "d6"
+    },
+    "spellcasting": null,
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Monk",
+        "source_ref": "turn839748search3"
+      }
+    ]
+  },
+  {
+    "id": "paladin",
+    "name_fr": "Paladin",
+    "name_en": "Paladin",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "strength",
+      "charisma"
+    ],
+    "hit_die": 10,
+    "saving_throw_proficiencies": [
+      "wisdom",
+      "charisma"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "athletics",
+        "insight",
+        "intimidation",
+        "medicine",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor",
+      "medium_armor",
+      "heavy_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "paladin_option_a",
+        "label": "Option A",
+        "items": [
+          "chain_mail",
+          "shield",
+          "longsword",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "javelin",
+          "holy_symbol",
+          "priests_pack"
+        ],
+        "gold": 9
+      },
+      {
+        "id": "paladin_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 150
+      }
+    ],
+    "level_1_features": [
+      "lay_on_hands",
+      "spellcasting",
+      "weapon_mastery"
+    ],
+    "level_1_feature_data": {
+      "lay_on_hands_pool": 5,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "charisma",
+      "spell_list_id": "paladin",
+      "weapon_mastery_choices": 2
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Paladin",
+        "source_ref": "turn839748search2"
+      }
+    ]
+  },
+  {
+    "id": "ranger",
+    "name_fr": "Rôdeur",
+    "name_en": "Ranger",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "dexterity",
+      "wisdom"
+    ],
+    "hit_die": 10,
+    "saving_throw_proficiencies": [
+      "strength",
+      "dexterity"
+    ],
+    "skill_proficiencies": {
+      "choose": 3,
+      "from": [
+        "animal_handling",
+        "athletics",
+        "insight",
+        "investigation",
+        "nature",
+        "perception",
+        "stealth",
+        "survival"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor",
+      "medium_armor",
+      "shields"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "ranger_option_a",
+        "label": "Option A",
+        "items": [
+          "studded_leather_armor",
+          "scimitar",
+          "shortsword",
+          "longbow",
+          "arrows_20",
+          "quiver",
+          "druidic_focus_mistletoe",
+          "explorers_pack"
+        ],
+        "gold": 7
+      },
+      {
+        "id": "ranger_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 150
+      }
+    ],
+    "level_1_features": [
+      "spellcasting",
+      "favored_enemy",
+      "weapon_mastery"
+    ],
+    "level_1_feature_data": {
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "wisdom",
+      "spell_list_id": "ranger",
+      "favored_enemy_free_hunters_mark_casts": 2,
+      "weapon_mastery_choices": 2
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Ranger",
+        "source_ref": "turn600990search0"
+      }
+    ]
+  },
+  {
+    "id": "rogue",
+    "name_fr": "Roublard",
+    "name_en": "Rogue",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "dexterity"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "dexterity",
+      "intelligence"
+    ],
+    "skill_proficiencies": {
+      "choose": 4,
+      "from": [
+        "acrobatics",
+        "athletics",
+        "deception",
+        "insight",
+        "intimidation",
+        "investigation",
+        "perception",
+        "persuasion",
+        "sleight_of_hand",
+        "stealth"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons",
+      "martial_finesse_or_light_only"
+    ],
+    "tool_proficiencies": [
+      "thieves_tools"
+    ],
+    "armor_training": [
+      "light_armor"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "rogue_option_a",
+        "label": "Option A",
+        "items": [
+          "leather_armor",
+          "dagger",
+          "dagger",
+          "shortsword",
+          "shortbow",
+          "arrows_20",
+          "quiver",
+          "thieves_tools",
+          "burglars_pack"
+        ],
+        "gold": 8
+      },
+      {
+        "id": "rogue_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 100
+      }
+    ],
+    "level_1_features": [
+      "expertise",
+      "sneak_attack",
+      "thieves_cant",
+      "weapon_mastery"
+    ],
+    "level_1_feature_data": {
+      "expertise_choices": 2,
+      "sneak_attack_dice": "1d6",
+      "additional_languages_from_thieves_cant": 1,
+      "weapon_mastery_choices": 2
+    },
+    "spellcasting": null,
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Rogue",
+        "source_ref": "turn640515search2"
+      }
+    ]
+  },
+  {
+    "id": "sorcerer",
+    "name_fr": "Ensorceleur",
+    "name_en": "Sorcerer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "charisma"
+    ],
+    "hit_die": 6,
+    "saving_throw_proficiencies": [
+      "constitution",
+      "charisma"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "deception",
+        "insight",
+        "intimidation",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [],
+    "starting_equipment_options": [
+      {
+        "id": "sorcerer_option_a",
+        "label": "Option A",
+        "items": [
+          "spear",
+          "dagger",
+          "dagger",
+          "arcane_focus_crystal",
+          "dungeoneers_pack"
+        ],
+        "gold": 28
+      },
+      {
+        "id": "sorcerer_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 50
+      }
+    ],
+    "level_1_features": [
+      "spellcasting",
+      "innate_sorcery"
+    ],
+    "level_1_feature_data": {
+      "cantrips_known": 4,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "charisma",
+      "spell_list_id": "sorcerer",
+      "innate_sorcery_uses": 2
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Sorcerer",
+        "source_ref": "turn839748search0"
+      }
+    ]
+  },
+  {
+    "id": "warlock",
+    "name_fr": "Occultiste",
+    "name_en": "Warlock",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "charisma"
+    ],
+    "hit_die": 8,
+    "saving_throw_proficiencies": [
+      "wisdom",
+      "charisma"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "deception",
+        "history",
+        "intimidation",
+        "investigation",
+        "nature",
+        "religion"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [
+      "light_armor"
+    ],
+    "starting_equipment_options": [
+      {
+        "id": "warlock_option_a",
+        "label": "Option A",
+        "items": [
+          "leather_armor",
+          "sickle",
+          "dagger",
+          "dagger",
+          "arcane_focus_orb",
+          {
+            "id": "book",
+            "subtype": "occult_lore",
+            "quantity": 1
+          },
+          "scholars_pack"
+        ],
+        "gold": 15
+      },
+      {
+        "id": "warlock_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 100
+      }
+    ],
+    "level_1_features": [
+      "eldritch_invocations",
+      "pact_magic"
+    ],
+    "level_1_feature_data": {
+      "eldritch_invocations_known": 1,
+      "cantrips_known": 2,
+      "prepared_spells": 2,
+      "spell_slots": 1,
+      "slot_level": 1,
+      "spellcasting_ability": "charisma",
+      "spell_list_id": "warlock"
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Warlock",
+        "source_ref": "turn839748search1"
+      }
+    ]
+  },
+  {
+    "id": "wizard",
+    "name_fr": "Magicien",
+    "name_en": "Wizard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class",
+    "available_at_character_level_1": true,
+    "primary_abilities": [
+      "intelligence"
+    ],
+    "hit_die": 6,
+    "saving_throw_proficiencies": [
+      "intelligence",
+      "wisdom"
+    ],
+    "skill_proficiencies": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "history",
+        "insight",
+        "investigation",
+        "medicine",
+        "nature",
+        "religion"
+      ]
+    },
+    "weapon_proficiencies": [
+      "simple_weapons"
+    ],
+    "tool_proficiencies": [],
+    "armor_training": [],
+    "starting_equipment_options": [
+      {
+        "id": "wizard_option_a",
+        "label": "Option A",
+        "items": [
+          "dagger",
+          "dagger",
+          "arcane_focus_quarterstaff",
+          "robe",
+          "spellbook",
+          "scholars_pack"
+        ],
+        "gold": 5
+      },
+      {
+        "id": "wizard_option_b",
+        "label": "Option B",
+        "items": [],
+        "gold": 55
+      }
+    ],
+    "level_1_features": [
+      "spellcasting",
+      "ritual_adept",
+      "arcane_recovery"
+    ],
+    "level_1_feature_data": {
+      "cantrips_known": 3,
+      "spellbook_starting_spells_known": 6,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spellcasting_ability": "intelligence",
+      "spell_list_id": "wizard"
+    },
+    "source_refs": [
+      {
+        "source_name": "Roll20 Free Basic Rules 2024 - Wizard",
+        "source_ref": "turn640515search3"
+      }
+    ]
+  }
+]

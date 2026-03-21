@@ -1,0 +1,642 @@
+[
+  {
+    "id": "barbarian_rage",
+    "class_id": "barbarian",
+    "feature_key": "rage",
+    "name_fr": "Rage",
+    "name_en": "Rage",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "activation": "bonus_action",
+    "duration": {
+      "value": 10,
+      "unit": "minute"
+    },
+    "uses": {
+      "count_formula": "2",
+      "recharge": "long_rest"
+    },
+    "effects": {
+      "advantage_on": ["strength_checks", "strength_saving_throws"],
+      "melee_strength_damage_bonus": 2,
+      "damage_resistances": ["bludgeoning", "piercing", "slashing"],
+      "cannot_cast_spells": true,
+      "cannot_concentrate": true
+    },
+    "maintenance": {
+      "can_extend_with_bonus_action": true,
+      "can_extend_if_enemy_forced_to_save": true
+    }
+  },
+  {
+    "id": "barbarian_unarmored_defense",
+    "class_id": "barbarian",
+    "feature_key": "unarmored_defense",
+    "name_fr": "Défense sans armure",
+    "name_en": "Unarmored Defense",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "passive_effect": {
+      "base_ac_formula": "10 + dexterity_modifier + constitution_modifier",
+      "shield_allowed": true,
+      "requires_no_armor": true
+    }
+  },
+  {
+    "id": "barbarian_weapon_mastery",
+    "class_id": "barbarian",
+    "feature_key": "weapon_mastery",
+    "name_fr": "Maîtrise d'armes",
+    "name_en": "Weapon Mastery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 2,
+      "from": "weapons_with_which_you_have_proficiency"
+    },
+    "swap_rule": {
+      "can_change_on_long_rest": false
+    }
+  },
+
+  {
+    "id": "bard_bardic_inspiration",
+    "class_id": "bard",
+    "feature_key": "bardic_inspiration",
+    "name_fr": "Inspiration bardique",
+    "name_en": "Bardic Inspiration",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "activation": "bonus_action",
+    "range_feet": 60,
+    "target_rule": "one_other_creature_that_can_see_or_hear_you",
+    "die": "d6",
+    "uses": {
+      "count_formula": "charisma_modifier_minimum_1",
+      "recharge": "long_rest"
+    },
+    "duration": {
+      "value": 1,
+      "unit": "hour"
+    },
+    "limitations": {
+      "one_die_per_creature_at_a_time": true
+    }
+  },
+  {
+    "id": "bard_spellcasting",
+    "class_id": "bard",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "charisma",
+    "focus_options": ["musical_instrument"],
+    "level_1_data": {
+      "cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "bard"
+    }
+  },
+
+  {
+    "id": "cleric_spellcasting",
+    "class_id": "cleric",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "wisdom",
+    "focus_options": ["holy_symbol"],
+    "level_1_data": {
+      "cantrips_known": 3,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "cleric"
+    }
+  },
+  {
+    "id": "cleric_divine_order",
+    "class_id": "cleric",
+    "feature_key": "divine_order",
+    "name_fr": "Ordre divin",
+    "name_en": "Divine Order",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 1,
+      "options": [
+        {
+          "id": "protector",
+          "name_fr": "Protecteur",
+          "name_en": "Protector",
+          "effects": {
+            "gain_armor_training": ["heavy"],
+            "gain_weapon_proficiencies": ["martial"]
+          }
+        },
+        {
+          "id": "thaumaturge",
+          "name_fr": "Thaumaturge",
+          "name_en": "Thaumaturge",
+          "effects": {
+            "gain_extra_cantrip_from_class_list": 1,
+            "add_wisdom_modifier_to_checks": ["arcana", "religion"]
+          }
+        }
+      ]
+    }
+  },
+
+  {
+    "id": "druid_spellcasting",
+    "class_id": "druid",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "wisdom",
+    "focus_options": ["druidic_focus"],
+    "level_1_data": {
+      "base_cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "druid"
+    }
+  },
+  {
+    "id": "druid_druidic",
+    "class_id": "druid",
+    "feature_key": "druidic",
+    "name_fr": "Druidique",
+    "name_en": "Druidic",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "effects": {
+      "gain_languages": ["druidic"]
+    }
+  },
+  {
+    "id": "druid_primal_order",
+    "class_id": "druid",
+    "feature_key": "primal_order",
+    "name_fr": "Ordre primordial",
+    "name_en": "Primal Order",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 1,
+      "options": [
+        {
+          "id": "magician",
+          "name_fr": "Magicien",
+          "name_en": "Magician",
+          "effects": {
+            "gain_extra_cantrip_from_class_list": 1,
+            "add_wisdom_modifier_to_checks": ["arcana", "nature"]
+          }
+        },
+        {
+          "id": "warden",
+          "name_fr": "Gardien",
+          "name_en": "Warden",
+          "effects": {
+            "gain_armor_training": ["medium"],
+            "gain_weapon_proficiencies": ["martial"]
+          }
+        }
+      ]
+    }
+  },
+
+  {
+    "id": "fighter_fighting_style",
+    "class_id": "fighter",
+    "feature_key": "fighting_style",
+    "name_fr": "Style de combat",
+    "name_en": "Fighting Style",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 1,
+      "options_ref": "fighting_styles"
+    }
+  },
+  {
+    "id": "fighter_second_wind",
+    "class_id": "fighter",
+    "feature_key": "second_wind",
+    "name_fr": "Second souffle",
+    "name_en": "Second Wind",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "activation": "bonus_action",
+    "uses": {
+      "count_formula": "2",
+      "recharge": "long_rest",
+      "regain_on_short_rest": 1
+    },
+    "effects": {
+      "heal_formula": "1d10 + fighter_level"
+    }
+  },
+  {
+    "id": "fighter_weapon_mastery",
+    "class_id": "fighter",
+    "feature_key": "weapon_mastery",
+    "name_fr": "Maîtrise d'armes",
+    "name_en": "Weapon Mastery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 3,
+      "from": "weapons_with_which_you_have_proficiency"
+    },
+    "swap_rule": {
+      "can_change_on_long_rest": true
+    }
+  },
+
+  {
+    "id": "monk_martial_arts",
+    "class_id": "monk",
+    "feature_key": "martial_arts",
+    "name_fr": "Arts martiaux",
+    "name_en": "Martial Arts",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "qualified_weapons": {
+      "simple_melee": true,
+      "martial_melee_with_light_property": true
+    },
+    "requirements": {
+      "no_armor": true,
+      "no_shield": true,
+      "must_be_unarmed_or_only_wielding_monk_weapons": true
+    },
+    "effects": {
+      "bonus_unarmed_strike": {
+        "activation": "bonus_action"
+      },
+      "martial_arts_die": "d6",
+      "dexterity_can_replace_strength_for_unarmed_and_monk_weapons": true
+    }
+  },
+  {
+    "id": "monk_unarmored_defense",
+    "class_id": "monk",
+    "feature_key": "unarmored_defense",
+    "name_fr": "Défense sans armure",
+    "name_en": "Unarmored Defense",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "passive_effect": {
+      "base_ac_formula": "10 + dexterity_modifier + wisdom_modifier",
+      "requires_no_armor": true,
+      "requires_no_shield": true
+    }
+  },
+
+  {
+    "id": "paladin_lay_on_hands",
+    "class_id": "paladin",
+    "feature_key": "lay_on_hands",
+    "name_fr": "Imposition des mains",
+    "name_en": "Lay on Hands",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "activation": "bonus_action",
+    "pool": {
+      "hit_points": 5
+    },
+    "target_rule": "creature_within_touch_including_constructs_and_undead"
+  },
+  {
+    "id": "paladin_spellcasting",
+    "class_id": "paladin",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "charisma",
+    "focus_options": ["holy_symbol"],
+    "level_1_data": {
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "paladin"
+    }
+  },
+  {
+    "id": "paladin_weapon_mastery",
+    "class_id": "paladin",
+    "feature_key": "weapon_mastery",
+    "name_fr": "Maîtrise d'armes",
+    "name_en": "Weapon Mastery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 2,
+      "from": "weapons_with_which_you_have_proficiency"
+    },
+    "swap_rule": {
+      "can_change_on_long_rest": true
+    }
+  },
+
+  {
+    "id": "ranger_spellcasting",
+    "class_id": "ranger",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "wisdom",
+    "focus_options": ["druidic_focus"],
+    "level_1_data": {
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "ranger"
+    }
+  },
+  {
+    "id": "ranger_favored_enemy",
+    "class_id": "ranger",
+    "feature_key": "favored_enemy",
+    "name_fr": "Ennemi juré",
+    "name_en": "Favored Enemy",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "effects": {
+      "always_prepared_spells": ["hunters_mark"],
+      "free_casts": [
+        {
+          "spell_id": "hunters_mark",
+          "count_formula": "2",
+          "recharge": "long_rest"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ranger_weapon_mastery",
+    "class_id": "ranger",
+    "feature_key": "weapon_mastery",
+    "name_fr": "Maîtrise d'armes",
+    "name_en": "Weapon Mastery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 2,
+      "from": "weapons_with_which_you_have_proficiency"
+    },
+    "swap_rule": {
+      "can_change_on_long_rest": false
+    }
+  },
+
+  {
+    "id": "rogue_expertise",
+    "class_id": "rogue",
+    "feature_key": "expertise",
+    "name_fr": "Expertise",
+    "name_en": "Expertise",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 2,
+      "from": "current_skill_proficiencies_only"
+    },
+    "effects": {
+      "double_proficiency_bonus": true
+    }
+  },
+  {
+    "id": "rogue_sneak_attack",
+    "class_id": "rogue",
+    "feature_key": "sneak_attack",
+    "name_fr": "Attaque sournoise",
+    "name_en": "Sneak Attack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "frequency": "once_per_turn",
+    "damage": {
+      "extra_dice": "1d6",
+      "damage_type": "same_as_weapon"
+    },
+    "trigger": {
+      "requires_attack_roll": true,
+      "requires_weapon_type": ["finesse", "ranged"],
+      "requires_advantage": true
+    }
+  },
+  {
+    "id": "rogue_thieves_cant",
+    "class_id": "rogue",
+    "feature_key": "thieves_cant",
+    "name_fr": "Argot des voleurs",
+    "name_en": "Thieves' Cant",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "effects": {
+      "gain_languages": ["thieves_cant"],
+      "gain_additional_language": {
+        "choose": 1,
+        "from_category": "standard_languages"
+      }
+    }
+  },
+  {
+    "id": "rogue_weapon_mastery",
+    "class_id": "rogue",
+    "feature_key": "weapon_mastery",
+    "name_fr": "Maîtrise d'armes",
+    "name_en": "Weapon Mastery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 2,
+      "from": "weapons_with_which_you_have_proficiency"
+    },
+    "swap_rule": {
+      "can_change_on_long_rest": false
+    }
+  },
+
+  {
+    "id": "sorcerer_spellcasting",
+    "class_id": "sorcerer",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "charisma",
+    "focus_options": ["arcane_focus"],
+    "level_1_data": {
+      "cantrips_known": 4,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "sorcerer"
+    }
+  },
+  {
+    "id": "sorcerer_innate_sorcery",
+    "class_id": "sorcerer",
+    "feature_key": "innate_sorcery",
+    "name_fr": "Sorcellerie innée",
+    "name_en": "Innate Sorcery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "activation": "bonus_action",
+    "duration": {
+      "value": 1,
+      "unit": "minute"
+    },
+    "uses": {
+      "count_formula": "2",
+      "recharge": "long_rest"
+    },
+    "effects": {
+      "sorcerer_spell_save_dc_bonus": 1,
+      "advantage_on_sorcerer_spell_attack_rolls": true
+    }
+  },
+
+  {
+    "id": "warlock_eldritch_invocations",
+    "class_id": "warlock",
+    "feature_key": "eldritch_invocations",
+    "name_fr": "Invocations occultes",
+    "name_en": "Eldritch Invocations",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "selection": {
+      "choose": 1,
+      "options_ref": "eldritch_invocations"
+    }
+  },
+  {
+    "id": "warlock_pact_magic",
+    "class_id": "warlock",
+    "feature_key": "pact_magic",
+    "name_fr": "Magie de pacte",
+    "name_en": "Pact Magic",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared",
+    "spellcasting_ability": "charisma",
+    "focus_options": ["arcane_focus"],
+    "level_1_data": {
+      "cantrips_known": 2,
+      "prepared_spells": 2,
+      "pact_slots": 1,
+      "pact_slot_level": 1,
+      "spell_list_id": "warlock"
+    }
+  },
+
+  {
+    "id": "wizard_spellcasting",
+    "class_id": "wizard",
+    "feature_key": "spellcasting",
+    "name_fr": "Lancement de sorts",
+    "name_en": "Spellcasting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "spellcasting_type": "prepared_from_spellbook",
+    "spellcasting_ability": "intelligence",
+    "focus_options": ["arcane_focus"],
+    "level_1_data": {
+      "cantrips_known": 3,
+      "spellbook_starting_spells_known": 6,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "spell_list_id": "wizard"
+    }
+  },
+  {
+    "id": "wizard_ritual_adept",
+    "class_id": "wizard",
+    "feature_key": "ritual_adept",
+    "name_fr": "Adepte des rituels",
+    "name_en": "Ritual Adept",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "effects": {
+      "can_cast_ritual_tag_spells_from_spellbook_without_preparing": true,
+      "must_read_from_spellbook": true
+    }
+  },
+  {
+    "id": "wizard_arcane_recovery",
+    "class_id": "wizard",
+    "feature_key": "arcane_recovery",
+    "name_fr": "Récupération arcanique",
+    "name_en": "Arcane Recovery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_feature",
+    "level": 1,
+    "trigger": "short_rest",
+    "effects": {
+      "recover_expended_spell_slots_combined_level_formula": "half_wizard_level_rounded_up",
+      "cannot_recover_slots_level_6_or_higher": true
+    }
+  }
+]

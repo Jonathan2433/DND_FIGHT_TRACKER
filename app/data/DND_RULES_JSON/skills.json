@@ -1,0 +1,182 @@
+[
+  {
+    "id": "acrobatics",
+    "name_fr": "Acrobaties",
+    "name_en": "Acrobatics",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "dexterity",
+    "short_description_fr": "Équilibre, souplesse, acrobaties et manœuvres physiques précises.",
+    "ui_group": "dexterity"
+  },
+  {
+    "id": "animal_handling",
+    "name_fr": "Dressage",
+    "name_en": "Animal Handling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "wisdom",
+    "short_description_fr": "Calmer, guider ou comprendre le comportement d’un animal.",
+    "ui_group": "wisdom"
+  },
+  {
+    "id": "arcana",
+    "name_fr": "Arcanes",
+    "name_en": "Arcana",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "intelligence",
+    "short_description_fr": "Connaissances sur la magie, les sorts, les plans et les traditions occultes.",
+    "ui_group": "intelligence"
+  },
+  {
+    "id": "athletics",
+    "name_fr": "Athlétisme",
+    "name_en": "Athletics",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "strength",
+    "short_description_fr": "Escalade, saut, nage, lutte et efforts physiques bruts.",
+    "ui_group": "strength"
+  },
+  {
+    "id": "deception",
+    "name_fr": "Tromperie",
+    "name_en": "Deception",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "charisma",
+    "short_description_fr": "Mentir, bluffer, déguiser la vérité ou induire quelqu’un en erreur.",
+    "ui_group": "charisma"
+  },
+  {
+    "id": "history",
+    "name_fr": "Histoire",
+    "name_en": "History",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "intelligence",
+    "short_description_fr": "Se souvenir d’événements, peuples, guerres, lignées et civilisations.",
+    "ui_group": "intelligence"
+  },
+  {
+    "id": "insight",
+    "name_fr": "Intuition",
+    "name_en": "Insight",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "wisdom",
+    "short_description_fr": "Lire les émotions, intentions, mensonges ou motivations d’autrui.",
+    "ui_group": "wisdom"
+  },
+  {
+    "id": "intimidation",
+    "name_fr": "Intimidation",
+    "name_en": "Intimidation",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "charisma",
+    "short_description_fr": "Imposer sa présence, menacer ou obtenir quelque chose par la peur.",
+    "ui_group": "charisma"
+  },
+  {
+    "id": "investigation",
+    "name_fr": "Investigation",
+    "name_en": "Investigation",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "intelligence",
+    "short_description_fr": "Examiner des indices, tirer des conclusions et analyser méthodiquement.",
+    "ui_group": "intelligence"
+  },
+  {
+    "id": "medicine",
+    "name_fr": "Médecine",
+    "name_en": "Medicine",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "wisdom",
+    "short_description_fr": "Diagnostiquer, stabiliser ou évaluer l’état physique d’une créature.",
+    "ui_group": "wisdom"
+  },
+  {
+    "id": "nature",
+    "name_fr": "Nature",
+    "name_en": "Nature",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "intelligence",
+    "short_description_fr": "Connaissances sur la nature, les terrains, les plantes et les animaux.",
+    "ui_group": "intelligence"
+  },
+  {
+    "id": "perception",
+    "name_fr": "Perception",
+    "name_en": "Perception",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "wisdom",
+    "short_description_fr": "Repérer sons, mouvements, détails, présences ou anomalies autour de soi.",
+    "ui_group": "wisdom"
+  },
+  {
+    "id": "performance",
+    "name_fr": "Représentation",
+    "name_en": "Performance",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "charisma",
+    "short_description_fr": "Chanter, jouer, réciter, danser ou divertir un public.",
+    "ui_group": "charisma"
+  },
+  {
+    "id": "persuasion",
+    "name_fr": "Persuasion",
+    "name_en": "Persuasion",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "charisma",
+    "short_description_fr": "Convaincre, négocier, apaiser ou influencer par le dialogue.",
+    "ui_group": "charisma"
+  },
+  {
+    "id": "religion",
+    "name_fr": "Religion",
+    "name_en": "Religion",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "intelligence",
+    "short_description_fr": "Connaissances sur les dieux, cultes, rites, symboles et traditions sacrées.",
+    "ui_group": "intelligence"
+  },
+  {
+    "id": "sleight_of_hand",
+    "name_fr": "Escamotage",
+    "name_en": "Sleight of Hand",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "dexterity",
+    "short_description_fr": "Discrétion manuelle, vol à la tire, manipulation rapide d’objets.",
+    "ui_group": "dexterity"
+  },
+  {
+    "id": "stealth",
+    "name_fr": "Discrétion",
+    "name_en": "Stealth",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "dexterity",
+    "short_description_fr": "Se cacher, se déplacer silencieusement et éviter d’être repéré.",
+    "ui_group": "dexterity"
+  },
+  {
+    "id": "survival",
+    "name_fr": "Survie",
+    "name_en": "Survival",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "skill",
+    "ability": "wisdom",
+    "short_description_fr": "Suivre des traces, s’orienter, chasser et survivre en milieu sauvage.",
+    "ui_group": "wisdom"
+  }
+]

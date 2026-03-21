@@ -1,0 +1,158 @@
+[
+  {
+    "id": "agonizing_blast",
+    "name_fr": "Décharge agonisante",
+    "name_en": "Agonizing Blast",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "applies_to_spell": "eldritch_blast",
+      "damage_bonus": {
+        "type": "add_ability_modifier",
+        "ability": "charisma"
+      }
+    },
+    "description_short_fr": "Ajoute le modificateur de Charisme aux dégâts de Eldritch Blast."
+  },
+  {
+    "id": "armor_of_shadows",
+    "name_fr": "Armure des ombres",
+    "name_en": "Armor of Shadows",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "grants_spell": {
+        "spell_id": "mage_armor",
+        "cast_at_will": true,
+        "no_spell_slot_required": true
+      }
+    },
+    "description_short_fr": "Permet de lancer Mage Armor à volonté sans emplacement de sort."
+  },
+  {
+    "id": "beast_speech",
+    "name_fr": "Langage des bêtes",
+    "name_en": "Beast Speech",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "grants_spell": {
+        "spell_id": "speak_with_animals",
+        "cast_at_will": true,
+        "no_spell_slot_required": true
+      }
+    },
+    "description_short_fr": "Permet de lancer Speak with Animals à volonté."
+  },
+  {
+    "id": "devils_sight",
+    "name_fr": "Vision du diable",
+    "name_en": "Devil's Sight",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "see_in_darkness": {
+        "range_feet": 120,
+        "includes_magical_darkness": true
+      }
+    },
+    "description_short_fr": "Permet de voir normalement dans l’obscurité, même magique, jusqu’à 36 m."
+  },
+  {
+    "id": "eldritch_mind",
+    "name_fr": "Esprit occulte",
+    "name_en": "Eldritch Mind",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "advantage_on": ["constitution_saving_throws_to_maintain_concentration"]
+    },
+    "description_short_fr": "Avantage aux jets de Constitution pour maintenir la concentration."
+  },
+  {
+    "id": "fiendish_vigor",
+    "name_fr": "Vigueur infernale",
+    "name_en": "Fiendish Vigor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "grants_spell": {
+        "spell_id": "false_life",
+        "cast_at_will": true,
+        "no_spell_slot_required": true
+      }
+    },
+    "description_short_fr": "Permet de lancer False Life à volonté."
+  },
+  {
+    "id": "mask_of_many_faces",
+    "name_fr": "Masque aux mille visages",
+    "name_en": "Mask of Many Faces",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "grants_spell": {
+        "spell_id": "disguise_self",
+        "cast_at_will": true,
+        "no_spell_slot_required": true
+      }
+    },
+    "description_short_fr": "Permet de lancer Disguise Self à volonté."
+  },
+  {
+    "id": "misty_visions",
+    "name_fr": "Visions brumeuses",
+    "name_en": "Misty Visions",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "grants_spell": {
+        "spell_id": "silent_image",
+        "cast_at_will": true,
+        "no_spell_slot_required": true
+      }
+    },
+    "description_short_fr": "Permet de lancer Silent Image à volonté."
+  },
+  {
+    "id": "repelling_blast",
+    "name_fr": "Décharge repoussante",
+    "name_en": "Repelling Blast",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "eldritch_invocation",
+    "available_at_level": 1,
+    "prerequisites": [],
+    "mechanics_status": "verified",
+    "effects": {
+      "applies_to_spell": "eldritch_blast",
+      "on_hit_effect": {
+        "push_distance_feet": 10
+      }
+    },
+    "description_short_fr": "Repousse la cible de 3 m quand Eldritch Blast touche."
+  }
+]

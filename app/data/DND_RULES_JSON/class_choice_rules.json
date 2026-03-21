@@ -1,0 +1,610 @@
+[
+  {
+    "class_id": "barbarian",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "barbarian_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "animal_handling",
+          "athletics",
+          "intimidation",
+          "nature",
+          "perception",
+          "survival"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "barbarian_weapon_mastery_choices",
+        "choice_type": "weapon_mastery",
+        "required": true,
+        "choose": 2,
+        "from_resolver": "weapons_with_which_you_have_proficiency",
+        "grant_mastery_property_from_weapon": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json",
+    "weapon_catalog_source": "weapons_catalog.json",
+    "weapon_mastery_source": "weapon_masteries.json"
+  },
+  {
+    "class_id": "bard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "bard_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "any_skill",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "bard_tool_proficiencies",
+        "choice_type": "tool_proficiency",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "musical_instrument",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "bard_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "bard_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "bard_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 4,
+        "duplicates_not_allowed": true,
+        "from_spell_list": {
+          "source": "spells_by_class.json",
+          "class_id": "bard",
+          "include_cantrips": false,
+          "max_spell_level": 1
+        }
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "cleric",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "cleric_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "history",
+          "insight",
+          "medicine",
+          "persuasion",
+          "religion"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "cleric_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "cleric_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "cleric_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 4,
+        "from_catalog": "cleric_spells_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "cleric_divine_order",
+        "choice_type": "feature_option",
+        "required": true,
+        "choose": 1,
+        "feature_id": "cleric_divine_order",
+        "options": [
+          "protector",
+          "thaumaturge"
+        ],
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "druid",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "druid_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "animal_handling",
+          "arcana",
+          "insight",
+          "medicine",
+          "nature",
+          "perception",
+          "religion",
+          "survival"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "druid_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "druid_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "druid_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 4,
+        "from_catalog": "druid_spells_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "druid_primal_order",
+        "choice_type": "feature_option",
+        "required": true,
+        "choose": 1,
+        "feature_id": "druid_primal_order",
+        "options": [
+          "magician",
+          "warden"
+        ],
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "fighter",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "fighter_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "acrobatics",
+          "animal_handling",
+          "athletics",
+          "history",
+          "insight",
+          "intimidation",
+          "persuasion",
+          "perception",
+          "survival"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "fighter_fighting_style",
+        "choice_type": "fighting_style",
+        "required": true,
+        "choose": 1,
+        "from_feature_ref": "fighting_styles",
+        "restricted_to_style_type": "fighting_style_feat",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "fighter_weapon_mastery_choices",
+        "choice_type": "weapon_mastery",
+        "required": true,
+        "choose": 3,
+        "from_resolver": "weapons_with_which_you_have_proficiency",
+        "grant_mastery_property_from_weapon": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json",
+    "weapon_catalog_source": "weapons_catalog.json",
+    "weapon_mastery_source": "weapon_masteries.json"
+  },
+  {
+    "class_id": "monk",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "monk_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "acrobatics",
+          "athletics",
+          "history",
+          "insight",
+          "religion",
+          "stealth"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "monk_tool_or_instrument",
+        "choice_type": "mixed",
+        "required": true,
+        "choose": 1,
+        "from_catalogs": [
+          "artisans_tools",
+          "musical_instrument"
+        ],
+        "flatten_nested_catalogs": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "paladin",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "paladin_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "athletics",
+          "insight",
+          "intimidation",
+          "medicine",
+          "persuasion",
+          "religion"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "paladin_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "duplicates_not_allowed": true,
+        "from_spell_list": {
+          "source": "spells_by_class.json",
+          "class_id": "paladin",
+          "include_cantrips": false,
+          "max_spell_level": 1
+        }
+      },
+      {
+        "id": "paladin_weapon_mastery_choices",
+        "choice_type": "weapon_mastery",
+        "required": true,
+        "choose": 2,
+        "from_resolver": "weapons_with_which_you_have_proficiency",
+        "grant_mastery_property_from_weapon": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json",
+    "weapon_catalog_source": "weapons_catalog.json",
+    "weapon_mastery_source": "weapon_masteries.json"
+  },
+  {
+    "class_id": "ranger",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "ranger_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "animal_handling",
+          "athletics",
+          "insight",
+          "investigation",
+          "nature",
+          "perception",
+          "stealth",
+          "survival"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "ranger_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "duplicates_not_allowed": true,
+        "from_spell_list": {
+          "source": "spells_by_class.json",
+          "class_id": "ranger",
+          "include_cantrips": false,
+          "max_spell_level": 1
+        }
+      },
+      {
+        "id": "ranger_weapon_mastery_choices",
+        "choice_type": "weapon_mastery",
+        "required": true,
+        "choose": 2,
+        "from_resolver": "weapons_with_which_you_have_proficiency",
+        "grant_mastery_property_from_weapon": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json",
+    "weapon_catalog_source": "weapons_catalog.json",
+    "weapon_mastery_source": "weapon_masteries.json"
+  },
+  {
+    "class_id": "rogue",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "rogue_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 4,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "acrobatics",
+          "athletics",
+          "deception",
+          "insight",
+          "intimidation",
+          "investigation",
+          "perception",
+          "persuasion",
+          "sleight_of_hand",
+          "stealth"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "rogue_expertise",
+        "choice_type": "expertise",
+        "required": true,
+        "choose": 2,
+        "from_resolver": "current_skill_proficiencies_only",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "rogue_bonus_language_from_thieves_cant",
+        "choice_type": "language",
+        "required": true,
+        "choose": 1,
+        "from_catalog": "standard_languages",
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "rogue_weapon_mastery_choices",
+        "choice_type": "weapon_mastery",
+        "required": true,
+        "choose": 2,
+        "from_resolver": "weapons_with_which_you_have_proficiency",
+        "grant_mastery_property_from_weapon": true,
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json",
+    "weapon_catalog_source": "weapons_catalog.json",
+    "weapon_mastery_source": "weapon_masteries.json"
+  },
+  {
+    "class_id": "sorcerer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "sorcerer_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "arcana",
+          "deception",
+          "insight",
+          "intimidation",
+          "persuasion",
+          "religion"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "sorcerer_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 4,
+        "from_catalog": "sorcerer_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "sorcerer_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "duplicates_not_allowed": true,
+        "from_spell_list": {
+          "source": "spells_by_class.json",
+          "class_id": "sorcerer",
+          "include_cantrips": false,
+          "max_spell_level": 1
+        }
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "warlock",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "warlock_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "arcana",
+          "deception",
+          "history",
+          "intimidation",
+          "investigation",
+          "nature",
+          "religion"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "warlock_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "warlock_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "warlock_prepared_spells",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "duplicates_not_allowed": true,
+        "from_spell_list": {
+          "source": "spells_by_class.json",
+          "class_id": "warlock",
+          "include_cantrips": false,
+          "max_spell_level": 1
+        }
+      },
+      {
+        "id": "warlock_eldritch_invocation",
+        "choice_type": "eldritch_invocation",
+        "required": true,
+        "choose": 1,
+        "from_feature_ref": "eldritch_invocations",
+        "filter": {
+          "available_at_level_lte": 1,
+          "prerequisites_must_be_met": true
+        },
+        "duplicates_not_allowed": true
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  },
+  {
+    "class_id": "wizard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "class_choice_rule",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "wizard_skill_proficiencies",
+        "choice_type": "skill_proficiency",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "any_skill",
+        "restricted_to": [
+          "arcana",
+          "history",
+          "insight",
+          "investigation",
+          "medicine",
+          "nature",
+          "religion"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "wizard_cantrips_known",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "wizard_cantrips_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "wizard_spellbook_level_1_spells",
+        "choice_type": "spellbook_entry",
+        "required": true,
+        "choose": 6,
+        "from_catalog": "wizard_spells_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json"
+      },
+      {
+        "id": "wizard_prepared_spells",
+        "choice_type": "prepared_spell",
+        "required": true,
+        "choose": 4,
+        "from_resolver": "wizard_spellbook_entries_only",
+        "spell_level_max": 1,
+        "duplicates_not_allowed": true,
+        "resolver_source": "spellcasting_rules.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json",
+    "spell_list_source": "spells_by_class.json"
+  }
+]

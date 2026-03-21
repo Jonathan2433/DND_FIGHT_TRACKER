@@ -1,0 +1,498 @@
+[
+  {
+    "id": "club",
+    "name_fr": "Gourdin",
+    "name_en": "Club",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 1,
+      "unit": "sp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery": "slow"
+  },
+  {
+    "id": "dagger",
+    "name_fr": "Dague",
+    "name_en": "Dagger",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
+    "weight_lb": 1,
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light",
+      "thrown",
+      "range_20_60"
+    ],
+    "mastery": "nick"
+  },
+  {
+    "id": "greatclub",
+    "name_fr": "Grand gourdin",
+    "name_en": "Greatclub",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 2,
+      "unit": "sp"
+    },
+    "weight_lb": 10,
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two_handed"
+    ],
+    "mastery": "push"
+  },
+  {
+    "id": "handaxe",
+    "name_fr": "Hachette",
+    "name_en": "Handaxe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "light",
+      "thrown",
+      "range_20_60"
+    ],
+    "mastery": "vex"
+  },
+  {
+    "id": "javelin",
+    "name_fr": "Javelot",
+    "name_en": "Javelin",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 5,
+      "unit": "sp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "range_30_120"
+    ],
+    "mastery": "slow"
+  },
+  {
+    "id": "mace",
+    "name_fr": "Masse d'armes",
+    "name_en": "Mace",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
+    "weight_lb": 4,
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "quarterstaff",
+    "name_fr": "Bâton",
+    "name_en": "Quarterstaff",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 2,
+      "unit": "sp"
+    },
+    "weight_lb": 4,
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": "topple",
+    "versatile_damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    }
+  },
+  {
+    "id": "sickle",
+    "name_fr": "Faucille",
+    "name_en": "Sickle",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery": "nick"
+  },
+  {
+    "id": "spear",
+    "name_fr": "Lance",
+    "name_en": "Spear",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
+    "weight_lb": 3,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "range_20_60",
+      "versatile"
+    ],
+    "mastery": "sap",
+    "versatile_damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    }
+  },
+  {
+    "id": "light_crossbow",
+    "name_fr": "Arbalète légère",
+    "name_en": "Light Crossbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_ranged",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
+    "weight_lb": 5,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading",
+      "range_80_320",
+      "two_handed"
+    ],
+    "mastery": "slow"
+  },
+  {
+    "id": "shortbow",
+    "name_fr": "Arc court",
+    "name_en": "Shortbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "simple_ranged",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "range_80_320",
+      "two_handed"
+    ],
+    "mastery": "vex"
+  },
+  {
+    "id": "flail",
+    "name_fr": "Fléau",
+    "name_en": "Flail",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "glaive",
+    "name_fr": "Glaive",
+    "name_en": "Glaive",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 20,
+      "unit": "gp"
+    },
+    "weight_lb": 6,
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "mastery": "graze"
+  },
+  {
+    "id": "greataxe",
+    "name_fr": "Hache à deux mains",
+    "name_en": "Greataxe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 30,
+      "unit": "gp"
+    },
+    "weight_lb": 7,
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery": "cleave"
+  },
+  {
+    "id": "greatsword",
+    "name_fr": "Espadon",
+    "name_en": "Greatsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
+    "weight_lb": 6,
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery": "graze"
+  },
+  {
+    "id": "longsword",
+    "name_fr": "Épée longue",
+    "name_en": "Longsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 15,
+      "unit": "gp"
+    },
+    "weight_lb": 3,
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": "sap",
+    "versatile_damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    }
+  },
+  {
+    "id": "rapier",
+    "name_fr": "Rapière",
+    "name_en": "Rapier",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse"
+    ],
+    "mastery": "vex"
+  },
+  {
+    "id": "scimitar",
+    "name_fr": "Cimeterre",
+    "name_en": "Scimitar",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
+    "weight_lb": 3,
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": "nick"
+  },
+  {
+    "id": "shortsword",
+    "name_fr": "Épée courte",
+    "name_en": "Shortsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": "vex"
+  },
+  {
+    "id": "warhammer",
+    "name_fr": "Marteau de guerre",
+    "name_en": "Warhammer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_melee",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 15,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": "push",
+    "versatile_damage": {
+      "dice": "1d10",
+      "type": "bludgeoning"
+    }
+  },
+  {
+    "id": "longbow",
+    "name_fr": "Arc long",
+    "name_en": "Longbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_catalog_entry",
+    "weapon_category": "martial_ranged",
+    "available_at_character_level_1": true,
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
+    "weight_lb": 2,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "range_150_600",
+      "two_handed"
+    ],
+    "mastery": "slow"
+  }
+]

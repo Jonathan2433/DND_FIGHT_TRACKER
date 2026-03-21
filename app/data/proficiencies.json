@@ -1,0 +1,376 @@
+[
+  {
+    "id": "light_armor",
+    "name_fr": "Armures légères",
+    "name_en": "Light Armor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "armor_group",
+    "applies_to_item_category": "armor",
+    "matches": {
+      "armor_category": ["light"]
+    }
+  },
+  {
+    "id": "medium_armor",
+    "name_fr": "Armures intermédiaires",
+    "name_en": "Medium Armor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "armor_group",
+    "applies_to_item_category": "armor",
+    "matches": {
+      "armor_category": ["medium"]
+    }
+  },
+  {
+    "id": "heavy_armor",
+    "name_fr": "Armures lourdes",
+    "name_en": "Heavy Armor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "armor_group",
+    "applies_to_item_category": "armor",
+    "matches": {
+      "armor_category": ["heavy"]
+    }
+  },
+  {
+    "id": "shields",
+    "name_fr": "Boucliers",
+    "name_en": "Shields",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "shield_group",
+    "applies_to_item_category": "shield",
+    "matches": {
+      "item_category": ["shield"]
+    }
+  },
+
+  {
+    "id": "simple_weapons",
+    "name_fr": "Armes simples",
+    "name_en": "Simple Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["simple_melee", "simple_ranged"]
+    }
+  },
+  {
+    "id": "martial_weapons",
+    "name_fr": "Armes de guerre",
+    "name_en": "Martial Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["martial_melee", "martial_ranged"]
+    }
+  },
+  {
+    "id": "simple_melee_weapons",
+    "name_fr": "Armes simples de mêlée",
+    "name_en": "Simple Melee Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["simple_melee"]
+    }
+  },
+  {
+    "id": "simple_ranged_weapons",
+    "name_fr": "Armes simples à distance",
+    "name_en": "Simple Ranged Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["simple_ranged"]
+    }
+  },
+  {
+    "id": "martial_melee_weapons",
+    "name_fr": "Armes de guerre de mêlée",
+    "name_en": "Martial Melee Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["martial_melee"]
+    }
+  },
+  {
+    "id": "martial_ranged_weapons",
+    "name_fr": "Armes de guerre à distance",
+    "name_en": "Martial Ranged Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["martial_ranged"]
+    }
+  },
+
+  {
+    "id": "martial_light_only",
+    "name_fr": "Armes de guerre légères uniquement",
+    "name_en": "Martial Weapons with the Light Property Only",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_filtered_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["martial_melee", "martial_ranged"],
+      "properties_any": ["light"]
+    }
+  },
+  {
+    "id": "martial_finesse_or_light_only",
+    "name_fr": "Armes de guerre avec Finesse ou Light uniquement",
+    "name_en": "Martial Weapons with the Finesse or Light Property Only",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "weapon_filtered_group",
+    "applies_to_item_category": "weapon",
+    "matches": {
+      "weapon_category": ["martial_melee", "martial_ranged"],
+      "properties_any": ["finesse", "light"]
+    }
+  },
+
+  {
+    "id": "all_armor",
+    "name_fr": "Toutes les armures",
+    "name_en": "All Armor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "composite_group",
+    "contains": ["light_armor", "medium_armor", "heavy_armor"]
+  },
+  {
+    "id": "all_weapons",
+    "name_fr": "Toutes les armes",
+    "name_en": "All Weapons",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "composite_group",
+    "contains": ["simple_weapons", "martial_weapons"]
+  },
+
+  {
+    "id": "specific_dagger",
+    "name_fr": "Dague",
+    "name_en": "Dagger",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_item",
+    "item_id": "dagger"
+  },
+  {
+    "id": "specific_spear",
+    "name_fr": "Lance",
+    "name_en": "Spear",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_item",
+    "item_id": "spear"
+  },
+  {
+    "id": "specific_shortbow",
+    "name_fr": "Arc court",
+    "name_en": "Shortbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_item",
+    "item_id": "shortbow"
+  },
+  {
+    "id": "specific_longbow",
+    "name_fr": "Arc long",
+    "name_en": "Longbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_item",
+    "item_id": "longbow"
+  },
+  {
+    "id": "specific_thieves_tools",
+    "name_fr": "Outils de voleur",
+    "name_en": "Thieves' Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "thieves_tools"
+  },
+  {
+    "id": "specific_herbalism_kit",
+    "name_fr": "Kit d'herboriste",
+    "name_en": "Herbalism Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "herbalism_kit"
+  },
+  {
+    "id": "specific_calligraphers_supplies",
+    "name_fr": "Matériel de calligraphe",
+    "name_en": "Calligrapher's Supplies",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "calligraphers_supplies"
+  },
+  {
+    "id": "specific_cartographers_tools",
+    "name_fr": "Outils de cartographe",
+    "name_en": "Cartographer's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "cartographers_tools"
+  },
+  {
+    "id": "specific_navigators_tools",
+    "name_fr": "Outils de navigateur",
+    "name_en": "Navigator's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "navigators_tools"
+  },
+  {
+    "id": "specific_forgery_kit",
+    "name_fr": "Kit de contrefaçon",
+    "name_en": "Forgery Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "specific_tool",
+    "tool_id": "forgery_kit"
+  },
+
+  {
+    "id": "artisans_tools",
+    "name_fr": "Outils d'artisan",
+    "name_en": "Artisan's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "tool_group",
+    "applies_to_entity": "tool",
+    "matches": {
+      "tool_category": ["artisans_tools"]
+    }
+  },
+  {
+    "id": "gaming_set",
+    "name_fr": "Jeu",
+    "name_en": "Gaming Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "tool_group",
+    "applies_to_entity": "tool",
+    "matches": {
+      "tool_category": ["gaming_set"]
+    }
+  },
+  {
+    "id": "musical_instrument",
+    "name_fr": "Instrument de musique",
+    "name_en": "Musical Instrument",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "tool_group",
+    "applies_to_entity": "tool",
+    "matches": {
+      "tool_category": ["musical_instrument"]
+    }
+  },
+
+  {
+    "id": "any_skill",
+    "name_fr": "N'importe quelle compétence",
+    "name_en": "Any Skill",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "skill_group",
+    "matches": {
+      "entity_type": ["skill"]
+    }
+  },
+  {
+    "id": "any_tool",
+    "name_fr": "N'importe quel outil",
+    "name_en": "Any Tool",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "tool_group",
+    "matches": {
+      "entity_type": ["tool"]
+    }
+  },
+
+  {
+    "id": "standard_languages",
+    "name_fr": "Langues standard",
+    "name_en": "Standard Languages",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "language_group",
+    "matches": {
+      "entity_type": ["language"],
+      "language_category": ["standard"]
+    }
+  },
+
+  {
+    "id": "weapons_with_which_you_have_proficiency",
+    "name_fr": "Armes maîtrisées",
+    "name_en": "Weapons with Which You Have Proficiency",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "dynamic_resolver",
+    "resolver": {
+      "type": "owned_weapon_proficiencies_to_weapon_items"
+    }
+  },
+  {
+    "id": "current_skill_proficiencies_only",
+    "name_fr": "Compétences déjà maîtrisées uniquement",
+    "name_en": "Current Skill Proficiencies Only",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "dynamic_resolver",
+    "resolver": {
+      "type": "owned_skill_proficiencies_only"
+    }
+  },
+  {
+    "id": "current_tool_proficiencies_only",
+    "name_fr": "Outils déjà maîtrisés uniquement",
+    "name_en": "Current Tool Proficiencies Only",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "dynamic_resolver",
+    "resolver": {
+      "type": "owned_tool_proficiencies_only"
+    }
+  },
+  {
+    "id": "skills_or_tools",
+    "name_fr": "Compétences ou outils",
+    "name_en": "Skills or Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "proficiency",
+    "proficiency_type": "composite_group",
+    "contains": ["any_skill", "any_tool"]
+  }
+]

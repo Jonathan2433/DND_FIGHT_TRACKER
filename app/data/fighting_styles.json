@@ -1,0 +1,206 @@
+[
+  {
+    "id": "archery",
+    "name_fr": "Archerie",
+    "name_en": "Archery",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "verified",
+    "effects": {
+      "attack_roll_bonus": {
+        "value": 2,
+        "applies_to_weapon_category": "ranged_weapons"
+      }
+    },
+    "description_short_fr": "+2 aux jets d’attaque avec les armes à distance."
+  },
+  {
+    "id": "defense",
+    "name_fr": "Défense",
+    "name_en": "Defense",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "verified",
+    "effects": {
+      "armor_class_bonus": {
+        "value": 1,
+        "while_wearing_armor_categories": ["light", "medium", "heavy"]
+      }
+    },
+    "description_short_fr": "+1 à la CA tant que tu portes une armure légère, intermédiaire ou lourde."
+  },
+  {
+    "id": "great_weapon_fighting",
+    "name_fr": "Combat avec grande arme",
+    "name_en": "Great Weapon Fighting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "verified",
+    "effects": {
+      "damage_die_floor": {
+        "replace_results": [1, 2],
+        "with": 3,
+        "applies_when": "melee_weapon_held_with_two_hands",
+        "weapon_must_have_property": ["two_handed", "versatile"]
+      }
+    },
+    "description_short_fr": "Quand tu lances les dégâts d’une arme de mêlée tenue à deux mains, les 1 et 2 sur les dés deviennent des 3."
+  },
+  {
+    "id": "two_weapon_fighting",
+    "name_fr": "Combat à deux armes",
+    "name_en": "Two-Weapon Fighting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "verified",
+    "effects": {
+      "light_extra_attack_damage_modifier": {
+        "add_ability_modifier_to_damage": true,
+        "only_if_not_already_added": true
+      }
+    },
+    "description_short_fr": "Ajoute le modificateur de caractéristique aux dégâts de l’attaque supplémentaire accordée par la propriété Light."
+  },
+  {
+    "id": "blind_fighting",
+    "name_fr": "Combat aveugle",
+    "name_en": "Blind Fighting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "blindsight_range_feet": 10
+    },
+    "description_short_fr": "Octroie la vision aveugle sur 3 mètres."
+  },
+  {
+    "id": "dueling",
+    "name_fr": "Duel",
+    "name_en": "Dueling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "damage_roll_bonus": {
+        "value": 2,
+        "applies_to": "melee_weapon_attacks",
+        "intended_condition": "one_handed_melee_style"
+      }
+    },
+    "description_short_fr": "+2 aux dégâts avec une arme de mêlée utilisée dans un style de duel."
+  },
+  {
+    "id": "interception",
+    "name_fr": "Interception",
+    "name_en": "Interception",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "reaction_defense": {
+        "trigger": "attack_hits_nearby_target",
+        "effect_type": "reduce_damage"
+      }
+    },
+    "description_short_fr": "Permet, en réaction, de réduire les dégâts d’une attaque qui touche une cible proche."
+  },
+  {
+    "id": "protection",
+    "name_fr": "Protection",
+    "name_en": "Protection",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "reaction_defense": {
+        "trigger": "attack_targets_nearby_ally",
+        "effect_type": "shield_against_attack"
+      }
+    },
+    "description_short_fr": "Permet, en réaction, d’intervenir avec un bouclier contre une attaque visant une cible proche."
+  },
+  {
+    "id": "thrown_weapon_fighting",
+    "name_fr": "Combat aux armes de jet",
+    "name_en": "Thrown Weapon Fighting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "damage_roll_bonus": {
+        "value": 2,
+        "applies_to_weapon_property": "thrown"
+      }
+    },
+    "description_short_fr": "+2 aux dégâts avec les armes ayant la propriété Thrown."
+  },
+  {
+    "id": "unarmed_fighting",
+    "name_fr": "Combat à mains nues",
+    "name_en": "Unarmed Fighting",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "fighting_style_feat",
+    "prerequisite_feature": "fighting_style",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "unarmed_strike_damage_increase": true
+    },
+    "description_short_fr": "Augmente les dégâts des frappes à mains nues."
+  },
+  {
+    "id": "blessed_warrior",
+    "name_fr": "Guerrier béni",
+    "name_en": "Blessed Warrior",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "class_alternative",
+    "available_to_classes": ["paladin"],
+    "replaces": "fighting_style_feat_choice",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "learn_cantrips": {
+        "choose": 2,
+        "from_spell_list": "cleric"
+      }
+    },
+    "description_short_fr": "Alternative de Paladin : apprend 2 sorts mineurs de Cleric au lieu d’un Fighting Style feat."
+  },
+  {
+    "id": "druidic_warrior",
+    "name_fr": "Guerrier druidique",
+    "name_en": "Druidic Warrior",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "fighting_style",
+    "style_type": "class_alternative",
+    "available_to_classes": ["ranger"],
+    "replaces": "fighting_style_feat_choice",
+    "mechanics_status": "summary_verified",
+    "effects": {
+      "learn_cantrips": {
+        "choose": 2,
+        "from_spell_list": "druid",
+        "count_as_class_spells_for": "ranger"
+      }
+    },
+    "description_short_fr": "Alternative de Ranger : apprend 2 sorts mineurs de Druid, qui comptent comme sorts de Ranger."
+  }
+]
