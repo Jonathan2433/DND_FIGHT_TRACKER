@@ -17,14 +17,15 @@
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
         <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
 
-        <div class="creation-wizard" data-total-steps="6">
+        <div class="creation-wizard" data-total-steps="7">
             <ol class="creation-steps-nav" aria-label="Étapes de création">
                 <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identité</button></li>
                 <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Classe</button></li>
                 <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Origines</button></li>
                 <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Langues</button></li>
                 <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Caractéristiques</button></li>
-                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Alignement</button></li>
+                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts</button></li>
+                <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Alignement</button></li>
             </ol>
 
             <section class="wizard-step is-active" data-step="1">
@@ -47,6 +48,7 @@
                     <h3>Gains automatiques (classe)</h3>
                     <ul id="class-auto-gains"></ul>
                     <h3>Choix à faire (classe)</h3>
+                    <p class="text-muted">Sélectionnez uniquement les options qui vous intéressent. Les intitulés sont traduits et simplifiés.</p>
                     <div id="class-required-choices"></div>
                 </div>
 
@@ -63,6 +65,7 @@
                     <h3>Gains automatiques (historique)</h3>
                     <ul id="background-auto-gains"></ul>
                     <h3>Choix à faire (historique)</h3>
+                    <p class="text-muted">Ces choix définissent votre passé d’aventurier et vos compétences de départ.</p>
                     <div id="background-required-choices"></div>
                     <div id="background-equipment"></div>
                 </div>
@@ -73,6 +76,7 @@
                     <h3>Gains automatiques (espèce)</h3>
                     <ul id="species-auto-gains"></ul>
                     <h3>Choix à faire (espèce)</h3>
+                    <p class="text-muted">Choisissez les traits demandés pour finaliser votre espèce.</p>
                     <div id="species-required-choices"></div>
                 </div>
 
@@ -101,8 +105,9 @@
             <section class="wizard-step" data-step="5" hidden>
                 <fieldset class="form-group">
                     <legend>Caractéristiques de base</legend>
-                    <label for="ability-method">Méthode</label>
+                    <label for="ability-method">Méthode de répartition (obligatoire)</label>
                     <select id="ability-method"></select>
+                    <p class="text-muted">Conseil débutant : utilisez la méthode recommandée si vous découvrez Donjons & Dragons.</p>
                     <p id="ability-background-limits" class="text-muted"></p>
                     <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
                         {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
@@ -126,6 +131,19 @@
 
             <section class="wizard-step" data-step="6" hidden>
                 <div class="form-group">
+                    <h3>Choix des sorts</h3>
+                    <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
+                    <div id="spell-required-choices"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="5">Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step="7">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="7" hidden>
+                <div class="form-group">
                     <label for="alignment">Alignement</label>
                     <select id="alignment" name="alignment">
                         <option value="Loyal Bon">Loyal Bon</option>
@@ -141,7 +159,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="5">Retour</button>
+                    <button type="button" class="btn btn-secondary" data-prev-step="6">Retour</button>
                     <button class="btn btn-primary" type="submit">Créer le personnage</button>
                 </div>
             </section>
@@ -158,6 +176,7 @@ const speciesChoice = document.getElementById('species-choice');
 const language2 = document.getElementById('language-2');
 const language3 = document.getElementById('language-3');
 const abilityMethod = document.getElementById('ability-method');
+const spellHelp = document.getElementById('spell-step-help');
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -169,6 +188,36 @@ const hidden = {
 };
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
+const SPELL_CHOICE_TYPES = new Set(['spell']);
+
+const FRIENDLY_LABELS = {
+    saving_throw_proficiencies: 'Jets de sauvegarde maîtrisés',
+    weapon_proficiencies: 'Maîtrises d’armes',
+    armor_training: 'Maîtrises d’armures',
+    features_level_1: 'Capacités de niveau 1',
+    hit_die: 'Dé de vie',
+    traits_level_1: 'Traits de niveau 1',
+    size_options: 'Tailles possibles',
+    speed: 'Vitesse',
+    skill_proficiencies: 'Compétences maîtrisées',
+    origin_feat: 'Don d’origine',
+    skill_proficiency: 'Compétence',
+    tool_proficiency: 'Outil',
+    language: 'Langue',
+    spell: 'Sort',
+    simple_weapons: 'Armes simples',
+    martial_weapons: 'Armes martiales',
+    light_armor: 'Armure légère',
+    medium_armor: 'Armure intermédiaire',
+    heavy_armor: 'Armure lourde',
+    shields: 'Boucliers',
+    standard_array: 'Valeurs standard (15, 14, 13, 12, 10, 8)',
+    point_buy: 'Achat de points',
+    rolling: 'Jets aléatoires',
+    small: 'Petite',
+    medium: 'Moyenne',
+    large: 'Grande',
+};
 
 function formatValue(value) {
     if (value === null || value === undefined || value === '') {
@@ -184,7 +233,25 @@ function formatValue(value) {
             .map(([key, nested]) => `${key}: ${formatValue(nested)}`)
             .join(' | ');
     }
+    if (typeof value === 'string') {
+        if (FRIENDLY_LABELS[value]) return FRIENDLY_LABELS[value];
+        return value
+            .replaceAll('_', ' ')
+            .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+    }
     return String(value);
+}
+
+function formatChoiceTitle(choice) {
+    if (choice.name_fr) return choice.name_fr;
+    if (choice.id && FRIENDLY_LABELS[choice.id]) return FRIENDLY_LABELS[choice.id];
+    if (choice.id) {
+        return choice.id
+            .replace(/^([a-z]+)_/, '')
+            .replaceAll('_', ' ')
+            .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+    }
+    return 'Choix';
 }
 
 function setOptions(select, entries) {
@@ -223,7 +290,8 @@ function renderChoices(targetId, requiredChoices, type) {
         const block = document.createElement('div');
         block.style.marginBottom = '12px';
         const title = document.createElement('p');
-        title.textContent = `${choice.name_fr || choice.id} — choisir ${choice.choose}`;
+        const label = formatChoiceTitle(choice);
+        title.textContent = `${label} — choisissez ${choice.choose}`;
         block.appendChild(title);
 
         const options = choice.options || [];
@@ -235,14 +303,16 @@ function renderChoices(targetId, requiredChoices, type) {
             input.value = option.label || option.name_fr || option.id;
             input.dataset.choiceId = choice.id;
             input.dataset.choiceType = choice.type;
+            input.dataset.scope = type;
             input.addEventListener('change', () => {
                 const siblings = Array.from(block.querySelectorAll('input:checked'));
                 if (siblings.length > choice.choose) {
                     input.checked = false;
                     return;
                 }
-                syncHiddenFields(type, target);
+                syncHiddenFields();
             });
+            label.classList.add('builder-choice-item');
             label.appendChild(input);
             label.append(` ${formatValue(option)}`);
             block.appendChild(label);
@@ -251,15 +321,24 @@ function renderChoices(targetId, requiredChoices, type) {
     });
 }
 
-function syncHiddenFields(scope, root) {
-    if (scope === 'class') {
-        const skillValues = Array.from(root.querySelectorAll('input[data-choice-type="skill_proficiency"]:checked')).map((x) => x.value);
-        hidden.skills.value = skillValues.join(', ');
-        const cantripValues = Array.from(root.querySelectorAll('input[data-choice-type="spell"][data-choice-id*="cantrip"]:checked')).map((x) => x.value);
-        const spellValues = Array.from(root.querySelectorAll('input[data-choice-type="spell"]:checked')).map((x) => x.value);
-        hidden.cantrips.value = cantripValues.join(', ');
-        hidden.spells.value = spellValues.join(', ');
-    }
+function syncHiddenFields() {
+    const allChecked = Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+    const skillValues = allChecked
+        .filter((x) => x.dataset.choiceType === 'skill_proficiency')
+        .map((x) => x.value);
+    hidden.skills.value = skillValues.join(', ');
+
+    const spellValues = allChecked.filter((x) => x.dataset.choiceType === 'spell').map((x) => x.value);
+    const cantripValues = spellValues.filter((value) => /cantrip/i.test(value));
+    hidden.cantrips.value = cantripValues.join(', ');
+    hidden.spells.value = spellValues.join(', ');
+}
+
+function splitSpellChoices(choices = []) {
+    return {
+        spellChoices: choices.filter((choice) => SPELL_CHOICE_TYPES.has(choice.type)),
+        nonSpellChoices: choices.filter((choice) => !SPELL_CHOICE_TYPES.has(choice.type)),
+    };
 }
 
 function renderEquipment(payload) {
@@ -308,14 +387,16 @@ async function refreshPayload() {
         `Armures : ${formatValue(classAuto.armor_training)}`,
         `Capacités niveau 1 : ${formatValue(classAuto.features_level_1)}`,
     ]);
-    renderChoices('class-required-choices', payload.class_payload?.required_choices || [], 'class');
+    const classChoices = splitSpellChoices(payload.class_payload?.required_choices || []);
+    renderChoices('class-required-choices', classChoices.nonSpellChoices, 'class');
 
     const bgAuto = payload.background_payload?.automatic_gains || {};
     renderList('background-auto-gains', [
         `Compétences : ${formatValue(bgAuto.skill_proficiencies)}`,
         `Don d'origine : ${formatValue(bgAuto.origin_feat)}`,
     ]);
-    renderChoices('background-required-choices', payload.background_payload?.required_choices || [], 'background');
+    const backgroundChoices = splitSpellChoices(payload.background_payload?.required_choices || []);
+    renderChoices('background-required-choices', backgroundChoices.nonSpellChoices, 'background');
     renderEquipment(payload.background_payload || {});
 
     const speciesAuto = payload.species_payload?.automatic_gains || {};
@@ -324,17 +405,33 @@ async function refreshPayload() {
         `Tailles possibles : ${formatValue(speciesAuto.size_options)}`,
         `Vitesse : ${formatValue(speciesAuto.speed)}`,
     ]);
-    renderChoices('species-required-choices', payload.species_payload?.required_choices || [], 'species');
+    const speciesChoices = splitSpellChoices(payload.species_payload?.required_choices || []);
+    renderChoices('species-required-choices', speciesChoices.nonSpellChoices, 'species');
+
+    const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
+    renderChoices('spell-required-choices', spellChoices, 'spell');
+    spellHelp.textContent = spellChoices.length
+        ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
+        : 'Aucun choix de sort requis pour vos sélections actuelles.';
 
     const languagePayload = payload.languages_payload || {};
     setOptions(language2, languagePayload.options || []);
     setOptions(language3, languagePayload.options || []);
 
     const methods = payload.ability_payload?.methods || [];
-    setOptions(abilityMethod, methods.map((m) => ({ id: m.id, label: m.label || m.name_fr || m.id })));
+    setOptions(abilityMethod, methods.map((m) => ({
+        id: m.id,
+        label: `${m.label || m.name_fr || formatValue(m.id)}${m.recommended_default ? ' (recommandée)' : ''}`,
+    })));
+    if (methods.length && !abilityMethod.value) {
+        const recommended = methods.find((method) => method.recommended_default) || methods[0];
+        abilityMethod.value = recommended.id;
+        hidden.mode.value = recommended.id;
+    }
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
     document.getElementById('ability-background-limits').textContent =
         allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+    syncHiddenFields();
 }
 
 setOptions(classChoice, rulesContext.classes || []);
