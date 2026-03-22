@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from app.utils.character_builder_engine import SpellResolverService, get_rules_loaders
+
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "app" / "data" / "spells_catalog.json"
 
 
@@ -218,8 +220,64 @@ def _translate_duration(value: str) -> str:
     return translated
 
 
+def _load_spell_catalog_from_rules_json() -> list[dict[str, Any]]:
+    loaders = get_rules_loaders()
+    if not loaders.has_knowledge_base() or not loaders.spell_by_id:
+        return []
+
+    spell_resolver = SpellResolverService(loaders)
+    class_spell_index = loaders.spells_by_class_and_level
+    classes_by_spell: dict[str, set[str]] = {}
+
+    for class_name, by_level in class_spell_index.items():
+        canonical_class = spell_resolver.canonical_class(class_name)
+        for spell_names in by_level.values():
+            for spell_name in spell_names:
+                classes_by_spell.setdefault(spell_name, set()).add(canonical_class)
+
+    normalized: list[dict[str, Any]] = []
+    for spell in loaders.spell_by_id.values():
+        normalized_entry = _normalize_spell_entry(spell)
+        spell_key = _normalize_spell_name(spell.get("name") or spell.get("name_fr") or spell.get("id") or "")
+        extra_classes = classes_by_spell.get(spell_key, set())
+        current_classes = {str(item).strip().lower() for item in normalized_entry.get("classes") or [] if str(item).strip()}
+        normalized_entry["classes"] = sorted(current_classes | extra_classes)
+        if normalized_entry["name"]:
+            normalized.append(normalized_entry)
+
+    # Tolérance haute : ajouter les sorts connus seulement via spells_by_class.json
+    known_spell_names = {_normalize_spell_name(spell.get("name") or spell.get("name_en") or "") for spell in normalized}
+    for class_name, by_level in class_spell_index.items():
+        canonical_class = spell_resolver.canonical_class(class_name)
+        for level, spell_names in by_level.items():
+            for spell_name in spell_names:
+                if spell_name in known_spell_names:
+                    continue
+                normalized.append({
+                    "name": spell_name.title(),
+                    "name_en": spell_name.title(),
+                    "level": level,
+                    "school": "",
+                    "classes": [canonical_class],
+                    "source": "",
+                    "description": "",
+                    "casting_time": "",
+                    "range": "",
+                    "duration": "",
+                    "concentration": "Non",
+                    "ritual": "Non",
+                })
+                known_spell_names.add(spell_name)
+
+    return normalized
+
+
 def load_spell_catalog() -> list[dict[str, Any]]:
-    """Retourner la liste complete des sorts depuis le JSON local."""
+    """Retourner la liste complete des sorts depuis la base JSON prioritaire, sinon fallback legacy."""
+    rules_json_spells = _load_spell_catalog_from_rules_json()
+    if rules_json_spells:
+        return rules_json_spells
+
     if not CATALOG_PATH.exists():
         return []
 
@@ -245,7 +303,7 @@ def load_spell_catalog() -> list[dict[str, Any]]:
 
 
 def get_spells_for_level(level: int) -> list[dict[str, Any]]:
-    """Filtrer les sorts sur un niveau precis."""
+    """Filtrer les sorts sur un niveau précis."""
     return sorted(
         [spell for spell in load_spell_catalog() if spell.get("level") == level],
         key=lambda entry: entry.get("name", ""),
@@ -253,5 +311,5 @@ def get_spells_for_level(level: int) -> list[dict[str, Any]]:
 
 
 def get_cantrips() -> list[dict[str, Any]]:
-    """Alias de lisibilite pour les sorts mineurs (niveau 0)."""
+    """Alias de lisibilité pour les sorts mineurs (niveau 0)."""
     return get_spells_for_level(0)
