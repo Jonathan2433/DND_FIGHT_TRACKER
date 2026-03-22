@@ -11,6 +11,7 @@ from app.utils import MONSTER_TEMPLATES, allowed_file
 from app.utils.dnd5_rules import resolve_character_creation
 from app.utils.spell_catalog import get_cantrips, get_spells_for_level
 from app.utils.character_builder_engine import get_rules_loaders
+from app.services.character_builder_service import get_character_builder_service
 from app.application.use_cases.notification_service import NotificationService
 from app.application.use_cases.character_sheet_pdf_service import CharacterSheetPdfService
 
@@ -437,6 +438,107 @@ class TemplateService:
         return " | ".join(sections)
 
     @staticmethod
+    def _safe_parse_json_list(raw_value):
+        if not raw_value:
+            return []
+        try:
+            data = json.loads(raw_value)
+        except Exception:
+            return []
+        return data if isinstance(data, list) else []
+
+    @classmethod
+    def _validate_guided_builder_constraints(cls, form_data):
+        service = get_character_builder_service()
+        state = {
+            "class_id": form_data.get("character_class") or None,
+            "background_id": form_data.get("background_choice") or None,
+            "species_id": form_data.get("race") or None,
+            "language_ids": [token for token in [form_data.get("language_2"), form_data.get("language_3")] if token],
+            "selected_origin_feat_id": None,
+        }
+        feat_choices = cls._safe_parse_json_list(form_data.get("feat_choices"))
+        for entry in feat_choices:
+            if isinstance(entry, dict) and entry.get("choice_type") == "origin_feat":
+                state["selected_origin_feat_id"] = entry.get("value")
+                break
+
+        ability_payload = service.get_ability_score_payload(state)
+        allowed_abilities = set(ability_payload.get("allowed_abilities", []))
+        bg_bonus_fields = ["force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"]
+        distribution = {}
+        for field in bg_bonus_fields:
+            try:
+                distribution[field] = int(form_data.get(f"{field}_bg_bonus", 0) or 0)
+            except Exception:
+                distribution[field] = 0
+        positive_distribution = {key: value for key, value in distribution.items() if value > 0}
+        total_bonus = sum(positive_distribution.values())
+        if allowed_abilities:
+            illegal = [key for key in positive_distribution if key not in allowed_abilities]
+            if illegal:
+                raise ValueError(f"Bonus d’origine illégal: {', '.join(illegal)} hors capacités autorisées.")
+            legal_distributions = ({2, 1}, {1, 1, 1})
+            if total_bonus != 3 or set(positive_distribution.values()) not in legal_distributions:
+                raise ValueError("Les bonus d’origine doivent suivre la règle +2/+1 ou +1/+1/+1.")
+
+        selected_by_choice_id = {}
+        for entry in feat_choices:
+            if isinstance(entry, dict):
+                choice_id = str(entry.get("choice_id") or "")
+                if choice_id:
+                    selected_by_choice_id.setdefault(choice_id, []).append(str(entry.get("value")))
+
+        skill_tokens = [token.strip() for token in (cls._normalize_skill_proficiencies(form_data) or "").split(",") if token.strip()]
+        spell_tokens = [token.strip() for token in (form_data.get("selected_level_1_spells") or "").split(",") if token.strip()]
+        cantrip_tokens = [token.strip() for token in (form_data.get("selected_cantrips") or "").split(",") if token.strip()]
+        language_tokens = [token for token in [form_data.get("language_2"), form_data.get("language_3")] if token]
+
+        def _validate_required_choices(payload):
+            for choice in payload.get("required_choices", []) if isinstance(payload, dict) else []:
+                if not isinstance(choice, dict) or not choice.get("required", True):
+                    continue
+                choice_id = str(choice.get("id") or "")
+                choose = int(choice.get("choose", 1))
+                choice_type = choice.get("type")
+                if choice_type == "skill_proficiency":
+                    count = len(skill_tokens)
+                elif choice_type == "spell":
+                    count = len(cantrip_tokens) + len(spell_tokens)
+                elif choice_type == "language":
+                    count = len(language_tokens)
+                else:
+                    count = len(selected_by_choice_id.get(choice_id, []))
+                if count != choose:
+                    raise ValueError(f"Choix requis incomplet ({choice_id}): {count}/{choose}.")
+
+        _validate_required_choices(service.get_class_payload(state["class_id"], state) if state["class_id"] else {})
+        _validate_required_choices(service.get_background_payload(state["background_id"], state) if state["background_id"] else {})
+        _validate_required_choices(service.get_species_payload(state["species_id"], state) if state["species_id"] else {})
+
+        if state["background_id"]:
+            background_payload = service.get_background_payload(state["background_id"], state)
+            for choice in background_payload.get("origin_feat_payload", {}).get("required_choices", []):
+                choice_id = str(choice.get("id") or "")
+                choose = int(choice.get("choose", 1))
+                if len(selected_by_choice_id.get(choice_id, [])) != choose:
+                    raise ValueError(f"Sous-choix de don d’origine incomplet ({choice_id}).")
+
+        if state["species_id"] and state["selected_origin_feat_id"]:
+            feat_payload = service.get_feat_payload(state["selected_origin_feat_id"], state)
+            for choice in feat_payload.get("required_choices", []):
+                choice_id = str(choice.get("id") or "")
+                choose = int(choice.get("choose", 1))
+                if len(selected_by_choice_id.get(choice_id, [])) != choose:
+                    raise ValueError(f"Sous-choix de don bonus d’espèce incomplet ({choice_id}).")
+
+        class_payload = service.get_class_payload(state["class_id"], state) if state["class_id"] else {}
+        background_payload = service.get_background_payload(state["background_id"], state) if state["background_id"] else {}
+        needs_equipment = bool(class_payload.get("equipment_options")) or bool(background_payload.get("equipment_options"))
+        if needs_equipment and not (form_data.get("equipment") or "").strip():
+            raise ValueError("Sélection d’équipement incomplète.")
+
+    @staticmethod
     def split_builder_equipment(equipment_value):
         """Reconstitue les champs du funnel a partir de la chaine equipement stockee."""
         parsed = {
@@ -561,6 +663,7 @@ class TemplateService:
         selected_languages = [language for language in selected_languages if language]
         if len(set(selected_languages)) < 3 or 'Commun' not in selected_languages:
             raise ValueError("Les langues doivent inclure Commun et 2 langues distinctes.")
+        TemplateService._validate_guided_builder_constraints(form_data)
 
         identity_bits = []
         if form_data.get('genre'):

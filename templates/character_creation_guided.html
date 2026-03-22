@@ -19,28 +19,10 @@
         <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
         <input type="hidden" name="feat_choices" id="feat-choices-hidden" value="">
 
-        <div class="creation-wizard" data-total-steps="7">
-            <ol class="creation-steps-nav" aria-label="Étapes de création">
-                <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identité</button></li>
-                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Classe</button></li>
-                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Origines</button></li>
-                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Langues</button></li>
-                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Caractéristiques</button></li>
-                <li data-step="6" data-conditional="spells"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts</button></li>
-                <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Alignement</button></li>
-            </ol>
+        <div class="creation-wizard">
+            <ol class="creation-steps-nav" aria-label="Étapes de création" id="creation-steps-nav"></ol>
 
-            <section class="wizard-step is-active" data-step="1">
-                <div class="form-group">
-                    <label for="character-name">Nom du personnage</label>
-                    <input id="character-name" name="name" required>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-primary" data-next-step="2">Continuer</button>
-                </div>
-            </section>
-
-            <section class="wizard-step" data-step="2" hidden>
+            <section class="wizard-step is-active" data-step-id="choose_class">
                 <div class="form-group">
                     <label for="class-choice">Classe</label>
                     <select id="class-choice" name="character_class" required></select>
@@ -52,16 +34,15 @@
                     <h3>Choix à faire (classe)</h3>
                     <p class="text-muted">Sélectionnez uniquement les options qui vous intéressent. Les intitulés sont traduits et simplifiés.</p>
                     <div id="class-required-choices"></div>
-                    <div id="class-equipment"></div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="1">Retour</button>
-                    <button type="button" class="btn btn-primary" data-next-step="3">Continuer</button>
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
 
-            <section class="wizard-step" data-step="3" hidden>
+            <section class="wizard-step" data-step-id="determine_origin" hidden>
                 <div class="form-group">
                     <h3>Choix à faire (historique)</h3>
                     <label for="background-choice">Historique</label>
@@ -72,7 +53,6 @@
                     <div id="background-origin-feat-details"></div>
                     <div id="background-origin-feat-choices"></div>
                     <div id="background-required-choices"></div>
-                    <div id="background-equipment"></div>
                 </div>
 
                 <div class="form-group">
@@ -87,28 +67,12 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="2">Retour</button>
-                    <button type="button" class="btn btn-primary" data-next-step="4">Continuer</button>
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
 
-            <section class="wizard-step" data-step="4" hidden>
-                <fieldset class="form-group">
-                    <legend>Langues</legend>
-                    <p>Langue commune incluse automatiquement.</p>
-                    <label for="language-2">Langue 2</label>
-                    <select id="language-2" required></select>
-                    <label for="language-3">Langue 3</label>
-                    <select id="language-3" required></select>
-                </fieldset>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="3">Retour</button>
-                    <button type="button" class="btn btn-primary" data-next-step="5">Continuer</button>
-                </div>
-            </section>
-
-            <section class="wizard-step" data-step="5" hidden>
+            <section class="wizard-step" data-step-id="determine_ability_scores" hidden>
                 <fieldset class="form-group">
                     <legend>Caractéristiques de base</legend>
                     <label for="ability-method">Méthode de répartition (obligatoire)</label>
@@ -127,29 +91,48 @@
                             <input type="hidden" name="{{ key }}_bg_bonus" value="0">
                         {% endfor %}
                     </div>
+                    <div id="origin-bonus-controls"></div>
+                </fieldset>
+                <fieldset class="form-group">
+                    <legend>Langues</legend>
+                    <p>Langue commune incluse automatiquement.</p>
+                    <label for="language-2">Langue 2</label>
+                    <select id="language-2" required></select>
+                    <label for="language-3">Langue 3</label>
+                    <select id="language-3" required></select>
                 </fieldset>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="4">Retour</button>
-                    <button type="button" class="btn btn-primary" data-next-step="6">Continuer</button>
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
 
-            <section class="wizard-step" data-step="6" hidden>
+            <section class="wizard-step" data-step-id="choose_equipment" hidden>
+                <div class="form-group">
+                    <h3>Équipement de classe</h3>
+                    <div id="class-equipment"></div>
+                    <h3>Équipement d'historique</h3>
+                    <div id="background-equipment"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step-id="finalize_character" hidden>
                 <div class="form-group">
                     <h3>Choix des sorts</h3>
                     <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
                     <div id="spell-required-choices"></div>
                 </div>
-
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="5">Retour</button>
-                    <button type="button" class="btn btn-primary" data-next-step="7">Continuer</button>
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
                 </div>
-            </section>
-
-            <section class="wizard-step" data-step="7" hidden>
                 <div class="form-group">
+                    <label for="character-name">Nom du personnage</label>
+                    <input id="character-name" name="name" required>
                     <label for="alignment">Alignement</label>
                     <select id="alignment" name="alignment">
                         <option value="Loyal Bon">Loyal Bon</option>
@@ -165,7 +148,6 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-prev-step="6">Retour</button>
                     <button class="btn btn-secondary" type="button" id="export-character-json">Extraire (JSON)</button>
                     <button class="btn btn-primary" type="submit">Créer le personnage</button>
                 </div>
@@ -185,6 +167,7 @@ const language3 = document.getElementById('language-3');
 const abilityMethod = document.getElementById('ability-method');
 const spellHelp = document.getElementById('spell-step-help');
 const exportCharacterJsonButton = document.getElementById('export-character-json');
+const stepsNav = document.getElementById('creation-steps-nav');
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -196,6 +179,9 @@ const hidden = {
     equipment: document.getElementById('equipment-hidden'),
     featChoices: document.getElementById('feat-choices-hidden'),
 };
+const abilityBonusInputs = Object.fromEntries(
+    ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'].map((key) => [key, form.querySelector(`input[name="${key}_bg_bonus"]`)])
+);
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
 const SPELL_CHOICE_TYPES = new Set(['spell']);
@@ -300,6 +286,11 @@ function renderChoices(targetId, requiredChoices, type) {
     requiredChoices.forEach((choice) => {
         const block = document.createElement('div');
         block.style.marginBottom = '12px';
+        block.dataset.choiceId = choice.id;
+        block.dataset.scope = type;
+        block.dataset.choose = String(choice.choose || 1);
+        block.dataset.required = choice.required ? '1' : '0';
+        block.classList.add('choice-group');
         const title = document.createElement('p');
         const label = formatChoiceTitle(choice);
         title.textContent = `${label} — choisissez ${choice.choose}`;
@@ -497,7 +488,6 @@ async function refreshPayload() {
     ]);
     const classChoices = splitSpellChoices(payload.class_payload?.required_choices || []);
     renderChoices('class-required-choices', classChoices.nonSpellChoices, 'class');
-    renderEquipment('class-equipment', payload.class_payload || {}, 'class');
 
     const bgAuto = payload.background_payload?.automatic_gains || {};
     renderList('background-auto-gains', [
@@ -508,7 +498,6 @@ async function refreshPayload() {
     renderChoices('background-required-choices', backgroundChoices.nonSpellChoices, 'background');
     renderOriginFeat(payload.background_payload || {});
     renderFeatChoices('background-origin-feat-choices', payload.background_payload?.origin_feat_payload || {}, 'background');
-    renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
     const speciesAuto = payload.species_payload?.automatic_gains || {};
     renderList('species-auto-gains', [
@@ -524,11 +513,11 @@ async function refreshPayload() {
 
     const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
     renderChoices('spell-required-choices', spellChoices, 'spell');
-    const shouldShowSpellStep = spellChoices.length > 0;
-    toggleConditionalStep('spells', shouldShowSpellStep);
     spellHelp.textContent = spellChoices.length
         ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
         : 'Aucun choix de sort requis pour vos sélections actuelles.';
+    renderEquipment('class-equipment', payload.class_payload || {}, 'class');
+    renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
     const languagePayload = payload.languages_payload || {};
     setOptions(language2, languagePayload.options || []);
@@ -544,10 +533,82 @@ async function refreshPayload() {
         abilityMethod.value = recommended.id;
         hidden.mode.value = recommended.id;
     }
+    renderAbilityBonusControls(payload.ability_payload || {});
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
     document.getElementById('ability-background-limits').textContent =
         allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
     syncHiddenFields();
+}
+
+function resetBackgroundAbilityBonuses() {
+    Object.values(abilityBonusInputs).forEach((input) => { if (input) input.value = '0'; });
+}
+
+function updateOriginBonusHiddenFields() {
+    resetBackgroundAbilityBonuses();
+    const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
+    if (mode === '2-1') {
+        const plusTwo = form.querySelector('#origin-plus-two')?.value;
+        const plusOne = form.querySelector('#origin-plus-one')?.value;
+        if (plusTwo && abilityBonusInputs[plusTwo]) abilityBonusInputs[plusTwo].value = '2';
+        if (plusOne && abilityBonusInputs[plusOne]) {
+            abilityBonusInputs[plusOne].value = String((parseInt(abilityBonusInputs[plusOne].value || '0', 10) + 1));
+        }
+        return;
+    }
+    Array.from(form.querySelectorAll('input[name="origin-plus-one-all"]:checked')).slice(0, 3).forEach((checkbox) => {
+        if (abilityBonusInputs[checkbox.value]) abilityBonusInputs[checkbox.value].value = '1';
+    });
+}
+
+function renderAbilityBonusControls(abilityPayload) {
+    const target = document.getElementById('origin-bonus-controls');
+    target.innerHTML = '';
+    resetBackgroundAbilityBonuses();
+    const options = abilityPayload?.background_ability_score_options || {};
+    const allowed = options.allowed || [];
+    if (!allowed.length) {
+        target.textContent = 'Aucun bonus d’origine configurable.';
+        return;
+    }
+    const modeBlock = document.createElement('div');
+    modeBlock.innerHTML = `
+        <label><input type="radio" name="origin_bonus_mode" value="2-1" checked> Bonus +2 / +1</label>
+        <label style="margin-left:12px;"><input type="radio" name="origin_bonus_mode" value="1-1-1"> Bonus +1 / +1 / +1</label>
+    `;
+    target.appendChild(modeBlock);
+    const selectors = document.createElement('div');
+    selectors.id = 'origin-bonus-selectors';
+    selectors.style.marginTop = '8px';
+    target.appendChild(selectors);
+
+    const renderSelectors = () => {
+        selectors.innerHTML = '';
+        const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
+        if (mode === '2-1') {
+            selectors.innerHTML = `
+                <label>Capacité +2 <select id="origin-plus-two"></select></label>
+                <label style="margin-left:12px;">Capacité +1 <select id="origin-plus-one"></select></label>
+            `;
+            const entries = allowed.map((entry) => ({ id: entry, label: formatValue(entry) }));
+            setOptions(selectors.querySelector('#origin-plus-two'), entries);
+            setOptions(selectors.querySelector('#origin-plus-one'), entries);
+        } else {
+            const legend = document.createElement('p');
+            legend.textContent = 'Choisissez 3 capacités distinctes (+1 chacune)';
+            selectors.appendChild(legend);
+            allowed.forEach((abilityId) => {
+                const label = document.createElement('label');
+                label.style.display = 'block';
+                label.innerHTML = `<input type="checkbox" name="origin-plus-one-all" value="${abilityId}"> ${formatValue(abilityId)}`;
+                selectors.appendChild(label);
+            });
+        }
+        updateOriginBonusHiddenFields();
+    };
+    modeBlock.querySelectorAll('input[name="origin_bonus_mode"]').forEach((radio) => radio.addEventListener('change', renderSelectors));
+    selectors.addEventListener('change', updateOriginBonusHiddenFields);
+    renderSelectors();
 }
 
 setOptions(classChoice, rulesContext.classes || []);
@@ -575,7 +636,49 @@ function syncStateFromUI() {
 
 abilityMethod.addEventListener('change', () => { hidden.mode.value = abilityMethod.value; });
 
+function validateGuidedBuilderBeforeSubmit() {
+    const errors = [];
+    const requiredGroups = Array.from(form.querySelectorAll('.choice-group[data-required="1"]'));
+    requiredGroups.forEach((group) => {
+        const choose = Number(group.dataset.choose || '1');
+        const checked = group.querySelectorAll('input[data-choice-id]:checked').length;
+        if (checked !== choose) {
+            errors.push(`Choix "${formatChoiceTitle({ id: group.dataset.choiceId })}" incomplet (${checked}/${choose}).`);
+        }
+    });
+    const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
+    const bonusValues = Object.values(abilityBonusInputs).map((input) => Number(input?.value || 0));
+    const totalBonus = bonusValues.reduce((sum, value) => sum + value, 0);
+    if (mode === '2-1') {
+        const distribution = bonusValues.filter((value) => value > 0).sort((a, b) => b - a);
+        if (!(distribution.length === 2 && distribution[0] === 2 && distribution[1] === 1 && totalBonus === 3)) {
+            errors.push('Bonus d’origine invalide : le mode +2/+1 exige un +2 et un +1.');
+        }
+    }
+    if (mode === '1-1-1') {
+        if (!(bonusValues.filter((value) => value === 1).length === 3 && totalBonus === 3)) {
+            errors.push('Bonus d’origine invalide : le mode +1/+1/+1 exige 3 capacités distinctes.');
+        }
+    }
+    const equipmentChoiceGroups = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked'))
+        .map((bundle) => bundle.closest('div'))
+        .filter(Boolean);
+    equipmentChoiceGroups.forEach((group) => {
+        const unresolved = Array.from(group.querySelectorAll('input[data-choice-type="equipment"]')).length > 0
+            && Array.from(group.querySelectorAll('input[data-choice-type="equipment"]:checked')).length === 0;
+        if (unresolved) errors.push("Équipement incomplet : un choix d'équipement requis n'est pas résolu.");
+    });
+    return errors;
+}
+
 form.addEventListener('submit', (event) => {
+    syncHiddenFields();
+    const errors = validateGuidedBuilderBeforeSubmit();
+    if (errors.length) {
+        event.preventDefault();
+        alert(errors.join('\n'));
+        return;
+    }
     if (!language2.value || !language3.value || language2.value === language3.value) {
         event.preventDefault();
         alert('Veuillez choisir 2 langues différentes en plus de Common.');
@@ -586,50 +689,33 @@ form.addEventListener('submit', (event) => {
     hidden.mode.value = abilityMethod.value || 'standard_array';
 });
 
-const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
 const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
-let currentStep = 1;
-const conditionalStepFlags = { spells: true };
+let stepOrder = [];
+let currentStep = null;
 
 function getVisibleSteps() {
-    return stepPanels
-        .filter((panel) => {
-            const navItem = stepItems.find((item) => Number(item.dataset.step) === Number(panel.dataset.step));
-            const condition = navItem?.dataset.conditional;
-            return !condition || conditionalStepFlags[condition];
-        })
-        .map((panel) => Number(panel.dataset.step));
+    return stepOrder.filter((stepId) => Boolean(form.querySelector(`.wizard-step[data-step-id="${stepId}"]`)));
 }
 
-function toggleConditionalStep(condition, isVisible) {
-    conditionalStepFlags[condition] = isVisible;
-    stepItems.forEach((item) => {
-        if (item.dataset.conditional === condition) {
-            item.hidden = !isVisible;
-        }
-    });
-}
-
-function renderStep(step) {
+function renderStep(stepId) {
     const visibleSteps = getVisibleSteps();
-    const safeStep = visibleSteps.includes(step) ? step : (visibleSteps[0] || 1);
+    const safeStep = visibleSteps.includes(stepId) ? stepId : (visibleSteps[0] || null);
     currentStep = safeStep;
     stepPanels.forEach((panel) => {
-        const panelStep = Number(panel.dataset.step);
-        const active = panelStep === safeStep;
+        const active = panel.dataset.stepId === safeStep;
         panel.hidden = !active;
         panel.classList.toggle('is-active', active);
     });
 
+    const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
     stepItems.forEach((item) => {
-        const itemStep = Number(item.dataset.step);
-        const active = itemStep === safeStep;
+        const active = item.dataset.stepId === safeStep;
+        const idx = visibleSteps.indexOf(item.dataset.stepId);
+        const currentIdx = visibleSteps.indexOf(safeStep);
         item.classList.toggle('is-active', active);
-        item.classList.toggle('is-complete', itemStep < safeStep && getVisibleSteps().includes(itemStep));
+        item.classList.toggle('is-complete', idx > -1 && idx < currentIdx);
         const trigger = item.querySelector('.creation-step-trigger');
-        if (trigger) {
-            trigger.setAttribute('aria-current', active ? 'step' : 'false');
-        }
+        if (trigger) trigger.setAttribute('aria-current', active ? 'step' : 'false');
     });
 }
 
@@ -704,17 +790,32 @@ form.querySelectorAll('[data-prev-step]').forEach((button) => {
     });
 });
 
-form.querySelectorAll('.creation-step-trigger').forEach((button) => {
-    button.addEventListener('click', () => {
-        const target = Number(button.dataset.stepTarget);
-        if (target) renderStep(target);
+function buildStepsFromRules() {
+    const configuredSteps = Array.isArray(rulesContext.steps) ? rulesContext.steps : [];
+    stepOrder = configuredSteps
+        .map((entry) => entry.id)
+        .filter((stepId) => form.querySelector(`.wizard-step[data-step-id="${stepId}"]`));
+    stepsNav.innerHTML = '';
+    stepOrder.forEach((stepId, index) => {
+        const meta = configuredSteps.find((entry) => entry.id === stepId) || {};
+        const li = document.createElement('li');
+        li.dataset.stepId = stepId;
+        if (index === 0) li.classList.add('is-active');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'creation-step-trigger';
+        button.textContent = `${index + 1}. ${meta.name_fr || meta.name_en || stepId}`;
+        button.addEventListener('click', () => renderStep(stepId));
+        li.appendChild(button);
+        stepsNav.appendChild(li);
     });
-});
+}
 
 exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
 
 syncStateFromUI();
+buildStepsFromRules();
 refreshPayload();
-renderStep(1);
+renderStep(stepOrder[0] || 'choose_class');
 </script>
 {% endblock %}

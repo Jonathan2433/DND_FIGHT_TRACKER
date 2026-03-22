@@ -39,6 +39,11 @@ class CharacterBuilderService:
         self.eldritch_invocations = self._load_json("eldritch_invocations.json", default=[])
         self.weapon_masteries = self._load_json("weapon_masteries.json", default=[])
         self.equipment_choice_rules = self._load_json("equipment_choice_rules.json", default=[])
+        self.equipment_choice_rule_by_id = {
+            str(rule.get("id")): rule
+            for rule in self.equipment_choice_rules
+            if isinstance(rule, dict) and rule.get("id")
+        }
 
         self.class_by_id = self._index(self.class_catalog)
         self.background_by_id = self._index(self.backgrounds)
@@ -54,6 +59,7 @@ class CharacterBuilderService:
             for rule in self.feat_choices_rules
             if isinstance(rule, dict) and rule.get("feat_id")
         }
+        self.class_feature_by_id = self._index(self.class_features)
 
     def _load_json(self, filename: str, default: Any) -> Any:
         target = self.data_dir / filename
@@ -309,6 +315,7 @@ class CharacterBuilderService:
             "weapon_proficiencies": class_data.get("weapon_proficiencies", []),
             "armor_training": class_data.get("armor_training", []),
             "features_level_1": class_data.get("level_1_features", []),
+            "features_level_1_details": self._expand_ids(class_data.get("level_1_features", []), self.class_feature_by_id),
             "hit_die": class_data.get("hit_die"),
         }
 
@@ -445,6 +452,17 @@ class CharacterBuilderService:
             items = []
             for raw_item in option.get("items", []):
                 if isinstance(raw_item, str):
+                    category_items = self._resolve_subchoice_catalog(raw_item, state)
+                    if category_items:
+                        items.append(
+                            {
+                                "type": "choice_from_category",
+                                "id": raw_item,
+                                "choose": 1,
+                                "options": category_items,
+                            }
+                        )
+                        continue
                     item = self.equipment_by_id.get(raw_item) if hasattr(self, 'equipment_by_id') else None
                     if not item:
                         item = next((e for e in self.equipment_items if isinstance(e, dict) and e.get("id") == raw_item), None)
@@ -459,6 +477,45 @@ class CharacterBuilderService:
                             "options": self._resolve_subchoice_catalog(choice_id, state),
                         }
                     )
+                elif isinstance(raw_item, dict) and isinstance(raw_item.get("choice_from_catalogs"), list):
+                    catalogs = [str(catalog_id) for catalog_id in raw_item.get("choice_from_catalogs", [])]
+                    merged_options: list[dict[str, Any]] = []
+                    for catalog_id in catalogs:
+                        merged_options.extend(self._resolve_subchoice_catalog(catalog_id, state))
+                    items.append(
+                        {
+                            "type": "choice_from_catalogs",
+                            "id": raw_item.get("id") or "_".join(catalogs),
+                            "choose": int(raw_item.get("quantity", 1)),
+                            "options": self._dedupe_options(merged_options),
+                        }
+                    )
+                elif isinstance(raw_item, dict) and raw_item.get("equipment_choice_rule_id"):
+                    rule = self.equipment_choice_rule_by_id.get(str(raw_item.get("equipment_choice_rule_id")), {})
+                    if rule:
+                        choice_from_category = rule.get("choice_from_category")
+                        choice_from_catalogs = rule.get("choice_from_catalogs")
+                        if choice_from_category:
+                            items.append(
+                                {
+                                    "type": "choice_from_category",
+                                    "id": raw_item.get("id") or str(choice_from_category),
+                                    "choose": int(raw_item.get("quantity", rule.get("quantity", 1))),
+                                    "options": self._resolve_subchoice_catalog(str(choice_from_category), state),
+                                }
+                            )
+                        elif isinstance(choice_from_catalogs, list):
+                            merged_options: list[dict[str, Any]] = []
+                            for catalog_id in choice_from_catalogs:
+                                merged_options.extend(self._resolve_subchoice_catalog(str(catalog_id), state))
+                            items.append(
+                                {
+                                    "type": "choice_from_catalogs",
+                                    "id": raw_item.get("id") or str(raw_item.get("equipment_choice_rule_id")),
+                                    "choose": int(raw_item.get("quantity", rule.get("quantity", 1))),
+                                    "options": self._dedupe_options(merged_options),
+                                }
+                            )
             resolved.append({"id": option.get("id"), "label": option.get("label"), "items": items, "gold": option.get("gold", 0)})
         return resolved
 
