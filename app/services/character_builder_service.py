@@ -91,6 +91,40 @@ class CharacterBuilderService:
     def get_step_order(self) -> list[dict[str, Any]]:
         return self.character_creation_rules.get("step_order", []) if isinstance(self.character_creation_rules, dict) else []
 
+    def get_step_definitions(self) -> list[dict[str, Any]]:
+        configured_steps = self.get_step_order()
+        if isinstance(configured_steps, list) and configured_steps:
+            definitions: list[dict[str, Any]] = []
+            for raw_step in configured_steps:
+                if isinstance(raw_step, dict):
+                    step_id = str(raw_step.get("id") or raw_step.get("step_id") or raw_step.get("name") or "").strip()
+                    if not step_id:
+                        continue
+                    definitions.append(
+                        {
+                            "id": step_id,
+                            "label": raw_step.get("label_fr")
+                            or raw_step.get("title_fr")
+                            or raw_step.get("label")
+                            or raw_step.get("title")
+                            or step_id,
+                        }
+                    )
+                elif isinstance(raw_step, str) and raw_step.strip():
+                    step_id = raw_step.strip()
+                    definitions.append({"id": step_id, "label": step_id})
+            if definitions:
+                return definitions
+        return [
+            {"id": "choose_class", "label": "Classe"},
+            {"id": "choose_background", "label": "Background"},
+            {"id": "choose_species", "label": "Espèce"},
+            {"id": "choose_languages", "label": "Langues"},
+            {"id": "assign_ability_scores", "label": "Caractéristiques"},
+            {"id": "choose_equipment", "label": "Équipement"},
+            {"id": "finalize", "label": "Résumé"},
+        ]
+
     def get_available_classes(self) -> list[dict[str, Any]]:
         return [
             {
@@ -443,6 +477,72 @@ class CharacterBuilderService:
             "background_ability_score_options": background.get("ability_score_options", {}),
             "allowed_abilities": (background.get("ability_score_options", {}) or {}).get("allowed", []),
         }
+
+    @staticmethod
+    def _to_string_list(value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [str(item) for item in value if item]
+
+    def validate_character_creation_submission(self, state: dict[str, Any]) -> list[str]:
+        errors: list[str] = []
+        class_id = state.get("class_id")
+        background_id = state.get("background_id")
+        species_id = state.get("species_id")
+
+        if not class_id:
+            errors.append("La classe est obligatoire.")
+        elif str(class_id) not in self.class_by_id:
+            errors.append("La classe sélectionnée est invalide.")
+
+        if not background_id:
+            errors.append("Le background est obligatoire.")
+        elif str(background_id) not in self.background_by_id:
+            errors.append("Le background sélectionné est invalide.")
+
+        if not species_id:
+            errors.append("L'espèce est obligatoire.")
+        elif str(species_id) not in self.species_by_id:
+            errors.append("L'espèce sélectionnée est invalide.")
+
+        language_ids = self._to_string_list(state.get("language_ids"))
+        if len(language_ids) != len(set(language_ids)):
+            errors.append("Les langues ne peuvent pas contenir de doublons.")
+
+        if background_id and str(background_id) in self.background_by_id:
+            ability_payload = self.get_ability_score_payload(state)
+            ability_options = ability_payload.get("background_ability_score_options") or {}
+            allowed_modes = set(ability_options.get("allocation_modes", [])) if isinstance(ability_options, dict) else set()
+            selected_mode = state.get("background_ability_bonus_mode")
+            if allowed_modes and selected_mode and selected_mode not in allowed_modes:
+                errors.append("Le mode de bonus d'origine est invalide pour ce background.")
+
+            allocations = state.get("background_ability_bonus_allocations")
+            if allocations is not None and not isinstance(allocations, (list, dict)):
+                errors.append("Les allocations de bonus d'origine sont invalides.")
+
+        ability_score_method = state.get("ability_score_method")
+        available_methods = {
+            str(method.get("id"))
+            for method in self.starting_ability_score_methods
+            if isinstance(method, dict) and method.get("id")
+        }
+        if ability_score_method and str(ability_score_method) not in available_methods:
+            errors.append("La méthode de caractéristiques est invalide.")
+
+        selected_spell_ids_by_choice = state.get("selected_spell_ids_by_choice")
+        if selected_spell_ids_by_choice is not None and not isinstance(selected_spell_ids_by_choice, dict):
+            errors.append("Le format des choix de sorts est invalide.")
+
+        selected_equipment_choices_by_slot = state.get("selected_equipment_choices_by_slot")
+        if selected_equipment_choices_by_slot is not None and not isinstance(selected_equipment_choices_by_slot, dict):
+            errors.append("Le format des choix d'équipement est invalide.")
+
+        selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
+        if selected_equipment_ids and len(selected_equipment_ids) != len(set(selected_equipment_ids)):
+            errors.append("Les équipements sélectionnés ne peuvent pas contenir de doublons.")
+
+        return errors
 
     def _resolve_equipment_options(self, options: list[Any], state: dict[str, Any]) -> list[dict[str, Any]]:
         resolved = []
