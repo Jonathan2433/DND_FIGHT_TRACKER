@@ -17,76 +17,135 @@
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
         <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
 
-        <div class="form-group">
-            <label for="character-name">Nom du personnage</label>
-            <input id="character-name" name="name" required>
+        <div class="creation-wizard" data-total-steps="6">
+            <ol class="creation-steps-nav" aria-label="Étapes de création">
+                <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identité</button></li>
+                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Classe</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Origines</button></li>
+                <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Langues</button></li>
+                <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Caractéristiques</button></li>
+                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Alignement</button></li>
+            </ol>
+
+            <section class="wizard-step is-active" data-step="1">
+                <div class="form-group">
+                    <label for="character-name">Nom du personnage</label>
+                    <input id="character-name" name="name" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" data-next-step="2">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="2" hidden>
+                <div class="form-group">
+                    <label for="class-choice">Classe</label>
+                    <select id="class-choice" name="character_class" required></select>
+                </div>
+
+                <div class="form-group">
+                    <h3>Gains automatiques (classe)</h3>
+                    <ul id="class-auto-gains"></ul>
+                    <h3>Choix à faire (classe)</h3>
+                    <div id="class-required-choices"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="1">Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step="3">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="3" hidden>
+                <div class="form-group">
+                    <label for="background-choice">Historique</label>
+                    <select id="background-choice" name="background_choice" required></select>
+                    <h3>Gains automatiques (historique)</h3>
+                    <ul id="background-auto-gains"></ul>
+                    <h3>Choix à faire (historique)</h3>
+                    <div id="background-required-choices"></div>
+                    <div id="background-equipment"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="species-choice">Espèce</label>
+                    <select id="species-choice" name="race" required></select>
+                    <h3>Gains automatiques (espèce)</h3>
+                    <ul id="species-auto-gains"></ul>
+                    <h3>Choix à faire (espèce)</h3>
+                    <div id="species-required-choices"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="2">Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step="4">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="4" hidden>
+                <fieldset class="form-group">
+                    <legend>Langues</legend>
+                    <p>Langue commune incluse automatiquement.</p>
+                    <label for="language-2">Langue 2</label>
+                    <select id="language-2" required></select>
+                    <label for="language-3">Langue 3</label>
+                    <select id="language-3" required></select>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="3">Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step="5">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="5" hidden>
+                <fieldset class="form-group">
+                    <legend>Caractéristiques de base</legend>
+                    <label for="ability-method">Méthode</label>
+                    <select id="ability-method"></select>
+                    <p id="ability-background-limits" class="text-muted"></p>
+                    <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
+                        {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
+                            <label>{{ label }}
+                                <select name="{{ key }}_base" required>
+                                    {% for value in [15,14,13,12,10,8] %}
+                                        <option value="{{ value }}" {% if loop.first %}selected{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <input type="hidden" name="{{ key }}_bg_bonus" value="0">
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="4">Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step="6">Continuer</button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-step="6" hidden>
+                <div class="form-group">
+                    <label for="alignment">Alignement</label>
+                    <select id="alignment" name="alignment">
+                        <option value="Loyal Bon">Loyal Bon</option>
+                        <option value="Neutre Bon">Neutre Bon</option>
+                        <option value="Chaotique Bon">Chaotique Bon</option>
+                        <option value="Loyal Neutre">Loyal Neutre</option>
+                        <option value="Neutre" selected>Neutre</option>
+                        <option value="Chaotique Neutre">Chaotique Neutre</option>
+                        <option value="Loyal Mauvais">Loyal Mauvais</option>
+                        <option value="Neutre Mauvais">Neutre Mauvais</option>
+                        <option value="Chaotique Mauvais">Chaotique Mauvais</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step="5">Retour</button>
+                    <button class="btn btn-primary" type="submit">Créer le personnage</button>
+                </div>
+            </section>
         </div>
-
-        <div class="form-group">
-            <label for="class-choice">Classe</label>
-            <select id="class-choice" name="character_class" required></select>
-        </div>
-
-        <div class="form-group">
-            <h3>Gains automatiques (classe)</h3>
-            <ul id="class-auto-gains"></ul>
-            <h3>Choix à faire (classe)</h3>
-            <div id="class-required-choices"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="background-choice">Background</label>
-            <select id="background-choice" name="background_choice" required></select>
-            <h3>Gains automatiques (background)</h3>
-            <ul id="background-auto-gains"></ul>
-            <h3>Choix à faire (background)</h3>
-            <div id="background-required-choices"></div>
-            <div id="background-equipment"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="species-choice">Espèce</label>
-            <select id="species-choice" name="race" required></select>
-            <h3>Gains automatiques (espèce)</h3>
-            <ul id="species-auto-gains"></ul>
-            <h3>Choix à faire (espèce)</h3>
-            <div id="species-required-choices"></div>
-        </div>
-
-        <fieldset class="form-group">
-            <legend>Langues</legend>
-            <p>Langue commune incluse automatiquement.</p>
-            <label for="language-2">Langue 2</label>
-            <select id="language-2" required></select>
-            <label for="language-3">Langue 3</label>
-            <select id="language-3" required></select>
-        </fieldset>
-
-        <fieldset class="form-group">
-            <legend>Caractéristiques de base</legend>
-            <label for="ability-method">Méthode</label>
-            <select id="ability-method"></select>
-            <p id="ability-background-limits" class="text-muted"></p>
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
-                {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
-                    <label>{{ label }}
-                        <select name="{{ key }}_base" required>
-                            {% for value in [15,14,13,12,10,8] %}
-                                <option value="{{ value }}" {% if loop.first %}selected{% endif %}>{{ value }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                    <input type="hidden" name="{{ key }}_bg_bonus" value="0">
-                {% endfor %}
-            </div>
-        </fieldset>
-
-        <div class="form-group">
-            <label for="alignment">Alignement</label>
-            <input id="alignment" name="alignment" value="Neutre">
-        </div>
-
-        <button class="btn btn-primary" type="submit">Créer le personnage</button>
     </form>
 </section>
 
@@ -111,12 +170,29 @@ const hidden = {
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
 
+function formatValue(value) {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+    if (Array.isArray(value)) {
+        const rendered = value.map((entry) => formatValue(entry)).filter(Boolean);
+        return rendered.length ? rendered.join(', ') : '—';
+    }
+    if (typeof value === 'object') {
+        return value.name_fr || value.label || value.id || Object.entries(value)
+            .filter(([, nested]) => nested !== null && nested !== undefined && nested !== '')
+            .map(([key, nested]) => `${key}: ${formatValue(nested)}`)
+            .join(' | ');
+    }
+    return String(value);
+}
+
 function setOptions(select, entries) {
     select.innerHTML = '';
     entries.forEach((entry) => {
         const opt = document.createElement('option');
         opt.value = entry.id;
-        opt.textContent = entry.label || entry.id;
+        opt.textContent = entry.label || entry.name_fr || entry.id;
         select.appendChild(opt);
     });
 }
@@ -147,7 +223,7 @@ function renderChoices(targetId, requiredChoices, type) {
         const block = document.createElement('div');
         block.style.marginBottom = '12px';
         const title = document.createElement('p');
-        title.textContent = `${choice.id} — choisir ${choice.choose}`;
+        title.textContent = `${choice.name_fr || choice.id} — choisir ${choice.choose}`;
         block.appendChild(title);
 
         const options = choice.options || [];
@@ -156,7 +232,7 @@ function renderChoices(targetId, requiredChoices, type) {
             label.style.display = 'block';
             const input = document.createElement('input');
             input.type = 'checkbox';
-            input.value = option.label || option.id;
+            input.value = option.label || option.name_fr || option.id;
             input.dataset.choiceId = choice.id;
             input.dataset.choiceType = choice.type;
             input.addEventListener('change', () => {
@@ -168,7 +244,7 @@ function renderChoices(targetId, requiredChoices, type) {
                 syncHiddenFields(type, target);
             });
             label.appendChild(input);
-            label.append(` ${option.label || option.id}`);
+            label.append(` ${formatValue(option)}`);
             block.appendChild(label);
         });
         target.appendChild(block);
@@ -193,19 +269,19 @@ function renderEquipment(payload) {
     if (!options.length) return;
 
     const title = document.createElement('h4');
-    title.textContent = 'Équipement de background';
+    title.textContent = 'Équipement d’historique';
     target.appendChild(title);
 
     options.forEach((option) => {
         const section = document.createElement('div');
-        section.innerHTML = `<strong>Option ${option.label || option.id}</strong> (or: ${option.gold || 0})`;
+        section.innerHTML = `<strong>Option ${option.label || option.id}</strong> (ou : ${option.gold || 0} po)`;
 
         (option.items || []).forEach((item) => {
             const row = document.createElement('p');
             if (item.type === 'choice_from_category') {
-                row.textContent = `Choix requis (${item.id}) : ${(item.options || []).map((x) => x.label).join(', ')}`;
+                row.textContent = `Choix requis (${item.id}) : ${(item.options || []).map((x) => x.label || x.name_fr || x.id).join(', ')}`;
             } else {
-                row.textContent = `- ${item.label}`;
+                row.textContent = `- ${item.label || item.name_fr || item.id}`;
             }
             section.appendChild(row);
         });
@@ -227,26 +303,26 @@ async function refreshPayload() {
 
     const classAuto = payload.class_payload?.automatic_gains || {};
     renderList('class-auto-gains', [
-        `Jets de sauvegarde: ${(classAuto.saving_throw_proficiencies || []).join(', ') || '—'}`,
-        `Armes: ${(classAuto.weapon_proficiencies || []).join(', ') || '—'}`,
-        `Armures: ${(classAuto.armor_training || []).join(', ') || '—'}`,
-        `Capacités niveau 1: ${(classAuto.features_level_1 || []).join(', ') || '—'}`,
+        `Jets de sauvegarde : ${formatValue(classAuto.saving_throw_proficiencies)}`,
+        `Armes : ${formatValue(classAuto.weapon_proficiencies)}`,
+        `Armures : ${formatValue(classAuto.armor_training)}`,
+        `Capacités niveau 1 : ${formatValue(classAuto.features_level_1)}`,
     ]);
     renderChoices('class-required-choices', payload.class_payload?.required_choices || [], 'class');
 
     const bgAuto = payload.background_payload?.automatic_gains || {};
     renderList('background-auto-gains', [
-        `Compétences: ${(bgAuto.skill_proficiencies || []).join(', ') || '—'}`,
-        `Don d'origine: ${bgAuto.origin_feat?.name_fr || bgAuto.origin_feat?.id || '—'}`,
+        `Compétences : ${formatValue(bgAuto.skill_proficiencies)}`,
+        `Don d'origine : ${formatValue(bgAuto.origin_feat)}`,
     ]);
     renderChoices('background-required-choices', payload.background_payload?.required_choices || [], 'background');
     renderEquipment(payload.background_payload || {});
 
     const speciesAuto = payload.species_payload?.automatic_gains || {};
     renderList('species-auto-gains', [
-        `Traits: ${(speciesAuto.traits_level_1 || []).join(', ') || '—'}`,
-        `Tailles possibles: ${(speciesAuto.size_options || []).join(', ') || '—'}`,
-        `Vitesse: ${speciesAuto.speed || '—'}`,
+        `Traits : ${formatValue(speciesAuto.traits_level_1)}`,
+        `Tailles possibles : ${formatValue(speciesAuto.size_options)}`,
+        `Vitesse : ${formatValue(speciesAuto.speed)}`,
     ]);
     renderChoices('species-required-choices', payload.species_payload?.required_choices || [], 'species');
 
@@ -255,10 +331,10 @@ async function refreshPayload() {
     setOptions(language3, languagePayload.options || []);
 
     const methods = payload.ability_payload?.methods || [];
-    setOptions(abilityMethod, methods.map((m) => ({ id: m.id, label: m.label })));
+    setOptions(abilityMethod, methods.map((m) => ({ id: m.id, label: m.label || m.name_fr || m.id })));
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
     document.getElementById('ability-background-limits').textContent =
-        allowed.length ? `Bonus d'origine autorisés: ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+        allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
 }
 
 setOptions(classChoice, rulesContext.classes || []);
@@ -297,7 +373,54 @@ form.addEventListener('submit', (event) => {
     hidden.mode.value = abilityMethod.value || 'standard_array';
 });
 
+const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
+const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
+let currentStep = 1;
+
+function renderStep(step) {
+    currentStep = step;
+    stepPanels.forEach((panel) => {
+        const panelStep = Number(panel.dataset.step);
+        const active = panelStep === step;
+        panel.hidden = !active;
+        panel.classList.toggle('is-active', active);
+    });
+
+    stepItems.forEach((item) => {
+        const itemStep = Number(item.dataset.step);
+        const active = itemStep === step;
+        item.classList.toggle('is-active', active);
+        item.classList.toggle('is-complete', itemStep < step);
+        const trigger = item.querySelector('.creation-step-trigger');
+        if (trigger) {
+            trigger.setAttribute('aria-current', active ? 'step' : 'false');
+        }
+    });
+}
+
+form.querySelectorAll('[data-next-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const next = Number(button.dataset.nextStep);
+        if (next) renderStep(next);
+    });
+});
+
+form.querySelectorAll('[data-prev-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const prev = Number(button.dataset.prevStep);
+        if (prev) renderStep(prev);
+    });
+});
+
+form.querySelectorAll('.creation-step-trigger').forEach((button) => {
+    button.addEventListener('click', () => {
+        const target = Number(button.dataset.stepTarget);
+        if (target) renderStep(target);
+    });
+});
+
 syncStateFromUI();
 refreshPayload();
+renderStep(1);
 </script>
 {% endblock %}
