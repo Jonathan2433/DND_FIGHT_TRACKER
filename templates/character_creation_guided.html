@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card inl-core-004">
+    <h1>Création de personnage (funnel JSON)</h1>
+    <p>Ce tunnel applique les étapes du moteur de règles JSON et masque automatiquement les options non valides selon vos choix précédents.</p>
+
+    <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form">
+        <input type="hidden" name="character_type" value="PJ">
+        <input type="hidden" name="visibility_level" value="private">
+        <input type="hidden" name="ability_mode" value="standard">
+        <input type="hidden" name="weapon_loadout" value="">
+        <input type="hidden" name="armor_loadout" value="">
+        <input type="hidden" name="selected_cantrips" id="selected-cantrips-hidden" value="">
+        <input type="hidden" name="selected_level_1_spells" id="selected-level-one-hidden" value="">
+        <input type="hidden" name="language_1" value="Commun">
+        <input type="hidden" name="language_2" id="language-2-hidden" value="">
+        <input type="hidden" name="language_3" id="language-3-hidden" value="">
+
+        <div class="form-group">
+            <label for="character-name">Nom du personnage</label>
+            <input id="character-name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="class-choice">Classe</label>
+            <select id="class-choice" name="character_class" required></select>
+            <p id="class-description" class="text-muted"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="background-choice">Historique</label>
+            <select id="background-choice" name="background_choice" required></select>
+            <p id="background-description" class="text-muted"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="species-choice">Espèce</label>
+            <select id="species-choice" name="race" required></select>
+            <p id="species-description" class="text-muted"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="origin-feat-choice">Don d’origine</label>
+            <select id="origin-feat-choice" name="origin_feat_choice" required></select>
+            <p id="origin-feat-description" class="text-muted"></p>
+        </div>
+
+        <fieldset class="form-group">
+            <legend>Caractéristiques de base (array standard)</legend>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
+                {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
+                    <label>{{ label }}
+                        <select name="{{ key }}_base" required>
+                            {% for value in [15,14,13,12,10,8] %}
+                                <option value="{{ value }}" {% if loop.first %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <input type="hidden" name="{{ key }}_bg_bonus" value="0">
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-group">
+            <legend>Langues (hors Commun)</legend>
+            <label for="language-2">Langue 2</label>
+            <select id="language-2" required></select>
+            <label for="language-3">Langue 3</label>
+            <select id="language-3" required></select>
+        </fieldset>
+
+        <fieldset class="form-group">
+            <legend>Compétences de classe (sélection filtrée)</legend>
+            <div id="class-skill-choices"></div>
+            <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
+        </fieldset>
+
+        <fieldset class="form-group">
+            <legend>Sorts de niveau 1 (si disponibles pour la classe)</legend>
+            <div id="spell-options"></div>
+        </fieldset>
+
+        <div class="form-group">
+            <label for="alignment">Alignement</label>
+            <input id="alignment" name="alignment" value="Neutre">
+        </div>
+
+        <button class="btn btn-primary" type="submit">Créer le personnage</button>
+    </form>
+</section>
+
+<script>
+const rulesContext = JSON.parse({{ dnd_rules_context|tojson }});
+const classChoice = document.getElementById('class-choice');
+const backgroundChoice = document.getElementById('background-choice');
+const speciesChoice = document.getElementById('species-choice');
+const featChoice = document.getElementById('origin-feat-choice');
+const language2 = document.getElementById('language-2');
+const language3 = document.getElementById('language-3');
+const language2Hidden = document.getElementById('language-2-hidden');
+const language3Hidden = document.getElementById('language-3-hidden');
+const skillHidden = document.getElementById('skill-proficiencies-hidden');
+const cantripHidden = document.getElementById('selected-cantrips-hidden');
+const levelOneHidden = document.getElementById('selected-level-one-hidden');
+
+function setOptions(select, entries) {
+    select.innerHTML = '';
+    entries.forEach((entry) => {
+        const opt = document.createElement('option');
+        opt.value = entry.id;
+        opt.textContent = entry.label || entry.id;
+        opt.dataset.description = entry.description || '';
+        select.appendChild(opt);
+    });
+}
+
+function updateDescription(select, targetId) {
+    const target = document.getElementById(targetId);
+    const option = select.options[select.selectedIndex];
+    target.textContent = option?.dataset?.description || 'Aucune description disponible.';
+}
+
+function asList(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.items)) return payload.items;
+    return [];
+}
+
+function refreshClassRules() {
+    const chosenClass = classChoice.value;
+    const classRules = rulesContext.rules.class_choice_rules || {};
+    const classRule = classRules[chosenClass] || classRules[chosenClass?.toLowerCase?.()] || {};
+    const allowedSkills = new Set((classRule.skill_choices || classRule.skills || classRule.allowed_skills || []).map((x) => String(x)));
+    const maxChoices = classRule.skill_pick_count || classRule.choose_skills || 2;
+
+    const skillContainer = document.getElementById('class-skill-choices');
+    skillContainer.innerHTML = '';
+    const catalog = rulesContext.skills.filter((entry) => allowedSkills.size === 0 || allowedSkills.has(entry.id) || allowedSkills.has(entry.label));
+
+    catalog.forEach((skill) => {
+        const id = `skill-${skill.id}`;
+        const wrapper = document.createElement('label');
+        wrapper.innerHTML = `<input type="checkbox" value="${skill.label}" id="${id}"> ${skill.label}`;
+        wrapper.querySelector('input').addEventListener('change', () => {
+            const checked = Array.from(skillContainer.querySelectorAll('input:checked'));
+            if (checked.length > maxChoices) {
+                checked[checked.length - 1].checked = false;
+            }
+            skillHidden.value = Array.from(skillContainer.querySelectorAll('input:checked')).map((i) => i.value).join(', ');
+        });
+        skillContainer.appendChild(wrapper);
+    });
+}
+
+async function refreshSpellOptions() {
+    const spellContainer = document.getElementById('spell-options');
+    spellContainer.innerHTML = 'Chargement des sorts...';
+    const response = await fetch(`{{ url_for('template.character_builder_spell_options') }}?class_name=${encodeURIComponent(classChoice.value)}&level=1`);
+    const payload = await response.json();
+    const spells = payload.spells || [];
+    if (!spells.length) {
+        spellContainer.textContent = 'Aucun sort de niveau 1 disponible pour cette classe.';
+        levelOneHidden.value = '';
+        cantripHidden.value = '';
+        return;
+    }
+    spellContainer.innerHTML = '';
+    spells.forEach((spell) => {
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.innerHTML = `<input type="checkbox" value="${spell.name}"> ${spell.name} — ${spell.school || 'École non renseignée'}`;
+        label.querySelector('input').addEventListener('change', () => {
+            const selected = Array.from(spellContainer.querySelectorAll('input:checked')).map((item) => item.value);
+            if (selected.length > 4) {
+                label.querySelector('input').checked = false;
+            }
+            levelOneHidden.value = Array.from(spellContainer.querySelectorAll('input:checked')).map((item) => item.value).join(', ');
+        });
+        spellContainer.appendChild(label);
+    });
+}
+
+setOptions(classChoice, rulesContext.classes);
+setOptions(backgroundChoice, rulesContext.backgrounds);
+setOptions(speciesChoice, rulesContext.species);
+setOptions(featChoice, rulesContext.origin_feats);
+setOptions(language2, rulesContext.languages.filter((entry) => entry.label !== 'Commun'));
+setOptions(language3, rulesContext.languages.filter((entry) => entry.label !== 'Commun'));
+
+[classChoice, backgroundChoice, speciesChoice, featChoice].forEach((select) => {
+    select.addEventListener('change', () => {
+        updateDescription(classChoice, 'class-description');
+        updateDescription(backgroundChoice, 'background-description');
+        updateDescription(speciesChoice, 'species-description');
+        updateDescription(featChoice, 'origin-feat-description');
+        refreshClassRules();
+        refreshSpellOptions();
+    });
+});
+
+language2.addEventListener('change', () => { language2Hidden.value = language2.value; });
+language3.addEventListener('change', () => { language3Hidden.value = language3.value; });
+document.getElementById('guided-character-form').addEventListener('submit', (event) => {
+    if (!language2.value || !language3.value || language2.value === language3.value) {
+        event.preventDefault();
+        alert('Veuillez choisir 2 langues différentes en plus de Commun.');
+        return;
+    }
+    language2Hidden.value = language2.value;
+    language3Hidden.value = language3.value;
+});
+
+updateDescription(classChoice, 'class-description');
+updateDescription(backgroundChoice, 'background-description');
+updateDescription(speciesChoice, 'species-description');
+updateDescription(featChoice, 'origin-feat-description');
+refreshClassRules();
+refreshSpellOptions();
+</script>
+{% endblock %}
