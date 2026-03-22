@@ -50,6 +50,8 @@ class RulesLoaders:
         self.spells_by_class = self._load_json("spells_by_class.json")
         self.spellcasting_rules = self._load_json("spellcasting_rules.json")
         self.class_choice_rules = self._load_json("class_choice_rules.json")
+        self.starting_ability_score_methods = self._load_json("starting_ability_score_methods.json")
+        self.abilities = self._load_json("abilities.json")
         self.character_creation_rules = self._load_json("character_creation_rules.json")
         self.character_schema = self._load_json("character_schema.json")
         self.builder_output_schema = self._load_json("builder_output_schema.json")
