@@ -10,6 +10,7 @@ from app.models.user import User
 from app.utils import MONSTER_TEMPLATES, allowed_file
 from app.utils.dnd5_rules import resolve_character_creation
 from app.utils.spell_catalog import get_cantrips, get_spells_for_level
+from app.utils.character_builder_engine import get_rules_loaders
 from app.application.use_cases.notification_service import NotificationService
 from app.application.use_cases.character_sheet_pdf_service import CharacterSheetPdfService
 
@@ -327,7 +328,8 @@ class TemplateService:
             )
 
         catalog_index = {spell["name"]: spell for spell in (cantrip_catalog + level_one_catalog)}
-        strict_level_one_allow_list = cls.LEVEL_ONE_SPELLS_BY_CLASS.get(class_key_canonical)
+        use_json_spell_rules = get_rules_loaders().has_knowledge_base()
+        strict_level_one_allow_list = None if use_json_spell_rules else cls.LEVEL_ONE_SPELLS_BY_CLASS.get(class_key_canonical)
         if strict_level_one_allow_list is not None:
             disallowed_level_one = []
             for spell_name in selected_level_one_names:

@@ -1,3 +1,5 @@
+from app.utils.character_builder_engine import CharacterBuilderService, ValidationService, get_rules_loaders
+
 """Règles simplifiées DnD 5e (version 2024) pour le funnel de création de personnage."""
 
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
@@ -643,7 +645,19 @@ def _resolve_base_scores(form_data):
 
 
 def resolve_character_creation(form_data):
-    """Calcule les stats finales et les valeurs dérivées selon les règles 2024."""
+    """Calcule les stats finales et les valeurs dérivées selon les règles 2024.
+
+    Priorité: moteur JSON `app/data/DND_RULES_JSON` si présent; sinon fallback historique.
+    """
+    loaders = get_rules_loaders()
+    if loaders.has_knowledge_base():
+        builder = CharacterBuilderService(loaders)
+        payload = builder.build_character(form_data)
+        validation_errors = ValidationService(loaders).validate(payload)
+        if validation_errors:
+            raise ValueError(validation_errors[0])
+        return payload
+
     level = _clamp(int(form_data.get("level", 1)), 1, 20)
     race = form_data.get("race", "Human")
     character_class = form_data.get("character_class", "Fighter")
