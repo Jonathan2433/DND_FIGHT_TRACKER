@@ -2,19 +2,20 @@
 {% block content %}
 <section class="card">
     <h1>Création de personnage (funnel JSON)</h1>
-    <p>Ce tunnel applique les étapes du moteur de règles JSON et masque automatiquement les options non valides selon vos choix précédents.</p>
+    <p>Le wizard masque les options non légales et n’affiche que ce qui est autorisé pour vos choix courants.</p>
 
     <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form">
         <input type="hidden" name="character_type" value="PJ">
         <input type="hidden" name="visibility_level" value="private">
-        <input type="hidden" name="ability_mode" value="standard">
+        <input type="hidden" name="ability_mode" id="ability-mode-hidden" value="standard_array">
         <input type="hidden" name="weapon_loadout" value="">
         <input type="hidden" name="armor_loadout" value="">
         <input type="hidden" name="selected_cantrips" id="selected-cantrips-hidden" value="">
         <input type="hidden" name="selected_level_1_spells" id="selected-level-one-hidden" value="">
-        <input type="hidden" name="language_1" value="Commun">
+        <input type="hidden" name="language_1" value="common">
         <input type="hidden" name="language_2" id="language-2-hidden" value="">
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
+        <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
 
         <div class="form-group">
             <label for="character-name">Nom du personnage</label>
@@ -24,29 +25,48 @@
         <div class="form-group">
             <label for="class-choice">Classe</label>
             <select id="class-choice" name="character_class" required></select>
-            <p id="class-description" class="text-muted"></p>
         </div>
 
         <div class="form-group">
-            <label for="background-choice">Historique</label>
+            <h3>Gains automatiques (classe)</h3>
+            <ul id="class-auto-gains"></ul>
+            <h3>Choix à faire (classe)</h3>
+            <div id="class-required-choices"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="background-choice">Background</label>
             <select id="background-choice" name="background_choice" required></select>
-            <p id="background-description" class="text-muted"></p>
+            <h3>Gains automatiques (background)</h3>
+            <ul id="background-auto-gains"></ul>
+            <h3>Choix à faire (background)</h3>
+            <div id="background-required-choices"></div>
+            <div id="background-equipment"></div>
         </div>
 
         <div class="form-group">
             <label for="species-choice">Espèce</label>
             <select id="species-choice" name="race" required></select>
-            <p id="species-description" class="text-muted"></p>
-        </div>
-
-        <div class="form-group">
-            <label for="origin-feat-choice">Don d’origine</label>
-            <select id="origin-feat-choice" name="origin_feat_choice" required></select>
-            <p id="origin-feat-description" class="text-muted"></p>
+            <h3>Gains automatiques (espèce)</h3>
+            <ul id="species-auto-gains"></ul>
+            <h3>Choix à faire (espèce)</h3>
+            <div id="species-required-choices"></div>
         </div>
 
         <fieldset class="form-group">
-            <legend>Caractéristiques de base (array standard)</legend>
+            <legend>Langues</legend>
+            <p>Langue commune incluse automatiquement.</p>
+            <label for="language-2">Langue 2</label>
+            <select id="language-2" required></select>
+            <label for="language-3">Langue 3</label>
+            <select id="language-3" required></select>
+        </fieldset>
+
+        <fieldset class="form-group">
+            <legend>Caractéristiques de base</legend>
+            <label for="ability-method">Méthode</label>
+            <select id="ability-method"></select>
+            <p id="ability-background-limits" class="text-muted"></p>
             <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
                 {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
                     <label>{{ label }}
@@ -61,25 +81,6 @@
             </div>
         </fieldset>
 
-        <fieldset class="form-group">
-            <legend>Langues (hors Commun)</legend>
-            <label for="language-2">Langue 2</label>
-            <select id="language-2" required></select>
-            <label for="language-3">Langue 3</label>
-            <select id="language-3" required></select>
-        </fieldset>
-
-        <fieldset class="form-group">
-            <legend>Compétences de classe (sélection filtrée)</legend>
-            <div id="class-skill-choices"></div>
-            <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
-        </fieldset>
-
-        <fieldset class="form-group">
-            <legend>Sorts de niveau 1 (si disponibles pour la classe)</legend>
-            <div id="spell-options"></div>
-        </fieldset>
-
         <div class="form-group">
             <label for="alignment">Alignement</label>
             <input id="alignment" name="alignment" value="Neutre">
@@ -91,17 +92,24 @@
 
 <script>
 const rulesContext = JSON.parse({{ dnd_rules_context|tojson }});
+const form = document.getElementById('guided-character-form');
 const classChoice = document.getElementById('class-choice');
 const backgroundChoice = document.getElementById('background-choice');
 const speciesChoice = document.getElementById('species-choice');
-const featChoice = document.getElementById('origin-feat-choice');
 const language2 = document.getElementById('language-2');
 const language3 = document.getElementById('language-3');
-const language2Hidden = document.getElementById('language-2-hidden');
-const language3Hidden = document.getElementById('language-3-hidden');
-const skillHidden = document.getElementById('skill-proficiencies-hidden');
-const cantripHidden = document.getElementById('selected-cantrips-hidden');
-const levelOneHidden = document.getElementById('selected-level-one-hidden');
+const abilityMethod = document.getElementById('ability-method');
+
+const hidden = {
+    mode: document.getElementById('ability-mode-hidden'),
+    language2: document.getElementById('language-2-hidden'),
+    language3: document.getElementById('language-3-hidden'),
+    skills: document.getElementById('skill-proficiencies-hidden'),
+    cantrips: document.getElementById('selected-cantrips-hidden'),
+    spells: document.getElementById('selected-level-one-hidden'),
+};
+
+const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
 
 function setOptions(select, entries) {
     select.innerHTML = '';
@@ -109,112 +117,187 @@ function setOptions(select, entries) {
         const opt = document.createElement('option');
         opt.value = entry.id;
         opt.textContent = entry.label || entry.id;
-        opt.dataset.description = entry.description || '';
         select.appendChild(opt);
     });
 }
 
-function updateDescription(select, targetId) {
+function renderList(targetId, rows) {
     const target = document.getElementById(targetId);
-    const option = select.options[select.selectedIndex];
-    target.textContent = option?.dataset?.description || 'Aucune description disponible.';
-}
-
-function asList(payload) {
-    if (Array.isArray(payload)) return payload;
-    if (payload && Array.isArray(payload.items)) return payload.items;
-    return [];
-}
-
-function refreshClassRules() {
-    const chosenClass = classChoice.value;
-    const classRules = rulesContext.rules.class_choice_rules || {};
-    const classRule = classRules[chosenClass] || classRules[chosenClass?.toLowerCase?.()] || {};
-    const allowedSkills = new Set((classRule.skill_choices || classRule.skills || classRule.allowed_skills || []).map((x) => String(x)));
-    const maxChoices = classRule.skill_pick_count || classRule.choose_skills || 2;
-
-    const skillContainer = document.getElementById('class-skill-choices');
-    skillContainer.innerHTML = '';
-    const catalog = rulesContext.skills.filter((entry) => allowedSkills.size === 0 || allowedSkills.has(entry.id) || allowedSkills.has(entry.label));
-
-    catalog.forEach((skill) => {
-        const id = `skill-${skill.id}`;
-        const wrapper = document.createElement('label');
-        wrapper.innerHTML = `<input type="checkbox" value="${skill.label}" id="${id}"> ${skill.label}`;
-        wrapper.querySelector('input').addEventListener('change', () => {
-            const checked = Array.from(skillContainer.querySelectorAll('input:checked'));
-            if (checked.length > maxChoices) {
-                checked[checked.length - 1].checked = false;
-            }
-            skillHidden.value = Array.from(skillContainer.querySelectorAll('input:checked')).map((i) => i.value).join(', ');
-        });
-        skillContainer.appendChild(wrapper);
-    });
-}
-
-async function refreshSpellOptions() {
-    const spellContainer = document.getElementById('spell-options');
-    spellContainer.innerHTML = 'Chargement des sorts...';
-    const response = await fetch(`{{ url_for('template.character_builder_spell_options') }}?class_name=${encodeURIComponent(classChoice.value)}&level=1`);
-    const payload = await response.json();
-    const spells = payload.spells || [];
-    if (!spells.length) {
-        spellContainer.textContent = 'Aucun sort de niveau 1 disponible pour cette classe.';
-        levelOneHidden.value = '';
-        cantripHidden.value = '';
+    target.innerHTML = '';
+    if (!rows.length) {
+        target.innerHTML = '<li>Aucun gain automatique.</li>';
         return;
     }
-    spellContainer.innerHTML = '';
-    spells.forEach((spell) => {
-        const label = document.createElement('label');
-        label.style.display = 'block';
-        label.innerHTML = `<input type="checkbox" value="${spell.name}"> ${spell.name} — ${spell.school || 'École non renseignée'}`;
-        label.querySelector('input').addEventListener('change', () => {
-            const selected = Array.from(spellContainer.querySelectorAll('input:checked')).map((item) => item.value);
-            if (selected.length > 4) {
-                label.querySelector('input').checked = false;
-            }
-            levelOneHidden.value = Array.from(spellContainer.querySelectorAll('input:checked')).map((item) => item.value).join(', ');
-        });
-        spellContainer.appendChild(label);
+    rows.forEach((row) => {
+        const li = document.createElement('li');
+        li.textContent = row;
+        target.appendChild(li);
     });
 }
 
-setOptions(classChoice, rulesContext.classes);
-setOptions(backgroundChoice, rulesContext.backgrounds);
-setOptions(speciesChoice, rulesContext.species);
-setOptions(featChoice, rulesContext.origin_feats);
-setOptions(language2, rulesContext.languages.filter((entry) => entry.label !== 'Commun'));
-setOptions(language3, rulesContext.languages.filter((entry) => entry.label !== 'Commun'));
+function renderChoices(targetId, requiredChoices, type) {
+    const target = document.getElementById(targetId);
+    target.innerHTML = '';
+    if (!requiredChoices.length) {
+        target.textContent = 'Aucun choix requis.';
+        return;
+    }
 
-[classChoice, backgroundChoice, speciesChoice, featChoice].forEach((select) => {
-    select.addEventListener('change', () => {
-        updateDescription(classChoice, 'class-description');
-        updateDescription(backgroundChoice, 'background-description');
-        updateDescription(speciesChoice, 'species-description');
-        updateDescription(featChoice, 'origin-feat-description');
-        refreshClassRules();
-        refreshSpellOptions();
+    requiredChoices.forEach((choice) => {
+        const block = document.createElement('div');
+        block.style.marginBottom = '12px';
+        const title = document.createElement('p');
+        title.textContent = `${choice.id} — choisir ${choice.choose}`;
+        block.appendChild(title);
+
+        const options = choice.options || [];
+        options.forEach((option) => {
+            const label = document.createElement('label');
+            label.style.display = 'block';
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.value = option.label || option.id;
+            input.dataset.choiceId = choice.id;
+            input.dataset.choiceType = choice.type;
+            input.addEventListener('change', () => {
+                const siblings = Array.from(block.querySelectorAll('input:checked'));
+                if (siblings.length > choice.choose) {
+                    input.checked = false;
+                    return;
+                }
+                syncHiddenFields(type, target);
+            });
+            label.appendChild(input);
+            label.append(` ${option.label || option.id}`);
+            block.appendChild(label);
+        });
+        target.appendChild(block);
+    });
+}
+
+function syncHiddenFields(scope, root) {
+    if (scope === 'class') {
+        const skillValues = Array.from(root.querySelectorAll('input[data-choice-type="skill_proficiency"]:checked')).map((x) => x.value);
+        hidden.skills.value = skillValues.join(', ');
+        const cantripValues = Array.from(root.querySelectorAll('input[data-choice-type="spell"][data-choice-id*="cantrip"]:checked')).map((x) => x.value);
+        const spellValues = Array.from(root.querySelectorAll('input[data-choice-type="spell"]:checked')).map((x) => x.value);
+        hidden.cantrips.value = cantripValues.join(', ');
+        hidden.spells.value = spellValues.join(', ');
+    }
+}
+
+function renderEquipment(payload) {
+    const target = document.getElementById('background-equipment');
+    target.innerHTML = '';
+    const options = payload?.equipment_options || [];
+    if (!options.length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = 'Équipement de background';
+    target.appendChild(title);
+
+    options.forEach((option) => {
+        const section = document.createElement('div');
+        section.innerHTML = `<strong>Option ${option.label || option.id}</strong> (or: ${option.gold || 0})`;
+
+        (option.items || []).forEach((item) => {
+            const row = document.createElement('p');
+            if (item.type === 'choice_from_category') {
+                row.textContent = `Choix requis (${item.id}) : ${(item.options || []).map((x) => x.label).join(', ')}`;
+            } else {
+                row.textContent = `- ${item.label}`;
+            }
+            section.appendChild(row);
+        });
+
+        target.appendChild(section);
+    });
+}
+
+async function refreshPayload() {
+    const params = new URLSearchParams({
+        class_id: state.class_id || '',
+        background_id: state.background_id || '',
+        species_id: state.species_id || '',
+    });
+    state.language_ids.forEach((value) => params.append('language_ids', value));
+
+    const res = await fetch(`{{ url_for('template.character_builder_funnel_payload') }}?${params.toString()}`);
+    const payload = await res.json();
+
+    const classAuto = payload.class_payload?.automatic_gains || {};
+    renderList('class-auto-gains', [
+        `Jets de sauvegarde: ${(classAuto.saving_throw_proficiencies || []).join(', ') || '—'}`,
+        `Armes: ${(classAuto.weapon_proficiencies || []).join(', ') || '—'}`,
+        `Armures: ${(classAuto.armor_training || []).join(', ') || '—'}`,
+        `Capacités niveau 1: ${(classAuto.features_level_1 || []).join(', ') || '—'}`,
+    ]);
+    renderChoices('class-required-choices', payload.class_payload?.required_choices || [], 'class');
+
+    const bgAuto = payload.background_payload?.automatic_gains || {};
+    renderList('background-auto-gains', [
+        `Compétences: ${(bgAuto.skill_proficiencies || []).join(', ') || '—'}`,
+        `Don d'origine: ${bgAuto.origin_feat?.name_fr || bgAuto.origin_feat?.id || '—'}`,
+    ]);
+    renderChoices('background-required-choices', payload.background_payload?.required_choices || [], 'background');
+    renderEquipment(payload.background_payload || {});
+
+    const speciesAuto = payload.species_payload?.automatic_gains || {};
+    renderList('species-auto-gains', [
+        `Traits: ${(speciesAuto.traits_level_1 || []).join(', ') || '—'}`,
+        `Tailles possibles: ${(speciesAuto.size_options || []).join(', ') || '—'}`,
+        `Vitesse: ${speciesAuto.speed || '—'}`,
+    ]);
+    renderChoices('species-required-choices', payload.species_payload?.required_choices || [], 'species');
+
+    const languagePayload = payload.languages_payload || {};
+    setOptions(language2, languagePayload.options || []);
+    setOptions(language3, languagePayload.options || []);
+
+    const methods = payload.ability_payload?.methods || [];
+    setOptions(abilityMethod, methods.map((m) => ({ id: m.id, label: m.label })));
+    const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
+    document.getElementById('ability-background-limits').textContent =
+        allowed.length ? `Bonus d'origine autorisés: ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+}
+
+setOptions(classChoice, rulesContext.classes || []);
+setOptions(backgroundChoice, rulesContext.backgrounds || []);
+setOptions(speciesChoice, rulesContext.species || []);
+
+function syncStateFromUI() {
+    state.class_id = classChoice.value || null;
+    state.background_id = backgroundChoice.value || null;
+    state.species_id = speciesChoice.value || null;
+    state.language_ids = [language2.value, language3.value].filter(Boolean);
+}
+
+[classChoice, backgroundChoice, speciesChoice].forEach((el) => {
+    el.addEventListener('change', async () => { syncStateFromUI(); await refreshPayload(); });
+});
+
+[language2, language3].forEach((el) => {
+    el.addEventListener('change', () => {
+        hidden.language2.value = language2.value;
+        hidden.language3.value = language3.value;
+        syncStateFromUI();
     });
 });
 
-language2.addEventListener('change', () => { language2Hidden.value = language2.value; });
-language3.addEventListener('change', () => { language3Hidden.value = language3.value; });
-document.getElementById('guided-character-form').addEventListener('submit', (event) => {
+abilityMethod.addEventListener('change', () => { hidden.mode.value = abilityMethod.value; });
+
+form.addEventListener('submit', (event) => {
     if (!language2.value || !language3.value || language2.value === language3.value) {
         event.preventDefault();
-        alert('Veuillez choisir 2 langues différentes en plus de Commun.');
+        alert('Veuillez choisir 2 langues différentes en plus de Common.');
         return;
     }
-    language2Hidden.value = language2.value;
-    language3Hidden.value = language3.value;
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
 });
 
-updateDescription(classChoice, 'class-description');
-updateDescription(backgroundChoice, 'background-description');
-updateDescription(speciesChoice, 'species-description');
-updateDescription(featChoice, 'origin-feat-description');
-refreshClassRules();
-refreshSpellOptions();
+syncStateFromUI();
+refreshPayload();
 </script>
 {% endblock %}
