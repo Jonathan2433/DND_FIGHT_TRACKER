@@ -198,7 +198,7 @@ const hidden = {
 };
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
-const SPELL_CHOICE_TYPES = new Set(['spell']);
+const SPELL_CHOICE_TYPES = new Set(['spell', 'prepared_spell', 'spellbook_entry']);
 
 const FRIENDLY_LABELS = {
     saving_throw_proficiencies: 'Jets de sauvegarde maîtrisés',
@@ -347,10 +347,16 @@ function syncHiddenFields() {
         .map((x) => x.dataset.optionLabel || x.value);
     hidden.skills.value = skillValues.join(', ');
 
-    const spellValues = allChecked.filter((x) => x.dataset.choiceType === 'spell').map((x) => x.value);
-    const cantripValues = spellValues.filter((value) => /cantrip/i.test(value));
+    const selectedSpellInputs = allChecked.filter((x) => SPELL_CHOICE_TYPES.has(x.dataset.choiceType));
+    const spellValues = selectedSpellInputs.map((x) => x.value);
+    const cantripValues = selectedSpellInputs
+        .filter((input) => /cantrip/i.test(input.dataset.choiceId || ''))
+        .map((input) => input.value);
+    const levelOneSpellValues = selectedSpellInputs
+        .filter((input) => !/cantrip/i.test(input.dataset.choiceId || ''))
+        .map((input) => input.value);
     hidden.cantrips.value = cantripValues.join(', ');
-    hidden.spells.value = spellValues.join(', ');
+    hidden.spells.value = levelOneSpellValues.join(', ');
 
     const selectedEquipment = allChecked
         .filter((x) => x.dataset.choiceType === 'equipment')
