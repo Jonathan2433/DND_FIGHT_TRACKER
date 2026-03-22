@@ -296,6 +296,10 @@ def character_builder_funnel_payload():
         'background_id': request.args.get('background_id') or None,
         'species_id': request.args.get('species_id') or None,
         'language_ids': [lang for lang in request.args.getlist('language_ids') if lang],
+        'selected_origin_feat_id': request.args.get('selected_origin_feat_id') or None,
+        'selected_feat_ids': [feat for feat in request.args.getlist('selected_feat_ids') if feat],
+        'selected_equipment_ids': [item for item in request.args.getlist('selected_equipment_ids') if item],
+        'selected_ability_bonus_ids': [ability for ability in request.args.getlist('selected_ability_bonus_ids') if ability],
     }
 
     payload = {
