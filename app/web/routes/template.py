@@ -122,6 +122,39 @@ def _resolve_step_order(loaders):
     return resolved or default_steps
 
 
+def _parse_json_payload(raw_value, default):
+    if not raw_value:
+        return default
+    try:
+        parsed = json.loads(raw_value)
+    except (TypeError, ValueError):
+        return default
+    return parsed
+
+
+def _extract_builder_state(source):
+    getlist = getattr(source, 'getlist', lambda _key: [])
+    return {
+        'class_id': source.get('class_id') or None,
+        'background_id': source.get('background_id') or None,
+        'species_id': source.get('species_id') or None,
+        'language_ids': [lang for lang in getlist('language_ids') if lang],
+        'selected_origin_feat_id': source.get('selected_origin_feat_id') or None,
+        'selected_feat_ids': [feat for feat in getlist('selected_feat_ids') if feat],
+        'selected_equipment_ids': [item for item in getlist('selected_equipment_ids') if item],
+        'selected_ability_bonus_ids': [ability for ability in getlist('selected_ability_bonus_ids') if ability],
+        'ability_score_method': source.get('ability_score_method') or None,
+        'base_ability_scores': _parse_json_payload(source.get('base_ability_scores_json') or source.get('base_ability_scores'), default={}),
+        'background_ability_bonus_mode': source.get('background_ability_bonus_mode') or None,
+        'background_ability_bonus_allocations': _parse_json_payload(
+            source.get('background_ability_bonus_allocations_json'),
+            default=[item for item in getlist('background_ability_bonus_allocations') if item],
+        ),
+        'selected_spell_ids_by_choice': _parse_json_payload(source.get('selected_spell_ids_by_choice_json'), default={}),
+        'selected_equipment_choices_by_slot': _parse_json_payload(source.get('selected_equipment_choices_by_slot_json'), default={}),
+    }
+
+
 def _can_manage_character_combat_state(character, user):
     """Seul le proprietaire du PJ ou le MJ proprietaire de sa campagne peut modifier HP/CA."""
     if not user or character.character_type != 'PJ':
@@ -277,7 +310,7 @@ def create_character_template_guided():
         'character_creation_guided.html',
         dnd_rules_context=json.dumps(
             {
-                'steps': service.get_step_order(),
+                'steps': service.get_step_definitions(),
                 'classes': service.get_available_classes(),
                 'backgrounds': service.get_available_backgrounds(),
                 'species': service.get_available_species(),
@@ -291,20 +324,11 @@ def create_character_template_guided():
 def character_builder_funnel_payload():
     """Retourne les options filtrees selon l'etat courant du builder."""
     service = get_character_builder_service()
-    state = {
-        'class_id': request.args.get('class_id') or None,
-        'background_id': request.args.get('background_id') or None,
-        'species_id': request.args.get('species_id') or None,
-        'language_ids': [lang for lang in request.args.getlist('language_ids') if lang],
-        'selected_origin_feat_id': request.args.get('selected_origin_feat_id') or None,
-        'selected_feat_ids': [feat for feat in request.args.getlist('selected_feat_ids') if feat],
-        'selected_equipment_ids': [item for item in request.args.getlist('selected_equipment_ids') if item],
-        'selected_ability_bonus_ids': [ability for ability in request.args.getlist('selected_ability_bonus_ids') if ability],
-    }
+    state = _extract_builder_state(request.args)
 
     payload = {
         'state': state,
-        'steps': service.get_step_order(),
+        'steps': service.get_step_definitions(),
         'class_payload': service.get_class_payload(state['class_id'], state) if state['class_id'] else {},
         'background_payload': service.get_background_payload(state['background_id'], state) if state['background_id'] else {},
         'species_payload': service.get_species_payload(state['species_id'], state) if state['species_id'] else {},
@@ -337,6 +361,11 @@ def character_builder_spell_options():
 @bp.route('/character/create', methods=['POST'])
 def create_character_template():
     """Créer un template de personnage"""
+    service = get_character_builder_service()
+    validation_errors = service.validate_character_creation_submission(_extract_builder_state(request.form))
+    if validation_errors:
+        return jsonify({'ok': False, 'errors': validation_errors}), 400
+
     if not g.current_user:
         flash(
             "Mode test activé : création guidée accessible sans connexion, "
