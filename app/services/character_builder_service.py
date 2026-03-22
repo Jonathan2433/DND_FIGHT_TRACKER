@@ -49,6 +49,11 @@ class CharacterBuilderService:
         self.spell_by_id = self._index(self.spells)
         self.catalog_by_id = self._index(self.subchoices_catalog)
         self.origin_feat_by_id = self._index(self.origin_feats)
+        self.feat_choice_by_id = {
+            str(rule.get("feat_id")): rule
+            for rule in self.feat_choices_rules
+            if isinstance(rule, dict) and rule.get("feat_id")
+        }
 
     def _load_json(self, filename: str, default: Any) -> Any:
         target = self.data_dir / filename
@@ -113,6 +118,18 @@ class CharacterBuilderService:
                 resolved.append({"id": item_id, "label": str(item_id)})
         return resolved
 
+    @staticmethod
+    def _dedupe_options(options: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        seen: set[str] = set()
+        deduped: list[dict[str, Any]] = []
+        for option in options:
+            option_id = str(option.get("id", ""))
+            if not option_id or option_id in seen:
+                continue
+            seen.add(option_id)
+            deduped.append(option)
+        return deduped
+
     def _resolve_subchoice_catalog(self, catalog_id: str, state: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         catalog = self.catalog_by_id.get(catalog_id, {})
         if not catalog:
@@ -130,6 +147,36 @@ class CharacterBuilderService:
             **self.language_by_id,
             **self.spell_by_id,
         })
+
+    def _resolve_feat_options(self, choice: dict[str, Any], state: dict[str, Any]) -> list[dict[str, Any]]:
+        all_feats = [feat for feat in self.origin_feats if isinstance(feat, dict)]
+        feat_filter = choice.get("filter", {}) if isinstance(choice.get("filter"), dict) else {}
+        background_feat_id = (
+            self.background_by_id.get(state.get("background_id") or "", {}).get("origin_feat", {}).get("id")
+            if state.get("background_id")
+            else None
+        )
+        selected_origin_feat = state.get("selected_origin_feat_id")
+
+        options: list[dict[str, Any]] = []
+        for feat in all_feats:
+            feat_id = feat.get("id")
+            if not feat_id:
+                continue
+            if feat_filter.get("feat_category") and feat.get("feat_category") != feat_filter.get("feat_category"):
+                continue
+            if feat_filter.get("available_at_character_level_1") and not feat.get("available_at_character_level_1"):
+                continue
+            if choice.get("exclude_if_already_owned") and feat_id in {background_feat_id, selected_origin_feat}:
+                continue
+            options.append(
+                {
+                    "id": feat_id,
+                    "label": self._label(feat),
+                    "feat_category": feat.get("feat_category", "origin"),
+                }
+            )
+        return self._dedupe_options(options)
 
     def _resolve_spells_from_class(self, class_id: str | None, max_level: int = 1, exact_level: int | None = None) -> list[dict[str, Any]]:
         if not class_id:
@@ -170,12 +217,25 @@ class CharacterBuilderService:
                 "tool_proficiency": self.tool_by_id,
                 "language": self.language_by_id,
                 "spell": self.spell_by_id,
+                "fighting_style": self._index(self.fighting_styles),
             }.get(choice_type, {})
-            return self._expand_ids(values, index) if index else [{"id": x, "label": str(x)} for x in values]
+            options = self._expand_ids(values, index) if index else [{"id": x, "label": str(x)} for x in values]
+            return self._dedupe_options(options)
 
         from_catalog = choice.get("from_catalog")
         if from_catalog:
-            return self._resolve_subchoice_catalog(from_catalog, state)
+            options = self._resolve_subchoice_catalog(from_catalog, state)
+            restricted = set(choice.get("restricted_to", [])) if isinstance(choice.get("restricted_to"), list) else None
+            if restricted:
+                options = [opt for opt in options if opt.get("id") in restricted]
+            return self._dedupe_options(options)
+
+        from_catalogs = choice.get("from_catalogs")
+        if isinstance(from_catalogs, list):
+            merged: list[dict[str, Any]] = []
+            for catalog_id in from_catalogs:
+                merged.extend(self._resolve_subchoice_catalog(str(catalog_id), state))
+            return self._dedupe_options(merged)
 
         from_spell_list = choice.get("from_spell_list")
         if isinstance(from_spell_list, dict):
@@ -183,8 +243,63 @@ class CharacterBuilderService:
             max_level = int(from_spell_list.get("max_spell_level", 1))
             include_cantrips = bool(from_spell_list.get("include_cantrips", False))
             exact_level = None if include_cantrips else 1
-            return self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=exact_level)
+            return self._dedupe_options(self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=exact_level))
+
+        if choice.get("choice_type") == "origin_feat":
+            return self._resolve_feat_options(choice, state)
+        if choice.get("choice_type") == "fighting_style":
+            style_type = choice.get("restricted_to_style_type")
+            options = [
+                {"id": style.get("id"), "label": self._label(style)}
+                for style in self.fighting_styles
+                if isinstance(style, dict) and style.get("id") and (not style_type or style.get("style_type") == style_type)
+            ]
+            return self._dedupe_options(options)
+        if choice.get("choice_type") == "ability":
+            return [{"id": ability, "label": ability} for ability in choice.get("options", []) if isinstance(ability, str)]
+        if choice.get("choice_type") == "spell_list":
+            return [{"id": spell_list, "label": spell_list} for spell_list in choice.get("options", []) if isinstance(spell_list, str)]
         return []
+
+    def _find_feat_rule(self, feat_id: str | None) -> dict[str, Any]:
+        if not feat_id:
+            return {}
+        return self.feat_choice_by_id.get(str(feat_id), {})
+
+    def get_feat_payload(self, feat_id: str | None, state: dict[str, Any]) -> dict[str, Any]:
+        feat = self.origin_feat_by_id.get(str(feat_id or ""), {})
+        rule = self._find_feat_rule(feat_id)
+        required_choices: list[dict[str, Any]] = []
+        for choice in rule.get("choices", []) if isinstance(rule, dict) else []:
+            if not isinstance(choice, dict):
+                continue
+            dynamic_from = choice.get("dynamic_from_previous_choice")
+            dynamic_map = choice.get("catalog_map") if isinstance(choice.get("catalog_map"), dict) else {}
+            options = self._resolve_choice_options(choice, state)
+            if dynamic_from and dynamic_map and not options:
+                dynamic_options: list[dict[str, Any]] = []
+                for dynamic_key, catalog_id in dynamic_map.items():
+                    for option in self._resolve_subchoice_catalog(str(catalog_id), state):
+                        enriched = dict(option)
+                        enriched["source_choice_value"] = dynamic_key
+                        dynamic_options.append(enriched)
+                options = self._dedupe_options(dynamic_options)
+            required_choices.append(
+                {
+                    "id": choice.get("id"),
+                    "type": choice.get("choice_type"),
+                    "choose": int(choice.get("choose", 1)),
+                    "required": bool(choice.get("required", True)),
+                    "dynamic_from_previous_choice": dynamic_from,
+                    "catalog_map": dynamic_map,
+                    "options": options,
+                }
+            )
+        return {
+            "feat": feat,
+            "feat_category": feat.get("feat_category") if isinstance(feat, dict) else None,
+            "required_choices": required_choices,
+        }
 
     def get_class_payload(self, class_id: str, state: dict[str, Any]) -> dict[str, Any]:
         class_data = self.class_by_id.get(class_id, {})
@@ -239,13 +354,16 @@ class CharacterBuilderService:
             )
 
         equipment = self._resolve_equipment_options(bg.get("starting_equipment_options", []), state)
+        origin_feat_payload = self.get_feat_payload(origin_feat_id, state)
         return {
             "background": bg,
             "automatic_gains": {
                 "skill_proficiencies": bg.get("skill_proficiencies", []),
+                "tool_proficiency": bg.get("tool_proficiency"),
                 "origin_feat": origin_feat,
             },
             "origin_feat_details": origin_feat_details,
+            "origin_feat_payload": origin_feat_payload,
             "ability_score_options": bg.get("ability_score_options", {}),
             "required_choices": required_choices,
             "equipment_options": equipment,
@@ -258,13 +376,22 @@ class CharacterBuilderService:
         for choice in species_rule.get("choices", []):
             if not isinstance(choice, dict):
                 continue
+            options = self._resolve_choice_options(choice, state)
+            if choice.get("choice_type") == "origin_feat":
+                enriched_options = []
+                for option in options:
+                    option_id = option.get("id")
+                    enriched = dict(option)
+                    enriched["feat_payload"] = self.get_feat_payload(str(option_id), state)
+                    enriched_options.append(enriched)
+                options = enriched_options
             required.append(
                 {
                     "id": choice.get("id"),
                     "type": choice.get("choice_type"),
                     "choose": int(choice.get("choose", 1)),
                     "required": bool(choice.get("required", True)),
-                    "options": self._resolve_choice_options(choice, state),
+                    "options": options,
                 }
             )
         return {
@@ -307,6 +434,7 @@ class CharacterBuilderService:
                 for method in allowed_methods
             ],
             "background_ability_score_options": background.get("ability_score_options", {}),
+            "allowed_abilities": (background.get("ability_score_options", {}) or {}).get("allowed", []),
         }
 
     def _resolve_equipment_options(self, options: list[Any], state: dict[str, Any]) -> list[dict[str, Any]]:
