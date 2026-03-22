@@ -265,7 +265,6 @@ def manage_templates():
 
 
 @bp.route('/character/create-guided', methods=['GET'])
-@login_required
 def create_character_template_guided():
     """Funnel de creation JSON-first, independant du builder historique."""
     service = get_character_builder_service()
@@ -289,7 +288,6 @@ def create_character_template_guided():
 
 
 @bp.route('/api/character-builder/funnel-payload', methods=['GET'])
-@login_required
 def character_builder_funnel_payload():
     """Retourne les options filtrees selon l'etat courant du builder."""
     service = get_character_builder_service()
@@ -313,7 +311,6 @@ def character_builder_funnel_payload():
 
 
 @bp.route('/api/character-builder/spells', methods=['GET'])
-@login_required
 def character_builder_spell_options():
     """Expose les sorts autorises par classe en priorisant spells_by_class.json."""
     class_name = request.args.get('class_name', '')
@@ -334,9 +331,16 @@ def character_builder_spell_options():
 
 
 @bp.route('/character/create', methods=['POST'])
-@login_required  # ✅ AJOUT : Protection obligatoire
 def create_character_template():
     """Créer un template de personnage"""
+    if not g.current_user:
+        flash(
+            "Mode test activé : création guidée accessible sans connexion, "
+            "mais aucun personnage n'a été enregistré.",
+            'info'
+        )
+        return redirect(url_for('template.create_character_template_guided'))
+
     campaign_id = request.form.get('campaign_id', type=int)
 
     if campaign_id:
