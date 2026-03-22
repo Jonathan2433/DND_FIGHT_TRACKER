@@ -48,6 +48,7 @@ class CharacterBuilderService:
         self.language_by_id = self._index(self.languages)
         self.spell_by_id = self._index(self.spells)
         self.catalog_by_id = self._index(self.subchoices_catalog)
+        self.origin_feat_by_id = self._index(self.origin_feats)
 
     def _load_json(self, filename: str, default: Any) -> Any:
         target = self.data_dir / filename
@@ -210,10 +211,19 @@ class CharacterBuilderService:
                 }
             )
 
-        return {"class": class_data, "automatic_gains": automatic_gains, "required_choices": required}
+        equipment = self._resolve_equipment_options(class_data.get("starting_equipment_options", []), state)
+        return {
+            "class": class_data,
+            "automatic_gains": automatic_gains,
+            "required_choices": required,
+            "equipment_options": equipment,
+        }
 
     def get_background_payload(self, background_id: str, state: dict[str, Any]) -> dict[str, Any]:
         bg = self.background_by_id.get(background_id, {})
+        origin_feat = bg.get("origin_feat")
+        origin_feat_id = origin_feat.get("id") if isinstance(origin_feat, dict) else None
+        origin_feat_details = self.origin_feat_by_id.get(origin_feat_id, {}) if origin_feat_id else {}
         tool_prof = bg.get("tool_proficiency") if isinstance(bg, dict) else {}
         required_choices = []
         if isinstance(tool_prof, dict) and tool_prof.get("type") == "category_choice":
@@ -233,8 +243,9 @@ class CharacterBuilderService:
             "background": bg,
             "automatic_gains": {
                 "skill_proficiencies": bg.get("skill_proficiencies", []),
-                "origin_feat": bg.get("origin_feat"),
+                "origin_feat": origin_feat,
             },
+            "origin_feat_details": origin_feat_details,
             "ability_score_options": bg.get("ability_score_options", {}),
             "required_choices": required_choices,
             "equipment_options": equipment,
