@@ -166,6 +166,7 @@
 
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step="6">Retour</button>
+                    <button class="btn btn-secondary" type="button" id="export-character-json">Extraire (JSON)</button>
                     <button class="btn btn-primary" type="submit">Créer le personnage</button>
                 </div>
             </section>
@@ -183,6 +184,7 @@ const language2 = document.getElementById('language-2');
 const language3 = document.getElementById('language-3');
 const abilityMethod = document.getElementById('ability-method');
 const spellHelp = document.getElementById('spell-step-help');
+const exportCharacterJsonButton = document.getElementById('export-character-json');
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -631,6 +633,59 @@ function renderStep(step) {
     });
 }
 
+function sanitizeFileName(value) {
+    return (value || 'personnage')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase() || 'personnage';
+}
+
+function buildCharacterExportPayload() {
+    syncHiddenFields();
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+
+    const formData = new FormData(form);
+    const payload = {};
+    for (const [key, value] of formData.entries()) {
+        if (Object.prototype.hasOwnProperty.call(payload, key)) {
+            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+            payload[key].push(value);
+            continue;
+        }
+        payload[key] = value;
+    }
+
+    return {
+        exported_at: new Date().toISOString(),
+        state_snapshot: { ...state },
+        character_form_payload: payload,
+    };
+}
+
+function downloadCharacterExport() {
+    if (!language2.value || !language3.value || language2.value === language3.value) {
+        alert('Veuillez choisir 2 langues différentes en plus de Common avant extraction.');
+        return;
+    }
+
+    const exportPayload = buildCharacterExportPayload();
+    const characterName = form.querySelector('[name="name"]')?.value || 'personnage';
+    const safeName = sanitizeFileName(characterName);
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${safeName}-builder-export.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+}
+
 form.querySelectorAll('[data-next-step]').forEach((button) => {
     button.addEventListener('click', () => {
         const visibleSteps = getVisibleSteps();
@@ -655,6 +710,8 @@ form.querySelectorAll('.creation-step-trigger').forEach((button) => {
         if (target) renderStep(target);
     });
 });
+
+exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
 
 syncStateFromUI();
 refreshPayload();
