@@ -30,6 +30,7 @@ from app.utils.dnd5_rules import (
 )
 from app.utils.spell_catalog import get_cantrips, get_spells_for_level
 from app.utils.character_builder_engine import get_rules_loaders, SpellResolverService
+from app.services.character_builder_service import get_character_builder_service
 from app.web.routes.main import _slugify_spell_name
 
 # Créer le blueprint
@@ -267,45 +268,48 @@ def manage_templates():
 @login_required
 def create_character_template_guided():
     """Funnel de creation JSON-first, independant du builder historique."""
+    service = get_character_builder_service()
     loaders = get_rules_loaders()
     if not loaders.has_knowledge_base():
         flash("La base JSON app/data/DND_RULES_JSON est introuvable.", 'error')
         return redirect(url_for('template.manage_templates'))
 
-    class_entries = _serialize_catalog(_extract_items(loaders.class_catalog))
-    background_entries = _serialize_catalog(_extract_items(loaders.backgrounds))
-    species_entries = _serialize_catalog(_extract_items(loaders.species))
-    feat_entries = _serialize_catalog(_extract_items(loaders.origin_feats))
-    language_entries = _serialize_catalog(_extract_items(loaders.languages))
-    skill_entries = _serialize_catalog(_extract_items(loaders.skills))
-    ability_methods = _extract_items(loaders.starting_ability_score_methods)
-    ability_entries = _serialize_catalog(_extract_items(loaders.abilities))
-
-    rule_blob = {
-        'steps': _resolve_step_order(loaders),
-        'class_choice_rules': loaders.class_choice_rules or {},
-        'species_choice_rules': loaders.species_choice_rules or {},
-        'feat_choice_rules': loaders.feat_choices_rules or {},
-        'spellcasting_rules': loaders.spellcasting_rules or {},
-    }
-
     return render_template(
         'character_creation_guided.html',
         dnd_rules_context=json.dumps(
             {
-                'classes': class_entries,
-                'backgrounds': background_entries,
-                'species': species_entries,
-                'origin_feats': feat_entries,
-                'languages': language_entries,
-                'skills': skill_entries,
-                'ability_methods': _serialize_catalog(ability_methods),
-                'abilities': ability_entries,
-                'rules': rule_blob,
+                'steps': service.get_step_order(),
+                'classes': service.get_available_classes(),
+                'backgrounds': service.get_available_backgrounds(),
+                'species': service.get_available_species(),
             },
             ensure_ascii=False,
         ),
     )
+
+
+@bp.route('/api/character-builder/funnel-payload', methods=['GET'])
+@login_required
+def character_builder_funnel_payload():
+    """Retourne les options filtrees selon l'etat courant du builder."""
+    service = get_character_builder_service()
+    state = {
+        'class_id': request.args.get('class_id') or None,
+        'background_id': request.args.get('background_id') or None,
+        'species_id': request.args.get('species_id') or None,
+        'language_ids': [lang for lang in request.args.getlist('language_ids') if lang],
+    }
+
+    payload = {
+        'state': state,
+        'steps': service.get_step_order(),
+        'class_payload': service.get_class_payload(state['class_id'], state) if state['class_id'] else {},
+        'background_payload': service.get_background_payload(state['background_id'], state) if state['background_id'] else {},
+        'species_payload': service.get_species_payload(state['species_id'], state) if state['species_id'] else {},
+        'languages_payload': service.get_language_payload(state),
+        'ability_payload': service.get_ability_score_payload(state),
+    }
+    return jsonify(payload)
 
 
 @bp.route('/api/character-builder/spells', methods=['GET'])
