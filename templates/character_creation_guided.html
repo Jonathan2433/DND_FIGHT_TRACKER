@@ -12,6 +12,7 @@
         <input type="hidden" name="armor_loadout" value="">
         <input type="hidden" name="selected_cantrips" id="selected-cantrips-hidden" value="">
         <input type="hidden" name="selected_level_1_spells" id="selected-level-one-hidden" value="">
+        <input type="hidden" name="equipment" id="equipment-hidden" value="">
         <input type="hidden" name="language_1" value="common">
         <input type="hidden" name="language_2" id="language-2-hidden" value="">
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
@@ -24,7 +25,7 @@
                 <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Origines</button></li>
                 <li data-step="4"><button type="button" class="creation-step-trigger" data-step-target="4">4. Langues</button></li>
                 <li data-step="5"><button type="button" class="creation-step-trigger" data-step-target="5">5. Caractéristiques</button></li>
-                <li data-step="6"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts</button></li>
+                <li data-step="6" data-conditional="spells"><button type="button" class="creation-step-trigger" data-step-target="6">6. Sorts</button></li>
                 <li data-step="7"><button type="button" class="creation-step-trigger" data-step-target="7">7. Alignement</button></li>
             </ol>
 
@@ -50,6 +51,7 @@
                     <h3>Choix à faire (classe)</h3>
                     <p class="text-muted">Sélectionnez uniquement les options qui vous intéressent. Les intitulés sont traduits et simplifiés.</p>
                     <div id="class-required-choices"></div>
+                    <div id="class-equipment"></div>
                 </div>
 
                 <div class="form-actions">
@@ -60,22 +62,23 @@
 
             <section class="wizard-step" data-step="3" hidden>
                 <div class="form-group">
+                    <h3>Choix à faire (historique)</h3>
                     <label for="background-choice">Historique</label>
                     <select id="background-choice" name="background_choice" required></select>
                     <h3>Gains automatiques (historique)</h3>
                     <ul id="background-auto-gains"></ul>
-                    <h3>Choix à faire (historique)</h3>
                     <p class="text-muted">Ces choix définissent votre passé d’aventurier et vos compétences de départ.</p>
+                    <div id="background-origin-feat-details"></div>
                     <div id="background-required-choices"></div>
                     <div id="background-equipment"></div>
                 </div>
 
                 <div class="form-group">
+                    <h3>Choix à faire (espèce)</h3>
                     <label for="species-choice">Espèce</label>
                     <select id="species-choice" name="race" required></select>
                     <h3>Gains automatiques (espèce)</h3>
                     <ul id="species-auto-gains"></ul>
-                    <h3>Choix à faire (espèce)</h3>
                     <p class="text-muted">Choisissez les traits demandés pour finaliser votre espèce.</p>
                     <div id="species-required-choices"></div>
                 </div>
@@ -185,6 +188,7 @@ const hidden = {
     skills: document.getElementById('skill-proficiencies-hidden'),
     cantrips: document.getElementById('selected-cantrips-hidden'),
     spells: document.getElementById('selected-level-one-hidden'),
+    equipment: document.getElementById('equipment-hidden'),
 };
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
@@ -198,6 +202,7 @@ const FRIENDLY_LABELS = {
     hit_die: 'Dé de vie',
     traits_level_1: 'Traits de niveau 1',
     size_options: 'Tailles possibles',
+    size_choice: 'Taille du personnage',
     speed: 'Vitesse',
     skill_proficiencies: 'Compétences maîtrisées',
     origin_feat: 'Don d’origine',
@@ -332,6 +337,12 @@ function syncHiddenFields() {
     const cantripValues = spellValues.filter((value) => /cantrip/i.test(value));
     hidden.cantrips.value = cantripValues.join(', ');
     hidden.spells.value = spellValues.join(', ');
+
+    const selectedEquipment = allChecked
+        .filter((x) => x.dataset.choiceType === 'equipment')
+        .map((x) => x.value);
+    const selectedBundles = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked')).map((x) => x.value);
+    hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
 }
 
 function splitSpellChoices(choices = []) {
@@ -341,28 +352,84 @@ function splitSpellChoices(choices = []) {
     };
 }
 
-function renderEquipment(payload) {
-    const target = document.getElementById('background-equipment');
+function renderOriginFeat(payload) {
+    const target = document.getElementById('background-origin-feat-details');
+    target.innerHTML = '';
+    const feat = payload?.origin_feat_details || {};
+    if (!feat || !Object.keys(feat).length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = `Don d’origine : ${feat.name_fr || feat.name || feat.id || '—'}`;
+    const desc = document.createElement('p');
+    desc.classList.add('text-muted');
+    desc.textContent = feat.short_description_fr || feat.short_description || feat.description_fr || feat.description || 'Description non disponible.';
+    target.appendChild(title);
+    target.appendChild(desc);
+}
+
+function renderEquipment(targetId, payload, scope) {
+    const target = document.getElementById(targetId);
     target.innerHTML = '';
     const options = payload?.equipment_options || [];
     if (!options.length) return;
 
     const title = document.createElement('h4');
-    title.textContent = 'Équipement d’historique';
+    title.textContent = 'Équipement';
     target.appendChild(title);
+    const subtitle = document.createElement('p');
+    subtitle.classList.add('text-muted');
+    subtitle.textContent = 'Choisissez 1 option d’équipement, puis complétez les choix requis.';
+    target.appendChild(subtitle);
 
     options.forEach((option) => {
         const section = document.createElement('div');
-        section.innerHTML = `<strong>Option ${option.label || option.id}</strong> (ou : ${option.gold || 0} po)`;
+        const bundleLabel = document.createElement('label');
+        bundleLabel.classList.add('builder-choice-item');
+        const bundleRadio = document.createElement('input');
+        bundleRadio.type = 'radio';
+        bundleRadio.name = `${scope}-equipment-bundle`;
+        bundleRadio.dataset.choiceType = 'equipment_bundle';
+        bundleRadio.dataset.scope = scope;
+        bundleRadio.value = `${scope}:${option.label || option.id}`;
+        bundleRadio.addEventListener('change', syncHiddenFields);
+        bundleLabel.appendChild(bundleRadio);
+        bundleLabel.append(` Option ${option.label || option.id} (ou : ${option.gold || 0} po)`);
+        section.appendChild(bundleLabel);
 
         (option.items || []).forEach((item) => {
-            const row = document.createElement('p');
+            const row = document.createElement('label');
+            row.classList.add('builder-choice-item');
+            row.style.display = 'block';
             if (item.type === 'choice_from_category') {
-                row.textContent = `Choix requis (${item.id}) : ${(item.options || []).map((x) => x.label || x.name_fr || x.id).join(', ')}`;
+                const title = document.createElement('p');
+                title.textContent = `Choix requis (${item.id}) - choisissez ${item.choose || 1}`;
+                section.appendChild(title);
+                (item.options || []).forEach((subOption) => {
+                    const subRow = document.createElement('label');
+                    subRow.classList.add('builder-choice-item');
+                    subRow.style.display = 'block';
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.dataset.choiceType = 'equipment';
+                    input.dataset.scope = scope;
+                    input.dataset.choiceId = item.id;
+                    input.value = subOption.label || subOption.name_fr || subOption.id;
+                    input.addEventListener('change', () => {
+                        const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
+                        if (siblings.length > (item.choose || 1)) {
+                            input.checked = false;
+                            return;
+                        }
+                        syncHiddenFields();
+                    });
+                    subRow.appendChild(input);
+                    subRow.append(` ${subOption.label || subOption.name_fr || subOption.id}`);
+                    section.appendChild(subRow);
+                });
             } else {
                 row.textContent = `- ${item.label || item.name_fr || item.id}`;
+                section.appendChild(row);
             }
-            section.appendChild(row);
         });
 
         target.appendChild(section);
@@ -389,6 +456,7 @@ async function refreshPayload() {
     ]);
     const classChoices = splitSpellChoices(payload.class_payload?.required_choices || []);
     renderChoices('class-required-choices', classChoices.nonSpellChoices, 'class');
+    renderEquipment('class-equipment', payload.class_payload || {}, 'class');
 
     const bgAuto = payload.background_payload?.automatic_gains || {};
     renderList('background-auto-gains', [
@@ -397,7 +465,8 @@ async function refreshPayload() {
     ]);
     const backgroundChoices = splitSpellChoices(payload.background_payload?.required_choices || []);
     renderChoices('background-required-choices', backgroundChoices.nonSpellChoices, 'background');
-    renderEquipment(payload.background_payload || {});
+    renderOriginFeat(payload.background_payload || {});
+    renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
     const speciesAuto = payload.species_payload?.automatic_gains || {};
     renderList('species-auto-gains', [
@@ -410,6 +479,8 @@ async function refreshPayload() {
 
     const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
     renderChoices('spell-required-choices', spellChoices, 'spell');
+    const shouldShowSpellStep = spellChoices.length > 0;
+    toggleConditionalStep('spells', shouldShowSpellStep);
     spellHelp.textContent = spellChoices.length
         ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
         : 'Aucun choix de sort requis pour vos sélections actuelles.';
@@ -473,21 +544,43 @@ form.addEventListener('submit', (event) => {
 const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
 const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
 let currentStep = 1;
+const conditionalStepFlags = { spells: true };
+
+function getVisibleSteps() {
+    return stepPanels
+        .filter((panel) => {
+            const navItem = stepItems.find((item) => Number(item.dataset.step) === Number(panel.dataset.step));
+            const condition = navItem?.dataset.conditional;
+            return !condition || conditionalStepFlags[condition];
+        })
+        .map((panel) => Number(panel.dataset.step));
+}
+
+function toggleConditionalStep(condition, isVisible) {
+    conditionalStepFlags[condition] = isVisible;
+    stepItems.forEach((item) => {
+        if (item.dataset.conditional === condition) {
+            item.hidden = !isVisible;
+        }
+    });
+}
 
 function renderStep(step) {
-    currentStep = step;
+    const visibleSteps = getVisibleSteps();
+    const safeStep = visibleSteps.includes(step) ? step : (visibleSteps[0] || 1);
+    currentStep = safeStep;
     stepPanels.forEach((panel) => {
         const panelStep = Number(panel.dataset.step);
-        const active = panelStep === step;
+        const active = panelStep === safeStep;
         panel.hidden = !active;
         panel.classList.toggle('is-active', active);
     });
 
     stepItems.forEach((item) => {
         const itemStep = Number(item.dataset.step);
-        const active = itemStep === step;
+        const active = itemStep === safeStep;
         item.classList.toggle('is-active', active);
-        item.classList.toggle('is-complete', itemStep < step);
+        item.classList.toggle('is-complete', itemStep < safeStep && getVisibleSteps().includes(itemStep));
         const trigger = item.querySelector('.creation-step-trigger');
         if (trigger) {
             trigger.setAttribute('aria-current', active ? 'step' : 'false');
@@ -497,14 +590,18 @@ function renderStep(step) {
 
 form.querySelectorAll('[data-next-step]').forEach((button) => {
     button.addEventListener('click', () => {
-        const next = Number(button.dataset.nextStep);
+        const visibleSteps = getVisibleSteps();
+        const index = visibleSteps.indexOf(currentStep);
+        const next = visibleSteps[index + 1];
         if (next) renderStep(next);
     });
 });
 
 form.querySelectorAll('[data-prev-step]').forEach((button) => {
     button.addEventListener('click', () => {
-        const prev = Number(button.dataset.prevStep);
+        const visibleSteps = getVisibleSteps();
+        const index = visibleSteps.indexOf(currentStep);
+        const prev = visibleSteps[index - 1];
         if (prev) renderStep(prev);
     });
 });
