@@ -17,6 +17,7 @@
         <input type="hidden" name="language_2" id="language-2-hidden" value="">
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
         <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
+        <input type="hidden" name="feat_choices" id="feat-choices-hidden" value="">
 
         <div class="creation-wizard" data-total-steps="7">
             <ol class="creation-steps-nav" aria-label="Étapes de création">
@@ -69,6 +70,7 @@
                     <ul id="background-auto-gains"></ul>
                     <p class="text-muted">Ces choix définissent votre passé d’aventurier et vos compétences de départ.</p>
                     <div id="background-origin-feat-details"></div>
+                    <div id="background-origin-feat-choices"></div>
                     <div id="background-required-choices"></div>
                     <div id="background-equipment"></div>
                 </div>
@@ -81,6 +83,7 @@
                     <ul id="species-auto-gains"></ul>
                     <p class="text-muted">Choisissez les traits demandés pour finaliser votre espèce.</p>
                     <div id="species-required-choices"></div>
+                    <div id="species-origin-feat-choices"></div>
                 </div>
 
                 <div class="form-actions">
@@ -189,6 +192,7 @@ const hidden = {
     cantrips: document.getElementById('selected-cantrips-hidden'),
     spells: document.getElementById('selected-level-one-hidden'),
     equipment: document.getElementById('equipment-hidden'),
+    featChoices: document.getElementById('feat-choices-hidden'),
 };
 
 const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
@@ -305,21 +309,29 @@ function renderChoices(targetId, requiredChoices, type) {
             label.style.display = 'block';
             const input = document.createElement('input');
             input.type = 'checkbox';
-            input.value = option.label || option.name_fr || option.id;
+            input.value = option.id || option.label || option.name_fr;
+            input.dataset.optionLabel = option.label || option.name_fr || option.id;
             input.dataset.choiceId = choice.id;
             input.dataset.choiceType = choice.type;
             input.dataset.scope = type;
+            if (option.source_choice_value) {
+                input.dataset.sourceChoiceValue = option.source_choice_value;
+            }
             input.addEventListener('change', () => {
                 const siblings = Array.from(block.querySelectorAll('input:checked'));
                 if (siblings.length > choice.choose) {
                     input.checked = false;
                     return;
                 }
+                if (choice.type === 'origin_feat' && type === 'species') {
+                    const selectedOption = input.checked ? option : null;
+                    renderFeatChoices('species-origin-feat-choices', selectedOption?.feat_payload || {}, 'species_bonus');
+                }
                 syncHiddenFields();
             });
             label.classList.add('builder-choice-item');
             label.appendChild(input);
-            label.append(` ${formatValue(option)}`);
+            label.append(` ${option.label || option.name_fr || option.id}`);
             block.appendChild(label);
         });
         target.appendChild(block);
@@ -330,7 +342,7 @@ function syncHiddenFields() {
     const allChecked = Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
     const skillValues = allChecked
         .filter((x) => x.dataset.choiceType === 'skill_proficiency')
-        .map((x) => x.value);
+        .map((x) => x.dataset.optionLabel || x.value);
     hidden.skills.value = skillValues.join(', ');
 
     const spellValues = allChecked.filter((x) => x.dataset.choiceType === 'spell').map((x) => x.value);
@@ -343,6 +355,18 @@ function syncHiddenFields() {
         .map((x) => x.value);
     const selectedBundles = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked')).map((x) => x.value);
     hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
+
+    const featChoices = allChecked
+        .filter((x) => (x.dataset.scope || '').startsWith('feat'))
+        .map((x) => ({
+            scope: x.dataset.scope,
+            choice_id: x.dataset.choiceId,
+            choice_type: x.dataset.choiceType,
+            value: x.value,
+            label: x.dataset.optionLabel || x.value,
+            source_choice_value: x.dataset.sourceChoiceValue || null,
+        }));
+    hidden.featChoices.value = JSON.stringify(featChoices);
 }
 
 function splitSpellChoices(choices = []) {
@@ -365,6 +389,21 @@ function renderOriginFeat(payload) {
     desc.textContent = feat.short_description_fr || feat.short_description || feat.description_fr || feat.description || 'Description non disponible.';
     target.appendChild(title);
     target.appendChild(desc);
+}
+
+function renderFeatChoices(targetId, featPayload, scope) {
+    const target = document.getElementById(targetId);
+    target.innerHTML = '';
+    const choices = featPayload?.required_choices || [];
+    if (!choices.length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = `Sous-choix de don (${featPayload?.feat?.name_fr || featPayload?.feat?.id || 'origin feat'})`;
+    target.appendChild(title);
+    const body = document.createElement('div');
+    body.id = `${targetId}-body`;
+    target.appendChild(body);
+    renderChoices(body.id, choices, `feat_${scope}`);
 }
 
 function renderEquipment(targetId, payload, scope) {
@@ -466,6 +505,7 @@ async function refreshPayload() {
     const backgroundChoices = splitSpellChoices(payload.background_payload?.required_choices || []);
     renderChoices('background-required-choices', backgroundChoices.nonSpellChoices, 'background');
     renderOriginFeat(payload.background_payload || {});
+    renderFeatChoices('background-origin-feat-choices', payload.background_payload?.origin_feat_payload || {}, 'background');
     renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
     const speciesAuto = payload.species_payload?.automatic_gains || {};
@@ -476,6 +516,9 @@ async function refreshPayload() {
     ]);
     const speciesChoices = splitSpellChoices(payload.species_payload?.required_choices || []);
     renderChoices('species-required-choices', speciesChoices.nonSpellChoices, 'species');
+    if (!speciesChoices.nonSpellChoices.some((choice) => choice.type === 'origin_feat')) {
+        document.getElementById('species-origin-feat-choices').innerHTML = '';
+    }
 
     const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
     renderChoices('spell-required-choices', spellChoices, 'spell');
