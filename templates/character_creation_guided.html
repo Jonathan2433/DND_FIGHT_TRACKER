@@ -102,12 +102,25 @@
             margin-top: 8px;
         }
         .origin-bonus-checkboxes label {
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 8px;
+            width: 100%;
+            min-width: 0;
             padding: 8px 10px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.06);
+        }
+        .origin-bonus-checkboxes input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+        .origin-bonus-checkbox-label {
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
         .origin-bonus-helper {
             margin: 10px 0 0;
@@ -1312,7 +1325,14 @@ function renderAbilityBonusControls(abilityPayload) {
             checkboxGrid.className = 'origin-bonus-checkboxes';
             allowed.forEach((abilityId) => {
                 const label = document.createElement('label');
-                label.innerHTML = `<input type="checkbox" name="origin-plus-one-all" value="${abilityId}"> ${formatValue(abilityId)}`;
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'origin-plus-one-all';
+                checkbox.value = abilityId;
+                const text = document.createElement('span');
+                text.className = 'origin-bonus-checkbox-label';
+                text.textContent = formatValue(abilityId);
+                label.append(checkbox, text);
                 checkboxGrid.appendChild(label);
             });
             selectors.appendChild(checkboxGrid);
