@@ -129,7 +129,16 @@ def spell_library():
     spells = sorted(load_spell_catalog(), key=lambda spell: spell.get('name', '').lower())
     for spell in spells:
         spell['slug'] = _slugify_spell_name(spell.get('name', ''))
-    return render_template('spell_library.html', spells=spells)
+    return render_template('spell_library.html', spells=spells, page_mode='library')
+
+
+@bp.route('/mes-sorts')
+def favorite_spells():
+    """Vue dédiée aux sorts favoris (stockage local navigateur)."""
+    spells = sorted(load_spell_catalog(), key=lambda spell: spell.get('name', '').lower())
+    for spell in spells:
+        spell['slug'] = _slugify_spell_name(spell.get('name', ''))
+    return render_template('spell_library.html', spells=spells, page_mode='favorites')
 
 
 @bp.route('/bibliotheque-des-sorts/<spell_slug>')

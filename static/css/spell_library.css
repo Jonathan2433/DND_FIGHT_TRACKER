@@ -23,6 +23,19 @@
     color: var(--text-muted);
 }
 
+.spell-library__view-link {
+    display: inline-flex;
+    margin-top: 0.75rem;
+    color: #f9a8d4;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.spell-library__view-link:hover,
+.spell-library__view-link:focus-visible {
+    text-decoration: underline;
+}
+
 .spell-library__filters {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -68,6 +81,12 @@
     color: var(--text-muted);
 }
 
+.spell-library__empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 .spell-library__grid {
     display: grid;
     gap: 1rem;
@@ -75,28 +94,29 @@
 }
 
 .spell-card {
+    position: relative;
     background:
         radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.14), transparent 48%),
         radial-gradient(circle at 0% 100%, rgba(236, 72, 153, 0.13), transparent 42%),
         linear-gradient(180deg, rgba(20, 28, 48, 0.9), rgba(10, 15, 28, 0.95));
     border: 1px solid rgba(148, 163, 184, 0.2);
     border-radius: 14px;
-    padding: 1rem;
+    transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
 }
 
-.spell-card--interactive {
+.spell-card__content-link {
     display: block;
     color: inherit;
     text-decoration: none;
-    transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    padding: 1rem;
 }
 
 .spell-card[hidden] {
     display: none;
 }
 
-.spell-card--interactive:hover,
-.spell-card--interactive:focus-visible {
+.spell-card:hover,
+.spell-card:focus-within {
     border-color: rgba(236, 72, 153, 0.55);
     text-decoration: none;
     box-shadow:
@@ -124,6 +144,37 @@
     display: grid;
     gap: 0.25rem;
     font-size: 0.9rem;
+}
+
+.spell-card__favorite {
+    position: absolute;
+    right: 0.6rem;
+    top: 0.55rem;
+    z-index: 2;
+    background: rgba(12, 18, 40, 0.85);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 999px;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.spell-card__favorite:hover,
+.spell-card__favorite:focus-visible {
+    border-color: rgba(250, 204, 21, 0.95);
+    color: #fde047;
+}
+
+.spell-card__favorite.is-active {
+    color: #fde047;
+    border-color: rgba(250, 204, 21, 0.95);
+    box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.22);
 }
 
 .spell-card__description {
