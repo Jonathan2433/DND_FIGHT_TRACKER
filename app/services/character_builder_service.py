@@ -16,9 +16,9 @@ BUILDER_STATE_DEFAULTS: dict[str, Any] = {
     "background_ability_bonus_mode": None,
     "background_ability_bonus_allocations": [],
     "language_ids": [],
-    "selected_class_choice_ids": [],
-    "selected_species_choice_ids": [],
-    "selected_feat_choice_ids": [],
+    "selected_class_choice_ids": {},
+    "selected_species_choice_ids": {},
+    "selected_feat_choice_ids": {},
     "selected_origin_feat_id": None,
     "selected_feat_ids": [],
     "selected_spell_ids_by_choice": {},
@@ -442,8 +442,11 @@ class CharacterBuilderService:
             return normalized
         if not isinstance(raw, list):
             return normalized
+        flat_values: list[str] = []
         for entry in raw:
             if not isinstance(entry, dict):
+                if entry not in (None, ""):
+                    flat_values.append(str(entry))
                 continue
             choice_id = entry.get("choice_id") or entry.get("id")
             if not choice_id:
@@ -458,17 +461,29 @@ class CharacterBuilderService:
             if not values:
                 continue
             normalized.setdefault(str(choice_id), []).extend(values)
+        if flat_values:
+            normalized["__flat__"] = flat_values
         return normalized
+
+    def _flatten_choice_selections(self, raw: Any) -> list[str]:
+        flattened: list[str] = []
+        for values in self._normalize_choice_selections(raw).values():
+            flattened.extend(values)
+        return flattened
+
+    def _get_choice_selection_values(self, state: dict[str, Any], selection_key: str, choice_id: str | None = None) -> list[str]:
+        normalized = self._normalize_choice_selections(state.get(selection_key))
+        if not choice_id:
+            return self._flatten_choice_selections(state.get(selection_key))
+        selected_for_choice = normalized.get(str(choice_id), [])
+        if selected_for_choice:
+            return list(selected_for_choice)
+        return list(normalized.get("__flat__", []))
 
     def _collect_selected_choice_values(self, state: dict[str, Any], choice_id: str | None = None) -> list[str]:
         selected_values: list[str] = []
         for key in ("selected_class_choice_ids", "selected_species_choice_ids", "selected_feat_choice_ids"):
-            mapping = self._normalize_choice_selections(state.get(key))
-            if choice_id:
-                selected_values.extend(mapping.get(str(choice_id), []))
-            else:
-                for values in mapping.values():
-                    selected_values.extend(values)
+            selected_values.extend(self._get_choice_selection_values(state, key, choice_id))
         return selected_values
 
     def _resolve_weapons_with_which_you_have_proficiency(self, class_id: str | None) -> list[dict[str, Any]]:
@@ -674,20 +689,13 @@ class CharacterBuilderService:
 
         from_resolver = str(choice.get("from_resolver") or "")
         if from_resolver == "weapons_with_which_you_have_proficiency":
-            class_id = str(state.get("class_id") or "")
-            return self._resolve_weapons_with_class_proficiency(class_id)
+            return self._resolve_weapons_with_which_you_have_proficiency(str(state.get("class_id") or ""))
         if from_resolver == "current_skill_proficiencies_only":
-            current_skills = self._collect_current_skill_proficiencies(state)
-            return self._expand_ids(sorted(current_skills), self.skill_by_id)
+            return self._resolve_current_skill_proficiencies_only(state)
         if from_resolver == "wizard_spellbook_entries_only":
             class_id = str(state.get("class_id") or "")
             max_level = int(choice.get("spell_level_max", 1))
             return self._dedupe_options(self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=max_level))
-        if from_resolver == "weapons_with_which_you_have_proficiency":
-            class_id = str(state.get("class_id") or "")
-            return self._resolve_weapons_with_which_you_have_proficiency(class_id)
-        if from_resolver == "current_skill_proficiencies_only":
-            return self._resolve_current_skill_proficiencies_only(state)
 
         if choice.get("choice_type") == "origin_feat":
             return self._resolve_feat_options(choice, state)
@@ -769,7 +777,7 @@ class CharacterBuilderService:
 
         class_id = str(normalized_state.get("class_id") or "")
         class_rule = self._find_class_rule(class_id)
-        selected_ids = set(self._to_string_list(normalized_state.get("selected_class_choice_ids")))
+        selected_ids = set(self._flatten_choice_selections(normalized_state.get("selected_class_choice_ids")))
         for choice in class_rule.get("choices", []):
             if not isinstance(choice, dict) or choice.get("choice_type") != "skill_proficiency":
                 continue
@@ -792,9 +800,9 @@ class CharacterBuilderService:
                 seen.add(token)
 
     def _extract_selected_ids_for_choice(self, choice: dict[str, Any], state: dict[str, Any], selection_key: str) -> list[str]:
-        selected_pool = self._to_string_list(state.get(selection_key))
-        selected_spells_by_choice = state.get("selected_spell_ids_by_choice", {})
         choice_id = str(choice.get("id") or "")
+        selected_pool = self._flatten_choice_selections(state.get(selection_key))
+        selected_spells_by_choice = state.get("selected_spell_ids_by_choice", {})
         choose_count = int(choice.get("choose", 1) or 1)
 
         if choice_id and isinstance(selected_spells_by_choice, dict):
@@ -803,10 +811,12 @@ class CharacterBuilderService:
                 raw_values = self._to_string_list(by_choice)
                 return raw_values[:choose_count]
 
+        selected_by_choice = self._get_choice_selection_values(state, selection_key, choice_id)
         options = self._resolve_choice_options(choice, state)
         option_ids = {str(option.get("id")) for option in options if isinstance(option, dict) and option.get("id")}
+        source_pool = selected_by_choice or selected_pool
         selected_for_choice: list[str] = []
-        for selection in selected_pool:
+        for selection in source_pool:
             if selection not in option_ids:
                 continue
             if selection in selected_for_choice and bool(choice.get("duplicates_not_allowed", True)):
@@ -827,12 +837,14 @@ class CharacterBuilderService:
             if isinstance(by_choice, list):
                 return self._to_string_list(by_choice)
 
-        selected_pool = self._to_string_list(state.get(selection_key))
+        selected_pool = self._flatten_choice_selections(state.get(selection_key))
+        selected_by_choice = self._get_choice_selection_values(state, selection_key, choice_id)
         options = self._resolve_choice_options(choice, state)
         option_ids = {str(option.get("id")) for option in options if isinstance(option, dict) and option.get("id")}
         if not option_ids:
             return []
-        return [selection for selection in selected_pool if selection in option_ids]
+        source_pool = selected_by_choice or selected_pool
+        return [selection for selection in source_pool if selection in option_ids]
 
     def _validate_required_choices_for_rule(
         self,
@@ -846,7 +858,7 @@ class CharacterBuilderService:
         if not isinstance(choices, list):
             return
 
-        selected_pool = self._to_string_list(state.get(selection_key))
+        selected_pool = self._flatten_choice_selections(state.get(selection_key))
         all_option_ids: set[str] = set()
 
         for choice in choices:
@@ -946,9 +958,8 @@ class CharacterBuilderService:
             prerequisites = invocation.get("prerequisites", [])
             if not prerequisites:
                 continue
-            errors.append(
-                f"Warlock: l'invocation {invocation_id} a des prérequis non satisfaits ou non pris en charge."
-            )
+            if not self._eldritch_prerequisites_met(invocation, state):
+                errors.append(f"Warlock: l'invocation {invocation_id} ne satisfait pas ses prérequis.")
 
     def apply_background_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
         background = self.background_by_id.get(str(state.get("background_id") or ""), {})
@@ -956,13 +967,16 @@ class CharacterBuilderService:
         self._merge_unique(output["skills"], self._to_string_list(background.get("skill_proficiencies")))
         tool_prof = background.get("tool_proficiency")
         if isinstance(tool_prof, dict):
-            self._merge_unique(output["tools"], self._to_string_list(tool_prof.get("fixed")))
+            fixed_tools = self._to_string_list(tool_prof.get("fixed"))
+            if not fixed_tools and tool_prof.get("item"):
+                fixed_tools = [str(tool_prof.get("item"))]
+            self._merge_unique(output["tools"], fixed_tools)
 
     def apply_species_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
         species_id = str(state.get("species_id") or "")
         species = self.species_by_id.get(species_id, {})
         rule = self._find_species_rule(species_id)
-        selected_ids = set(self._to_string_list(state.get("selected_species_choice_ids")))
+        selected_ids = set(self._flatten_choice_selections(state.get("selected_species_choice_ids")))
 
         if not output["size"]:
             size_options = self._to_string_list(species.get("size_options"))
@@ -1029,6 +1043,14 @@ class CharacterBuilderService:
                         output["expertise_skills"].append(skill_id)
             if choice_type == "eldritch_invocation":
                 self._merge_unique(output["eldritch_invocations"], selected_for_choice)
+            if choice_type == "fighting_style":
+                self._merge_unique(output["fighting_styles"], selected_for_choice)
+            if choice_type == "spell":
+                self._merge_unique(output["class_spells_selected"], selected_for_choice)
+            if choice_type == "spellbook_entry":
+                self._merge_unique(output["class_spellbook_spells"], selected_for_choice)
+            if choice_type == "prepared_spell":
+                self._merge_unique(output["class_prepared_spells"], selected_for_choice)
             if choice_type == "feature_option":
                 feature = self.class_feature_by_id.get(str(choice.get("feature_id") or ""), {})
                 option_id = selected_for_choice[0]
@@ -1112,6 +1134,10 @@ class CharacterBuilderService:
             "weapon_masteries": [],
             "expertise_skills": [],
             "eldritch_invocations": [],
+            "fighting_styles": [],
+            "class_spells_selected": [],
+            "class_spellbook_spells": [],
+            "class_prepared_spells": [],
             "resolved_class_feature_options": [],
             "resolved_species_trait_options": [],
             "species_spellcasting_ability": None,
@@ -1121,6 +1147,10 @@ class CharacterBuilderService:
             "feat_ids": [],
             "selected_bonus_origin_feat_id": None,
             "extra_class_cantrips": 0,
+            "selected_equipment_ids": [],
+            "equipped_armor_id": None,
+            "has_shield": False,
+            "shield_armor_class_bonus": 0,
         }
 
         self.apply_background_choices(state, output)
@@ -1128,16 +1158,52 @@ class CharacterBuilderService:
         self.apply_class_choices(state, output)
         self.apply_feat_choices(state, output)
 
+        selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
+        for selected_item in state.get("selected_equipment_choices_by_slot", {}).values() if isinstance(state.get("selected_equipment_choices_by_slot"), dict) else []:
+            if isinstance(selected_item, list):
+                selected_equipment_ids.extend(self._to_string_list(selected_item))
+            elif selected_item:
+                selected_equipment_ids.append(str(selected_item))
+        selected_equipment_ids = list(dict.fromkeys(selected_equipment_ids))
+        output["selected_equipment_ids"] = selected_equipment_ids
+
         base_scores = state.get("base_ability_scores", {})
         constitution_score = int(base_scores.get("constitution", 10) or 10)
         dexterity_score = int(base_scores.get("dexterity", 10) or 10)
         constitution_modifier = self._ability_modifier(constitution_score)
         dexterity_modifier = self._ability_modifier(dexterity_score)
         hit_die = int(class_data.get("hit_die", 8) or 8)
+        best_armor_class = 10 + dexterity_modifier
+        equipped_armor_id: str | None = None
+        shield_bonus = 0
+
+        for equipment_id in selected_equipment_ids:
+            equipment = self.equipment_by_id.get(str(equipment_id), {})
+            if not isinstance(equipment, dict):
+                continue
+            armor_class_rule = equipment.get("armor_class")
+            if isinstance(armor_class_rule, dict):
+                base_armor = int(armor_class_rule.get("base", 10) or 10)
+                dex_cap = armor_class_rule.get("dex_cap")
+                if dex_cap is None:
+                    applied_dex = dexterity_modifier
+                else:
+                    applied_dex = min(dexterity_modifier, int(dex_cap))
+                armor_class = base_armor + applied_dex
+                if armor_class > best_armor_class:
+                    best_armor_class = armor_class
+                    equipped_armor_id = str(equipment_id)
+            armor_bonus = int(equipment.get("armor_class_bonus", 0) or 0)
+            if armor_bonus:
+                shield_bonus += armor_bonus
+
+        output["equipped_armor_id"] = equipped_armor_id
+        output["shield_armor_class_bonus"] = shield_bonus
+        output["has_shield"] = shield_bonus > 0
 
         output["derived"] = {
             "hit_points_max": max(1, hit_die + constitution_modifier),
-            "armor_class": 10 + dexterity_modifier,
+            "armor_class": best_armor_class + shield_bonus,
             "initiative_modifier": dexterity_modifier,
         }
         return output
@@ -1390,14 +1456,14 @@ class CharacterBuilderService:
 
         for key in (
             "language_ids",
-            "selected_class_choice_ids",
-            "selected_species_choice_ids",
-            "selected_feat_choice_ids",
             "selected_feat_ids",
             "selected_equipment_ids",
             "selected_ability_bonus_ids",
         ):
             normalized[key] = self._to_string_list(normalized.get(key))
+
+        for key in ("selected_class_choice_ids", "selected_species_choice_ids", "selected_feat_choice_ids"):
+            normalized[key] = self._normalize_choice_selections(normalized.get(key))
 
         if not isinstance(normalized.get("base_ability_scores"), dict):
             normalized["base_ability_scores"] = {}
