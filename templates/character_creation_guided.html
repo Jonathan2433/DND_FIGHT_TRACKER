@@ -291,6 +291,8 @@ function formatValue(value) {
     if (typeof value === 'string') {
         if (FRIENDLY_LABELS[value]) return FRIENDLY_LABELS[value];
         return value
+            .replace(/^[a-z]+_option_[a-z]_/, '')
+            .replace(/_gold$/, ' or')
             .replaceAll('_', ' ')
             .replace(/\b([a-z])/g, (match) => match.toUpperCase());
     }
@@ -321,7 +323,7 @@ function setOptions(select, entries) {
     entries.forEach((entry) => {
         const opt = document.createElement('option');
         opt.value = entry.id;
-        opt.textContent = entry.label || entry.name_fr || entry.id;
+        opt.textContent = entry.label || entry.name_fr || formatValue(entry.id);
         select.appendChild(opt);
     });
 }
@@ -399,7 +401,7 @@ function renderFinalSummary(payload) {
     renderSummaryList(
         target,
         'Choix requis',
-        choicesSummary.map((entry) => `${entry.label} — ${entry.id || 'choix'} (${entry.choose})`)
+        choicesSummary.map((entry) => `${entry.label || 'Choix'} — ${formatValue(entry.id || 'choix')} (${entry.choose})`)
     );
 }
 
@@ -422,8 +424,9 @@ function renderChoiceBlock(choice, container, scope) {
         labelEl.style.display = 'block';
         const input = document.createElement('input');
         input.type = 'checkbox';
+        const optionText = option.label || option.name_fr || formatValue(option.id);
         input.value = option.id || option.label || option.name_fr;
-        input.dataset.optionLabel = option.label || option.name_fr || option.id;
+        input.dataset.optionLabel = optionText;
         input.dataset.choiceId = choice.id;
         input.dataset.choiceType = choice.type;
         input.dataset.scope = scope;
@@ -444,7 +447,7 @@ function renderChoiceBlock(choice, container, scope) {
         });
         labelEl.classList.add('builder-choice-item');
         labelEl.appendChild(input);
-        labelEl.append(` ${option.label || option.name_fr || option.id}`);
+        labelEl.append(` ${optionText}`);
         block.appendChild(labelEl);
     });
     container.appendChild(block);
@@ -555,7 +558,7 @@ function renderFeatChoices(targetId, featPayload, scope) {
     if (!choices.length) return;
 
     const title = document.createElement('h4');
-    title.textContent = `Sous-choix de don (${featPayload?.feat?.name_fr || featPayload?.feat?.id || 'origin feat'})`;
+    title.textContent = `Sous-choix de don (${featPayload?.feat?.name_fr || formatValue(featPayload?.feat?.id) || 'don d’origine'})`;
     target.appendChild(title);
     const body = document.createElement('div');
     body.id = `${targetId}-body`;
@@ -587,10 +590,11 @@ function renderEquipment(targetId, payload, scope) {
         bundleRadio.name = `${scope}-equipment-bundle`;
         bundleRadio.dataset.choiceType = 'equipment_bundle';
         bundleRadio.dataset.scope = scope;
-        bundleRadio.value = `${scope}:${option.label || option.id}`;
+        const optionLabel = option.label || option.name_fr || formatValue(option.id);
+        bundleRadio.value = `${scope}:${optionLabel}`;
         bundleRadio.addEventListener('change', syncHiddenFields);
         bundleLabel.appendChild(bundleRadio);
-        bundleLabel.append(` Option ${option.label || option.id} (ou : ${option.gold || 0} po)`);
+        bundleLabel.append(` Option ${optionLabel} (ou : ${option.gold || 0} po)`);
         section.appendChild(bundleLabel);
 
         (option.items || []).forEach((item) => {
@@ -599,7 +603,7 @@ function renderEquipment(targetId, payload, scope) {
             row.style.display = 'block';
             if (item.type === 'choice_from_category') {
                 const title = document.createElement('p');
-                title.textContent = `Choix requis (${item.id}) - choisissez ${item.choose || 1}`;
+                title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
                 section.appendChild(title);
                 (item.options || []).forEach((subOption) => {
                     const subRow = document.createElement('label');
@@ -611,7 +615,7 @@ function renderEquipment(targetId, payload, scope) {
                     input.dataset.scope = scope;
                     input.dataset.choiceId = item.id;
                     input.dataset.choose = String(item.choose || 1);
-                    input.value = subOption.label || subOption.name_fr || subOption.id;
+                    input.value = subOption.id || subOption.label || subOption.name_fr;
                     input.addEventListener('change', () => {
                         const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
                         if (siblings.length > (item.choose || 1)) {
@@ -621,11 +625,11 @@ function renderEquipment(targetId, payload, scope) {
                         syncHiddenFields();
                     });
                     subRow.appendChild(input);
-                    subRow.append(` ${subOption.label || subOption.name_fr || subOption.id}`);
+                    subRow.append(` ${subOption.label || subOption.name_fr || formatValue(subOption.id)}`);
                     section.appendChild(subRow);
                 });
             } else {
-                row.textContent = `- ${item.label || item.name_fr || item.id}`;
+                row.textContent = `- ${item.label || item.name_fr || formatValue(item.id)}`;
                 section.appendChild(row);
             }
         });
@@ -912,7 +916,7 @@ function validateBeforeSubmit(payload, currentState) {
             ...(payload?.class_payload?.required_choices_summary || []),
             ...(payload?.background_payload?.required_choices_summary || []),
             ...(payload?.species_payload?.required_choices_summary || []),
-        ].map((entry) => [String(entry.id || ''), entry.label || entry.id || 'choix'])
+        ].map((entry) => [String(entry.id || ''), entry.label || formatValue(entry.id || 'choix')])
     );
     const requiredGroups = Array.from(form.querySelectorAll('.choice-group[data-required="1"]'));
     requiredGroups.forEach((group) => {
@@ -925,7 +929,7 @@ function validateBeforeSubmit(payload, currentState) {
         }
         const inputType = group.querySelector('input[data-choice-type]')?.dataset.choiceType || '';
         if (SPELL_CHOICE_TYPES.has(inputType) && checkedInputs.length !== choose) {
-            errors.push(`Sorts invalides — ${choiceId} (${checkedInputs.length}/${choose}).`);
+            errors.push(`Sorts invalides — ${formatValue(choiceId)} (${checkedInputs.length}/${choose}).`);
         }
     });
 
@@ -961,7 +965,7 @@ function validateBeforeSubmit(payload, currentState) {
             const choose = Number(choiceInputs[0]?.dataset.choose || '1');
             const selected = choiceInputs.filter((input) => input.checked).length;
             if (selected !== choose) {
-                errors.push(`Équipement incomplet : ${choiceId} (${selected}/${choose}).`);
+                errors.push(`Équipement incomplet : ${formatValue(choiceId)} (${selected}/${choose}).`);
             }
         });
     });
@@ -987,7 +991,7 @@ form.addEventListener('submit', (event) => {
     renderErrorMessages([]);
     if (!language2?.value || !language3?.value || language2.value === language3.value) {
         event.preventDefault();
-        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Common.']);
+        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Commun.']);
         return;
     }
     hidden.language2.value = language2.value;
@@ -1061,7 +1065,7 @@ function buildCharacterExportPayload() {
 
 function downloadCharacterExport() {
     if (!language2?.value || !language3?.value || language2.value === language3.value) {
-        alert('Veuillez choisir 2 langues différentes en plus de Common avant extraction.');
+        alert('Veuillez choisir 2 langues différentes en plus de Commun avant extraction.');
         return;
     }
 
