@@ -60,7 +60,9 @@
                         <a href="{{ url_for('main.index') }}" class="site-nav__link">Accueil</a>
                         <a href="{{ url_for('campaign.list_campaigns') }}" class="site-nav__link">Campagnes</a>
                         <a href="{{ url_for('main.spell_library') }}" class="site-nav__link">Sorts</a>
-                        <a href="{{ url_for('main.favorite_spells') }}" class="site-nav__link">Mes sorts</a>
+                        {% if session.user_id %}
+                            <a href="{{ url_for('main.favorite_spells') }}" class="site-nav__link">Mes sorts</a>
+                        {% endif %}
 
                         {% if session.user_id %}
                             <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
