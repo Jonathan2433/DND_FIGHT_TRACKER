@@ -816,6 +816,140 @@ class CharacterBuilderService:
                 break
         return selected_for_choice
 
+    def _get_raw_selected_ids_for_choice(self, choice: dict[str, Any], state: dict[str, Any], selection_key: str) -> list[str]:
+        """Retourne les sélections brutes associées à un choix, sans tronquer à `choose`."""
+        if not isinstance(choice, dict):
+            return []
+        choice_id = str(choice.get("id") or "")
+        selected_spells_by_choice = state.get("selected_spell_ids_by_choice", {})
+        if choice_id and isinstance(selected_spells_by_choice, dict):
+            by_choice = selected_spells_by_choice.get(choice_id)
+            if isinstance(by_choice, list):
+                return self._to_string_list(by_choice)
+
+        selected_pool = self._to_string_list(state.get(selection_key))
+        options = self._resolve_choice_options(choice, state)
+        option_ids = {str(option.get("id")) for option in options if isinstance(option, dict) and option.get("id")}
+        if not option_ids:
+            return []
+        return [selection for selection in selected_pool if selection in option_ids]
+
+    def _validate_required_choices_for_rule(
+        self,
+        *,
+        choices: list[Any],
+        state: dict[str, Any],
+        selection_key: str,
+        context_label: str,
+        errors: list[str],
+    ) -> None:
+        if not isinstance(choices, list):
+            return
+
+        selected_pool = self._to_string_list(state.get(selection_key))
+        all_option_ids: set[str] = set()
+
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            choice_id = str(choice.get("id") or "")
+            choose = int(choice.get("choose", 1) or 1)
+            required = bool(choice.get("required", True))
+            selected_ids = self._get_raw_selected_ids_for_choice(choice, state, selection_key)
+            options = self._resolve_choice_options(choice, state)
+            option_ids = {str(option.get("id")) for option in options if isinstance(option, dict) and option.get("id")}
+            all_option_ids.update(option_ids)
+
+            invalid_selected = [token for token in selected_ids if token not in option_ids]
+            if invalid_selected:
+                errors.append(
+                    f"{context_label}: le choix {choice_id} contient des options invalides ({', '.join(invalid_selected)})."
+                )
+
+            duplicates_not_allowed = bool(choice.get("duplicates_not_allowed", True))
+            if duplicates_not_allowed and len(selected_ids) != len(set(selected_ids)):
+                errors.append(f"{context_label}: le choix {choice_id} ne peut pas contenir de doublons.")
+
+            if required and len(selected_ids) != choose:
+                errors.append(
+                    f"{context_label}: le choix requis {choice_id} est incomplet ({len(selected_ids)}/{choose})."
+                )
+
+        if selected_pool:
+            unknown = [token for token in selected_pool if token not in all_option_ids]
+            if unknown:
+                errors.append(
+                    f"{context_label}: certaines sélections ne correspondent à aucun choix autorisé ({', '.join(unknown)})."
+                )
+
+    def _validate_wizard_prepared_spells_against_spellbook(self, state: dict[str, Any], errors: list[str]) -> None:
+        class_id = str(state.get("class_id") or "")
+        if class_id != "wizard":
+            return
+        class_rule = self._find_class_rule(class_id)
+        if not isinstance(class_rule, dict):
+            return
+
+        spellbook_choice = None
+        prepared_choice = None
+        for choice in class_rule.get("choices", []):
+            if not isinstance(choice, dict):
+                continue
+            if choice.get("choice_type") == "spellbook_entry":
+                spellbook_choice = choice
+            if choice.get("choice_type") == "prepared_spell":
+                prepared_choice = choice
+        if not spellbook_choice or not prepared_choice:
+            return
+
+        spellbook_ids = set(self._get_raw_selected_ids_for_choice(spellbook_choice, state, "selected_class_choice_ids"))
+        prepared_ids = self._get_raw_selected_ids_for_choice(prepared_choice, state, "selected_class_choice_ids")
+        illegal_prepared = [spell_id for spell_id in prepared_ids if spell_id not in spellbook_ids]
+        if illegal_prepared:
+            errors.append(
+                "Wizard: les sorts préparés doivent appartenir au grimoire (illégaux: "
+                + ", ".join(illegal_prepared)
+                + ")."
+            )
+
+    def _validate_eldritch_invocation_prerequisites(self, state: dict[str, Any], errors: list[str]) -> None:
+        class_id = str(state.get("class_id") or "")
+        if class_id != "warlock":
+            return
+        class_rule = self._find_class_rule(class_id)
+        if not isinstance(class_rule, dict):
+            return
+
+        invocation_choice = next(
+            (
+                choice
+                for choice in class_rule.get("choices", [])
+                if isinstance(choice, dict) and choice.get("choice_type") == "eldritch_invocation"
+            ),
+            None,
+        )
+        if not invocation_choice:
+            return
+
+        selected_invocations = self._get_raw_selected_ids_for_choice(invocation_choice, state, "selected_class_choice_ids")
+        for invocation_id in selected_invocations:
+            invocation = next(
+                (
+                    entry
+                    for entry in self.eldritch_invocations
+                    if isinstance(entry, dict) and str(entry.get("id")) == invocation_id
+                ),
+                None,
+            )
+            if not invocation:
+                continue
+            prerequisites = invocation.get("prerequisites", [])
+            if not prerequisites:
+                continue
+            errors.append(
+                f"Warlock: l'invocation {invocation_id} a des prérequis non satisfaits ou non pris en charge."
+            )
+
     def apply_background_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
         background = self.background_by_id.get(str(state.get("background_id") or ""), {})
         self._merge_unique(output["languages"], self._to_string_list(state.get("language_ids")))
@@ -1363,6 +1497,61 @@ class CharacterBuilderService:
         selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
         if selected_equipment_ids and len(selected_equipment_ids) != len(set(selected_equipment_ids)):
             errors.append("Les équipements sélectionnés ne peuvent pas contenir de doublons.")
+
+        class_rule = self._find_class_rule(str(class_id)) if class_id else {}
+        if isinstance(class_rule, dict):
+            self._validate_required_choices_for_rule(
+                choices=class_rule.get("choices", []),
+                state=state,
+                selection_key="selected_class_choice_ids",
+                context_label="Classe",
+                errors=errors,
+            )
+
+        species_rule = self._find_species_rule(str(species_id)) if species_id else {}
+        if isinstance(species_rule, dict):
+            self._validate_required_choices_for_rule(
+                choices=species_rule.get("choices", []),
+                state=state,
+                selection_key="selected_species_choice_ids",
+                context_label="Espèce",
+                errors=errors,
+            )
+
+        selected_origin_feat_id = str(state.get("selected_origin_feat_id") or "")
+        if selected_origin_feat_id:
+            self._validate_required_choices_for_rule(
+                choices=self._find_feat_rule(selected_origin_feat_id).get("choices", []),
+                state=state,
+                selection_key="selected_feat_choice_ids",
+                context_label="Don d'origine bonus",
+                errors=errors,
+            )
+
+        background = self.background_by_id.get(str(background_id or ""), {})
+        background_origin_feat = background.get("origin_feat", {}) if isinstance(background, dict) else {}
+        background_origin_feat_id = str(background_origin_feat.get("id") or "")
+        if background_origin_feat_id:
+            self._validate_required_choices_for_rule(
+                choices=self._find_feat_rule(background_origin_feat_id).get("choices", []),
+                state=state,
+                selection_key="selected_feat_choice_ids",
+                context_label="Don d'origine de background",
+                errors=errors,
+            )
+
+        if isinstance(species_rule, dict):
+            for choice in species_rule.get("choices", []):
+                if not isinstance(choice, dict):
+                    continue
+                if choice.get("choice_type") != "origin_feat" or not choice.get("exclude_if_already_owned"):
+                    continue
+                selected_for_choice = self._get_raw_selected_ids_for_choice(choice, state, "selected_species_choice_ids")
+                if selected_for_choice and background_origin_feat_id and selected_for_choice[0] == background_origin_feat_id:
+                    errors.append("Le don bonus d'espèce doit être différent du don d'origine du background.")
+
+        self._validate_wizard_prepared_spells_against_spellbook(state, errors)
+        self._validate_eldritch_invocation_prerequisites(state, errors)
 
         return errors
 
