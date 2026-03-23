@@ -27,13 +27,15 @@
 
         <div class="creation-wizard">
             <ol class="creation-steps-nav" aria-label="Étapes de création" id="creation-steps-nav"></ol>
+            <div id="wizard-panels"></div>
+        </div>
 
-            <section class="wizard-step is-active" data-step-id="choose_class">
+        <template id="step-template-choose_class">
+            <section class="wizard-step" data-step-id="choose_class" hidden>
                 <div class="form-group">
                     <label for="class-choice">Classe</label>
                     <select id="class-choice" name="character_class" required></select>
                 </div>
-
                 <div class="form-group">
                     <h3>Gains automatiques (classe)</h3>
                     <ul id="class-auto-gains"></ul>
@@ -41,14 +43,15 @@
                     <p class="text-muted">Sélectionnez uniquement les options qui vous intéressent. Les intitulés sont traduits et simplifiés.</p>
                     <div id="class-required-choices"></div>
                 </div>
-
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
                     <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
+        </template>
 
-            <section class="wizard-step" data-step-id="determine_origin" hidden>
+        <template id="step-template-choose_background">
+            <section class="wizard-step" data-step-id="choose_background" hidden>
                 <div class="form-group">
                     <h3>Choix à faire (historique)</h3>
                     <label for="background-choice">Historique</label>
@@ -60,7 +63,15 @@
                     <div id="background-origin-feat-choices"></div>
                     <div id="background-required-choices"></div>
                 </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
 
+        <template id="step-template-choose_species">
+            <section class="wizard-step" data-step-id="choose_species" hidden>
                 <div class="form-group">
                     <h3>Choix à faire (espèce)</h3>
                     <label for="species-choice">Espèce</label>
@@ -71,14 +82,15 @@
                     <div id="species-required-choices"></div>
                     <div id="species-origin-feat-choices"></div>
                 </div>
-
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
                     <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
+        </template>
 
-            <section class="wizard-step" data-step-id="determine_ability_scores" hidden>
+        <template id="step-template-assign_ability_scores">
+            <section class="wizard-step" data-step-id="assign_ability_scores" hidden>
                 <fieldset class="form-group">
                     <legend>Caractéristiques de base</legend>
                     <label for="ability-method">Méthode de répartition (obligatoire)</label>
@@ -99,6 +111,15 @@
                     </div>
                     <div id="origin-bonus-controls"></div>
                 </fieldset>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_languages">
+            <section class="wizard-step" data-step-id="choose_languages" hidden>
                 <fieldset class="form-group">
                     <legend>Langues</legend>
                     <p>Langue commune incluse automatiquement.</p>
@@ -107,13 +128,14 @@
                     <label for="language-3">Langue 3</label>
                     <select id="language-3" required></select>
                 </fieldset>
-
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
                     <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
+        </template>
 
+        <template id="step-template-choose_equipment">
             <section class="wizard-step" data-step-id="choose_equipment" hidden>
                 <div class="form-group">
                     <h3>Équipement de classe</h3>
@@ -126,8 +148,10 @@
                     <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
                 </div>
             </section>
+        </template>
 
-            <section class="wizard-step" data-step-id="finalize_character" hidden>
+        <template id="step-template-finalize">
+            <section class="wizard-step" data-step-id="finalize" hidden>
                 <div class="form-group">
                     <h3>Choix des sorts</h3>
                     <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
@@ -152,28 +176,29 @@
                         <option value="Chaotique Mauvais">Chaotique Mauvais</option>
                     </select>
                 </div>
-
                 <div class="form-actions">
                     <button class="btn btn-secondary" type="button" id="export-character-json">Extraire (JSON)</button>
                     <button class="btn btn-primary" type="submit">Créer le personnage</button>
                 </div>
             </section>
-        </div>
+        </template>
     </form>
 </section>
 
 <script>
 const rulesContext = JSON.parse({{ dnd_rules_context|tojson }});
 const form = document.getElementById('guided-character-form');
-const classChoice = document.getElementById('class-choice');
-const backgroundChoice = document.getElementById('background-choice');
-const speciesChoice = document.getElementById('species-choice');
-const language2 = document.getElementById('language-2');
-const language3 = document.getElementById('language-3');
-const abilityMethod = document.getElementById('ability-method');
-const spellHelp = document.getElementById('spell-step-help');
-const exportCharacterJsonButton = document.getElementById('export-character-json');
 const stepsNav = document.getElementById('creation-steps-nav');
+const wizardPanels = document.getElementById('wizard-panels');
+
+let classChoice = null;
+let backgroundChoice = null;
+let speciesChoice = null;
+let language2 = null;
+let language3 = null;
+let abilityMethod = null;
+let spellHelp = null;
+let exportCharacterJsonButton = null;
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -191,9 +216,7 @@ const hidden = {
     backgroundAbilityBonusMode: document.getElementById('background-ability-bonus-mode-hidden'),
     backgroundAbilityBonusAllocations: document.getElementById('background-ability-bonus-allocations-hidden'),
 };
-const abilityBonusInputs = Object.fromEntries(
-    ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'].map((key) => [key, form.querySelector(`input[name="${key}_bg_bonus"]`)])
-);
+let abilityBonusInputs = {};
 
 const state = {
     class_id: null,
@@ -273,6 +296,7 @@ function formatChoiceTitle(choice) {
 }
 
 function setOptions(select, entries) {
+    if (!select) return;
     select.innerHTML = '';
     entries.forEach((entry) => {
         const opt = document.createElement('option');
@@ -284,6 +308,7 @@ function setOptions(select, entries) {
 
 function renderList(targetId, rows) {
     const target = document.getElementById(targetId);
+    if (!target) return;
     target.innerHTML = '';
     if (!rows.length) {
         target.innerHTML = '<li>Aucun gain automatique.</li>';
@@ -296,60 +321,88 @@ function renderList(targetId, rows) {
     });
 }
 
+function renderChoiceBlock(choice, container, scope) {
+    const block = document.createElement('div');
+    block.style.marginBottom = '12px';
+    block.dataset.choiceId = choice.id;
+    block.dataset.scope = scope;
+    block.dataset.choose = String(choice.choose || 1);
+    block.dataset.required = choice.required ? '1' : '0';
+    block.classList.add('choice-group');
+    const title = document.createElement('p');
+    const label = formatChoiceTitle(choice);
+    title.textContent = `${label} — choisissez ${choice.choose}`;
+    block.appendChild(title);
+
+    const options = choice.options || [];
+    options.forEach((option) => {
+        const labelEl = document.createElement('label');
+        labelEl.style.display = 'block';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = option.id || option.label || option.name_fr;
+        input.dataset.optionLabel = option.label || option.name_fr || option.id;
+        input.dataset.choiceId = choice.id;
+        input.dataset.choiceType = choice.type;
+        input.dataset.scope = scope;
+        if (option.source_choice_value) {
+            input.dataset.sourceChoiceValue = option.source_choice_value;
+        }
+        input.addEventListener('change', () => {
+            const siblings = Array.from(block.querySelectorAll('input:checked'));
+            if (siblings.length > (choice.choose || 1)) {
+                input.checked = false;
+                return;
+            }
+            if (choice.type === 'origin_feat' && scope === 'species') {
+                const selectedOption = input.checked ? option : null;
+                renderFeatChoices('species-origin-feat-choices', selectedOption?.feat_payload || {}, 'species_bonus');
+            }
+            syncHiddenFields();
+        });
+        labelEl.classList.add('builder-choice-item');
+        labelEl.appendChild(input);
+        labelEl.append(` ${option.label || option.name_fr || option.id}`);
+        block.appendChild(labelEl);
+    });
+    container.appendChild(block);
+}
+
+function renderSkillChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderToolChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderSpellChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderAbilityBonusChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderOriginFeatChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderEquipmentChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderSizeChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+
+function renderChoiceByType(choice, container, scope) {
+    const rendererByType = {
+        skill_proficiency: renderSkillChoice,
+        tool_proficiency: renderToolChoice,
+        spell: renderSpellChoice,
+        prepared_spell: renderSpellChoice,
+        spellbook_entry: renderSpellChoice,
+        ability_bonus: renderAbilityBonusChoice,
+        origin_feat: renderOriginFeatChoice,
+        equipment: renderEquipmentChoice,
+        size_choice: renderSizeChoice,
+    };
+    const renderer = rendererByType[choice.type] || renderChoiceBlock;
+    renderer(choice, container, scope);
+}
+
 function renderChoices(targetId, requiredChoices, type) {
     const target = document.getElementById(targetId);
+    if (!target) return;
     target.innerHTML = '';
     if (!requiredChoices.length) {
         target.textContent = 'Aucun choix requis.';
         return;
     }
-
-    requiredChoices.forEach((choice) => {
-        const block = document.createElement('div');
-        block.style.marginBottom = '12px';
-        block.dataset.choiceId = choice.id;
-        block.dataset.scope = type;
-        block.dataset.choose = String(choice.choose || 1);
-        block.dataset.required = choice.required ? '1' : '0';
-        block.classList.add('choice-group');
-        const title = document.createElement('p');
-        const label = formatChoiceTitle(choice);
-        title.textContent = `${label} — choisissez ${choice.choose}`;
-        block.appendChild(title);
-
-        const options = choice.options || [];
-        options.forEach((option) => {
-            const label = document.createElement('label');
-            label.style.display = 'block';
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.value = option.id || option.label || option.name_fr;
-            input.dataset.optionLabel = option.label || option.name_fr || option.id;
-            input.dataset.choiceId = choice.id;
-            input.dataset.choiceType = choice.type;
-            input.dataset.scope = type;
-            if (option.source_choice_value) {
-                input.dataset.sourceChoiceValue = option.source_choice_value;
-            }
-            input.addEventListener('change', () => {
-                const siblings = Array.from(block.querySelectorAll('input:checked'));
-                if (siblings.length > choice.choose) {
-                    input.checked = false;
-                    return;
-                }
-                if (choice.type === 'origin_feat' && type === 'species') {
-                    const selectedOption = input.checked ? option : null;
-                    renderFeatChoices('species-origin-feat-choices', selectedOption?.feat_payload || {}, 'species_bonus');
-                }
-                syncHiddenFields();
-            });
-            label.classList.add('builder-choice-item');
-            label.appendChild(input);
-            label.append(` ${option.label || option.name_fr || option.id}`);
-            block.appendChild(label);
-        });
-        target.appendChild(block);
-    });
+    for (const choice of requiredChoices) {
+        renderChoiceByType(choice, target, type);
+    }
 }
 
 function syncHiddenFields() {
@@ -398,6 +451,7 @@ function splitSpellChoices(choices = []) {
 
 function renderOriginFeat(payload) {
     const target = document.getElementById('background-origin-feat-details');
+    if (!target) return;
     target.innerHTML = '';
     const feat = payload?.origin_feat_details || {};
     if (!feat || !Object.keys(feat).length) return;
@@ -413,6 +467,7 @@ function renderOriginFeat(payload) {
 
 function renderFeatChoices(targetId, featPayload, scope) {
     const target = document.getElementById(targetId);
+    if (!target) return;
     target.innerHTML = '';
     const choices = featPayload?.required_choices || [];
     if (!choices.length) return;
@@ -428,6 +483,7 @@ function renderFeatChoices(targetId, featPayload, scope) {
 
 function renderEquipment(targetId, payload, scope) {
     const target = document.getElementById(targetId);
+    if (!target) return;
     target.innerHTML = '';
     const options = payload?.equipment_options || [];
     if (!options.length) return;
@@ -540,20 +596,25 @@ async function refreshPayload() {
     const speciesChoices = splitSpellChoices(payload.species_payload?.required_choices || []);
     renderChoices('species-required-choices', speciesChoices.nonSpellChoices, 'species');
     if (!speciesChoices.nonSpellChoices.some((choice) => choice.type === 'origin_feat')) {
-        document.getElementById('species-origin-feat-choices').innerHTML = '';
+        const speciesFeatTarget = document.getElementById('species-origin-feat-choices');
+        if (speciesFeatTarget) speciesFeatTarget.innerHTML = '';
     }
 
     const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
     renderChoices('spell-required-choices', spellChoices, 'spell');
-    spellHelp.textContent = spellChoices.length
-        ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
-        : 'Aucun choix de sort requis pour vos sélections actuelles.';
+    if (spellHelp) {
+        spellHelp.textContent = spellChoices.length
+            ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
+            : 'Aucun choix de sort requis pour vos sélections actuelles.';
+    }
     renderEquipment('class-equipment', payload.class_payload || {}, 'class');
     renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
     const languagePayload = payload.languages_payload || {};
-    setOptions(language2, languagePayload.options || []);
-    setOptions(language3, languagePayload.options || []);
+    if (language2 && language3) {
+        setOptions(language2, languagePayload.options || []);
+        setOptions(language3, languagePayload.options || []);
+    }
 
     const methods = payload.ability_payload?.methods || [];
     setOptions(abilityMethod, methods.map((m) => ({
@@ -571,8 +632,11 @@ async function refreshPayload() {
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
     renderAbilityBonusControls(payload.ability_payload || {});
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
-    document.getElementById('ability-background-limits').textContent =
-        allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+    const abilityLimits = document.getElementById('ability-background-limits');
+    if (abilityLimits) {
+        abilityLimits.textContent =
+            allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+    }
     syncHiddenFields();
 }
 
@@ -669,9 +733,15 @@ function renderAbilityBonusControls(abilityPayload) {
     renderSelectors();
 }
 
-setOptions(classChoice, rulesContext.classes || []);
-setOptions(backgroundChoice, rulesContext.backgrounds || []);
-setOptions(speciesChoice, rulesContext.species || []);
+const STEP_COMPONENTS = {
+    choose_class: () => document.getElementById('step-template-choose_class')?.content.cloneNode(true),
+    choose_background: () => document.getElementById('step-template-choose_background')?.content.cloneNode(true),
+    choose_species: () => document.getElementById('step-template-choose_species')?.content.cloneNode(true),
+    choose_languages: () => document.getElementById('step-template-choose_languages')?.content.cloneNode(true),
+    assign_ability_scores: () => document.getElementById('step-template-assign_ability_scores')?.content.cloneNode(true),
+    choose_equipment: () => document.getElementById('step-template-choose_equipment')?.content.cloneNode(true),
+    finalize: () => document.getElementById('step-template-finalize')?.content.cloneNode(true),
+};
 
 function syncStateFromUI() {
     state.class_id = classChoice.value || null;
@@ -684,17 +754,46 @@ function syncStateFromUI() {
     hidden.speciesId.value = state.species_id || '';
 }
 
-[classChoice, backgroundChoice, speciesChoice].forEach((el) => {
-    el.addEventListener('change', async () => { syncStateFromUI(); await refreshPayload(); });
-});
+function bindStepElements() {
+    classChoice = document.getElementById('class-choice');
+    backgroundChoice = document.getElementById('background-choice');
+    speciesChoice = document.getElementById('species-choice');
+    language2 = document.getElementById('language-2');
+    language3 = document.getElementById('language-3');
+    abilityMethod = document.getElementById('ability-method');
+    spellHelp = document.getElementById('spell-step-help');
+    exportCharacterJsonButton = document.getElementById('export-character-json');
+    abilityBonusInputs = Object.fromEntries(
+        ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'].map((key) => [key, form.querySelector(`input[name="${key}_bg_bonus"]`)])
+    );
+}
 
-[language2, language3].forEach((el) => {
-    el.addEventListener('change', () => {
-        hidden.language2.value = language2.value;
-        hidden.language3.value = language3.value;
-        syncStateFromUI();
+function bindWizardEvents() {
+    [classChoice, backgroundChoice, speciesChoice].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('change', async () => { syncStateFromUI(); await refreshPayload(); });
     });
-});
+
+    [language2, language3].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('change', () => {
+            hidden.language2.value = language2?.value || '';
+            hidden.language3.value = language3?.value || '';
+            syncStateFromUI();
+        });
+    });
+
+    abilityMethod?.addEventListener('change', () => { hidden.mode.value = abilityMethod.value; });
+    exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
+
+    form.querySelectorAll('[data-next-step]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const visibleSteps = getVisibleSteps();
+            const index = visibleSteps.indexOf(currentStep);
+            const next = visibleSteps[index + 1];
+            if (next) renderStep(next);
+        });
+    });
 
 abilityMethod.addEventListener('change', () => {
     hidden.mode.value = abilityMethod.value;
@@ -782,7 +881,7 @@ form.addEventListener('submit', (event) => {
         alert(validationResult.errors.join('\n'));
         return;
     }
-    if (!language2.value || !language3.value || language2.value === language3.value) {
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
         event.preventDefault();
         alert('Veuillez choisir 2 langues différentes en plus de Common.');
         return;
@@ -793,7 +892,6 @@ form.addEventListener('submit', (event) => {
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
 });
 
-const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
 let stepOrder = [];
 let currentStep = null;
 
@@ -805,6 +903,7 @@ function renderStep(stepId) {
     const visibleSteps = getVisibleSteps();
     const safeStep = visibleSteps.includes(stepId) ? stepId : (visibleSteps[0] || null);
     currentStep = safeStep;
+    const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
     stepPanels.forEach((panel) => {
         const active = panel.dataset.stepId === safeStep;
         panel.hidden = !active;
@@ -857,7 +956,7 @@ function buildCharacterExportPayload() {
 }
 
 function downloadCharacterExport() {
-    if (!language2.value || !language3.value || language2.value === language3.value) {
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
         alert('Veuillez choisir 2 langues différentes en plus de Common avant extraction.');
         return;
     }
@@ -876,32 +975,10 @@ function downloadCharacterExport() {
     URL.revokeObjectURL(url);
 }
 
-form.querySelectorAll('[data-next-step]').forEach((button) => {
-    button.addEventListener('click', () => {
-        const visibleSteps = getVisibleSteps();
-        const index = visibleSteps.indexOf(currentStep);
-        const next = visibleSteps[index + 1];
-        if (next) renderStep(next);
-    });
-});
-
-form.querySelectorAll('[data-prev-step]').forEach((button) => {
-    button.addEventListener('click', () => {
-        const visibleSteps = getVisibleSteps();
-        const index = visibleSteps.indexOf(currentStep);
-        const prev = visibleSteps[index - 1];
-        if (prev) renderStep(prev);
-    });
-});
-
-function buildStepsFromRules() {
-    const configuredSteps = Array.isArray(rulesContext.steps) ? rulesContext.steps : [];
-    stepOrder = configuredSteps
-        .map((entry) => entry.id)
-        .filter((stepId) => form.querySelector(`.wizard-step[data-step-id="${stepId}"]`));
+function renderWizardNav(effectiveSteps) {
     stepsNav.innerHTML = '';
-    stepOrder.forEach((stepId, index) => {
-        const meta = configuredSteps.find((entry) => entry.id === stepId) || {};
+    effectiveSteps.forEach((stepId, index) => {
+        const meta = (rulesContext.steps || []).find((entry) => (entry.id || entry) === stepId) || {};
         const li = document.createElement('li');
         li.dataset.stepId = stepId;
         if (index === 0) li.classList.add('is-active');
@@ -915,10 +992,18 @@ function buildStepsFromRules() {
     });
 }
 
-exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
-
+const effectiveSteps = (Array.isArray(rulesContext.steps) ? rulesContext.steps : [])
+    .map((stepEntry) => stepEntry.id || stepEntry)
+    .filter((stepId) => Boolean(STEP_COMPONENTS[stepId]));
+renderWizardNav(effectiveSteps);
+renderWizardPanels(effectiveSteps);
+stepOrder = effectiveSteps;
+bindStepElements();
+bindWizardEvents();
+setOptions(classChoice, rulesContext.classes || []);
+setOptions(backgroundChoice, rulesContext.backgrounds || []);
+setOptions(speciesChoice, rulesContext.species || []);
 syncStateFromUI();
-buildStepsFromRules();
 refreshPayload();
 renderStep(stepOrder[0] || 'choose_class');
 </script>
