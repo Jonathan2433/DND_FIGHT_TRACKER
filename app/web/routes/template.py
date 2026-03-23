@@ -134,25 +134,37 @@ def _parse_json_payload(raw_value, default):
 
 def _extract_builder_state(source):
     getlist = getattr(source, 'getlist', lambda _key: [])
-    return {
+    state = {
         'class_id': source.get('class_id') or None,
         'background_id': source.get('background_id') or None,
         'species_id': source.get('species_id') or None,
         'language_ids': [lang for lang in getlist('language_ids') if lang],
+        'selected_language_ids': [lang for lang in getlist('selected_language_ids') if lang],
         'selected_origin_feat_id': source.get('selected_origin_feat_id') or None,
         'selected_feat_ids': [feat for feat in getlist('selected_feat_ids') if feat],
         'selected_equipment_ids': [item for item in getlist('selected_equipment_ids') if item],
         'selected_ability_bonus_ids': [ability for ability in getlist('selected_ability_bonus_ids') if ability],
         'ability_score_method': source.get('ability_score_method') or None,
+        'ability_method_id': source.get('ability_method_id') or None,
         'base_ability_scores': _parse_json_payload(source.get('base_ability_scores_json') or source.get('base_ability_scores'), default={}),
+        'base_abilities': _parse_json_payload(source.get('base_abilities_json') or source.get('base_abilities'), default={}),
         'background_ability_bonus_mode': source.get('background_ability_bonus_mode') or None,
         'background_ability_bonus_allocations': _parse_json_payload(
             source.get('background_ability_bonus_allocations_json'),
             default=[item for item in getlist('background_ability_bonus_allocations') if item],
         ),
         'selected_spell_ids_by_choice': _parse_json_payload(source.get('selected_spell_ids_by_choice_json'), default={}),
+        'selected_spells_by_choice': _parse_json_payload(source.get('selected_spells_by_choice_json'), default={}),
         'selected_equipment_choices_by_slot': _parse_json_payload(source.get('selected_equipment_choices_by_slot_json'), default={}),
+        'equipment_choices_by_slot': _parse_json_payload(source.get('equipment_choices_by_slot_json'), default={}),
+        'selected_class_choice_ids': [choice_id for choice_id in getlist('selected_class_choice_ids') if choice_id],
+        'class_choice_ids': [choice_id for choice_id in getlist('class_choice_ids') if choice_id],
+        'selected_species_choice_ids': [choice_id for choice_id in getlist('selected_species_choice_ids') if choice_id],
+        'species_choice_ids': [choice_id for choice_id in getlist('species_choice_ids') if choice_id],
+        'selected_feat_choice_ids': [choice_id for choice_id in getlist('selected_feat_choice_ids') if choice_id],
+        'feat_choice_ids': [choice_id for choice_id in getlist('feat_choice_ids') if choice_id],
     }
+    return get_character_builder_service().normalize_character_creation_state(state)
 
 
 def _can_manage_character_combat_state(character, user):

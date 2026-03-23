@@ -6,6 +6,45 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+
+BUILDER_STATE_DEFAULTS: dict[str, Any] = {
+    "class_id": None,
+    "background_id": None,
+    "species_id": None,
+    "ability_score_method": None,
+    "base_ability_scores": {},
+    "background_ability_bonus_mode": None,
+    "background_ability_bonus_allocations": [],
+    "language_ids": [],
+    "selected_class_choice_ids": [],
+    "selected_species_choice_ids": [],
+    "selected_feat_choice_ids": [],
+    "selected_origin_feat_id": None,
+    "selected_feat_ids": [],
+    "selected_spell_ids_by_choice": {},
+    "selected_equipment_choices_by_slot": {},
+    "selected_equipment_ids": [],
+    "selected_ability_bonus_ids": [],
+}
+
+BUILDER_STATE_ALIASES: dict[str, str] = {
+    "ability_method_id": "ability_score_method",
+    "ability_method": "ability_score_method",
+    "base_abilities": "base_ability_scores",
+    "base_abilities_json": "base_ability_scores",
+    "ability_scores": "base_ability_scores",
+    "selected_language_ids": "language_ids",
+    "languages": "language_ids",
+    "selected_class_choices": "selected_class_choice_ids",
+    "class_choice_ids": "selected_class_choice_ids",
+    "selected_species_choices": "selected_species_choice_ids",
+    "species_choice_ids": "selected_species_choice_ids",
+    "selected_feat_choices": "selected_feat_choice_ids",
+    "feat_choice_ids": "selected_feat_choice_ids",
+    "selected_spells_by_choice": "selected_spell_ids_by_choice",
+    "equipment_choices_by_slot": "selected_equipment_choices_by_slot",
+}
+
 STEP_COMPONENT_IDS = {
     "choose_class",
     "choose_background",
@@ -685,7 +724,56 @@ class CharacterBuilderService:
                     normalized.append({"ability": str(ability), "bonus": parsed_bonus})
         return normalized
 
+    def normalize_character_creation_state(self, state: dict[str, Any] | None) -> dict[str, Any]:
+        """Normalise le payload du builder vers un contrat unique."""
+        raw_state = state if isinstance(state, dict) else {}
+        normalized: dict[str, Any] = dict(BUILDER_STATE_DEFAULTS)
+
+        for raw_key, raw_value in raw_state.items():
+            canonical_key = BUILDER_STATE_ALIASES.get(str(raw_key), str(raw_key))
+            if canonical_key not in normalized:
+                continue
+            normalized[canonical_key] = raw_value
+
+        normalized["class_id"] = str(normalized["class_id"]) if normalized.get("class_id") else None
+        normalized["background_id"] = str(normalized["background_id"]) if normalized.get("background_id") else None
+        normalized["species_id"] = str(normalized["species_id"]) if normalized.get("species_id") else None
+        normalized["selected_origin_feat_id"] = (
+            str(normalized["selected_origin_feat_id"]) if normalized.get("selected_origin_feat_id") else None
+        )
+        normalized["ability_score_method"] = (
+            str(normalized["ability_score_method"]) if normalized.get("ability_score_method") else None
+        )
+
+        for key in (
+            "language_ids",
+            "selected_class_choice_ids",
+            "selected_species_choice_ids",
+            "selected_feat_choice_ids",
+            "selected_feat_ids",
+            "selected_equipment_ids",
+            "selected_ability_bonus_ids",
+        ):
+            normalized[key] = self._to_string_list(normalized.get(key))
+
+        if not isinstance(normalized.get("base_ability_scores"), dict):
+            normalized["base_ability_scores"] = {}
+
+        allocations = normalized.get("background_ability_bonus_allocations")
+        if isinstance(allocations, dict):
+            allocations = allocations.get("items", [])
+        normalized["background_ability_bonus_allocations"] = allocations if isinstance(allocations, list) else []
+
+        spells_by_choice = normalized.get("selected_spell_ids_by_choice")
+        normalized["selected_spell_ids_by_choice"] = spells_by_choice if isinstance(spells_by_choice, dict) else {}
+
+        equipment_by_slot = normalized.get("selected_equipment_choices_by_slot")
+        normalized["selected_equipment_choices_by_slot"] = equipment_by_slot if isinstance(equipment_by_slot, dict) else {}
+
+        return normalized
+
     def validate_character_creation_submission(self, state: dict[str, Any]) -> list[str]:
+        state = self.normalize_character_creation_state(state)
         errors: list[str] = []
         class_id = state.get("class_id")
         background_id = state.get("background_id")
