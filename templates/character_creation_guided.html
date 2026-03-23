@@ -692,7 +692,7 @@ function renderEquipment(targetId, payload, scope) {
         const bundleValue = `${scope}:${option.label || option.id}`;
         const selectOption = document.createElement('option');
         selectOption.value = bundleValue;
-        selectOption.textContent = `Option ${option.label || option.id} (et ${option.gold || 0} po)`;
+        selectOption.textContent = `Option ${option.label || option.id}`;
         bundleSelect.appendChild(selectOption);
 
         const section = document.createElement('div');
