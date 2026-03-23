@@ -10,6 +10,7 @@ from app.models import Combat, CharacterTemplate, Campaign, User
 from app.models.story_arc import StoryArc
 from app.models.episode import Episode
 from app.utils import format_duration
+from app.utils.decorators import login_required
 from app.utils.spell_catalog import load_spell_catalog
 
 
@@ -133,6 +134,7 @@ def spell_library():
 
 
 @bp.route('/mes-sorts')
+@login_required
 def favorite_spells():
     """Vue dédiée aux sorts favoris (stockage local navigateur)."""
     spells = sorted(load_spell_catalog(), key=lambda spell: spell.get('name', '').lower())
