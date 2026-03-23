@@ -20,13 +20,49 @@
             gap: 12px;
             margin: 10px 0 12px;
         }
-        .origin-bonus-mode label {
+        .origin-bonus-option {
+            position: relative;
+            flex: 1 1 220px;
+            min-height: 72px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            border-radius: 999px;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             background: rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+        }
+        .origin-bonus-option:hover {
+            border-color: rgba(126, 211, 255, 0.45);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+        .origin-bonus-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #7ed3ff;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+        .origin-bonus-option-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+            gap: 3px;
+        }
+        .origin-bonus-option-title {
+            font-weight: 700;
+        }
+        .origin-bonus-option-detail {
+            font-size: 0.86rem;
+            opacity: 0.82;
+        }
+        .origin-bonus-option.is-active {
+            border-color: rgba(126, 211, 255, 0.85);
+            background: rgba(126, 211, 255, 0.14);
+            box-shadow: 0 0 0 1px rgba(126, 211, 255, 0.25);
         }
         .origin-bonus-grid {
             display: grid;
@@ -1118,8 +1154,20 @@ function renderAbilityBonusControls(abilityPayload) {
     const modeBlock = document.createElement('div');
     modeBlock.className = 'origin-bonus-mode';
     modeBlock.innerHTML = `
-        <label><input type="radio" name="origin_bonus_mode" value="2-1" checked> Option A: +2 et +1</label>
-        <label><input type="radio" name="origin_bonus_mode" value="1-1-1"> Option B: +1, +1 et +1</label>
+        <label class="origin-bonus-option">
+            <input type="radio" name="origin_bonus_mode" value="2-1" checked>
+            <span class="origin-bonus-option-text">
+                <span class="origin-bonus-option-title">Option A : +2 et +1</span>
+                <span class="origin-bonus-option-detail">Spécialisation principale + bonus secondaire.</span>
+            </span>
+        </label>
+        <label class="origin-bonus-option">
+            <input type="radio" name="origin_bonus_mode" value="1-1-1">
+            <span class="origin-bonus-option-text">
+                <span class="origin-bonus-option-title">Option B : +1, +1 et +1</span>
+                <span class="origin-bonus-option-detail">Répartition équilibrée sur 3 capacités.</span>
+            </span>
+        </label>
     `;
     panel.appendChild(modeBlock);
     const selectors = document.createElement('div');
@@ -1199,7 +1247,19 @@ function renderAbilityBonusControls(abilityPayload) {
         }
         updateOriginBonusHiddenFields();
     };
-    modeBlock.querySelectorAll('input[name="origin_bonus_mode"]').forEach((radio) => radio.addEventListener('change', renderSelectors));
+    const syncModeVisualState = () => {
+        modeBlock.querySelectorAll('.origin-bonus-option').forEach((option) => {
+            const radio = option.querySelector('input[name="origin_bonus_mode"]');
+            option.classList.toggle('is-active', !!radio?.checked);
+        });
+    };
+    syncModeVisualState();
+    modeBlock.querySelectorAll('input[name="origin_bonus_mode"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            syncModeVisualState();
+            renderSelectors();
+        });
+    });
     selectors.addEventListener('change', updateOriginBonusHiddenFields);
     renderSelectors();
 }
