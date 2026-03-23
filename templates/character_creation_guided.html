@@ -1357,6 +1357,14 @@ function bindWizardEvents() {
             if (next) renderStep(next);
         });
     });
+    form.querySelectorAll('[data-prev-step]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const visibleSteps = getVisibleSteps();
+            const index = visibleSteps.indexOf(currentStep);
+            const previous = visibleSteps[index - 1];
+            if (previous) renderStep(previous);
+        });
+    });
     abilityMethod?.addEventListener('change', () => {
         hidden.mode.value = abilityMethod.value;
         hidden.abilityScoreMethod.value = abilityMethod.value;
