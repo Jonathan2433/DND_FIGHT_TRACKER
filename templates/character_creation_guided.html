@@ -598,7 +598,7 @@ function renderOriginFeat(payload) {
     title.textContent = `Don d’origine : ${feat.name_fr || feat.name || feat.id || '—'}`;
     const desc = document.createElement('p');
     desc.classList.add('text-muted');
-    desc.textContent = feat.short_description_fr || feat.short_description || feat.description_fr || feat.description || 'Description non disponible.';
+    desc.textContent = feat.description_short_fr || feat.short_description_fr || feat.description_short || feat.short_description || feat.description_fr || feat.description || 'Description non disponible.';
     target.appendChild(title);
     target.appendChild(desc);
 }
