@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="card">
-    <h1>Création de personnage (funnel JSON)</h1>
-    <p>Le wizard masque les options non légales et n’affiche que ce qui est autorisé pour vos choix courants.</p>
+    <h1>Création de personnage</h1>
 
     <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form">
         <input type="hidden" name="character_type" value="PJ">
@@ -38,10 +37,8 @@
                     <select id="class-choice" name="character_class" required></select>
                 </div>
                 <div class="form-group">
-                    <h3>Gains automatiques (classe)</h3>
                     <ul id="class-auto-gains"></ul>
-                    <h3>Choix à faire (classe)</h3>
-                    <p class="text-muted">Sélectionnez uniquement les options qui vous intéressent. Les intitulés sont traduits et simplifiés.</p>
+                    <h3>Choix à faire</h3>
                     <div id="class-required-choices"></div>
                 </div>
                 <div class="form-actions">
@@ -54,10 +51,9 @@
         <template id="step-template-choose_background">
             <section class="wizard-step" data-step-id="choose_background" hidden>
                 <div class="form-group">
-                    <h3>Choix à faire (historique)</h3>
+                    <h3>Choix du background</h3>
                     <label for="background-choice">Historique</label>
                     <select id="background-choice" name="background_choice" required></select>
-                    <h3>Gains automatiques (historique)</h3>
                     <ul id="background-auto-gains"></ul>
                     <p class="text-muted">Ces choix définissent votre passé d’aventurier et vos compétences de départ.</p>
                     <div id="background-origin-feat-details"></div>
@@ -74,12 +70,12 @@
         <template id="step-template-choose_species">
             <section class="wizard-step" data-step-id="choose_species" hidden>
                 <div class="form-group">
-                    <h3>Choix à faire (espèce)</h3>
+                    <h3>Choix de la race</h3>
                     <label for="species-choice">Espèce</label>
                     <select id="species-choice" name="race" required></select>
                     <h3>Gains automatiques (espèce)</h3>
                     <ul id="species-auto-gains"></ul>
-                    <p class="text-muted">Choisissez les traits demandés pour finaliser votre espèce.</p>
+                    <p class="text-muted">Choisissez les traits demandés pour finaliser votre race.</p>
                     <div id="species-required-choices"></div>
                     <div id="species-origin-feat-choices"></div>
                 </div>
@@ -94,7 +90,7 @@
             <section class="wizard-step" data-step-id="assign_ability_scores" hidden>
                 <fieldset class="form-group">
                     <legend>Caractéristiques de base</legend>
-                    <label for="ability-method">Méthode de répartition (obligatoire)</label>
+                    <label for="ability-method">Méthode de répartition</label>
                     <select id="ability-method" name="ability_score_method"></select>
                     <p class="text-muted">Conseil débutant : utilisez la méthode recommandée si vous découvrez Donjons & Dragons.</p>
                     <p id="ability-background-limits" class="text-muted"></p>
@@ -157,7 +153,7 @@
             <section class="wizard-step" data-step-id="choose_spells" hidden>
                 <div class="form-group">
                     <h3>Choix des sorts</h3>
-                    <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
+                    <p class="text-muted" id="spell-step-help">Si votre classe le permet, choisissez ici vos sorts.</p>
                     <div id="spell-required-choices"></div>
                 </div>
                 <div class="form-actions">
