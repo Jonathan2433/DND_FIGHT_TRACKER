@@ -938,18 +938,22 @@ function computeAllowedArmorLoadouts(armorTrainingSet) {
     if (armorTrainingSet.has('light_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.light);
     if (armorTrainingSet.has('medium_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.medium);
     if (armorTrainingSet.has('heavy_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.heavy);
-    const uniqueArmorLabels = [...new Set(allowedArmorLabels)];
-    const allowsShield = armorTrainingSet.has('shields');
-    return uniqueArmorLabels.flatMap((armorLabel) => {
-        if (!allowsShield) return [armorLabel];
-        if (armorLabel === 'Sans armure') return ['Bouclier'];
-        return [armorLabel, `${armorLabel} + Bouclier`];
-    });
+    return [...new Set(allowedArmorLabels)];
 }
 
 function syncArmorLoadoutHiddenField() {
     if (!hidden.armorLoadout) return;
-    hidden.armorLoadout.value = document.getElementById('armor-loadout-choice')?.value || 'Sans armure';
+    const selectedArmor = document.getElementById('armor-loadout-choice')?.value || 'Sans armure';
+    const shieldChoice = document.getElementById('shield-choice')?.value || '0';
+    const hasShield = shieldChoice === '1';
+
+    if (!hasShield) {
+        hidden.armorLoadout.value = selectedArmor;
+        return;
+    }
+    hidden.armorLoadout.value = selectedArmor === 'Sans armure'
+        ? 'Bouclier'
+        : `${selectedArmor} + Bouclier`;
 }
 
 function renderArmorShieldSelection(classPayload = {}) {
@@ -969,7 +973,7 @@ function renderArmorShieldSelection(classPayload = {}) {
     const allowedLoadouts = computeAllowedArmorLoadouts(armorTrainingSet);
     const wrapper = document.createElement('label');
     wrapper.classList.add('builder-choice-item');
-    wrapper.textContent = 'Sélection d’armure / bouclier';
+    wrapper.textContent = 'Sélection d’armure';
 
     const select = document.createElement('select');
     select.id = 'armor-loadout-choice';
@@ -984,9 +988,34 @@ function renderArmorShieldSelection(classPayload = {}) {
     wrapper.appendChild(select);
     target.appendChild(wrapper);
 
+    const allowsShield = armorTrainingSet.has('shields');
+    if (allowsShield) {
+        const shieldWrapper = document.createElement('label');
+        shieldWrapper.classList.add('builder-choice-item');
+        shieldWrapper.textContent = 'Bouclier';
+
+        const shieldSelect = document.createElement('select');
+        shieldSelect.id = 'shield-choice';
+        shieldSelect.classList.add('builder-input');
+        [
+            { value: '0', label: 'Non' },
+            { value: '1', label: 'Oui' },
+        ].forEach((choice) => {
+            const option = document.createElement('option');
+            option.value = choice.value;
+            option.textContent = choice.label;
+            shieldSelect.appendChild(option);
+        });
+        shieldSelect.addEventListener('change', syncArmorLoadoutHiddenField);
+        shieldWrapper.appendChild(shieldSelect);
+        target.appendChild(shieldWrapper);
+    }
+
     const hint = document.createElement('p');
     hint.classList.add('text-muted');
-    hint.textContent = `Options autorisées selon votre classe : ${allowedLoadouts.join(', ')}.`;
+    hint.textContent = allowsShield
+        ? `Armures autorisées selon votre classe : ${allowedLoadouts.join(', ')}. Bouclier : oui/non.`
+        : `Armures autorisées selon votre classe : ${allowedLoadouts.join(', ')}.`;
     target.appendChild(hint);
     syncArmorLoadoutHiddenField();
 }
