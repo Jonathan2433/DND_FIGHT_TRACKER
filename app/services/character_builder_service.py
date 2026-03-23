@@ -545,6 +545,50 @@ class CharacterBuilderService:
         return errors
 
     def _resolve_equipment_options(self, options: list[Any], state: dict[str, Any]) -> list[dict[str, Any]]:
+        def resolve_rule_payload(
+            rule: dict[str, Any],
+            *,
+            item_id: str | None = None,
+            choose: int | None = None,
+        ) -> dict[str, Any] | None:
+            if not isinstance(rule, dict):
+                return None
+            rule_id = str(rule.get("id") or item_id or "").strip()
+            quantity = int(choose if choose is not None else rule.get("quantity", 1))
+            choice_from_category = rule.get("choice_from_category")
+            if choice_from_category:
+                return {
+                    "type": "choice_from_category",
+                    "id": rule_id or str(choice_from_category),
+                    "choose": quantity,
+                    "options": self._resolve_subchoice_catalog(str(choice_from_category), state),
+                }
+            choice_from_catalogs = rule.get("choice_from_catalogs")
+            if isinstance(choice_from_catalogs, list):
+                merged_options: list[dict[str, Any]] = []
+                for catalog_id in choice_from_catalogs:
+                    merged_options.extend(self._resolve_subchoice_catalog(str(catalog_id), state))
+                return {
+                    "type": "choice_from_catalogs",
+                    "id": rule_id or "_".join(str(catalog_id) for catalog_id in choice_from_catalogs),
+                    "choose": quantity,
+                    "options": self._dedupe_options(merged_options),
+                }
+            return None
+
+        def resolve_fixed_item_payload(item_id: str, quantity: int = 1) -> dict[str, Any]:
+            item = self.equipment_by_id.get(item_id, {})
+            payload: dict[str, Any] = {
+                "type": "fixed_item",
+                "id": item_id,
+                "choose": quantity,
+                "options": [],
+                "label": self._label(item) or item_id,
+            }
+            if quantity > 1:
+                payload["quantity"] = quantity
+            return payload
+
         resolved = []
         for option in options or []:
             if not isinstance(option, dict):
@@ -563,65 +607,66 @@ class CharacterBuilderService:
                             }
                         )
                         continue
-                    item = self.equipment_by_id.get(raw_item) if hasattr(self, 'equipment_by_id') else None
-                    if not item:
-                        item = next((e for e in self.equipment_items if isinstance(e, dict) and e.get("id") == raw_item), None)
-                    items.append({"type": "fixed", "id": raw_item, "label": self._label(item or {"id": raw_item})})
+                    items.append(resolve_fixed_item_payload(raw_item))
                 elif isinstance(raw_item, dict) and raw_item.get("choice_from_category"):
-                    choice_id = raw_item.get("choice_from_category")
-                    items.append(
+                    resolved_item = resolve_rule_payload(
                         {
-                            "type": "choice_from_category",
-                            "id": raw_item.get("id") or choice_id,
-                            "choose": int(raw_item.get("quantity", 1)),
-                            "options": self._resolve_subchoice_catalog(choice_id, state),
-                        }
+                            "id": raw_item.get("id"),
+                            "choice_from_category": raw_item.get("choice_from_category"),
+                            "quantity": raw_item.get("quantity", 1),
+                        },
+                        item_id=str(raw_item.get("id") or raw_item.get("choice_from_category") or ""),
                     )
+                    if resolved_item:
+                        items.append(resolved_item)
                 elif isinstance(raw_item, dict) and isinstance(raw_item.get("choice_from_catalogs"), list):
-                    catalogs = [str(catalog_id) for catalog_id in raw_item.get("choice_from_catalogs", [])]
-                    merged_options: list[dict[str, Any]] = []
-                    for catalog_id in catalogs:
-                        merged_options.extend(self._resolve_subchoice_catalog(catalog_id, state))
-                    items.append(
+                    resolved_item = resolve_rule_payload(
                         {
-                            "type": "choice_from_catalogs",
-                            "id": raw_item.get("id") or "_".join(catalogs),
-                            "choose": int(raw_item.get("quantity", 1)),
-                            "options": self._dedupe_options(merged_options),
-                        }
+                            "id": raw_item.get("id"),
+                            "choice_from_catalogs": raw_item.get("choice_from_catalogs"),
+                            "quantity": raw_item.get("quantity", 1),
+                        },
+                        item_id=str(raw_item.get("id") or ""),
                     )
+                    if resolved_item:
+                        items.append(resolved_item)
                 elif isinstance(raw_item, dict) and raw_item.get("equipment_choice_rule_id"):
                     rule = self.equipment_choice_rule_by_id.get(str(raw_item.get("equipment_choice_rule_id")), {})
-                    if rule:
-                        choice_from_category = rule.get("choice_from_category")
-                        choice_from_catalogs = rule.get("choice_from_catalogs")
-                        if choice_from_category:
-                            items.append(
-                                {
-                                    "type": "choice_from_category",
-                                    "id": raw_item.get("id") or str(choice_from_category),
-                                    "choose": int(raw_item.get("quantity", rule.get("quantity", 1))),
-                                    "options": self._resolve_subchoice_catalog(str(choice_from_category), state),
-                                }
-                            )
-                        elif isinstance(choice_from_catalogs, list):
-                            merged_options: list[dict[str, Any]] = []
-                            for catalog_id in choice_from_catalogs:
-                                merged_options.extend(self._resolve_subchoice_catalog(str(catalog_id), state))
-                            items.append(
-                                {
-                                    "type": "choice_from_catalogs",
-                                    "id": raw_item.get("id") or str(raw_item.get("equipment_choice_rule_id")),
-                                    "choose": int(raw_item.get("quantity", rule.get("quantity", 1))),
-                                    "options": self._dedupe_options(merged_options),
-                                }
-                            )
-            resolved.append({"id": option.get("id"), "label": option.get("label"), "items": items, "gold": option.get("gold", 0)})
+                    resolved_item = resolve_rule_payload(
+                        {
+                            **rule,
+                            "id": raw_item.get("id") or raw_item.get("equipment_choice_rule_id"),
+                            "quantity": raw_item.get("quantity", rule.get("quantity", 1)),
+                        },
+                        item_id=str(raw_item.get("id") or raw_item.get("equipment_choice_rule_id") or ""),
+                    )
+                    if resolved_item:
+                        items.append(resolved_item)
+                elif isinstance(raw_item, dict) and raw_item.get("id"):
+                    items.append(resolve_fixed_item_payload(str(raw_item.get("id")), int(raw_item.get("quantity", 1))))
+            gold_amount = int(option.get("gold", 0) or 0)
+            if gold_amount > 0:
+                items.append(
+                    {
+                        "type": "gold_alternative",
+                        "id": f"{option.get('id')}_gold",
+                        "choose": 1,
+                        "options": [],
+                        "gold": gold_amount,
+                    }
+                )
+            resolved.append({"id": option.get("id"), "label": option.get("label"), "items": items, "gold": gold_amount})
         return resolved
 
     @property
     def equipment_by_id(self) -> dict[str, dict[str, Any]]:
-        combined = [*self.equipment_items, *self.equipment_items_adventuring_gear, *self.starting_equipment_packs]
+        combined = [
+            *self.equipment_items,
+            *self.equipment_items_adventuring_gear,
+            *self.starting_equipment_packs,
+            *self.weapons_catalog,
+            *self.tools,
+        ]
         return self._index(combined)
 
 

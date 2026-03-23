@@ -1,0 +1,25 @@
+[
+  {
+    "id": "musical_instrument_choice",
+    "choice_from_category": "musical_instrument",
+    "quantity": 1
+  },
+  {
+    "id": "gaming_set_choice",
+    "choice_from_category": "gaming_set",
+    "quantity": 1
+  },
+  {
+    "id": "artisan_tools_choice",
+    "choice_from_category": "artisans_tools",
+    "quantity": 1
+  },
+  {
+    "id": "monk_tool_or_instrument_choice",
+    "choice_from_catalogs": [
+      "artisans_tools",
+      "musical_instrument"
+    ],
+    "quantity": 1
+  }
+]
