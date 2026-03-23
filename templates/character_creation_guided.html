@@ -254,6 +254,16 @@ const state = {
 };
 let latestPayload = null;
 const SPELL_CHOICE_TYPES = new Set(['spell', 'prepared_spell', 'spellbook_entry']);
+const STEP_LABELS = {
+    choose_class: 'Choisir une classe',
+    choose_background: 'Choisir un background',
+    choose_species: 'Choisir une espèce',
+    assign_ability_scores: 'Choisir les caractéristiques',
+    choose_languages: 'Choisir les langues',
+    choose_equipment: "Choisir l'équipement",
+    choose_spells: 'Choisir les sorts',
+    finalize: 'Résumé final',
+};
 
 const FRIENDLY_LABELS = {
     saving_throw_proficiencies: 'Jets de sauvegarde maîtrisés',
@@ -1195,7 +1205,8 @@ function renderWizardNav(effectiveSteps) {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'creation-step-trigger';
-        button.textContent = `${index + 1}. ${meta.label || meta.name_fr || meta.name_en || stepId}`;
+        const stepLabel = meta.label || meta.name_fr || meta.name_en || STEP_LABELS[stepId] || stepId;
+        button.textContent = `${index + 1}. ${stepLabel}`;
         button.addEventListener('click', () => renderStep(stepId));
         li.appendChild(button);
         stepsNav.appendChild(li);

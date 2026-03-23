@@ -32,7 +32,8 @@ class CharacterBuilderService:
         self.species_choice_rules = self._load_json("species_choice_rules.json", default=[])
         self.starting_ability_score_methods = self._load_json("starting_ability_score_methods.json", default=[])
         self.spellcasting_rules = self._load_json("spellcasting_rules.json", default={})
-        self.spells_by_class = self._load_json("spells_by_class.json", default={})
+        raw_spells_by_class = self._load_json("spells_by_class.json", default={})
+        self.spells_by_class = self._normalize_spells_by_class(raw_spells_by_class)
         self.spells = self._load_json("spells.json", default=[])
         self.subchoices_catalog = self._load_json("subchoices_catalog.json", default=[])
         self.equipment_items = self._load_json("equipment_items.json", default=[])
@@ -85,6 +86,23 @@ class CharacterBuilderService:
         if not isinstance(items, list):
             return {}
         return {str(i.get("id")): i for i in items if isinstance(i, dict) and i.get("id")}
+
+    @staticmethod
+    def _normalize_spells_by_class(raw_mapping: Any) -> dict[str, dict[str, Any]]:
+        if isinstance(raw_mapping, dict):
+            return raw_mapping
+        if not isinstance(raw_mapping, list):
+            return {}
+        normalized: dict[str, dict[str, Any]] = {}
+        for entry in raw_mapping:
+            if not isinstance(entry, dict):
+                continue
+            class_id = str(entry.get("class_id") or "").strip()
+            levels = entry.get("levels")
+            if not class_id or not isinstance(levels, dict):
+                continue
+            normalized[class_id] = levels
+        return normalized
 
     @staticmethod
     def _label(entry: dict[str, Any]) -> str:
@@ -396,6 +414,12 @@ class CharacterBuilderService:
             include_cantrips = bool(from_spell_list.get("include_cantrips", False))
             exact_level = None if include_cantrips else 1
             return self._dedupe_options(self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=exact_level))
+
+        from_resolver = str(choice.get("from_resolver") or "")
+        if from_resolver == "wizard_spellbook_entries_only":
+            class_id = str(state.get("class_id") or "")
+            max_level = int(choice.get("spell_level_max", 1))
+            return self._dedupe_options(self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=max_level))
 
         if choice.get("choice_type") == "origin_feat":
             return self._resolve_feat_options(choice, state)
