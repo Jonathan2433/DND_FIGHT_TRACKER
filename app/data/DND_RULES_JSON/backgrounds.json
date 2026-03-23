@@ -91,7 +91,7 @@
         "items": [
           {
             "id": "artisans_tools",
-            "choice_from_category": "artisans_tools",
+            "equipment_choice_rule_id": "artisan_tools_choice",
             "quantity": 1
           },
           {
@@ -254,7 +254,7 @@
         "items": [
           {
             "id": "musical_instrument",
-            "choice_from_category": "musical_instrument",
+            "equipment_choice_rule_id": "musical_instrument_choice",
             "quantity": 1
           },
           {
@@ -368,7 +368,7 @@
           "crossbow_bolts_20",
           {
             "id": "gaming_set",
-            "choice_from_category": "gaming_set",
+            "equipment_choice_rule_id": "gaming_set_choice",
             "quantity": 1
           },
           "hooded_lantern",
@@ -589,7 +589,7 @@
         "items": [
           {
             "id": "gaming_set",
-            "choice_from_category": "gaming_set",
+            "equipment_choice_rule_id": "gaming_set_choice",
             "quantity": 1
           },
           "fine_clothes",
@@ -811,7 +811,7 @@
           "arrows_20",
           {
             "id": "gaming_set",
-            "choice_from_category": "gaming_set",
+            "equipment_choice_rule_id": "gaming_set_choice",
             "quantity": 1
           },
           "healers_kit",
@@ -870,7 +870,7 @@
           "thieves_tools",
           {
             "id": "gaming_set",
-            "choice_from_category": "gaming_set",
+            "equipment_choice_rule_id": "gaming_set_choice",
             "quantity": 1
           },
           "bedroll",
