@@ -309,6 +309,29 @@ const FRIENDLY_LABELS = {
     tool_proficiencies: 'Maîtrises d’outils',
     tool_proficiency_choice: 'Choix d’outil',
     skill_proficiencies: 'Compétences maîtrisées',
+    sleight_of_hand: 'Escamotage',
+    'sleight of hand': 'Escamotage',
+    stealth: 'Discrétion',
+    perception: 'Perception',
+    insight: 'Intuition',
+    persuasion: 'Persuasion',
+    intimidation: 'Intimidation',
+    deception: 'Tromperie',
+    performance: 'Représentation',
+    investigation: 'Investigation',
+    history: 'Histoire',
+    arcana: 'Arcanes',
+    religion: 'Religion',
+    nature: 'Nature',
+    medicine: 'Médecine',
+    athletics: 'Athlétisme',
+    acrobatics: 'Acrobaties',
+    animal_handling: 'Dressage',
+    'animal handling': 'Dressage',
+    survival: 'Survie',
+    gnome_gnomish_lineage_spellcasting_ability: 'Capacité d’incantation de la lignée gnome',
+    elf_elven_lineage_spellcasting_ability: 'Capacité d’incantation de la lignée elfique',
+    tiefling_fiendish_legacy_spellcasting_ability: 'Capacité d’incantation de l’héritage infernal',
 };
 
 function formatValue(value) {
@@ -337,6 +360,8 @@ function formatValue(value) {
 }
 
 function formatChoiceTitle(choice) {
+    const choiceLabel = choice.display_label || choice.label_fr || choice.label || choice.name_fr || choice.name;
+    if (choiceLabel) return formatValue(choiceLabel);
     if (choice.name_fr) return choice.name_fr;
     if (choice.type && FRIENDLY_LABELS[choice.type]) return FRIENDLY_LABELS[choice.type];
     if (choice.id && FRIENDLY_LABELS[choice.id]) return FRIENDLY_LABELS[choice.id];
@@ -461,7 +486,8 @@ function renderChoiceBlock(choice, container, scope) {
     block.appendChild(title);
 
     options.forEach((option) => {
-        const optionDisplayLabel = option.display_label || option.label_fr || option.label || option.name_fr || option.id;
+        const rawOptionLabel = option.display_label || option.label_fr || option.label || option.name_fr || option.id;
+        const optionDisplayLabel = formatValue(rawOptionLabel);
         const labelEl = document.createElement('label');
         labelEl.style.display = 'block';
         const input = document.createElement('input');
@@ -666,7 +692,7 @@ function renderEquipment(targetId, payload, scope) {
         const bundleValue = `${scope}:${option.label || option.id}`;
         const selectOption = document.createElement('option');
         selectOption.value = bundleValue;
-        selectOption.textContent = `Option ${option.label || option.id} (ou : ${option.gold || 0} po)`;
+        selectOption.textContent = `Option ${option.label || option.id} (et ${option.gold || 0} po)`;
         bundleSelect.appendChild(selectOption);
 
         const section = document.createElement('div');
