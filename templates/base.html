@@ -60,6 +60,7 @@
                         <a href="{{ url_for('main.index') }}" class="site-nav__link">Accueil</a>
                         <a href="{{ url_for('campaign.list_campaigns') }}" class="site-nav__link">Campagnes</a>
                         <a href="{{ url_for('main.spell_library') }}" class="site-nav__link">Sorts</a>
+                        <a href="{{ url_for('main.favorite_spells') }}" class="site-nav__link">Mes sorts</a>
 
                         {% if session.user_id %}
                             <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
@@ -166,6 +167,7 @@
                     <!--<a href="{{ url_for('main.index') }}">Accueil</a>-->
                     <a href="{{ url_for('campaign.list_campaigns') }}">Campagnes</a>
                     <a href="{{ url_for('main.spell_library') }}">Sorts</a>
+                    <a href="{{ url_for('main.favorite_spells') }}">Mes sorts</a>
                     {% if session.user_id %}
                         <a href="{{ url_for('template.manage_templates') }}">Personnages</a>
                         <a href="{{ url_for('auth.profile') }}">Profil</a>
