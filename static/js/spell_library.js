@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const datasetKeyByFilter = {
+        casting_time: 'castingTime',
+        class: 'classes',
+    };
+
     filterIds.forEach((filterId) => {
         const select = form.querySelector(`[name="${filterId}"]`);
         if (!select) {
@@ -56,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const values = new Set();
         cards.forEach((card) => {
-            const key = filterId === 'casting_time' ? 'castingTime' : filterId;
+            const key = datasetKeyByFilter[filterId] || filterId;
             const raw = card.dataset[key];
             if (!raw) {
                 return;
