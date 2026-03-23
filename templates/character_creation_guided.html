@@ -272,6 +272,18 @@ const FRIENDLY_LABELS = {
     small: 'Petite',
     medium: 'Moyenne',
     large: 'Grande',
+    strength: 'Force',
+    dexterity: 'Dextérité',
+    constitution: 'Constitution',
+    intelligence: 'Intelligence',
+    wisdom: 'Sagesse',
+    charisma: 'Charisme',
+    species_trait_option: 'Trait d’espèce',
+    weapon_mastery: 'Maîtrise d’arme',
+    weapon_mastery_choices: 'Choix de maîtrise d’arme',
+    tool_proficiencies: 'Maîtrises d’outils',
+    tool_proficiency_choice: 'Choix d’outil',
+    skill_proficiencies: 'Compétences maîtrisées',
 };
 
 function formatValue(value) {
@@ -290,6 +302,8 @@ function formatValue(value) {
     }
     if (typeof value === 'string') {
         if (FRIENDLY_LABELS[value]) return FRIENDLY_LABELS[value];
+        const normalizedValue = value.toLowerCase();
+        if (FRIENDLY_LABELS[normalizedValue]) return FRIENDLY_LABELS[normalizedValue];
         return value
             .replaceAll('_', ' ')
             .replace(/\b([a-z])/g, (match) => match.toUpperCase());
@@ -299,12 +313,14 @@ function formatValue(value) {
 
 function formatChoiceTitle(choice) {
     if (choice.name_fr) return choice.name_fr;
+    if (choice.type && FRIENDLY_LABELS[choice.type]) return FRIENDLY_LABELS[choice.type];
     if (choice.id && FRIENDLY_LABELS[choice.id]) return FRIENDLY_LABELS[choice.id];
     if (choice.id) {
-        return choice.id
-            .replace(/^([a-z]+)_/, '')
-            .replaceAll('_', ' ')
-            .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+        const simplifiedId = choice.id
+            .replace(/^(barbarian|bard|cleric|druid|fighter|monk|paladin|ranger|rogue|sorcerer|warlock|wizard)_/, '')
+            .replace(/^(human|elf|dwarf|dragonborn|gnome|goliath|halfling|orc|tiefling)_/, '');
+        if (FRIENDLY_LABELS[simplifiedId]) return FRIENDLY_LABELS[simplifiedId];
+        return formatValue(simplifiedId);
     }
     return 'Choix';
 }
@@ -399,7 +415,7 @@ function renderFinalSummary(payload) {
     renderSummaryList(
         target,
         'Choix requis',
-        choicesSummary.map((entry) => `${entry.label} — ${entry.id || 'choix'} (${entry.choose})`)
+        choicesSummary.map((entry) => `${entry.label} (${entry.choose})`)
     );
 }
 
@@ -599,7 +615,7 @@ function renderEquipment(targetId, payload, scope) {
             row.style.display = 'block';
             if (item.type === 'choice_from_category') {
                 const title = document.createElement('p');
-                title.textContent = `Choix requis (${item.id}) - choisissez ${item.choose || 1}`;
+                title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
                 section.appendChild(title);
                 (item.options || []).forEach((subOption) => {
                     const subRow = document.createElement('label');
