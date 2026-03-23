@@ -6,6 +6,16 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+STEP_COMPONENT_IDS = {
+    "choose_class",
+    "choose_background",
+    "choose_species",
+    "choose_languages",
+    "assign_ability_scores",
+    "choose_equipment",
+    "finalize",
+}
+
 
 class CharacterBuilderService:
     """Construit les payloads filtres pour chaque etape du builder."""
@@ -91,27 +101,55 @@ class CharacterBuilderService:
     def get_step_order(self) -> list[dict[str, Any]]:
         return self.character_creation_rules.get("step_order", []) if isinstance(self.character_creation_rules, dict) else []
 
+    @staticmethod
+    def _normalize_step_id(step_id: str) -> str:
+        aliases = {
+            "determine_ability_scores": "assign_ability_scores",
+            "finalize_character": "finalize",
+        }
+        return aliases.get(step_id, step_id)
+
+    def _extract_step_definitions(self, step: dict[str, Any], definitions: list[dict[str, Any]]) -> None:
+        step_id = str(step.get("id") or step.get("step_id") or step.get("name") or "").strip()
+        if not step_id:
+            return
+
+        normalized_id = self._normalize_step_id(step_id)
+        substeps = step.get("substeps") if isinstance(step.get("substeps"), list) else []
+
+        if substeps and normalized_id not in STEP_COMPONENT_IDS:
+            for substep in substeps:
+                if isinstance(substep, dict):
+                    self._extract_step_definitions(substep, definitions)
+            return
+
+        if normalized_id not in STEP_COMPONENT_IDS:
+            return
+
+        definitions.append(
+            {
+                "id": normalized_id,
+                "label": step.get("label_fr")
+                or step.get("title_fr")
+                or step.get("name_fr")
+                or step.get("label")
+                or step.get("title")
+                or step.get("name_en")
+                or normalized_id,
+            }
+        )
+
     def get_step_definitions(self) -> list[dict[str, Any]]:
         configured_steps = self.get_step_order()
         if isinstance(configured_steps, list) and configured_steps:
             definitions: list[dict[str, Any]] = []
             for raw_step in configured_steps:
                 if isinstance(raw_step, dict):
-                    step_id = str(raw_step.get("id") or raw_step.get("step_id") or raw_step.get("name") or "").strip()
-                    if not step_id:
-                        continue
-                    definitions.append(
-                        {
-                            "id": step_id,
-                            "label": raw_step.get("label_fr")
-                            or raw_step.get("title_fr")
-                            or raw_step.get("label")
-                            or raw_step.get("title")
-                            or step_id,
-                        }
-                    )
+                    self._extract_step_definitions(raw_step, definitions)
                 elif isinstance(raw_step, str) and raw_step.strip():
-                    step_id = raw_step.strip()
+                    step_id = self._normalize_step_id(raw_step.strip())
+                    if step_id not in STEP_COMPONENT_IDS:
+                        continue
                     definitions.append({"id": step_id, "label": step_id})
             if definitions:
                 return definitions
