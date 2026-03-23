@@ -1,22 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('spell-grid');
     const count = document.getElementById('spell-count');
+    const empty = document.getElementById('spell-empty');
     const form = document.getElementById('spell-filters');
+    const section = document.querySelector('.spell-library');
 
-    if (!grid || !count || !form) {
+    if (!grid || !count || !form || !section) {
         return;
     }
 
+    const FAVORITES_STORAGE_KEY = 'spell_library_favorites';
+    const pageMode = section.dataset.pageMode || 'library';
     const cards = Array.from(grid.querySelectorAll('.spell-card'));
     const filterIds = ['school', 'casting_time', 'class', 'duration', 'level'];
 
     const toOptionValue = (value) => (value || '').trim();
+
+    const loadFavorites = () => {
+        try {
+            const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return new Set(Array.isArray(parsed) ? parsed : []);
+        } catch (error) {
+            return new Set();
+        }
+    };
+
+    const saveFavorites = (favorites) => {
+        localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(favorites)));
+    };
+
+    let favoriteSlugs = loadFavorites();
+
+    const updateFavoriteButtons = () => {
+        cards.forEach((card) => {
+            const slug = card.dataset.slug;
+            const button = card.querySelector('[data-favorite-toggle]');
+            if (!slug || !button) {
+                return;
+            }
+
+            const isFavorite = favoriteSlugs.has(slug);
+            button.setAttribute('aria-pressed', String(isFavorite));
+            button.textContent = isFavorite ? '★' : '☆';
+            button.classList.toggle('is-active', isFavorite);
+            button.title = isFavorite ? 'Retirer de mes sorts' : 'Ajouter à mes sorts';
+        });
+    };
 
     filterIds.forEach((filterId) => {
         const select = form.querySelector(`[name="${filterId}"]`);
         if (!select) {
             return;
         }
+
         const values = new Set();
         cards.forEach((card) => {
             const key = filterId === 'casting_time' ? 'castingTime' : filterId;
@@ -69,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let visibleCount = 0;
 
         cards.forEach((card) => {
+            const isFavorite = favoriteSlugs.has(card.dataset.slug || '');
             const matches =
                 (!filters.name || card.dataset.name.includes(filters.name)) &&
                 (!filters.school || card.dataset.school === filters.school) &&
@@ -77,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 (!filters.class || (card.dataset.classes || '').split(',').includes(filters.class)) &&
                 (!filters.duration || card.dataset.duration === filters.duration) &&
                 (!filters.concentration || card.dataset.concentration === filters.concentration) &&
-                (!filters.ritual || card.dataset.ritual === filters.ritual);
+                (!filters.ritual || card.dataset.ritual === filters.ritual) &&
+                (pageMode !== 'favorites' || isFavorite);
 
             card.hidden = !matches;
             if (matches) {
@@ -85,10 +124,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        if (empty) {
+            empty.hidden = visibleCount !== 0;
+        }
+
         count.textContent = `${visibleCount} sort${visibleCount > 1 ? 's' : ''} affiché${visibleCount > 1 ? 's' : ''}.`;
     };
 
+    grid.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-favorite-toggle]');
+        if (!button) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const { slug } = button.dataset;
+        if (!slug) {
+            return;
+        }
+
+        if (favoriteSlugs.has(slug)) {
+            favoriteSlugs.delete(slug);
+        } else {
+            favoriteSlugs.add(slug);
+        }
+
+        saveFavorites(favoriteSlugs);
+        updateFavoriteButtons();
+        refresh();
+    });
+
     form.addEventListener('input', refresh);
     form.addEventListener('change', refresh);
+
+    updateFavoriteButtons();
     refresh();
 });
