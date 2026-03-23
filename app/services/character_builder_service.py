@@ -405,6 +405,14 @@ class CharacterBuilderService:
                 "fighting_style": self._index(self.fighting_styles),
             }.get(choice_type, {})
             options = self._expand_ids(values, index) if index else [{"id": x, "label": str(x)} for x in values]
+            option_labels = choice.get("option_labels")
+            if isinstance(option_labels, dict):
+                for option in options:
+                    option_id = str(option.get("id", ""))
+                    translated_label = option_labels.get(option_id)
+                    if translated_label:
+                        option["label_fr"] = str(translated_label)
+                        option["display_label"] = str(translated_label)
             return self._dedupe_options(options)
 
         from_catalog = choice.get("from_catalog")

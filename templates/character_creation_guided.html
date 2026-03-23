@@ -461,12 +461,13 @@ function renderChoiceBlock(choice, container, scope) {
     block.appendChild(title);
 
     options.forEach((option) => {
+        const optionDisplayLabel = option.display_label || option.label_fr || option.label || option.name_fr || option.id;
         const labelEl = document.createElement('label');
         labelEl.style.display = 'block';
         const input = document.createElement('input');
         input.type = 'checkbox';
         input.value = option.id || option.label || option.name_fr;
-        input.dataset.optionLabel = option.label || option.name_fr || option.id;
+        input.dataset.optionLabel = optionDisplayLabel;
         input.dataset.choiceId = choice.id;
         input.dataset.choiceType = choice.type;
         input.dataset.scope = scope;
@@ -487,7 +488,7 @@ function renderChoiceBlock(choice, container, scope) {
         });
         labelEl.classList.add('builder-choice-item');
         labelEl.appendChild(input);
-        labelEl.append(` ${option.label || option.name_fr || option.id}`);
+        labelEl.append(` ${optionDisplayLabel}`);
         block.appendChild(labelEl);
     });
     container.appendChild(block);
