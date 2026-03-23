@@ -524,7 +524,9 @@ function syncHiddenFields() {
     const selectedEquipment = allChecked
         .filter((x) => x.dataset.choiceType === 'equipment')
         .map((x) => x.value);
-    const selectedBundles = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked')).map((x) => x.value);
+    const selectedBundles = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((x) => x.value)
+        .filter(Boolean);
     hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
 
     const featChoices = allChecked
@@ -594,60 +596,107 @@ function renderEquipment(targetId, payload, scope) {
     subtitle.textContent = 'Choisissez 1 option d’équipement, puis complétez les choix requis.';
     target.appendChild(subtitle);
 
-    options.forEach((option) => {
-        const section = document.createElement('div');
-        const bundleLabel = document.createElement('label');
-        bundleLabel.classList.add('builder-choice-item');
-        const bundleRadio = document.createElement('input');
-        bundleRadio.type = 'radio';
-        bundleRadio.name = `${scope}-equipment-bundle`;
-        bundleRadio.dataset.choiceType = 'equipment_bundle';
-        bundleRadio.dataset.scope = scope;
-        bundleRadio.value = `${scope}:${option.label || option.id}`;
-        bundleRadio.addEventListener('change', syncHiddenFields);
-        bundleLabel.appendChild(bundleRadio);
-        bundleLabel.append(` Option ${option.label || option.id} (ou : ${option.gold || 0} po)`);
-        section.appendChild(bundleLabel);
+    const aggregateLabelsWithCounts = (labels = []) => {
+        const counts = new Map();
+        const orderedKeys = [];
+        labels.forEach((rawLabel) => {
+            const label = String(rawLabel || '').trim();
+            if (!label) return;
+            if (!counts.has(label)) orderedKeys.push(label);
+            counts.set(label, (counts.get(label) || 0) + 1);
+        });
+        return orderedKeys.map((label) => ({
+            label,
+            count: counts.get(label) || 1,
+        }));
+    };
 
-        (option.items || []).forEach((item) => {
+    const selectLabel = document.createElement('label');
+    selectLabel.classList.add('builder-choice-item');
+    selectLabel.textContent = 'Option d’équipement';
+    const bundleSelect = document.createElement('select');
+    bundleSelect.dataset.choiceType = 'equipment_bundle';
+    bundleSelect.dataset.scope = scope;
+    bundleSelect.classList.add('builder-input');
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = 'Sélectionnez une option';
+    bundleSelect.appendChild(placeholderOption);
+    selectLabel.appendChild(bundleSelect);
+    target.appendChild(selectLabel);
+
+    const sectionByBundleValue = new Map();
+
+    options.forEach((option, optionIdx) => {
+        const bundleValue = `${scope}:${option.label || option.id}`;
+        const selectOption = document.createElement('option');
+        selectOption.value = bundleValue;
+        selectOption.textContent = `Option ${option.label || option.id} (ou : ${option.gold || 0} po)`;
+        bundleSelect.appendChild(selectOption);
+
+        const section = document.createElement('div');
+        section.dataset.bundleValue = bundleValue;
+        section.hidden = optionIdx !== 0;
+        sectionByBundleValue.set(bundleValue, section);
+
+        const fixedItems = (option.items || [])
+            .filter((item) => item.type !== 'choice_from_category')
+            .map((item) => item.label || item.name_fr || item.id);
+        aggregateLabelsWithCounts(fixedItems).forEach(({ label, count }) => {
             const row = document.createElement('label');
             row.classList.add('builder-choice-item');
             row.style.display = 'block';
-            if (item.type === 'choice_from_category') {
-                const title = document.createElement('p');
-                title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
-                section.appendChild(title);
-                (item.options || []).forEach((subOption) => {
-                    const subRow = document.createElement('label');
-                    subRow.classList.add('builder-choice-item');
-                    subRow.style.display = 'block';
-                    const input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.dataset.choiceType = 'equipment';
-                    input.dataset.scope = scope;
-                    input.dataset.choiceId = item.id;
-                    input.dataset.choose = String(item.choose || 1);
-                    input.value = subOption.label || subOption.name_fr || subOption.id;
-                    input.addEventListener('change', () => {
-                        const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
-                        if (siblings.length > (item.choose || 1)) {
-                            input.checked = false;
-                            return;
-                        }
-                        syncHiddenFields();
-                    });
-                    subRow.appendChild(input);
-                    subRow.append(` ${subOption.label || subOption.name_fr || subOption.id}`);
-                    section.appendChild(subRow);
+            row.textContent = `- ${label}${count > 1 ? ` x${count}` : ''}`;
+            section.appendChild(row);
+        });
+
+        (option.items || []).filter((item) => item.type === 'choice_from_category').forEach((item) => {
+            const title = document.createElement('p');
+            title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
+            section.appendChild(title);
+            (item.options || []).forEach((subOption) => {
+                const subRow = document.createElement('label');
+                subRow.classList.add('builder-choice-item');
+                subRow.style.display = 'block';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.dataset.choiceType = 'equipment';
+                input.dataset.scope = scope;
+                input.dataset.choiceId = item.id;
+                input.dataset.choose = String(item.choose || 1);
+                input.value = subOption.label || subOption.name_fr || subOption.id;
+                input.addEventListener('change', () => {
+                    const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
+                    if (siblings.length > (item.choose || 1)) {
+                        input.checked = false;
+                        return;
+                    }
+                    syncHiddenFields();
                 });
-            } else {
-                row.textContent = `- ${item.label || item.name_fr || item.id}`;
-                section.appendChild(row);
-            }
+                subRow.appendChild(input);
+                subRow.append(` ${subOption.label || subOption.name_fr || subOption.id}`);
+                section.appendChild(subRow);
+            });
         });
 
         target.appendChild(section);
     });
+
+    bundleSelect.value = options[0] ? `${scope}:${options[0].label || options[0].id}` : '';
+    bundleSelect.addEventListener('change', () => {
+        const selectedValue = bundleSelect.value;
+        sectionByBundleValue.forEach((section, bundleValue) => {
+            const isSelected = bundleValue === selectedValue;
+            section.hidden = !isSelected;
+            if (!isSelected) {
+                section.querySelectorAll('input[data-choice-type="equipment"]').forEach((input) => {
+                    input.checked = false;
+                });
+            }
+        });
+        syncHiddenFields();
+    });
+    syncHiddenFields();
 }
 
 async function refreshPayload() {
@@ -967,8 +1016,13 @@ function validateBeforeSubmit(payload, currentState) {
         errors.push('Bonus d’origine invalide : le mode +1/+1/+1 exige 3 capacités distinctes.');
     }
 
-    const equipmentChoiceGroups = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked'))
-        .map((bundle) => bundle.closest('div'))
+    const equipmentChoiceGroups = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((bundleSelect) => {
+            const selectedValue = bundleSelect.value;
+            if (!selectedValue) return null;
+            const root = bundleSelect.closest('[id$="-equipment"]') || form;
+            return root.querySelector(`div[data-bundle-value="${selectedValue}"]`);
+        })
         .filter(Boolean);
     equipmentChoiceGroups.forEach((group) => {
         const choiceIds = [...new Set(Array.from(group.querySelectorAll('input[data-choice-type="equipment"]')).map((input) => input.dataset.choiceId))];
