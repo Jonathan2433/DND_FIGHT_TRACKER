@@ -2,6 +2,62 @@
 {% block content %}
 <section class="card">
     <h1>Création de personnage</h1>
+    <style>
+        .origin-bonus-panel {
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .origin-bonus-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .origin-bonus-mode {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 10px 0 12px;
+        }
+        .origin-bonus-mode label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .origin-bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .origin-bonus-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .origin-bonus-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .origin-bonus-checkboxes label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .origin-bonus-helper {
+            margin: 10px 0 0;
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+    </style>
 
     <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form">
         <input type="hidden" name="character_type" value="PJ">
@@ -1051,38 +1107,95 @@ function renderAbilityBonusControls(abilityPayload) {
         target.textContent = 'Aucun bonus d’origine configurable.';
         return;
     }
-    const modeBlock = document.createElement('div');
-    modeBlock.innerHTML = `
-        <label><input type="radio" name="origin_bonus_mode" value="2-1" checked> Bonus +2 / +1</label>
-        <label style="margin-left:12px;"><input type="radio" name="origin_bonus_mode" value="1-1-1"> Bonus +1 / +1 / +1</label>
+    const panel = document.createElement('div');
+    panel.className = 'origin-bonus-panel';
+    panel.innerHTML = `
+        <p class="origin-bonus-title">Bonus d'historique</p>
+        <p class="text-muted">Étape 1 : choisissez une répartition puis affectez les bonus aux capacités.</p>
     `;
-    target.appendChild(modeBlock);
+    target.appendChild(panel);
+
+    const modeBlock = document.createElement('div');
+    modeBlock.className = 'origin-bonus-mode';
+    modeBlock.innerHTML = `
+        <label><input type="radio" name="origin_bonus_mode" value="2-1" checked> Option A: +2 et +1</label>
+        <label><input type="radio" name="origin_bonus_mode" value="1-1-1"> Option B: +1, +1 et +1</label>
+    `;
+    panel.appendChild(modeBlock);
     const selectors = document.createElement('div');
     selectors.id = 'origin-bonus-selectors';
-    selectors.style.marginTop = '8px';
-    target.appendChild(selectors);
+    panel.appendChild(selectors);
+    const helper = document.createElement('p');
+    helper.className = 'origin-bonus-helper text-muted';
+    helper.id = 'origin-bonus-helper';
+    helper.setAttribute('aria-live', 'polite');
+    panel.appendChild(helper);
 
     const renderSelectors = () => {
         selectors.innerHTML = '';
         const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
         if (mode === '2-1') {
             selectors.innerHTML = `
-                <label>Capacité +2 <select id="origin-plus-two"></select></label>
-                <label style="margin-left:12px;">Capacité +1 <select id="origin-plus-one"></select></label>
+                <div class="origin-bonus-grid">
+                    <label>Étape 2 — Capacité recevant +2
+                        <select id="origin-plus-two"></select>
+                    </label>
+                    <label>Étape 3 — Capacité recevant +1
+                        <select id="origin-plus-one"></select>
+                    </label>
+                </div>
             `;
             const entries = allowed.map((entry) => ({ id: entry, label: formatValue(entry) }));
             setOptions(selectors.querySelector('#origin-plus-two'), entries);
             setOptions(selectors.querySelector('#origin-plus-one'), entries);
+            const plusTwoSelect = selectors.querySelector('#origin-plus-two');
+            const plusOneSelect = selectors.querySelector('#origin-plus-one');
+            if (allowed.length > 1) {
+                plusTwoSelect.value = allowed[0];
+                plusOneSelect.value = allowed[1];
+            }
+            const syncDualSelectConstraints = () => {
+                const plusTwo = plusTwoSelect.value;
+                const plusOne = plusOneSelect.value;
+                Array.from(plusOneSelect.options).forEach((option) => {
+                    option.disabled = !!(option.value && option.value === plusTwo);
+                });
+                Array.from(plusTwoSelect.options).forEach((option) => {
+                    option.disabled = !!(option.value && option.value === plusOne);
+                });
+                if (plusOne && plusOne === plusTwo) {
+                    const fallback = allowed.find((ability) => ability !== plusTwo) || '';
+                    plusOneSelect.value = fallback;
+                }
+                helper.textContent = `Répartition active: +2 sur ${formatValue(plusTwoSelect.value || '')}, +1 sur ${formatValue(plusOneSelect.value || '')}.`;
+            };
+            plusTwoSelect.addEventListener('change', syncDualSelectConstraints);
+            plusOneSelect.addEventListener('change', syncDualSelectConstraints);
+            syncDualSelectConstraints();
         } else {
             const legend = document.createElement('p');
-            legend.textContent = 'Choisissez 3 capacités distinctes (+1 chacune)';
+            legend.textContent = 'Étape 2 : choisissez exactement 3 capacités distinctes (+1 chacune).';
             selectors.appendChild(legend);
+            const checkboxGrid = document.createElement('div');
+            checkboxGrid.className = 'origin-bonus-checkboxes';
             allowed.forEach((abilityId) => {
                 const label = document.createElement('label');
-                label.style.display = 'block';
                 label.innerHTML = `<input type="checkbox" name="origin-plus-one-all" value="${abilityId}"> ${formatValue(abilityId)}`;
-                selectors.appendChild(label);
+                checkboxGrid.appendChild(label);
             });
+            selectors.appendChild(checkboxGrid);
+            const updateCheckboxSummary = (changedInput = null) => {
+                const checked = Array.from(selectors.querySelectorAll('input[name="origin-plus-one-all"]:checked'));
+                if (checked.length > 3 && changedInput) {
+                    changedInput.checked = false;
+                }
+                const selected = Array.from(selectors.querySelectorAll('input[name="origin-plus-one-all"]:checked')).map((input) => formatValue(input.value));
+                helper.textContent = `Sélection: ${selected.length}/3${selected.length ? ` — ${selected.join(', ')}` : ''}.`;
+            };
+            selectors.querySelectorAll('input[name="origin-plus-one-all"]').forEach((checkbox) => {
+                checkbox.addEventListener('change', () => updateCheckboxSummary(checkbox));
+            });
+            updateCheckboxSummary();
         }
         updateOriginBonusHiddenFields();
     };
