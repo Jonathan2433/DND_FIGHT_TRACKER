@@ -189,7 +189,18 @@
 </section>
 
 <script>
-const rulesContext = JSON.parse({{ dnd_rules_context|tojson }});
+const rawRulesContext = {{ dnd_rules_context|tojson }};
+const rulesContext = (() => {
+    if (typeof rawRulesContext === 'string') {
+        try {
+            return JSON.parse(rawRulesContext);
+        } catch (error) {
+            console.error('Impossible de parser dnd_rules_context.', error);
+            return {};
+        }
+    }
+    return rawRulesContext || {};
+})();
 const form = document.getElementById('guided-character-form');
 const stepsNav = document.getElementById('creation-steps-nav');
 const wizardPanels = document.getElementById('wizard-panels');
@@ -301,6 +312,12 @@ function formatChoiceTitle(choice) {
 function setOptions(select, entries) {
     if (!select) return;
     select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— Sélectionnez —';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
     entries.forEach((entry) => {
         const opt = document.createElement('option');
         opt.value = entry.id;
@@ -1072,7 +1089,7 @@ function renderWizardNav(effectiveSteps) {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'creation-step-trigger';
-        button.textContent = `${index + 1}. ${meta.name_fr || meta.name_en || stepId}`;
+        button.textContent = `${index + 1}. ${meta.label || meta.name_fr || meta.name_en || stepId}`;
         button.addEventListener('click', () => renderStep(stepId));
         li.appendChild(button);
         stepsNav.appendChild(li);
