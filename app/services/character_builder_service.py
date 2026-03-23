@@ -367,9 +367,24 @@ class CharacterBuilderService:
                     names.update(str(n) for n in spell_names)
 
         result = []
-        normalized = {self._label(s).lower(): s for s in self.spells if isinstance(s, dict)}
+        normalized: dict[str, dict[str, Any]] = {}
+        for spell in self.spells:
+            if not isinstance(spell, dict):
+                continue
+            for key in (
+                spell.get("id"),
+                spell.get("name"),
+                spell.get("name_en"),
+                spell.get("name_fr"),
+                self._label(spell),
+            ):
+                normalized_key = str(key or "").strip().lower()
+                if normalized_key:
+                    normalized[normalized_key] = spell
+
         for name in sorted(names):
-            spell = normalized.get(name.lower())
+            lookup_key = str(name or "").strip().lower()
+            spell = self.spell_by_id.get(str(name)) or normalized.get(lookup_key)
             if spell:
                 result.append({"id": spell.get("id", name), "label": self._label(spell)})
             else:
