@@ -132,7 +132,11 @@
           "leather_armor",
           "dagger",
           "dagger",
-          "musical_instrument",
+          {
+            "id": "bard_instrument_choice",
+            "equipment_choice_rule_id": "musical_instrument_choice",
+            "quantity": 1
+          },
           "entertainers_pack"
         ],
         "gold": 19
@@ -468,7 +472,11 @@
           "dagger",
           "dagger",
           "dagger",
-          "chosen_monk_tool_or_instrument",
+          {
+            "id": "monk_tool_or_instrument_choice",
+            "equipment_choice_rule_id": "monk_tool_or_instrument_choice",
+            "quantity": 1
+          },
           "explorers_pack"
         ],
         "gold": 11
