@@ -218,6 +218,80 @@ class CharacterBuilderService:
             )
         return self._dedupe_options(options)
 
+    def _build_auto_granted_summary(self, automatic_gains: dict[str, Any]) -> list[dict[str, Any]]:
+        if not isinstance(automatic_gains, dict):
+            return []
+        label_by_key = {
+            "saving_throw_proficiencies": "Jets de sauvegarde",
+            "weapon_proficiencies": "Armes",
+            "armor_training": "Armures",
+            "features_level_1_details": "Capacités de niveau 1",
+            "features_level_1": "Capacités de niveau 1",
+            "hit_die": "Dé de vie",
+            "skill_proficiencies": "Compétences",
+            "tool_proficiency": "Outils",
+            "origin_feat": "Don d'origine",
+            "traits_level_1": "Traits de niveau 1",
+            "size_options": "Tailles",
+            "speed": "Vitesse",
+        }
+        summary: list[dict[str, Any]] = []
+        for key, raw_value in automatic_gains.items():
+            value = raw_value
+            if isinstance(raw_value, list):
+                if not raw_value:
+                    continue
+                value = [self._label(item) if isinstance(item, dict) else str(item) for item in raw_value]
+            elif isinstance(raw_value, dict):
+                if not raw_value:
+                    continue
+                if "id" in raw_value or "name_fr" in raw_value or "name" in raw_value:
+                    value = self._label(raw_value)
+                else:
+                    value = ", ".join(
+                        f"{nested_key}: {nested_value}" for nested_key, nested_value in raw_value.items() if nested_value not in (None, "", [])
+                    )
+            elif raw_value in (None, "", []):
+                continue
+            summary.append({"label": label_by_key.get(key, key), "value": value})
+        return summary
+
+    def _build_required_choices_summary(self, required_choices: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not isinstance(required_choices, list):
+            return []
+        type_labels = {
+            "skill_proficiency": "Compétence",
+            "tool_proficiency": "Outil",
+            "language": "Langue",
+            "spell": "Sort",
+            "prepared_spell": "Sort préparé",
+            "spellbook_entry": "Sort",
+            "origin_feat": "Don",
+            "size_choice": "Taille",
+            "ability_bonus": "Bonus de caractéristique",
+            "equipment": "Équipement",
+        }
+        summary: list[dict[str, Any]] = []
+        for choice in required_choices:
+            if not isinstance(choice, dict):
+                continue
+            options = choice.get("options", [])
+            rendered_options = [
+                self._label(option) if isinstance(option, dict) else str(option)
+                for option in options
+            ]
+            summary.append(
+                {
+                    "id": choice.get("id"),
+                    "label": type_labels.get(str(choice.get("type")), str(choice.get("type") or "choix")),
+                    "choose": int(choice.get("choose", 1)),
+                    "required": bool(choice.get("required", True)),
+                    "options_count": len(options) if isinstance(options, list) else 0,
+                    "options_preview": rendered_options[:6],
+                }
+            )
+        return summary
+
     def _resolve_spells_from_class(self, class_id: str | None, max_level: int = 1, exact_level: int | None = None) -> list[dict[str, Any]]:
         if not class_id:
             return []
@@ -339,6 +413,7 @@ class CharacterBuilderService:
             "feat": feat,
             "feat_category": feat.get("feat_category") if isinstance(feat, dict) else None,
             "required_choices": required_choices,
+            "required_choices_summary": self._build_required_choices_summary(required_choices),
         }
 
     def get_class_payload(self, class_id: str, state: dict[str, Any]) -> dict[str, Any]:
@@ -371,7 +446,9 @@ class CharacterBuilderService:
         return {
             "class": class_data,
             "automatic_gains": automatic_gains,
+            "auto_granted_summary": self._build_auto_granted_summary(automatic_gains),
             "required_choices": required,
+            "required_choices_summary": self._build_required_choices_summary(required),
             "equipment_options": equipment,
         }
 
@@ -396,17 +473,20 @@ class CharacterBuilderService:
 
         equipment = self._resolve_equipment_options(bg.get("starting_equipment_options", []), state)
         origin_feat_payload = self.get_feat_payload(origin_feat_id, state)
+        automatic_gains = {
+            "skill_proficiencies": bg.get("skill_proficiencies", []),
+            "tool_proficiency": bg.get("tool_proficiency"),
+            "origin_feat": origin_feat,
+        }
         return {
             "background": bg,
-            "automatic_gains": {
-                "skill_proficiencies": bg.get("skill_proficiencies", []),
-                "tool_proficiency": bg.get("tool_proficiency"),
-                "origin_feat": origin_feat,
-            },
+            "automatic_gains": automatic_gains,
+            "auto_granted_summary": self._build_auto_granted_summary(automatic_gains),
             "origin_feat_details": origin_feat_details,
             "origin_feat_payload": origin_feat_payload,
             "ability_score_options": bg.get("ability_score_options", {}),
             "required_choices": required_choices,
+            "required_choices_summary": self._build_required_choices_summary(required_choices),
             "equipment_options": equipment,
         }
 
@@ -435,14 +515,17 @@ class CharacterBuilderService:
                     "options": options,
                 }
             )
+        automatic_gains = {
+            "traits_level_1": species.get("traits_level_1", []),
+            "size_options": species.get("size_options", []),
+            "speed": species.get("speed"),
+        }
         return {
             "species": species,
-            "automatic_gains": {
-                "traits_level_1": species.get("traits_level_1", []),
-                "size_options": species.get("size_options", []),
-                "speed": species.get("speed"),
-            },
+            "automatic_gains": automatic_gains,
+            "auto_granted_summary": self._build_auto_granted_summary(automatic_gains),
             "required_choices": required,
+            "required_choices_summary": self._build_required_choices_summary(required),
         }
 
     def get_language_payload(self, state: dict[str, Any]) -> dict[str, Any]:

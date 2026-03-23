@@ -24,6 +24,7 @@
         <input type="hidden" name="feat_choices" id="feat-choices-hidden" value="">
         <input type="hidden" name="background_ability_bonus_mode" id="background-ability-bonus-mode-hidden" value="">
         <input type="hidden" name="background_ability_bonus_allocations_json" id="background-ability-bonus-allocations-hidden" value="[]">
+        <div id="form-validation-errors" class="alert alert-danger" role="alert" hidden></div>
 
         <div class="creation-wizard">
             <ol class="creation-steps-nav" aria-label="Étapes de création" id="creation-steps-nav"></ol>
@@ -156,6 +157,8 @@
                     <h3>Choix des sorts</h3>
                     <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
                     <div id="spell-required-choices"></div>
+                    <h3>Résumé final</h3>
+                    <div id="final-summary"></div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
@@ -319,6 +322,68 @@ function renderList(targetId, rows) {
         li.textContent = row;
         target.appendChild(li);
     });
+}
+
+function renderErrorMessages(errors = []) {
+    const target = document.getElementById('form-validation-errors');
+    if (!target) return;
+    if (!errors.length) {
+        target.hidden = true;
+        target.innerHTML = '';
+        return;
+    }
+    target.hidden = false;
+    target.innerHTML = `
+        <strong>Le formulaire contient des erreurs :</strong>
+        <ul>${errors.map((error) => `<li>${error}</li>`).join('')}</ul>
+    `;
+}
+
+function renderSummaryList(target, title, rows) {
+    const section = document.createElement('section');
+    const heading = document.createElement('h4');
+    heading.textContent = title;
+    section.appendChild(heading);
+    const list = document.createElement('ul');
+    if (!rows.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'Aucun élément.';
+        list.appendChild(empty);
+    } else {
+        rows.forEach((row) => {
+            const li = document.createElement('li');
+            li.textContent = row;
+            list.appendChild(li);
+        });
+    }
+    section.appendChild(list);
+    target.appendChild(section);
+}
+
+function renderFinalSummary(payload) {
+    const target = document.getElementById('final-summary');
+    if (!target) return;
+    target.innerHTML = '';
+    if (!payload) return;
+    const classSummary = payload.class_payload?.auto_granted_summary || [];
+    const backgroundSummary = payload.background_payload?.auto_granted_summary || [];
+    const speciesSummary = payload.species_payload?.auto_granted_summary || [];
+    const choicesSummary = [
+        ...(payload.class_payload?.required_choices_summary || []),
+        ...(payload.background_payload?.required_choices_summary || []),
+        ...(payload.species_payload?.required_choices_summary || []),
+    ];
+
+    renderSummaryList(
+        target,
+        'Gains automatiques',
+        [...classSummary, ...backgroundSummary, ...speciesSummary].map((entry) => `${entry.label} : ${formatValue(entry.value)}`)
+    );
+    renderSummaryList(
+        target,
+        'Choix requis',
+        choicesSummary.map((entry) => `${entry.label} — ${entry.id || 'choix'} (${entry.choose})`)
+    );
 }
 
 function renderChoiceBlock(choice, container, scope) {
@@ -637,6 +702,8 @@ async function refreshPayload() {
         abilityLimits.textContent =
             allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
     }
+    renderFinalSummary(payload);
+    renderErrorMessages([]);
     syncHiddenFields();
 }
 
@@ -794,12 +861,22 @@ function bindWizardEvents() {
             if (next) renderStep(next);
         });
     });
+    abilityMethod?.addEventListener('change', () => {
+        hidden.mode.value = abilityMethod.value;
+        hidden.abilityScoreMethod.value = abilityMethod.value;
+        state.ability_score_method = abilityMethod.value || null;
+    });
+}
 
-abilityMethod.addEventListener('change', () => {
-    hidden.mode.value = abilityMethod.value;
-    hidden.abilityScoreMethod.value = abilityMethod.value;
-    state.ability_score_method = abilityMethod.value || null;
-});
+function renderWizardPanels(effectiveSteps) {
+    wizardPanels.innerHTML = '';
+    effectiveSteps.forEach((stepId) => {
+        const factory = STEP_COMPONENTS[stepId];
+        if (!factory) return;
+        const fragment = factory();
+        if (fragment) wizardPanels.appendChild(fragment);
+    });
+}
 
 function getAllowedBackgroundBonusModes(abilityOptions = {}) {
     const allocationModes = Array.isArray(abilityOptions.allocation_modes) ? abilityOptions.allocation_modes : [];
@@ -813,16 +890,25 @@ function getAllowedBackgroundBonusModes(abilityOptions = {}) {
 
 function validateBeforeSubmit(payload, currentState) {
     const errors = [];
+    const choiceLabelById = new Map(
+        [
+            ...(payload?.class_payload?.required_choices_summary || []),
+            ...(payload?.background_payload?.required_choices_summary || []),
+            ...(payload?.species_payload?.required_choices_summary || []),
+        ].map((entry) => [String(entry.id || ''), entry.label || entry.id || 'choix'])
+    );
     const requiredGroups = Array.from(form.querySelectorAll('.choice-group[data-required="1"]'));
     requiredGroups.forEach((group) => {
         const choose = Number(group.dataset.choose || '1');
         const checkedInputs = Array.from(group.querySelectorAll('input[data-choice-id]:checked'));
+        const choiceId = String(group.dataset.choiceId || '');
+        const choiceLabel = choiceLabelById.get(choiceId) || formatChoiceTitle({ id: choiceId });
         if (checkedInputs.length !== choose) {
-            errors.push(`Choix "${formatChoiceTitle({ id: group.dataset.choiceId })}" incomplet (${checkedInputs.length}/${choose}).`);
+            errors.push(`Choix incomplet — ${choiceLabel} (${checkedInputs.length}/${choose}).`);
         }
-        const type = checkedInputs[0]?.dataset.choiceType || '';
-        if (SPELL_CHOICE_TYPES.has(type) && checkedInputs.length !== choose) {
-            errors.push(`Sorts invalides pour "${group.dataset.choiceId}" (${checkedInputs.length}/${choose}).`);
+        const inputType = group.querySelector('input[data-choice-type]')?.dataset.choiceType || '';
+        if (SPELL_CHOICE_TYPES.has(inputType) && checkedInputs.length !== choose) {
+            errors.push(`Sorts invalides — ${choiceId} (${checkedInputs.length}/${choose}).`);
         }
     });
 
@@ -878,12 +964,13 @@ form.addEventListener('submit', (event) => {
     const validationResult = validateBeforeSubmit(latestPayload || {}, state);
     if (!validationResult.ok) {
         event.preventDefault();
-        alert(validationResult.errors.join('\n'));
+        renderErrorMessages(validationResult.errors);
         return;
     }
+    renderErrorMessages([]);
     if (!language2?.value || !language3?.value || language2.value === language3.value) {
         event.preventDefault();
-        alert('Veuillez choisir 2 langues différentes en plus de Common.');
+        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Common.']);
         return;
     }
     hidden.language2.value = language2.value;
