@@ -702,7 +702,12 @@ function renderEquipment(targetId, payload, scope) {
 
         const fixedItems = (option.items || [])
             .filter((item) => item.type !== 'choice_from_category')
-            .map((item) => item.label || item.name_fr || item.id);
+            .map((item) => {
+                if (item.type === 'gold_alternative') {
+                    return `${item.gold || 0} po`;
+                }
+                return item.label || item.name_fr || item.id;
+            });
         aggregateLabelsWithCounts(fixedItems).forEach(({ label, count }) => {
             const row = document.createElement('label');
             row.classList.add('builder-choice-item');
