@@ -308,15 +308,12 @@ def create_character_template_guided():
 
     return render_template(
         'character_creation_guided.html',
-        dnd_rules_context=json.dumps(
-            {
-                'steps': service.get_step_definitions(),
-                'classes': service.get_available_classes(),
-                'backgrounds': service.get_available_backgrounds(),
-                'species': service.get_available_species(),
-            },
-            ensure_ascii=False,
-        ),
+        dnd_rules_context={
+            'steps': service.get_step_definitions(),
+            'classes': service.get_available_classes(),
+            'backgrounds': service.get_available_backgrounds(),
+            'species': service.get_available_species(),
+        },
     )
 
 
