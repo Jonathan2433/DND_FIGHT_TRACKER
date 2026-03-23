@@ -10,7 +10,10 @@
         "choice_type": "size",
         "required": true,
         "choose": 1,
-        "options": ["small", "medium"],
+        "options": [
+          "small",
+          "medium"
+        ],
         "duplicates_not_allowed": true
       }
     ],
@@ -118,7 +121,10 @@
     "deferred_choices": [
       {
         "id": "elf_future_lineage_spells",
-        "unlock_at_character_levels": [3, 5],
+        "unlock_at_character_levels": [
+          3,
+          5
+        ],
         "notes": "Les sorts de lignage de niveau 3 et 5 restent enregistrés mais non actifs au niveau 1."
       }
     ]
@@ -139,7 +145,11 @@
           "forest_gnome",
           "rock_gnome"
         ],
-        "duplicates_not_allowed": true
+        "duplicates_not_allowed": true,
+        "option_labels": {
+          "forest_gnome": "Gnome des forêts",
+          "rock_gnome": "Gnome des roches"
+        }
       },
       {
         "id": "gnome_gnomish_lineage_spellcasting_ability",
@@ -207,7 +217,10 @@
         "choice_type": "size",
         "required": true,
         "choose": 1,
-        "options": ["small", "medium"],
+        "options": [
+          "small",
+          "medium"
+        ],
         "duplicates_not_allowed": true
       },
       {
@@ -251,7 +264,10 @@
         "choice_type": "size",
         "required": true,
         "choose": 1,
-        "options": ["small", "medium"],
+        "options": [
+          "small",
+          "medium"
+        ],
         "duplicates_not_allowed": true
       },
       {
@@ -287,13 +303,12 @@
     "deferred_choices": [
       {
         "id": "tiefling_future_legacy_spells",
-        "unlock_at_character_levels": [3, 5],
+        "unlock_at_character_levels": [
+          3,
+          5
+        ],
         "notes": "Les sorts supplémentaires de Fiendish Legacy sont mémorisés mais non actifs au niveau 1."
       }
     ]
   }
 ]
-
-
-
-
