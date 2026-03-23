@@ -3,8 +3,14 @@
 Business logic now lives in app.application.use_cases.
 """
 
-from app.application.use_cases.email_service import EmailService
-
 __all__ = [
     "EmailService",
 ]
+
+
+def __getattr__(name: str):
+    if name != "EmailService":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from app.application.use_cases.email_service import EmailService
+    return EmailService
