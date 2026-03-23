@@ -343,6 +343,7 @@ def character_builder_funnel_payload():
         'species_payload': service.get_species_payload(state['species_id'], state) if state['species_id'] else {},
         'languages_payload': service.get_language_payload(state),
         'ability_payload': service.get_ability_score_payload(state),
+        'builder_output': service.build_character_output(state),
     }
     return jsonify(payload)
 

@@ -478,6 +478,12 @@ class CharacterBuilderService:
             return self._dedupe_options(self._resolve_spells_from_class(class_id, max_level=max_level, exact_level=exact_level))
 
         from_resolver = str(choice.get("from_resolver") or "")
+        if from_resolver == "weapons_with_which_you_have_proficiency":
+            class_id = str(state.get("class_id") or "")
+            return self._resolve_weapons_with_class_proficiency(class_id)
+        if from_resolver == "current_skill_proficiencies_only":
+            current_skills = self._collect_current_skill_proficiencies(state)
+            return self._expand_ids(sorted(current_skills), self.skill_by_id)
         if from_resolver == "wizard_spellbook_entries_only":
             class_id = str(state.get("class_id") or "")
             max_level = int(choice.get("spell_level_max", 1))
@@ -493,11 +499,303 @@ class CharacterBuilderService:
                 if isinstance(style, dict) and style.get("id") and (not style_type or style.get("style_type") == style_type)
             ]
             return self._dedupe_options(options)
+        if choice.get("choice_type") == "eldritch_invocation":
+            max_level = int((choice.get("filter") or {}).get("available_at_level_lte", 1))
+            options = [
+                {"id": invocation.get("id"), "label": self._label(invocation)}
+                for invocation in self.eldritch_invocations
+                if isinstance(invocation, dict)
+                and invocation.get("id")
+                and int(invocation.get("available_at_level", 1) or 1) <= max_level
+            ]
+            return self._dedupe_options(options)
         if choice.get("choice_type") == "ability":
             return [{"id": ability, "label": ability} for ability in choice.get("options", []) if isinstance(ability, str)]
         if choice.get("choice_type") == "spell_list":
             return [{"id": spell_list, "label": spell_list} for spell_list in choice.get("options", []) if isinstance(spell_list, str)]
         return []
+
+    def _resolve_weapons_with_class_proficiency(self, class_id: str) -> list[dict[str, Any]]:
+        class_data = self.class_by_id.get(class_id, {})
+        proficiencies = {str(entry) for entry in class_data.get("weapon_proficiencies", []) if entry}
+        options: list[dict[str, Any]] = []
+        for weapon in self.weapons_catalog:
+            if not isinstance(weapon, dict) or not weapon.get("id"):
+                continue
+            weapon_category = str(weapon.get("weapon_category") or "")
+            weapon_properties = {str(prop) for prop in weapon.get("properties", []) if prop}
+            is_simple = weapon_category.startswith("simple_")
+            is_martial = weapon_category.startswith("martial_")
+
+            if "simple_weapons" in proficiencies and is_simple:
+                options.append({"id": weapon["id"], "label": self._label(weapon)})
+                continue
+            if "martial_weapons" in proficiencies and is_martial:
+                options.append({"id": weapon["id"], "label": self._label(weapon)})
+                continue
+            if "martial_finesse_or_light_only" in proficiencies and is_martial and weapon_properties.intersection({"finesse", "light"}):
+                options.append({"id": weapon["id"], "label": self._label(weapon)})
+                continue
+            if weapon.get("id") in proficiencies:
+                options.append({"id": weapon["id"], "label": self._label(weapon)})
+
+        return self._dedupe_options(options)
+
+    def _collect_current_skill_proficiencies(self, state: dict[str, Any]) -> set[str]:
+        normalized_state = self.normalize_character_creation_state(state)
+        skills: set[str] = set()
+
+        background = self.background_by_id.get(str(normalized_state.get("background_id") or ""), {})
+        skills.update(str(skill) for skill in background.get("skill_proficiencies", []) if skill)
+
+        species = self.species_by_id.get(str(normalized_state.get("species_id") or ""), {})
+        for trait in species.get("traits_level_1", []) if isinstance(species, dict) else []:
+            if not isinstance(trait, dict):
+                continue
+            gain_skill = trait.get("gain_skill_proficiency")
+            if isinstance(gain_skill, dict):
+                skills.update(str(skill) for skill in gain_skill.get("from", []) if skill)
+
+        class_id = str(normalized_state.get("class_id") or "")
+        class_rule = self._find_class_rule(class_id)
+        selected_ids = set(self._to_string_list(normalized_state.get("selected_class_choice_ids")))
+        for choice in class_rule.get("choices", []):
+            if not isinstance(choice, dict) or choice.get("choice_type") != "skill_proficiency":
+                continue
+            valid_options = {str(option.get("id")) for option in self._resolve_choice_options(choice, normalized_state)}
+            skills.update(selected_ids.intersection(valid_options))
+
+        return {skill for skill in skills if skill in self.skill_by_id}
+
+    @staticmethod
+    def _ability_modifier(score: int) -> int:
+        return (int(score) - 10) // 2
+
+    @staticmethod
+    def _merge_unique(target: list[str], values: list[str]) -> None:
+        seen = set(target)
+        for value in values:
+            token = str(value)
+            if token and token not in seen:
+                target.append(token)
+                seen.add(token)
+
+    def _extract_selected_ids_for_choice(self, choice: dict[str, Any], state: dict[str, Any], selection_key: str) -> list[str]:
+        selected_pool = self._to_string_list(state.get(selection_key))
+        selected_spells_by_choice = state.get("selected_spell_ids_by_choice", {})
+        choice_id = str(choice.get("id") or "")
+        choose_count = int(choice.get("choose", 1) or 1)
+
+        if choice_id and isinstance(selected_spells_by_choice, dict):
+            by_choice = selected_spells_by_choice.get(choice_id)
+            if isinstance(by_choice, list):
+                raw_values = self._to_string_list(by_choice)
+                return raw_values[:choose_count]
+
+        options = self._resolve_choice_options(choice, state)
+        option_ids = {str(option.get("id")) for option in options if isinstance(option, dict) and option.get("id")}
+        selected_for_choice: list[str] = []
+        for selection in selected_pool:
+            if selection not in option_ids:
+                continue
+            if selection in selected_for_choice and bool(choice.get("duplicates_not_allowed", True)):
+                continue
+            selected_for_choice.append(selection)
+            if len(selected_for_choice) >= choose_count:
+                break
+        return selected_for_choice
+
+    def apply_background_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
+        background = self.background_by_id.get(str(state.get("background_id") or ""), {})
+        self._merge_unique(output["languages"], self._to_string_list(state.get("language_ids")))
+        self._merge_unique(output["skills"], self._to_string_list(background.get("skill_proficiencies")))
+        tool_prof = background.get("tool_proficiency")
+        if isinstance(tool_prof, dict):
+            self._merge_unique(output["tools"], self._to_string_list(tool_prof.get("fixed")))
+
+    def apply_species_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
+        species_id = str(state.get("species_id") or "")
+        species = self.species_by_id.get(species_id, {})
+        rule = self._find_species_rule(species_id)
+        selected_ids = set(self._to_string_list(state.get("selected_species_choice_ids")))
+
+        if not output["size"]:
+            size_options = self._to_string_list(species.get("size_options"))
+            output["size"] = size_options[0] if size_options else None
+
+        for trait in species.get("traits_level_1", []) if isinstance(species, dict) else []:
+            if not isinstance(trait, dict):
+                continue
+            if trait.get("id") == "darkvision":
+                range_feet = int(trait.get("range_feet", 0) or 0)
+                output["darkvision_range_feet"] = max(output["darkvision_range_feet"] or 0, range_feet)
+
+        for choice in rule.get("choices", []):
+            if not isinstance(choice, dict):
+                continue
+            selected_for_choice = self._extract_selected_ids_for_choice(choice, state, "selected_species_choice_ids")
+            if not selected_for_choice:
+                continue
+            choice_type = str(choice.get("choice_type") or "")
+            if choice_type == "size":
+                output["size"] = selected_for_choice[0]
+            if choice_type == "skill_proficiency":
+                self._merge_unique(output["skills"], selected_for_choice)
+            if choice_type == "species_trait_option":
+                trait_id = str(choice.get("trait_id") or "")
+                selected_option_id = selected_for_choice[0]
+                option_details = self._find_species_trait_option(species, trait_id, selected_option_id)
+                if option_details:
+                    output["resolved_species_trait_options"].append({"trait_id": trait_id, "option_id": selected_option_id})
+                    self._apply_species_trait_effects(option_details, output)
+            if choice_type == "ability":
+                output["species_spellcasting_ability"] = selected_for_choice[0]
+            if choice_type == "origin_feat":
+                output["selected_bonus_origin_feat_id"] = selected_for_choice[0]
+            selected_ids.update(selected_for_choice)
+
+    def apply_class_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
+        class_id = str(state.get("class_id") or "")
+        class_data = self.class_by_id.get(class_id, {})
+        class_rule = self._find_class_rule(class_id)
+        self._merge_unique(output["skills"], self._to_string_list(class_data.get("skill_proficiencies")))
+        self._merge_unique(output["weapon_proficiencies"], self._to_string_list(class_data.get("weapon_proficiencies")))
+        self._merge_unique(output["armor_training"], self._to_string_list(class_data.get("armor_training")))
+
+        for choice in class_rule.get("choices", []):
+            if not isinstance(choice, dict):
+                continue
+            selected_for_choice = self._extract_selected_ids_for_choice(choice, state, "selected_class_choice_ids")
+            if not selected_for_choice:
+                continue
+            choice_type = str(choice.get("choice_type") or "")
+            if choice_type == "skill_proficiency":
+                self._merge_unique(output["skills"], selected_for_choice)
+            if choice_type == "tool_proficiency":
+                self._merge_unique(output["tools"], selected_for_choice)
+            if choice_type == "weapon_mastery":
+                for weapon_id in selected_for_choice:
+                    weapon = self.equipment_by_id.get(weapon_id, {})
+                    mastery_id = str(weapon.get("mastery") or "")
+                    output["weapon_masteries"].append({"weapon_id": weapon_id, "mastery_id": mastery_id or None})
+            if choice_type == "expertise":
+                for skill_id in selected_for_choice:
+                    if skill_id in output["skills"] and skill_id not in output["expertise_skills"]:
+                        output["expertise_skills"].append(skill_id)
+            if choice_type == "eldritch_invocation":
+                self._merge_unique(output["eldritch_invocations"], selected_for_choice)
+            if choice_type == "feature_option":
+                feature = self.class_feature_by_id.get(str(choice.get("feature_id") or ""), {})
+                option_id = selected_for_choice[0]
+                effects = self._find_feature_option_effects(feature, option_id)
+                output["resolved_class_feature_options"].append({"feature_id": feature.get("id"), "option_id": option_id})
+                self._apply_feature_effects(effects, output)
+
+    def apply_feat_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
+        feat_ids = self._to_string_list(state.get("selected_feat_ids"))
+        for feat_id in feat_ids:
+            feat = self.origin_feat_by_id.get(feat_id, {})
+            benefits = feat.get("benefits", {}) if isinstance(feat, dict) else {}
+            self._merge_unique(output["feat_ids"], [feat_id])
+            if isinstance(benefits, dict):
+                self._merge_unique(output["languages"], self._to_string_list(benefits.get("languages")))
+                self._merge_unique(output["skills"], self._to_string_list(benefits.get("skill_proficiencies")))
+
+    def _find_feature_option_effects(self, feature: dict[str, Any], option_id: str) -> dict[str, Any]:
+        selection = feature.get("selection", {}) if isinstance(feature, dict) else {}
+        for option in selection.get("options", []) if isinstance(selection, dict) else []:
+            if isinstance(option, dict) and str(option.get("id")) == option_id:
+                return option.get("effects", {}) if isinstance(option.get("effects"), dict) else {}
+        return {}
+
+    def _find_species_trait_option(self, species: dict[str, Any], trait_id: str, option_id: str) -> dict[str, Any]:
+        for trait in species.get("traits_level_1", []) if isinstance(species, dict) else []:
+            if not isinstance(trait, dict) or str(trait.get("id")) != trait_id:
+                continue
+            for option in trait.get("options", []) if isinstance(trait.get("options"), list) else []:
+                if isinstance(option, dict) and str(option.get("id")) == option_id:
+                    return option
+        return {}
+
+    def _apply_feature_effects(self, effects: dict[str, Any], output: dict[str, Any]) -> None:
+        if not isinstance(effects, dict):
+            return
+        self._merge_unique(output["weapon_proficiencies"], self._to_string_list(effects.get("gain_weapon_proficiencies")))
+        self._merge_unique(output["armor_training"], self._to_string_list(effects.get("gain_armor_training")))
+        extra_cantrip = int(effects.get("gain_extra_cantrip_from_class_list", 0) or 0)
+        if extra_cantrip:
+            output["extra_class_cantrips"] += extra_cantrip
+
+    def _apply_species_trait_effects(self, option_details: dict[str, Any], output: dict[str, Any]) -> None:
+        benefits = option_details.get("level_1_benefits", {}) if isinstance(option_details, dict) else {}
+        if not isinstance(benefits, dict):
+            return
+        self._merge_unique(output["damage_resistances"], self._to_string_list(benefits.get("damage_resistance")))
+        self._merge_unique(output["species_cantrips"], self._to_string_list(benefits.get("cantrips_known")))
+        always_prepared = self._to_string_list(benefits.get("always_prepared_spells"))
+        for spell_id in always_prepared:
+            output["species_granted_spells"].append({"spell_id": spell_id, "source_id": option_details.get("id")})
+        speed_bonus = int(benefits.get("speed_bonus_feet", 0) or 0)
+        if speed_bonus:
+            output["speed"]["walk"] += speed_bonus
+        darkvision_override = int(benefits.get("darkvision_range_override_feet", 0) or 0)
+        if darkvision_override:
+            output["darkvision_range_feet"] = max(output["darkvision_range_feet"] or 0, darkvision_override)
+
+    def build_character_output(self, raw_state: dict[str, Any]) -> dict[str, Any]:
+        state = self.normalize_character_creation_state(raw_state)
+        class_id = str(state.get("class_id") or "")
+        background_id = str(state.get("background_id") or "")
+        species_id = str(state.get("species_id") or "")
+        class_data = self.class_by_id.get(class_id, {})
+        species_data = self.species_by_id.get(species_id, {})
+
+        size_options = self._to_string_list(species_data.get("size_options"))
+        output: dict[str, Any] = {
+            "class_id": class_id or None,
+            "background_id": background_id or None,
+            "species_id": species_id or None,
+            "size": size_options[0] if size_options else None,
+            "speed": {"walk": int((species_data.get("speed") or {}).get("walk", 30))},
+            "languages": [],
+            "skills": [],
+            "tools": [],
+            "weapon_proficiencies": [],
+            "armor_training": [],
+            "damage_resistances": [],
+            "darkvision_range_feet": None,
+            "weapon_masteries": [],
+            "expertise_skills": [],
+            "eldritch_invocations": [],
+            "resolved_class_feature_options": [],
+            "resolved_species_trait_options": [],
+            "species_spellcasting_ability": None,
+            "species_cantrips": [],
+            "species_granted_spells": [],
+            "feat_granted_spells": [],
+            "feat_ids": [],
+            "selected_bonus_origin_feat_id": None,
+            "extra_class_cantrips": 0,
+        }
+
+        self.apply_background_choices(state, output)
+        self.apply_species_choices(state, output)
+        self.apply_class_choices(state, output)
+        self.apply_feat_choices(state, output)
+
+        base_scores = state.get("base_ability_scores", {})
+        constitution_score = int(base_scores.get("constitution", 10) or 10)
+        dexterity_score = int(base_scores.get("dexterity", 10) or 10)
+        constitution_modifier = self._ability_modifier(constitution_score)
+        dexterity_modifier = self._ability_modifier(dexterity_score)
+        hit_die = int(class_data.get("hit_die", 8) or 8)
+
+        output["derived"] = {
+            "hit_points_max": max(1, hit_die + constitution_modifier),
+            "armor_class": 10 + dexterity_modifier,
+            "initiative_modifier": dexterity_modifier,
+        }
+        return output
 
     def _find_feat_rule(self, feat_id: str | None) -> dict[str, Any]:
         if not feat_id:
