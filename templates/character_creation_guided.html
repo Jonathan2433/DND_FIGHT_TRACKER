@@ -8,8 +8,12 @@
         <input type="hidden" name="character_type" value="PJ">
         <input type="hidden" name="visibility_level" value="private">
         <input type="hidden" name="ability_mode" id="ability-mode-hidden" value="standard_array">
+        <input type="hidden" name="ability_score_method" id="ability-score-method-hidden" value="standard_array">
         <input type="hidden" name="weapon_loadout" value="">
         <input type="hidden" name="armor_loadout" value="">
+        <input type="hidden" name="class_id" id="class-id-hidden" value="">
+        <input type="hidden" name="background_id" id="background-id-hidden" value="">
+        <input type="hidden" name="species_id" id="species-id-hidden" value="">
         <input type="hidden" name="selected_cantrips" id="selected-cantrips-hidden" value="">
         <input type="hidden" name="selected_level_1_spells" id="selected-level-one-hidden" value="">
         <input type="hidden" name="equipment" id="equipment-hidden" value="">
@@ -18,6 +22,8 @@
         <input type="hidden" name="language_3" id="language-3-hidden" value="">
         <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
         <input type="hidden" name="feat_choices" id="feat-choices-hidden" value="">
+        <input type="hidden" name="background_ability_bonus_mode" id="background-ability-bonus-mode-hidden" value="">
+        <input type="hidden" name="background_ability_bonus_allocations_json" id="background-ability-bonus-allocations-hidden" value="[]">
 
         <div class="creation-wizard">
             <ol class="creation-steps-nav" aria-label="Étapes de création" id="creation-steps-nav"></ol>
@@ -88,7 +94,7 @@
                 <fieldset class="form-group">
                     <legend>Caractéristiques de base</legend>
                     <label for="ability-method">Méthode de répartition (obligatoire)</label>
-                    <select id="ability-method"></select>
+                    <select id="ability-method" name="ability_score_method"></select>
                     <p class="text-muted">Conseil débutant : utilisez la méthode recommandée si vous découvrez Donjons & Dragons.</p>
                     <p id="ability-background-limits" class="text-muted"></p>
                     <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
@@ -196,6 +202,10 @@ let exportCharacterJsonButton = null;
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
+    abilityScoreMethod: document.getElementById('ability-score-method-hidden'),
+    classId: document.getElementById('class-id-hidden'),
+    backgroundId: document.getElementById('background-id-hidden'),
+    speciesId: document.getElementById('species-id-hidden'),
     language2: document.getElementById('language-2-hidden'),
     language3: document.getElementById('language-3-hidden'),
     skills: document.getElementById('skill-proficiencies-hidden'),
@@ -203,10 +213,21 @@ const hidden = {
     spells: document.getElementById('selected-level-one-hidden'),
     equipment: document.getElementById('equipment-hidden'),
     featChoices: document.getElementById('feat-choices-hidden'),
+    backgroundAbilityBonusMode: document.getElementById('background-ability-bonus-mode-hidden'),
+    backgroundAbilityBonusAllocations: document.getElementById('background-ability-bonus-allocations-hidden'),
 };
 let abilityBonusInputs = {};
 
-const state = { class_id: null, background_id: null, species_id: null, language_ids: [] };
+const state = {
+    class_id: null,
+    background_id: null,
+    species_id: null,
+    language_ids: [],
+    ability_score_method: null,
+    background_ability_bonus_mode: null,
+    background_ability_bonus_allocations: [],
+};
+let latestPayload = null;
 const SPELL_CHOICE_TYPES = new Set(['spell', 'prepared_spell', 'spellbook_entry']);
 
 const FRIENDLY_LABELS = {
@@ -507,6 +528,7 @@ function renderEquipment(targetId, payload, scope) {
                     input.dataset.choiceType = 'equipment';
                     input.dataset.scope = scope;
                     input.dataset.choiceId = item.id;
+                    input.dataset.choose = String(item.choose || 1);
                     input.value = subOption.label || subOption.name_fr || subOption.id;
                     input.addEventListener('change', () => {
                         const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
@@ -535,11 +557,15 @@ async function refreshPayload() {
         class_id: state.class_id || '',
         background_id: state.background_id || '',
         species_id: state.species_id || '',
+        ability_score_method: state.ability_score_method || '',
+        background_ability_bonus_mode: state.background_ability_bonus_mode || '',
+        background_ability_bonus_allocations_json: JSON.stringify(state.background_ability_bonus_allocations || []),
     });
     state.language_ids.forEach((value) => params.append('language_ids', value));
 
     const res = await fetch(`{{ url_for('template.character_builder_funnel_payload') }}?${params.toString()}`);
     const payload = await res.json();
+    latestPayload = payload;
 
     const classAuto = payload.class_payload?.automatic_gains || {};
     renderList('class-auto-gains', [
@@ -591,17 +617,19 @@ async function refreshPayload() {
     }
 
     const methods = payload.ability_payload?.methods || [];
-    if (abilityMethod) {
-        setOptions(abilityMethod, methods.map((m) => ({
-            id: m.id,
-            label: `${m.label || m.name_fr || formatValue(m.id)}${m.recommended_default ? ' (recommandée)' : ''}`,
-        })));
-        if (methods.length && !abilityMethod.value) {
-            const recommended = methods.find((method) => method.recommended_default) || methods[0];
-            abilityMethod.value = recommended.id;
-            hidden.mode.value = recommended.id;
-        }
+    setOptions(abilityMethod, methods.map((m) => ({
+        id: m.id,
+        label: `${m.label || m.name_fr || formatValue(m.id)}${m.recommended_default ? ' (recommandée)' : ''}`,
+    })));
+    if (methods.length && !abilityMethod.value) {
+        const recommended = methods.find((method) => method.recommended_default) || methods[0];
+        abilityMethod.value = recommended.id;
+        hidden.mode.value = recommended.id;
+        hidden.abilityScoreMethod.value = recommended.id;
+        state.ability_score_method = recommended.id;
     }
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
     renderAbilityBonusControls(payload.ability_payload || {});
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
     const abilityLimits = document.getElementById('ability-background-limits');
@@ -616,21 +644,43 @@ function resetBackgroundAbilityBonuses() {
     Object.values(abilityBonusInputs).forEach((input) => { if (input) input.value = '0'; });
 }
 
-function updateOriginBonusHiddenFields() {
-    resetBackgroundAbilityBonuses();
+function getBackgroundBonusAllocations() {
     const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
     if (mode === '2-1') {
-        const plusTwo = form.querySelector('#origin-plus-two')?.value;
-        const plusOne = form.querySelector('#origin-plus-one')?.value;
+        return {
+            mode,
+            allocations: [
+                { ability: form.querySelector('#origin-plus-two')?.value || '', bonus: 2 },
+                { ability: form.querySelector('#origin-plus-one')?.value || '', bonus: 1 },
+            ].filter((entry) => entry.ability),
+        };
+    }
+    const selected = Array.from(form.querySelectorAll('input[name="origin-plus-one-all"]:checked'));
+    return {
+        mode,
+        allocations: selected.map((checkbox) => ({ ability: checkbox.value, bonus: 1 })),
+    };
+}
+
+function updateOriginBonusHiddenFields() {
+    resetBackgroundAbilityBonuses();
+    const { mode, allocations } = getBackgroundBonusAllocations();
+    if (mode === '2-1') {
+        const plusTwo = allocations.find((entry) => entry.bonus === 2)?.ability;
+        const plusOne = allocations.find((entry) => entry.bonus === 1)?.ability;
         if (plusTwo && abilityBonusInputs[plusTwo]) abilityBonusInputs[plusTwo].value = '2';
         if (plusOne && abilityBonusInputs[plusOne]) {
             abilityBonusInputs[plusOne].value = String((parseInt(abilityBonusInputs[plusOne].value || '0', 10) + 1));
         }
-        return;
+    } else {
+        allocations.slice(0, 3).forEach((allocation) => {
+            if (abilityBonusInputs[allocation.ability]) abilityBonusInputs[allocation.ability].value = '1';
+        });
     }
-    Array.from(form.querySelectorAll('input[name="origin-plus-one-all"]:checked')).slice(0, 3).forEach((checkbox) => {
-        if (abilityBonusInputs[checkbox.value]) abilityBonusInputs[checkbox.value].value = '1';
-    });
+    hidden.backgroundAbilityBonusMode.value = mode;
+    hidden.backgroundAbilityBonusAllocations.value = JSON.stringify(allocations);
+    state.background_ability_bonus_mode = mode;
+    state.background_ability_bonus_allocations = allocations;
 }
 
 function renderAbilityBonusControls(abilityPayload) {
@@ -693,14 +743,15 @@ const STEP_COMPONENTS = {
     finalize: () => document.getElementById('step-template-finalize')?.content.cloneNode(true),
 };
 
-function renderWizardPanels(effectiveSteps) {
-    wizardPanels.innerHTML = '';
-    effectiveSteps.forEach((stepId) => {
-        const renderStepComponent = STEP_COMPONENTS[stepId];
-        if (!renderStepComponent) return;
-        const fragment = renderStepComponent();
-        if (fragment) wizardPanels.appendChild(fragment);
-    });
+function syncStateFromUI() {
+    state.class_id = classChoice.value || null;
+    state.background_id = backgroundChoice.value || null;
+    state.species_id = speciesChoice.value || null;
+    state.language_ids = [language2.value, language3.value].filter(Boolean);
+    state.ability_score_method = abilityMethod.value || null;
+    hidden.classId.value = state.class_id || '';
+    hidden.backgroundId.value = state.background_id || '';
+    hidden.speciesId.value = state.species_id || '';
 }
 
 function bindStepElements() {
@@ -744,64 +795,90 @@ function bindWizardEvents() {
         });
     });
 
-    form.querySelectorAll('[data-prev-step]').forEach((button) => {
-        button.addEventListener('click', () => {
-            const visibleSteps = getVisibleSteps();
-            const index = visibleSteps.indexOf(currentStep);
-            const prev = visibleSteps[index - 1];
-            if (prev) renderStep(prev);
-        });
-    });
+abilityMethod.addEventListener('change', () => {
+    hidden.mode.value = abilityMethod.value;
+    hidden.abilityScoreMethod.value = abilityMethod.value;
+    state.ability_score_method = abilityMethod.value || null;
+});
+
+function getAllowedBackgroundBonusModes(abilityOptions = {}) {
+    const allocationModes = Array.isArray(abilityOptions.allocation_modes) ? abilityOptions.allocation_modes : [];
+    if (allocationModes.length) return new Set(allocationModes);
+    const increaseRule = abilityOptions.increase_rule || '';
+    if (increaseRule.includes('increase_one_by_2_and_one_by_1')) {
+        return new Set(['increase_one_by_2_and_one_by_1', 'increase_all_three_by_1']);
+    }
+    return new Set();
 }
 
-function syncStateFromUI() {
-    state.class_id = classChoice?.value || null;
-    state.background_id = backgroundChoice?.value || null;
-    state.species_id = speciesChoice?.value || null;
-    state.language_ids = [language2?.value, language3?.value].filter(Boolean);
-}
-
-function validateGuidedBuilderBeforeSubmit() {
+function validateBeforeSubmit(payload, currentState) {
     const errors = [];
     const requiredGroups = Array.from(form.querySelectorAll('.choice-group[data-required="1"]'));
     requiredGroups.forEach((group) => {
         const choose = Number(group.dataset.choose || '1');
-        const checked = group.querySelectorAll('input[data-choice-id]:checked').length;
-        if (checked !== choose) {
-            errors.push(`Choix "${formatChoiceTitle({ id: group.dataset.choiceId })}" incomplet (${checked}/${choose}).`);
+        const checkedInputs = Array.from(group.querySelectorAll('input[data-choice-id]:checked'));
+        if (checkedInputs.length !== choose) {
+            errors.push(`Choix "${formatChoiceTitle({ id: group.dataset.choiceId })}" incomplet (${checkedInputs.length}/${choose}).`);
+        }
+        const type = checkedInputs[0]?.dataset.choiceType || '';
+        if (SPELL_CHOICE_TYPES.has(type) && checkedInputs.length !== choose) {
+            errors.push(`Sorts invalides pour "${group.dataset.choiceId}" (${checkedInputs.length}/${choose}).`);
         }
     });
-    const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
-    const bonusValues = Object.values(abilityBonusInputs).map((input) => Number(input?.value || 0));
-    const totalBonus = bonusValues.reduce((sum, value) => sum + value, 0);
+
+    const abilityOptions = payload?.ability_payload?.background_ability_score_options || {};
+    const allowedAbilities = new Set((abilityOptions.allowed || []).map((value) => String(value)));
+    const allowedModes = getAllowedBackgroundBonusModes(abilityOptions);
+    const { mode, allocations } = getBackgroundBonusAllocations();
+    const canonicalMode = mode === '2-1' ? 'increase_one_by_2_and_one_by_1' : 'increase_all_three_by_1';
+    if (allowedModes.size && !allowedModes.has(canonicalMode)) {
+        errors.push('Bonus d’origine invalide : le mode sélectionné n’est pas autorisé pour ce background.');
+    }
+    if (allocations.some((entry) => !allowedAbilities.has(entry.ability))) {
+        errors.push('Bonus d’origine invalide : certaines capacités choisies ne sont pas autorisées.');
+    }
+    const abilityKeys = allocations.map((entry) => entry.ability);
+    const uniqueAbilityCount = new Set(abilityKeys).size;
     if (mode === '2-1') {
-        const distribution = bonusValues.filter((value) => value > 0).sort((a, b) => b - a);
-        if (!(distribution.length === 2 && distribution[0] === 2 && distribution[1] === 1 && totalBonus === 3)) {
-            errors.push('Bonus d’origine invalide : le mode +2/+1 exige un +2 et un +1.');
+        const bonuses = allocations.map((entry) => Number(entry.bonus)).sort((a, b) => b - a);
+        if (!(bonuses.length === 2 && bonuses[0] === 2 && bonuses[1] === 1 && uniqueAbilityCount === 2)) {
+            errors.push('Bonus d’origine invalide : le mode +2/+1 exige 2 capacités distinctes (+2 et +1).');
         }
+    } else if (!(allocations.length === 3 && allocations.every((entry) => Number(entry.bonus) === 1) && uniqueAbilityCount === 3)) {
+        errors.push('Bonus d’origine invalide : le mode +1/+1/+1 exige 3 capacités distinctes.');
     }
-    if (mode === '1-1-1') {
-        if (!(bonusValues.filter((value) => value === 1).length === 3 && totalBonus === 3)) {
-            errors.push('Bonus d’origine invalide : le mode +1/+1/+1 exige 3 capacités distinctes.');
-        }
-    }
+
     const equipmentChoiceGroups = Array.from(form.querySelectorAll('input[data-choice-type="equipment_bundle"]:checked'))
         .map((bundle) => bundle.closest('div'))
         .filter(Boolean);
     equipmentChoiceGroups.forEach((group) => {
-        const unresolved = Array.from(group.querySelectorAll('input[data-choice-type="equipment"]')).length > 0
-            && Array.from(group.querySelectorAll('input[data-choice-type="equipment"]:checked')).length === 0;
-        if (unresolved) errors.push("Équipement incomplet : un choix d'équipement requis n'est pas résolu.");
+        const choiceIds = [...new Set(Array.from(group.querySelectorAll('input[data-choice-type="equipment"]')).map((input) => input.dataset.choiceId))];
+        choiceIds.forEach((choiceId) => {
+            const choiceInputs = Array.from(group.querySelectorAll(`input[data-choice-type="equipment"][data-choice-id="${choiceId}"]`));
+            const choose = Number(choiceInputs[0]?.dataset.choose || '1');
+            const selected = choiceInputs.filter((input) => input.checked).length;
+            if (selected !== choose) {
+                errors.push(`Équipement incomplet : ${choiceId} (${selected}/${choose}).`);
+            }
+        });
     });
-    return errors;
+    if ((hidden.equipment.value || '').includes('undefined')) {
+        errors.push("Équipement invalide : un placeholder d'équipement n'a pas été résolu.");
+    }
+    if (!currentState.ability_score_method) {
+        errors.push('Méthode de caractéristiques obligatoire.');
+    }
+    return { ok: errors.length === 0, errors };
 }
 
 form.addEventListener('submit', (event) => {
+    syncStateFromUI();
+    updateOriginBonusHiddenFields();
     syncHiddenFields();
-    const errors = validateGuidedBuilderBeforeSubmit();
-    if (errors.length) {
+    const validationResult = validateBeforeSubmit(latestPayload || {}, state);
+    if (!validationResult.ok) {
         event.preventDefault();
-        alert(errors.join('\n'));
+        alert(validationResult.errors.join('\n'));
         return;
     }
     if (!language2?.value || !language3?.value || language2.value === language3.value) {
@@ -812,6 +889,7 @@ form.addEventListener('submit', (event) => {
     hidden.language2.value = language2.value;
     hidden.language3.value = language3.value;
     hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
 });
 
 let stepOrder = [];

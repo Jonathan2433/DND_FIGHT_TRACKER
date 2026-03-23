@@ -484,6 +484,39 @@ class CharacterBuilderService:
             return []
         return [str(item) for item in value if item]
 
+    @staticmethod
+    def _normalize_background_bonus_mode(mode: Any) -> str | None:
+        if not mode:
+            return None
+        normalized = str(mode).strip()
+        aliases = {
+            "2-1": "increase_one_by_2_and_one_by_1",
+            "+2/+1": "increase_one_by_2_and_one_by_1",
+            "1-1-1": "increase_all_three_by_1",
+            "+1/+1/+1": "increase_all_three_by_1",
+        }
+        return aliases.get(normalized, normalized)
+
+    @staticmethod
+    def _normalize_background_allocations(raw_allocations: Any) -> list[dict[str, Any]]:
+        if not isinstance(raw_allocations, list):
+            return []
+        normalized: list[dict[str, Any]] = []
+        for entry in raw_allocations:
+            if isinstance(entry, str):
+                normalized.append({"ability": entry, "bonus": 1})
+                continue
+            if isinstance(entry, dict):
+                ability = entry.get("ability") or entry.get("id")
+                bonus = entry.get("bonus", 1)
+                if ability:
+                    try:
+                        parsed_bonus = int(bonus)
+                    except (TypeError, ValueError):
+                        parsed_bonus = 1
+                    normalized.append({"ability": str(ability), "bonus": parsed_bonus})
+        return normalized
+
     def validate_character_creation_submission(self, state: dict[str, Any]) -> list[str]:
         errors: list[str] = []
         class_id = state.get("class_id")
@@ -512,14 +545,38 @@ class CharacterBuilderService:
         if background_id and str(background_id) in self.background_by_id:
             ability_payload = self.get_ability_score_payload(state)
             ability_options = ability_payload.get("background_ability_score_options") or {}
-            allowed_modes = set(ability_options.get("allocation_modes", [])) if isinstance(ability_options, dict) else set()
-            selected_mode = state.get("background_ability_bonus_mode")
+            allowed_modes = set()
+            if isinstance(ability_options, dict):
+                if isinstance(ability_options.get("allocation_modes"), list):
+                    allowed_modes = {str(mode) for mode in ability_options.get("allocation_modes", []) if mode}
+                increase_rule = str(ability_options.get("increase_rule", ""))
+                if not allowed_modes and "increase_one_by_2_and_one_by_1" in increase_rule:
+                    allowed_modes = {"increase_one_by_2_and_one_by_1", "increase_all_three_by_1"}
+            selected_mode = self._normalize_background_bonus_mode(state.get("background_ability_bonus_mode"))
             if allowed_modes and selected_mode and selected_mode not in allowed_modes:
                 errors.append("Le mode de bonus d'origine est invalide pour ce background.")
 
-            allocations = state.get("background_ability_bonus_allocations")
-            if allocations is not None and not isinstance(allocations, (list, dict)):
+            raw_allocations = state.get("background_ability_bonus_allocations")
+            if raw_allocations is not None and not isinstance(raw_allocations, list):
                 errors.append("Les allocations de bonus d'origine sont invalides.")
+            allocations = self._normalize_background_allocations(raw_allocations)
+            allowed_abilities = {
+                str(ability)
+                for ability in (ability_options.get("allowed", []) if isinstance(ability_options, dict) else [])
+                if ability
+            }
+            if allocations and allowed_abilities and any(allocation.get("ability") not in allowed_abilities for allocation in allocations):
+                errors.append("Les allocations de bonus d'origine contiennent des capacités non autorisées.")
+            if selected_mode == "increase_one_by_2_and_one_by_1":
+                bonuses = sorted((int(allocation.get("bonus", 0)) for allocation in allocations), reverse=True)
+                abilities = [allocation.get("ability") for allocation in allocations]
+                if not (bonuses == [2, 1] and len(abilities) == len(set(abilities)) == 2):
+                    errors.append("Les allocations de bonus d'origine ne respectent pas le mode +2/+1.")
+            if selected_mode == "increase_all_three_by_1":
+                bonuses = [int(allocation.get("bonus", 0)) for allocation in allocations]
+                abilities = [allocation.get("ability") for allocation in allocations]
+                if not (len(allocations) == 3 and all(bonus == 1 for bonus in bonuses) and len(abilities) == len(set(abilities)) == 3):
+                    errors.append("Les allocations de bonus d'origine ne respectent pas le mode +1/+1/+1.")
 
         ability_score_method = state.get("ability_score_method")
         available_methods = {
