@@ -449,6 +449,9 @@ function renderFinalSummary(payload) {
 }
 
 function renderChoiceBlock(choice, container, scope) {
+    const options = choice.options || [];
+    if (!options.length) return false;
+
     const block = document.createElement('div');
     block.style.marginBottom = '12px';
     block.dataset.choiceId = choice.id;
@@ -461,7 +464,6 @@ function renderChoiceBlock(choice, container, scope) {
     title.textContent = `${label} — choisissez ${choice.choose}`;
     block.appendChild(title);
 
-    const options = choice.options || [];
     options.forEach((option) => {
         const labelEl = document.createElement('label');
         labelEl.style.display = 'block';
@@ -493,15 +495,16 @@ function renderChoiceBlock(choice, container, scope) {
         block.appendChild(labelEl);
     });
     container.appendChild(block);
+    return true;
 }
 
-function renderSkillChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderToolChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderSpellChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderAbilityBonusChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderOriginFeatChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderEquipmentChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
-function renderSizeChoice(choice, container, scope) { renderChoiceBlock(choice, container, scope); }
+function renderSkillChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderToolChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderSpellChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderAbilityBonusChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderOriginFeatChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderEquipmentChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderSizeChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
 
 function renderChoiceByType(choice, container, scope) {
     const rendererByType = {
@@ -516,7 +519,7 @@ function renderChoiceByType(choice, container, scope) {
         size_choice: renderSizeChoice,
     };
     const renderer = rendererByType[choice.type] || renderChoiceBlock;
-    renderer(choice, container, scope);
+    return renderer(choice, container, scope);
 }
 
 function renderChoices(targetId, requiredChoices, type) {
@@ -527,8 +530,14 @@ function renderChoices(targetId, requiredChoices, type) {
         target.textContent = 'Aucun choix requis.';
         return;
     }
+    let renderedChoices = 0;
     for (const choice of requiredChoices) {
-        renderChoiceByType(choice, target, type);
+        if (renderChoiceByType(choice, target, type)) {
+            renderedChoices += 1;
+        }
+    }
+    if (!renderedChoices) {
+        target.textContent = 'Aucun choix requis.';
     }
 }
 
