@@ -93,11 +93,13 @@
                     <label for="ability-method">Méthode de répartition</label>
                     <select id="ability-method" name="ability_score_method"></select>
                     <p class="text-muted">Conseil débutant : utilisez la méthode recommandée si vous découvrez Donjons & Dragons.</p>
+                    <p id="ability-method-description" class="text-muted"></p>
+                    <p id="ability-point-buy-budget" class="text-muted" hidden></p>
                     <p id="ability-background-limits" class="text-muted"></p>
                     <div style="display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:8px;">
                         {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
                             <label>{{ label }}
-                                <select name="{{ key }}_base" required>
+                                <select name="{{ key }}_base" required class="ability-base-field" data-ability-key="{{ key }}">
                                     {% for value in [15,14,13,12,10,8] %}
                                         <option value="{{ value }}" {% if loop.first %}selected{% endif %}>{{ value }}</option>
                                     {% endfor %}
@@ -222,6 +224,8 @@ let language3 = null;
 let abilityMethod = null;
 let spellHelp = null;
 let exportCharacterJsonButton = null;
+let abilityMethodDescription = null;
+let pointBuyBudgetHint = null;
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -241,6 +245,7 @@ const hidden = {
     backgroundAbilityBonusAllocations: document.getElementById('background-ability-bonus-allocations-hidden'),
 };
 let abilityBonusInputs = {};
+let abilityMethodsById = {};
 
 const state = {
     class_id: null,
@@ -357,6 +362,71 @@ function formatValue(value) {
             .replace(/\b([a-z])/g, (match) => match.toUpperCase());
     }
     return String(value);
+}
+
+function getAbilityBaseFields() {
+    return Array.from(form.querySelectorAll('.ability-base-field'));
+}
+
+function setAbilityFieldOptions(fields, values) {
+    fields.forEach((field) => {
+        const currentValue = field.value;
+        const options = values.map((value) => ({ id: String(value), label: String(value) }));
+        setOptions(field, options);
+        if (options.some((entry) => entry.id === currentValue)) {
+            field.value = currentValue;
+        } else if (options.length) {
+            field.value = options[0].id;
+        }
+    });
+}
+
+function updatePointBuyBudget(methodConfig) {
+    if (!pointBuyBudgetHint) return;
+    const modeId = abilityMethod?.value || '';
+    if (modeId !== 'point_buy') {
+        pointBuyBudgetHint.hidden = true;
+        return;
+    }
+    const rules = methodConfig?.rules || {};
+    const budget = Number(rules.budget ?? 27);
+    const costEntries = Array.isArray(rules.cost_table) ? rules.cost_table : [];
+    const costByScore = new Map(costEntries.map((entry) => [Number(entry.score), Number(entry.cost)]));
+    const totalCost = getAbilityBaseFields().reduce((acc, field) => {
+        const score = Number(field.value || 0);
+        return acc + (costByScore.get(score) ?? 0);
+    }, 0);
+    const remaining = budget - totalCost;
+    pointBuyBudgetHint.hidden = false;
+    pointBuyBudgetHint.textContent = `Point Buy : ${totalCost}/${budget} points utilisés (${remaining} restants).`;
+    pointBuyBudgetHint.style.color = remaining < 0 ? '#b00020' : '';
+}
+
+function applyAbilityMethodUI(methodId) {
+    const methodConfig = abilityMethodsById[methodId] || {};
+    const rules = methodConfig.rules || {};
+    const fields = getAbilityBaseFields();
+    if (!fields.length) return;
+
+    if (abilityMethodDescription) {
+        abilityMethodDescription.textContent = methodConfig.description_short_fr || '';
+    }
+
+    if (methodId === 'point_buy') {
+        const min = Number(rules.minimum_base_score ?? 8);
+        const max = Number(rules.maximum_base_score ?? 15);
+        setAbilityFieldOptions(fields, Array.from({ length: (max - min + 1) }, (_, idx) => min + idx));
+    } else if (methodId === 'manual_custom') {
+        const min = Number(rules.minimum_base_score ?? 3);
+        const max = Number(rules.maximum_base_score ?? 18);
+        setAbilityFieldOptions(fields, Array.from({ length: (max - min + 1) }, (_, idx) => min + idx));
+    } else {
+        const pool = Array.isArray(rules.base_scores_pool) && rules.base_scores_pool.length
+            ? rules.base_scores_pool
+            : [15, 14, 13, 12, 10, 8];
+        setAbilityFieldOptions(fields, pool);
+    }
+    updatePointBuyBudget(methodConfig);
 }
 
 function formatChoiceTitle(choice) {
@@ -897,6 +967,11 @@ async function refreshPayload() {
     }
 
     const methods = payload.ability_payload?.methods || [];
+    abilityMethodsById = Object.fromEntries(
+        methods
+            .filter((method) => method && method.id)
+            .map((method) => [method.id, method])
+    );
     setOptions(abilityMethod, methods.map((m) => ({
         id: m.id,
         label: `${m.label || m.name_fr || formatValue(m.id)}${m.recommended_default ? ' (recommandée)' : ''}`,
@@ -910,6 +985,7 @@ async function refreshPayload() {
     }
     hidden.mode.value = abilityMethod.value || 'standard_array';
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    applyAbilityMethodUI(abilityMethod.value || 'standard_array');
     renderAbilityBonusControls(payload.ability_payload || {});
     const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
     const abilityLimits = document.getElementById('ability-background-limits');
@@ -1046,6 +1122,8 @@ function bindStepElements() {
     abilityMethod = document.getElementById('ability-method');
     spellHelp = document.getElementById('spell-step-help');
     exportCharacterJsonButton = document.getElementById('export-character-json');
+    abilityMethodDescription = document.getElementById('ability-method-description');
+    pointBuyBudgetHint = document.getElementById('ability-point-buy-budget');
     abilityBonusInputs = Object.fromEntries(
         ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'].map((key) => [key, form.querySelector(`input[name="${key}_bg_bonus"]`)])
     );
@@ -1081,7 +1159,12 @@ function bindWizardEvents() {
         hidden.mode.value = abilityMethod.value;
         hidden.abilityScoreMethod.value = abilityMethod.value;
         state.ability_score_method = abilityMethod.value || null;
+        applyAbilityMethodUI(abilityMethod.value || 'standard_array');
     });
+    getAbilityBaseFields().forEach((field) => field.addEventListener('change', () => {
+        const methodConfig = abilityMethodsById[abilityMethod?.value || ''] || {};
+        updatePointBuyBudget(methodConfig);
+    }));
 }
 
 function renderWizardPanels(effectiveSteps) {
