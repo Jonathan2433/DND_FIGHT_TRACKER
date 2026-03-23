@@ -151,12 +151,23 @@
             </section>
         </template>
 
-        <template id="step-template-finalize">
-            <section class="wizard-step" data-step-id="finalize" hidden>
+        <template id="step-template-choose_spells">
+            <section class="wizard-step" data-step-id="choose_spells" hidden>
                 <div class="form-group">
                     <h3>Choix des sorts</h3>
                     <p class="text-muted" id="spell-step-help">Si votre classe (ou origine) donne la magie, choisissez ici les sorts autorisés.</p>
                     <div id="spell-required-choices"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-finalize">
+            <section class="wizard-step" data-step-id="finalize" hidden>
+                <div class="form-group">
                     <h3>Résumé final</h3>
                     <div id="final-summary"></div>
                 </div>
@@ -748,12 +759,14 @@ async function refreshPayload() {
     }
 
     const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
+    hasSpellStepChoices = spellChoices.length > 0;
     renderChoices('spell-required-choices', spellChoices, 'spell');
     if (spellHelp) {
         spellHelp.textContent = spellChoices.length
             ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
             : 'Aucun choix de sort requis pour vos sélections actuelles.';
     }
+    setSpellStepVisibility(hasSpellStepChoices);
     renderEquipment('class-equipment', payload.class_payload || {}, 'class');
     renderEquipment('background-equipment', payload.background_payload || {}, 'background');
 
@@ -889,6 +902,7 @@ const STEP_COMPONENTS = {
     choose_languages: () => document.getElementById('step-template-choose_languages')?.content.cloneNode(true),
     assign_ability_scores: () => document.getElementById('step-template-assign_ability_scores')?.content.cloneNode(true),
     choose_equipment: () => document.getElementById('step-template-choose_equipment')?.content.cloneNode(true),
+    choose_spells: () => document.getElementById('step-template-choose_spells')?.content.cloneNode(true),
     finalize: () => document.getElementById('step-template-finalize')?.content.cloneNode(true),
 };
 
@@ -1068,9 +1082,13 @@ form.addEventListener('submit', (event) => {
 
 let stepOrder = [];
 let currentStep = null;
+let hasSpellStepChoices = false;
 
 function getVisibleSteps() {
-    return stepOrder.filter((stepId) => Boolean(form.querySelector(`.wizard-step[data-step-id="${stepId}"]`)));
+    return stepOrder.filter((stepId) => {
+        const panel = form.querySelector(`.wizard-step[data-step-id="${stepId}"]`);
+        return Boolean(panel) && panel.dataset.stepEnabled !== '0';
+    });
 }
 
 function renderStep(stepId) {
@@ -1086,14 +1104,32 @@ function renderStep(stepId) {
 
     const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
     stepItems.forEach((item) => {
-        const active = item.dataset.stepId === safeStep;
-        const idx = visibleSteps.indexOf(item.dataset.stepId);
+        const stepIdForItem = item.dataset.stepId;
+        const isVisible = visibleSteps.includes(stepIdForItem);
+        const active = isVisible && stepIdForItem === safeStep;
+        const idx = visibleSteps.indexOf(stepIdForItem);
         const currentIdx = visibleSteps.indexOf(safeStep);
+        item.hidden = !isVisible;
         item.classList.toggle('is-active', active);
         item.classList.toggle('is-complete', idx > -1 && idx < currentIdx);
         const trigger = item.querySelector('.creation-step-trigger');
         if (trigger) trigger.setAttribute('aria-current', active ? 'step' : 'false');
     });
+}
+
+function setSpellStepVisibility(enabled) {
+    const spellPanel = form.querySelector('.wizard-step[data-step-id="choose_spells"]');
+    const spellNavItem = stepsNav.querySelector('li[data-step-id="choose_spells"]');
+    const stepEnabled = enabled ? '1' : '0';
+    if (spellPanel) spellPanel.dataset.stepEnabled = stepEnabled;
+    if (spellNavItem) spellNavItem.dataset.stepEnabled = stepEnabled;
+    if (!enabled && currentStep === 'choose_spells') {
+        renderStep('finalize');
+        return;
+    }
+    if (currentStep) {
+        renderStep(currentStep);
+    }
 }
 
 function sanitizeFileName(value) {
@@ -1169,6 +1205,14 @@ function renderWizardNav(effectiveSteps) {
 const effectiveSteps = (Array.isArray(rulesContext.steps) ? rulesContext.steps : [])
     .map((stepEntry) => stepEntry.id || stepEntry)
     .filter((stepId) => Boolean(STEP_COMPONENTS[stepId]));
+if (!effectiveSteps.includes('choose_spells')) {
+    const finalizeIndex = effectiveSteps.indexOf('finalize');
+    if (finalizeIndex >= 0) {
+        effectiveSteps.splice(finalizeIndex, 0, 'choose_spells');
+    } else {
+        effectiveSteps.push('choose_spells');
+    }
+}
 renderWizardNav(effectiveSteps);
 renderWizardPanels(effectiveSteps);
 stepOrder = effectiveSteps;
@@ -1178,6 +1222,7 @@ setOptions(classChoice, rulesContext.classes || []);
 setOptions(backgroundChoice, rulesContext.backgrounds || []);
 setOptions(speciesChoice, rulesContext.species || []);
 syncStateFromUI();
+setSpellStepVisibility(false);
 refreshPayload();
 renderStep(stepOrder[0] || 'choose_class');
 </script>
