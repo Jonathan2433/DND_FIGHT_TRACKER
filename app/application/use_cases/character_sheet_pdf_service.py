@@ -12,6 +12,7 @@ from typing import Any
 
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import BooleanObject, NameObject, TextStringObject
+from app.utils.dnd5_rules import SPECIES_RULES
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class CharacterSheetPdfService:
         "character_name": ("CharacterName", "Character Name", "CharName"),
         "class_level": ("ClassLevel", "Class & Level", "ClassLevel1"),
         "background": ("Background",),
+        "character_backstory": ("Backstory", "Character Backstory", "CharacterBackstory"),
         "player_name": ("PlayerName", "Player Name"),
         "race": ("Race ", "Race"),
         "alignment": ("Alignment",),
@@ -211,6 +213,49 @@ class CharacterSheetPdfService:
             .replace("à", "a")
             .replace("ï", "i")
         )
+
+    @staticmethod
+    def _as_bool(value: Any) -> bool:
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return value != 0
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "on", "oui"}
+        return bool(value)
+
+    @classmethod
+    def _derive_speed(cls, character) -> str:
+        explicit_speed_keys = ("speed", "walk_speed", "movement_speed")
+        for key in explicit_speed_keys:
+            raw_value = getattr(character, key, None)
+            if raw_value in (None, ""):
+                continue
+            if isinstance(raw_value, dict):
+                walk = raw_value.get("walk")
+                if walk not in (None, ""):
+                    return str(walk)
+                continue
+            return str(raw_value)
+
+        normalized_race = cls._normalize_class_name(getattr(character, "race", ""))
+        for species_name, species_rules in SPECIES_RULES.items():
+            if cls._normalize_class_name(species_name) == normalized_race:
+                return str(species_rules.get("speed", 30))
+        return "30"
+
+    @staticmethod
+    def _extract_roleplay_traits(character) -> dict[str, str]:
+        fields = {
+            "personality_traits": "personality_traits",
+            "ideals": "ideals",
+            "bonds": "bonds",
+            "flaws": "flaws",
+        }
+        return {
+            key: str(getattr(character, attr, "") or "")
+            for key, attr in fields.items()
+        }
 
     @staticmethod
     def _to_multiline(value: str | None) -> str:
@@ -603,6 +648,8 @@ class CharacterSheetPdfService:
         weapon_rows = cls._build_weapon_table_rows(character, max_rows=3)
         proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
         background_name, backstory_text = cls._split_background_payload(character.background_story)
+        roleplay_traits = cls._extract_roleplay_traits(character)
+        features_traits_source = character.additional_features_traits or character.notes
 
         values_by_business_key: dict[str, Any] = {
             "character_name": character.name or "",
@@ -611,7 +658,7 @@ class CharacterSheetPdfService:
             "player_name": character.player_name or "",
             "race": character.race or "",
             "alignment": character.alignment or "",
-            "experience_points": "",
+            "experience_points": str(character.current_xp or 0),
             "strength": str(character.force or 10),
             "strength_mod": cls._format_mod(character.mod_force),
             "dexterity": str(character.dexterite or 10),
@@ -627,25 +674,26 @@ class CharacterSheetPdfService:
             "proficiency_bonus": cls._format_mod(character.bonus_maitrise),
             "armor_class": str(character.ac_total),
             "initiative": cls._format_mod(character.initiative_bonus or 0),
-            "speed": "30",
+            "speed": cls._derive_speed(character),
             "hp_max": str(character.hp_max or 0),
             "hp_current": str(character.hp_current_effective),
             "temp_hp": str(character.temp_hp or 0),
             "languages": character.languages or "",
             "proficiencies_languages": cls._normalize_multiline(proficiencies_languages, width=22, max_lines=8),
             "equipment": cls._normalize_multiline(character.equipment, width=24, max_lines=10),
-            "features_traits": cls._normalize_multiline(character.notes, width=30, max_lines=16),
+            "features_traits": cls._normalize_multiline(features_traits_source, width=30, max_lines=16),
             "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
+            "proficiency_checkbox": "Yes" if cls._as_bool(getattr(character, "inspiration", False)) else "Off",
             "age": str(character.age or ""),
             "height": character.height or "",
             "weight": character.weight or "",
             "eyes": character.eyes or "",
             "skin": character.skin or "",
             "hair": character.hair or "",
-            "personality_traits": "",
-            "ideals": "",
-            "bonds": "",
-            "flaws": "",
+            "personality_traits": cls._normalize_multiline(roleplay_traits["personality_traits"], width=30, max_lines=6),
+            "ideals": cls._normalize_multiline(roleplay_traits["ideals"], width=30, max_lines=6),
+            "bonds": cls._normalize_multiline(roleplay_traits["bonds"], width=30, max_lines=6),
+            "flaws": cls._normalize_multiline(roleplay_traits["flaws"], width=30, max_lines=6),
             "attacks_spellcasting": attacks_spellcasting,
             "weapon_1_name": weapon_rows[0]["name"] if len(weapon_rows) > 0 else "",
             "weapon_1_attack_bonus": weapon_rows[0]["attack_bonus"] if len(weapon_rows) > 0 else "",
