@@ -62,6 +62,20 @@
     },
     {
       "step": 5,
+      "id": "choose_spells",
+      "name_fr": "Choisir les sorts",
+      "name_en": "Choose Spells",
+      "required": true,
+      "data_sources": [
+        "class_choice_rules.json",
+        "feat_choices_rules.json",
+        "subchoices_catalog.json",
+        "spells.json",
+        "spells_by_class.json"
+      ]
+    },
+    {
+      "step": 6,
       "id": "finalize_character",
       "name_fr": "Finaliser le personnage",
       "name_en": "Finalize Character",

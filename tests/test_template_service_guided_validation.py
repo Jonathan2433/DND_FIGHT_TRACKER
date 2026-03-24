@@ -118,3 +118,20 @@ def test_skill_limit_uses_class_choice_count_not_total_skill_count(monkeypatch):
         normalized_skill_proficiencies,
         form_data=form_data,
     )
+
+
+def test_extract_selected_spells_by_choice_uses_canonical_payload():
+    form_data = _base_form_data()
+    form_data["selected_cantrips"] = "guidance, light, acid_splash, blade_ward, chill_touch"
+    form_data["selected_spell_ids_by_choice_json"] = json.dumps(
+        {
+            "wizard_cantrips_known": ["acid_splash", "blade_ward", "chill_touch"],
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+        }
+    )
+
+    selected_by_choice = TemplateService._extract_selected_spells_by_choice(form_data)
+    assert selected_by_choice == {
+        "wizard_cantrips_known": ["acid_splash", "blade_ward", "chill_touch"],
+        "magic_initiate_cleric_cantrips": ["guidance", "light"],
+    }
