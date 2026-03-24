@@ -901,8 +901,8 @@ class CharacterBuilderService:
 
         if choice_id and isinstance(selected_spells_by_choice, dict):
             by_choice = selected_spells_by_choice.get(choice_id)
-            if isinstance(by_choice, list):
-                raw_values = self._to_string_list(by_choice)
+            if by_choice not in (None, ""):
+                raw_values = self._to_string_list(by_choice) if isinstance(by_choice, list) else [str(by_choice)]
                 return raw_values[:choose_count]
 
         selected_by_choice = self._get_choice_selection_values(state, selection_key, choice_id)
@@ -928,8 +928,8 @@ class CharacterBuilderService:
         selected_spells_by_choice = state.get("selected_spell_ids_by_choice", {})
         if choice_id and isinstance(selected_spells_by_choice, dict):
             by_choice = selected_spells_by_choice.get(choice_id)
-            if isinstance(by_choice, list):
-                return self._to_string_list(by_choice)
+            if by_choice not in (None, ""):
+                return self._to_string_list(by_choice) if isinstance(by_choice, list) else [str(by_choice)]
 
         selected_pool = self._flatten_choice_selections(state.get(selection_key))
         selected_by_choice = self._get_choice_selection_values(state, selection_key, choice_id)
