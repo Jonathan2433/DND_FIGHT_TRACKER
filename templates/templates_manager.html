@@ -8,11 +8,8 @@
             <h1 class="section-title templates-title">Gestion des personnages</h1>
         </div>
         <div class="templates-header-actions">
-            <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
+            <a class="btn btn-primary" href="{{ url_for('template.create_character_template_guided') }}">
                 Nouveau PJ
-            </button>
-            <a class="btn btn-secondary" href="{{ url_for('template.create_character_template_guided') }}">
-                Nouveau PJ (JSON)
             </a>
             {% if can_create_pnj and pnj_campaign_context %}
                 <a class="btn btn-secondary" href="{{ url_for('pnj.create_pnj', campaign_id=pnj_campaign_context.id) }}">Nouveau PNJ</a>
@@ -20,8 +17,11 @@
         </div>
     </div>
 
-    <div id="create-form" class="card template-create-form inl-core-004">
+    <div id="create-form" class="card template-create-form inl-core-004" hidden aria-hidden="true">
         <h2>Creer un personnage joueur</h2>
+        <p class="section-head__copy">
+            Ancien funnel conserve en shadow pour fallback technique. Le funnel guide est desormais la voie par defaut.
+        </p>
 
         <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data" id="character-create-form">
             {% if campaign_context %}
