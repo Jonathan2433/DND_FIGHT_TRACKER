@@ -65,3 +65,30 @@ def test_pack_items_are_resolved_into_final_equipment():
     assert "dungeoneers_pack" in final_equipment_ids
     assert "torch" in final_equipment_ids
     assert "rations" in final_equipment_ids
+
+
+def test_equipment_placeholders_for_weapons_are_resolved_from_catalog_and_proficiencies():
+    service = CharacterBuilderService()
+    payload = service.get_class_payload("fighter", _base_state(class_id="fighter"))
+    options = payload.get("equipment_options", [])
+    fighter_option_a = next(option for option in options if option.get("id") == "fighter_option_a")
+
+    placeholders = {item["id"]: item for item in fighter_option_a.get("items", []) if item.get("type", "").startswith("choice_from_")}
+    assert "fighter_primary_melee_weapon" in placeholders
+    assert placeholders["fighter_primary_melee_weapon"]["type"] == "choice_from_weapon_category"
+    assert all(entry.get("weapon_category") == "martial_melee" for entry in placeholders["fighter_primary_melee_weapon"]["options"])
+    assert "fighter_ranged_pack" in placeholders
+    assert placeholders["fighter_ranged_pack"]["type"] == "choice_from_item_ids"
+    assert {entry["id"] for entry in placeholders["fighter_ranged_pack"]["options"]} == {"javelin_bundle_8", "light_crossbow_bundle_20"}
+
+
+def test_final_equipment_contains_full_weapon_fields():
+    service = CharacterBuilderService()
+    output = service.build_character_output(_base_state(selected_equipment_ids=["dagger"]))
+    dagger = next(item for item in output["final_equipment"] if item["id"] == "dagger")
+
+    assert dagger["name_fr"] == "Dague"
+    assert dagger["weapon_category"] == "simple_melee"
+    assert dagger["damage"] == {"dice": "1d4", "type": "piercing"}
+    assert "finesse" in dagger["properties"]
+    assert dagger["mastery"] == "nick"

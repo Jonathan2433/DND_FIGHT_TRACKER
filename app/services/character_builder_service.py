@@ -88,11 +88,14 @@ class CharacterBuilderService:
         self.fighting_styles = self._load_json("fighting_styles.json", default=[])
         self.eldritch_invocations = self._load_json("eldritch_invocations.json", default=[])
         self.weapon_masteries = self._load_json("weapon_masteries.json", default=[])
-        self.equipment_choice_rules = self._load_json("equipment_choice_rules.json", default=[])
+        self.equipment_choice_rules = self._load_json("equipment_choice_rules.json", default={})
+        supported_placeholder_shapes = self.equipment_choice_rules.get("supported_placeholder_item_shapes", []) if isinstance(self.equipment_choice_rules, dict) else []
+        self.equipment_placeholder_rules = [rule for rule in supported_placeholder_shapes if isinstance(rule, dict)]
+        source_specific = self.equipment_choice_rules.get("source_specific_placeholders", []) if isinstance(self.equipment_choice_rules, dict) else []
         self.equipment_choice_rule_by_id = {
-            str(rule.get("id")): rule
-            for rule in self.equipment_choice_rules
-            if isinstance(rule, dict) and rule.get("id")
+            str(rule.get("placeholder_id")): rule
+            for rule in source_specific
+            if isinstance(rule, dict) and rule.get("placeholder_id")
         }
 
         self.class_by_id = self._index(self.class_catalog)
@@ -760,6 +763,72 @@ class CharacterBuilderService:
 
         return self._dedupe_options(options)
 
+    def _is_weapon_allowed_for_class(self, weapon: dict[str, Any], proficiency_tokens: set[str]) -> bool:
+        if not proficiency_tokens:
+            return False
+        weapon_id = str(weapon.get("id") or "")
+        weapon_category = str(weapon.get("weapon_category") or "")
+        weapon_properties = {str(prop) for prop in weapon.get("properties", []) if prop}
+        proficiency_group = str(
+            weapon.get("proficiency_group")
+            or ("simple" if weapon_category.startswith("simple_") else "martial" if weapon_category.startswith("martial_") else "")
+        )
+        return bool(
+            weapon_id in proficiency_tokens
+            or proficiency_group in proficiency_tokens
+            or f"{proficiency_group}_weapons" in proficiency_tokens
+            or ("martial_finesse_or_light_only" in proficiency_tokens and proficiency_group == "martial" and weapon_properties.intersection({"finesse", "light"}))
+        )
+
+    def _resolve_weapon_placeholder_options(
+        self,
+        *,
+        class_id: str,
+        weapon_category: str | None = None,
+        weapon_filters: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        class_data = self.class_by_id.get(class_id, {})
+        proficiency_tokens = {str(token) for token in class_data.get("weapon_proficiencies", []) if token}
+        normalized_filters = weapon_filters if isinstance(weapon_filters, dict) else {}
+        allowed_categories = {str(value) for value in normalized_filters.get("any_categories", []) if value}
+        required_categories = {str(value) for value in normalized_filters.get("all_of", []) if value}
+        required_properties = {str(value) for value in normalized_filters.get("all_properties", []) if value}
+        any_properties = {str(value) for value in normalized_filters.get("any_properties", []) if value}
+        excluded_properties = {str(value) for value in normalized_filters.get("exclude_properties", []) if value}
+        options: list[dict[str, Any]] = []
+
+        for weapon in self.weapons_catalog:
+            if not isinstance(weapon, dict) or not weapon.get("id"):
+                continue
+            if not self._is_weapon_allowed_for_class(weapon, proficiency_tokens):
+                continue
+            category = str(weapon.get("weapon_category") or "")
+            properties = {str(prop) for prop in weapon.get("properties", []) if prop}
+            if weapon_category and category != str(weapon_category):
+                continue
+            if allowed_categories and category not in allowed_categories:
+                continue
+            if required_categories and category not in required_categories:
+                continue
+            if required_properties and not required_properties.issubset(properties):
+                continue
+            if any_properties and not any_properties.intersection(properties):
+                continue
+            if excluded_properties and excluded_properties.intersection(properties):
+                continue
+            options.append(
+                {
+                    "id": str(weapon.get("id")),
+                    "label": self._label(weapon),
+                    "weapon_category": category or None,
+                    "damage": weapon.get("damage") if isinstance(weapon.get("damage"), dict) else None,
+                    "versatile_damage": weapon.get("versatile_damage"),
+                    "properties": sorted(properties),
+                    "mastery": weapon.get("mastery"),
+                }
+            )
+        return self._dedupe_options(options)
+
     def _collect_current_skill_proficiencies(self, state: dict[str, Any]) -> set[str]:
         normalized_state = self.normalize_character_creation_state(state)
         skills: set[str] = set()
@@ -1357,6 +1426,13 @@ class CharacterBuilderService:
                 "quantity": int(item.get("quantity", 1) or 1),
                 "source": item.get("source"),
                 "name": self._label(item.get("details", {})),
+                "name_fr": item.get("details", {}).get("name_fr") if isinstance(item.get("details"), dict) else None,
+                "name_en": item.get("details", {}).get("name_en") if isinstance(item.get("details"), dict) else None,
+                "weapon_category": item.get("details", {}).get("weapon_category") if isinstance(item.get("details"), dict) else None,
+                "damage": item.get("details", {}).get("damage") if isinstance(item.get("details", {}).get("damage"), dict) else None,
+                "versatile_damage": item.get("details", {}).get("versatile_damage") if isinstance(item.get("details"), dict) else None,
+                "properties": item.get("details", {}).get("properties", []) if isinstance(item.get("details"), dict) else [],
+                "mastery": item.get("details", {}).get("mastery") if isinstance(item.get("details"), dict) else None,
             }
             for item in resolved_equipment
         ]
@@ -1788,6 +1864,15 @@ class CharacterBuilderService:
         return errors
 
     def _resolve_equipment_options(self, options: list[Any], state: dict[str, Any]) -> list[dict[str, Any]]:
+        class_id = str(state.get("class_id") or "")
+
+        def _match_placeholder_rule(raw_item: dict[str, Any]) -> dict[str, Any] | None:
+            for candidate in self.equipment_placeholder_rules:
+                keys = candidate.get("match_when_object_contains", [])
+                if isinstance(keys, list) and keys and all(key in raw_item for key in keys):
+                    return candidate
+            return None
+
         def resolve_rule_payload(
             rule: dict[str, Any],
             *,
@@ -1816,6 +1901,36 @@ class CharacterBuilderService:
                     "id": rule_id or "_".join(str(catalog_id) for catalog_id in choice_from_catalogs),
                     "choose": quantity,
                     "options": self._dedupe_options(merged_options),
+                }
+            choice_from_weapon_category = rule.get("choice_from_weapon_category")
+            if choice_from_weapon_category:
+                return {
+                    "type": "choice_from_weapon_category",
+                    "id": rule_id or str(choice_from_weapon_category),
+                    "choose": quantity,
+                    "options": self._resolve_weapon_placeholder_options(
+                        class_id=class_id,
+                        weapon_category=str(choice_from_weapon_category),
+                    ),
+                }
+            choice_from_weapon_filters = rule.get("choice_from_weapon_filters")
+            if isinstance(choice_from_weapon_filters, dict):
+                return {
+                    "type": "choice_from_weapon_filters",
+                    "id": rule_id or "choice_from_weapon_filters",
+                    "choose": quantity,
+                    "options": self._resolve_weapon_placeholder_options(
+                        class_id=class_id,
+                        weapon_filters=choice_from_weapon_filters,
+                    ),
+                }
+            choice_from_item_ids = rule.get("choice_from_item_ids")
+            if isinstance(choice_from_item_ids, list):
+                return {
+                    "type": "choice_from_item_ids",
+                    "id": rule_id or "choice_from_item_ids",
+                    "choose": quantity,
+                    "options": self._expand_ids([str(item) for item in choice_from_item_ids if item], self.equipment_by_id),
                 }
             return None
 
@@ -1874,15 +1989,45 @@ class CharacterBuilderService:
                     if resolved_item:
                         items.append(resolved_item)
                 elif isinstance(raw_item, dict) and raw_item.get("equipment_choice_rule_id"):
-                    rule = self.equipment_choice_rule_by_id.get(str(raw_item.get("equipment_choice_rule_id")), {})
+                    lookup_id = str(raw_item.get("placeholder_id") or raw_item.get("equipment_choice_rule_id") or "")
+                    rule = self.equipment_choice_rule_by_id.get(lookup_id, {})
                     resolved_item = resolve_rule_payload(
                         {
                             **rule,
-                            "id": raw_item.get("id") or raw_item.get("equipment_choice_rule_id"),
+                            "id": raw_item.get("placeholder_id") or raw_item.get("id") or raw_item.get("equipment_choice_rule_id"),
                             "quantity": raw_item.get("quantity", rule.get("quantity", 1)),
                         },
-                        item_id=str(raw_item.get("id") or raw_item.get("equipment_choice_rule_id") or ""),
+                        item_id=str(raw_item.get("placeholder_id") or raw_item.get("id") or raw_item.get("equipment_choice_rule_id") or ""),
                     )
+                    if resolved_item:
+                        items.append(resolved_item)
+                elif isinstance(raw_item, dict) and raw_item.get("placeholder_id"):
+                    declared_rule: dict[str, Any] = {
+                        "id": raw_item.get("placeholder_id"),
+                        "quantity": raw_item.get("choose", raw_item.get("quantity", 1)),
+                    }
+                    for key in ("choice_from_weapon_category", "choice_from_weapon_filters", "choice_from_item_ids", "choice_from_category", "choice_from_catalogs"):
+                        if key in raw_item:
+                            declared_rule[key] = raw_item.get(key)
+                    resolved_item = resolve_rule_payload(
+                        declared_rule,
+                        item_id=str(raw_item.get("placeholder_id") or ""),
+                    )
+                    if not resolved_item:
+                        matched_rule = _match_placeholder_rule(raw_item)
+                        if matched_rule:
+                            resolution = matched_rule.get("resolution", {}) if isinstance(matched_rule.get("resolution"), dict) else {}
+                            normalized_resolution = {
+                                "id": raw_item.get("placeholder_id"),
+                                "quantity": raw_item.get("choose", raw_item.get("quantity", 1)),
+                            }
+                            if resolution.get("select_one_item_from_weapons_where") and raw_item.get("choice_from_weapon_category"):
+                                normalized_resolution["choice_from_weapon_category"] = raw_item.get("choice_from_weapon_category")
+                            if resolution.get("select_one_item_from_weapons_matching_filters") and raw_item.get("choice_from_weapon_filters"):
+                                normalized_resolution["choice_from_weapon_filters"] = raw_item.get("choice_from_weapon_filters")
+                            if resolution.get("select_one_item_from_ids") and isinstance(raw_item.get("choice_from_item_ids"), list):
+                                normalized_resolution["choice_from_item_ids"] = raw_item.get("choice_from_item_ids")
+                            resolved_item = resolve_rule_payload(normalized_resolution, item_id=str(raw_item.get("placeholder_id") or ""))
                     if resolved_item:
                         items.append(resolved_item)
                 elif isinstance(raw_item, dict) and raw_item.get("id"):
