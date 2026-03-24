@@ -45,6 +45,20 @@ BUILDER_STATE_ALIASES: dict[str, str] = {
     "equipment_choices_by_slot": "selected_equipment_choices_by_slot",
 }
 
+FLAT_BASE_ABILITY_FIELD_ALIASES: dict[str, str] = {
+    "force_base": "strength",
+    "strength_base": "strength",
+    "dexterite_base": "dexterity",
+    "dextérité_base": "dexterity",
+    "dexterity_base": "dexterity",
+    "constitution_base": "constitution",
+    "intelligence_base": "intelligence",
+    "sagesse_base": "wisdom",
+    "wisdom_base": "wisdom",
+    "charisme_base": "charisma",
+    "charisma_base": "charisma",
+}
+
 STEP_COMPONENT_IDS = {
     "choose_class",
     "choose_background",
@@ -956,13 +970,16 @@ class CharacterBuilderService:
         if not isinstance(choices, list):
             return
 
-        selected_pool = self._flatten_choice_selections(state.get(selection_key))
+        selected_by_choice = self._normalize_choice_selections(state.get(selection_key))
         all_option_ids: set[str] = set()
+        expected_choice_ids: set[str] = set()
 
         for choice in choices:
             if not isinstance(choice, dict):
                 continue
             choice_id = str(choice.get("id") or "")
+            if choice_id:
+                expected_choice_ids.add(choice_id)
             choose = int(choice.get("choose", 1) or 1)
             required = bool(choice.get("required", True))
             selected_ids = self._get_raw_selected_ids_for_choice(choice, state, selection_key)
@@ -985,8 +1002,15 @@ class CharacterBuilderService:
                     f"{context_label}: le choix requis {choice_id} est incomplet ({len(selected_ids)}/{choose})."
                 )
 
-        if selected_pool:
-            unknown = [token for token in selected_pool if token not in all_option_ids]
+        context_selected_pool: list[str] = []
+        if expected_choice_ids:
+            for choice_id in expected_choice_ids:
+                context_selected_pool.extend(selected_by_choice.get(choice_id, []))
+        else:
+            context_selected_pool.extend(selected_by_choice.get("__flat__", []))
+
+        if context_selected_pool:
+            unknown = [token for token in context_selected_pool if token not in all_option_ids]
             if unknown:
                 errors.append(
                     f"{context_label}: certaines sélections ne correspondent à aucun choix autorisé ({', '.join(unknown)})."
@@ -1860,6 +1884,20 @@ class CharacterBuilderService:
             normalized[canonical_key] = parsed_value
         return normalized
 
+    @staticmethod
+    def _extract_base_ability_scores_from_flat_fields(raw_state: dict[str, Any]) -> dict[str, int]:
+        if not isinstance(raw_state, dict):
+            return {}
+        normalized: dict[str, int] = {}
+        for raw_key, canonical_key in FLAT_BASE_ABILITY_FIELD_ALIASES.items():
+            if raw_key not in raw_state:
+                continue
+            try:
+                normalized[canonical_key] = int(raw_state.get(raw_key))
+            except (TypeError, ValueError):
+                continue
+        return normalized
+
     def normalize_character_creation_state(self, state: dict[str, Any] | None) -> dict[str, Any]:
         """Normalise le payload du builder vers un contrat unique."""
         raw_state = state if isinstance(state, dict) else {}
@@ -1892,7 +1930,9 @@ class CharacterBuilderService:
         for key in ("selected_class_choice_ids", "selected_species_choice_ids", "selected_feat_choice_ids"):
             normalized[key] = self._normalize_choice_selections(normalized.get(key))
 
-        normalized["base_ability_scores"] = self._normalize_base_ability_scores(normalized.get("base_ability_scores"))
+        normalized_base_scores = self._normalize_base_ability_scores(normalized.get("base_ability_scores"))
+        normalized_base_scores.update(self._extract_base_ability_scores_from_flat_fields(raw_state))
+        normalized["base_ability_scores"] = normalized_base_scores
 
         allocations = normalized.get("background_ability_bonus_allocations")
         if isinstance(allocations, dict) and "items" in allocations:
