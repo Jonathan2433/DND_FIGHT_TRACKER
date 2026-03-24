@@ -56,6 +56,10 @@ STEP_COMPONENT_IDS = {
     "finalize",
 }
 
+ABILITY_ORDER = ("strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma")
+STANDARD_ARRAY = (8, 10, 12, 13, 14, 15)
+POINT_BUY_COST_BY_SCORE = {8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9}
+
 
 class CharacterBuilderService:
     """Construit les payloads filtres pour chaque etape du builder."""
@@ -1789,8 +1793,6 @@ class CharacterBuilderService:
 
     @staticmethod
     def _normalize_background_allocations(raw_allocations: Any) -> list[dict[str, Any]]:
-        if not isinstance(raw_allocations, list):
-            return []
         ability_aliases = {
             "force": "strength",
             "strength": "strength",
@@ -1804,6 +1806,13 @@ class CharacterBuilderService:
             "charisme": "charisma",
             "charisma": "charisma",
         }
+        if isinstance(raw_allocations, dict):
+            raw_allocations = [
+                {"ability": key, "bonus": value}
+                for key, value in raw_allocations.items()
+            ]
+        if not isinstance(raw_allocations, list):
+            return []
         normalized: list[dict[str, Any]] = []
         for entry in raw_allocations:
             if isinstance(entry, str):
@@ -1820,6 +1829,35 @@ class CharacterBuilderService:
                     except (TypeError, ValueError):
                         parsed_bonus = 1
                     normalized.append({"ability": str(ability), "bonus": parsed_bonus})
+        return normalized
+
+    @staticmethod
+    def _normalize_base_ability_scores(raw_scores: Any) -> dict[str, int]:
+        if not isinstance(raw_scores, dict):
+            return {}
+        ability_aliases = {
+            "force": "strength",
+            "strength": "strength",
+            "dextérité": "dexterity",
+            "dexterite": "dexterity",
+            "dexterity": "dexterity",
+            "constitution": "constitution",
+            "intelligence": "intelligence",
+            "sagesse": "wisdom",
+            "wisdom": "wisdom",
+            "charisme": "charisma",
+            "charisma": "charisma",
+        }
+        normalized: dict[str, int] = {}
+        for key, value in raw_scores.items():
+            canonical_key = ability_aliases.get(str(key).strip().lower(), str(key).strip().lower())
+            if canonical_key not in ABILITY_ORDER:
+                continue
+            try:
+                parsed_value = int(value)
+            except (TypeError, ValueError):
+                continue
+            normalized[canonical_key] = parsed_value
         return normalized
 
     def normalize_character_creation_state(self, state: dict[str, Any] | None) -> dict[str, Any]:
@@ -1854,13 +1892,12 @@ class CharacterBuilderService:
         for key in ("selected_class_choice_ids", "selected_species_choice_ids", "selected_feat_choice_ids"):
             normalized[key] = self._normalize_choice_selections(normalized.get(key))
 
-        if not isinstance(normalized.get("base_ability_scores"), dict):
-            normalized["base_ability_scores"] = {}
+        normalized["base_ability_scores"] = self._normalize_base_ability_scores(normalized.get("base_ability_scores"))
 
         allocations = normalized.get("background_ability_bonus_allocations")
-        if isinstance(allocations, dict):
+        if isinstance(allocations, dict) and "items" in allocations:
             allocations = allocations.get("items", [])
-        normalized["background_ability_bonus_allocations"] = allocations if isinstance(allocations, list) else []
+        normalized["background_ability_bonus_allocations"] = self._normalize_background_allocations(allocations)
 
         spells_by_choice = normalized.get("selected_spell_ids_by_choice")
         normalized["selected_spell_ids_by_choice"] = spells_by_choice if isinstance(spells_by_choice, dict) else {}
@@ -1910,10 +1947,7 @@ class CharacterBuilderService:
             if allowed_modes and selected_mode and selected_mode not in allowed_modes:
                 errors.append("Le mode de bonus d'origine est invalide pour ce background.")
 
-            raw_allocations = state.get("background_ability_bonus_allocations")
-            if raw_allocations is not None and not isinstance(raw_allocations, list):
-                errors.append("Les allocations de bonus d'origine sont invalides.")
-            allocations = self._normalize_background_allocations(raw_allocations)
+            allocations = self._normalize_background_allocations(state.get("background_ability_bonus_allocations"))
             allowed_abilities = {
                 str(ability)
                 for ability in (ability_options.get("allowed", []) if isinstance(ability_options, dict) else [])
@@ -1940,6 +1974,27 @@ class CharacterBuilderService:
         }
         if ability_score_method and str(ability_score_method) not in available_methods:
             errors.append("La méthode de caractéristiques est invalide.")
+        base_scores = state.get("base_ability_scores") if isinstance(state.get("base_ability_scores"), dict) else {}
+        if set(base_scores.keys()) != set(ABILITY_ORDER):
+            errors.append("Les caractéristiques de base sont incomplètes ou invalides.")
+        else:
+            method_id = str(ability_score_method or "").strip()
+            if method_id == "standard_array":
+                sorted_values = sorted(int(base_scores[ability]) for ability in ABILITY_ORDER)
+                if sorted_values != list(STANDARD_ARRAY):
+                    errors.append("Répartition standard invalide : utilisez exactement 15, 14, 13, 12, 10 et 8 une seule fois.")
+            elif method_id == "point_buy":
+                invalid_scores = [score for score in base_scores.values() if int(score) not in POINT_BUY_COST_BY_SCORE]
+                if invalid_scores:
+                    errors.append("Point Buy invalide : les scores de base doivent être compris entre 8 et 15.")
+                else:
+                    total_cost = sum(POINT_BUY_COST_BY_SCORE[int(base_scores[ability])] for ability in ABILITY_ORDER)
+                    if total_cost > 27:
+                        errors.append("Point Buy invalide : le budget de 27 points est dépassé.")
+            elif method_id == "manual_custom":
+                invalid_scores = [score for score in base_scores.values() if int(score) < 3 or int(score) > 18]
+                if invalid_scores:
+                    errors.append("Saisie manuelle invalide : les scores de base doivent être compris entre 3 et 18.")
 
         selected_spell_ids_by_choice = state.get("selected_spell_ids_by_choice")
         if selected_spell_ids_by_choice is not None and not isinstance(selected_spell_ids_by_choice, dict):

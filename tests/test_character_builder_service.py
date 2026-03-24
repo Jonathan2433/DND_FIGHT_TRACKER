@@ -41,6 +41,95 @@ def test_armor_and_shield_ac_rules_are_applied_from_selected_equipment():
     assert with_heavy["derived"]["armor_class"] == 18  # 16 + DEX cap 0 + shield 2
 
 
+def test_validate_standard_array_distribution_accepts_exact_pool():
+    service = CharacterBuilderService()
+    errors = service.validate_character_creation_submission(
+        _base_state(
+            ability_score_method="standard_array",
+            base_ability_scores={
+                "strength": 15,
+                "dexterity": 14,
+                "constitution": 13,
+                "intelligence": 12,
+                "wisdom": 10,
+                "charisma": 8,
+            },
+        )
+    )
+
+    assert "Répartition standard invalide : utilisez exactement 15, 14, 13, 12, 10 et 8 une seule fois." not in errors
+
+
+def test_validate_standard_array_distribution_rejects_all_fifteen():
+    service = CharacterBuilderService()
+    errors = service.validate_character_creation_submission(
+        _base_state(
+            ability_score_method="standard_array",
+            base_ability_scores={
+                "strength": 15,
+                "dexterity": 15,
+                "constitution": 15,
+                "intelligence": 15,
+                "wisdom": 15,
+                "charisma": 15,
+            },
+        )
+    )
+
+    assert "Répartition standard invalide : utilisez exactement 15, 14, 13, 12, 10 et 8 une seule fois." in errors
+
+
+def test_validate_background_bonus_mode_plus_two_plus_one_accepts_distinct_allocations():
+    service = CharacterBuilderService()
+    errors = service.validate_character_creation_submission(
+        _base_state(
+            background_id="soldier",
+            background_ability_bonus_mode="increase_one_by_2_and_one_by_1",
+            background_ability_bonus_allocations={
+                "strength": 2,
+                "constitution": 1,
+            },
+        )
+    )
+
+    assert "Les allocations de bonus d'origine ne respectent pas le mode +2/+1." not in errors
+
+
+def test_validate_background_bonus_mode_plus_two_plus_two_is_rejected():
+    service = CharacterBuilderService()
+    errors = service.validate_character_creation_submission(
+        _base_state(
+            background_id="soldier",
+            background_ability_bonus_mode="increase_one_by_2_and_one_by_1",
+            background_ability_bonus_allocations={
+                "strength": 2,
+                "constitution": 2,
+            },
+        )
+    )
+
+    assert "Les allocations de bonus d'origine ne respectent pas le mode +2/+1." in errors
+
+
+def test_validate_point_buy_rejects_budget_above_twenty_seven():
+    service = CharacterBuilderService()
+    errors = service.validate_character_creation_submission(
+        _base_state(
+            ability_score_method="point_buy",
+            base_ability_scores={
+                "strength": 15,
+                "dexterity": 15,
+                "constitution": 15,
+                "intelligence": 15,
+                "wisdom": 15,
+                "charisma": 15,
+            },
+        )
+    )
+
+    assert "Point Buy invalide : le budget de 27 points est dépassé." in errors
+
+
 def test_weapon_profiles_include_damage_range_and_attack_ability():
     service = CharacterBuilderService()
     state = _base_state(selected_equipment_ids=["longsword", "greatsword", "longbow", "dagger"])
