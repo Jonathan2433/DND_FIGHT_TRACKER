@@ -972,6 +972,59 @@ function syncHiddenFields() {
             source_choice_value: x.dataset.sourceChoiceValue || null,
         }));
     hidden.featChoices.value = JSON.stringify(featChoices);
+    syncSubmissionChoiceInputs(allChecked);
+}
+
+function syncSubmissionChoiceInputs(allCheckedInputs = null) {
+    const checkedInputs = Array.isArray(allCheckedInputs)
+        ? allCheckedInputs
+        : Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+
+    let bridge = form.querySelector('#choice-bridge-inputs');
+    if (!bridge) {
+        bridge = document.createElement('div');
+        bridge.id = 'choice-bridge-inputs';
+        bridge.hidden = true;
+        form.appendChild(bridge);
+    }
+    bridge.innerHTML = '';
+
+    const byScope = {
+        class: new Set(),
+        species: new Set(),
+        feat: new Set(),
+    };
+
+    checkedInputs.forEach((input) => {
+        const value = String(input.value || '').trim();
+        if (!value) return;
+        const scope = String(input.dataset.scope || '').trim();
+        if (scope === 'class') {
+            byScope.class.add(value);
+            return;
+        }
+        if (scope === 'species') {
+            byScope.species.add(value);
+            return;
+        }
+        if (scope.startsWith('feat_')) {
+            byScope.feat.add(value);
+        }
+    });
+
+    const appendMany = (name, values) => {
+        values.forEach((value) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            bridge.appendChild(input);
+        });
+    };
+
+    appendMany('selected_class_choice_ids', Array.from(byScope.class));
+    appendMany('selected_species_choice_ids', Array.from(byScope.species));
+    appendMany('selected_feat_choice_ids', Array.from(byScope.feat));
 }
 
 function splitSpellChoices(choices = []) {
