@@ -74,6 +74,15 @@ class CharacterSheetPdfService:
         "bonds": ("Bonds",),
         "flaws": ("Flaws",),
         "attacks_spellcasting": ("AttacksSpellcasting", "Attacks & Spellcasting"),
+        "weapon_1_name": ("Wpn Name",),
+        "weapon_1_attack_bonus": ("Wpn1 AtkBonus",),
+        "weapon_1_damage_type": ("Wpn1 Damage",),
+        "weapon_2_name": ("Wpn Name 2",),
+        "weapon_2_attack_bonus": ("Wpn2 AtkBonus", "Wpn2 AtkBonus "),
+        "weapon_2_damage_type": ("Wpn2 Damage", "Wpn2 Damage "),
+        "weapon_3_name": ("Wpn Name 3",),
+        "weapon_3_attack_bonus": ("Wpn3 AtkBonus", "Wpn3 AtkBonus  "),
+        "weapon_3_damage_type": ("Wpn3 Damage", "Wpn3 Damage "),
         "allies_organizations": ("AlliesOrganizations", "Allies & Organizations"),
         "character_appearance": ("CharacterAppearance", "CHARACTER APPEARANCE"),
         "additional_features_traits": ("AdditionalFeatandTraits", "Additional Features and Traits"),
@@ -304,15 +313,9 @@ class CharacterSheetPdfService:
 
     @classmethod
     def _build_attacks_spellcasting_text(cls, character) -> str:
-        weapon_names = cls._extract_weapon_loadouts(character.equipment)
-        if not weapon_names:
+        rows = cls._build_weapon_table_rows(character, max_rows=5)
+        if not rows:
             return ""
-
-        damage_type_short = {
-            "Tranchant": "Trch",
-            "Percant": "Perc",
-            "Contondant": "Cont",
-        }
 
         def clamp_line(value: str, limit: int = 36) -> str:
             text = " ".join((value or "").split())
@@ -320,11 +323,30 @@ class CharacterSheetPdfService:
                 return text
             return f"{text[:limit - 1].rstrip()}…"
 
-        attack_lines: list[str] = []
-        for weapon_name in weapon_names[:5]:
+        lines: list[str] = []
+        for row in rows:
+            if row["attack_bonus"] and row["damage_type"]:
+                lines.append(clamp_line(f"{row['name']} {row['attack_bonus']} {row['damage_type']}"))
+            else:
+                lines.append(clamp_line(row["name"]))
+        return "\n".join(lines)
+
+    @classmethod
+    def _build_weapon_table_rows(cls, character, *, max_rows: int = 3) -> list[dict[str, str]]:
+        weapon_names = cls._extract_weapon_loadouts(character.equipment)
+        if not weapon_names:
+            return []
+
+        damage_type_short = {
+            "Tranchant": "Trch",
+            "Percant": "Perc",
+            "Contondant": "Cont",
+        }
+        rows: list[dict[str, str]] = []
+        for weapon_name in weapon_names[:max_rows]:
             profile = cls._resolve_weapon_profile(weapon_name)
             if not profile:
-                attack_lines.append(clamp_line(weapon_name))
+                rows.append({"name": weapon_name, "attack_bonus": "", "damage_type": ""})
                 continue
 
             if profile["is_ranged"]:
@@ -337,11 +359,14 @@ class CharacterSheetPdfService:
             attack_bonus = cls._format_mod(ability_mod + character.bonus_maitrise)
             damage_bonus = f"+{ability_mod}" if ability_mod >= 0 else str(ability_mod)
             damage_type = damage_type_short.get(profile["damage_type"], profile["damage_type"])
-            damage_block = f"{profile['damage']}{damage_bonus} {damage_type}"
-            display_name = profile.get("name") or weapon_name
-            attack_lines.append(clamp_line(f"{display_name} {attack_bonus} {damage_block}"))
-
-        return "\n".join(attack_lines)
+            rows.append(
+                {
+                    "name": str(profile.get("name") or weapon_name),
+                    "attack_bonus": attack_bonus,
+                    "damage_type": f"{profile['damage']}{damage_bonus} {damage_type}",
+                }
+            )
+        return rows
 
     @classmethod
     def _build_dynamic_spell_field_values(
@@ -575,6 +600,7 @@ class CharacterSheetPdfService:
 
         spellcasting_class, spellcasting_ability, spell_save_dc, spell_attack_bonus = cls._derive_spellcasting_from_class(character)
         attacks_spellcasting = cls._build_attacks_spellcasting_text(character)
+        weapon_rows = cls._build_weapon_table_rows(character, max_rows=3)
         proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
         background_name, backstory_text = cls._split_background_payload(character.background_story)
 
@@ -621,6 +647,15 @@ class CharacterSheetPdfService:
             "bonds": "",
             "flaws": "",
             "attacks_spellcasting": attacks_spellcasting,
+            "weapon_1_name": weapon_rows[0]["name"] if len(weapon_rows) > 0 else "",
+            "weapon_1_attack_bonus": weapon_rows[0]["attack_bonus"] if len(weapon_rows) > 0 else "",
+            "weapon_1_damage_type": weapon_rows[0]["damage_type"] if len(weapon_rows) > 0 else "",
+            "weapon_2_name": weapon_rows[1]["name"] if len(weapon_rows) > 1 else "",
+            "weapon_2_attack_bonus": weapon_rows[1]["attack_bonus"] if len(weapon_rows) > 1 else "",
+            "weapon_2_damage_type": weapon_rows[1]["damage_type"] if len(weapon_rows) > 1 else "",
+            "weapon_3_name": weapon_rows[2]["name"] if len(weapon_rows) > 2 else "",
+            "weapon_3_attack_bonus": weapon_rows[2]["attack_bonus"] if len(weapon_rows) > 2 else "",
+            "weapon_3_damage_type": weapon_rows[2]["damage_type"] if len(weapon_rows) > 2 else "",
             "allies_organizations": cls._normalize_multiline(character.allies_organizations, width=32, max_lines=12),
             "character_appearance": cls._normalize_multiline(character.character_appearance, width=30, max_lines=16),
             "additional_features_traits": cls._normalize_multiline(character.additional_features_traits, width=32, max_lines=16),
