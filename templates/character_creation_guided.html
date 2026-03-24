@@ -1005,6 +1005,7 @@ function syncHiddenFields() {
 
 function normalizeChoiceScope(scope) {
     if (scope === 'class' || scope === 'background' || scope === 'species') return scope;
+    if (scope === 'spell') return 'class';
     if (String(scope || '').startsWith('feat_')) return 'feat';
     return null;
 }
