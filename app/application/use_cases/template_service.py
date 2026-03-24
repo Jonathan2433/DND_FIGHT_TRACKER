@@ -580,6 +580,7 @@ class TemplateService:
         """Compose un bloc equipement detaille depuis le funnel de creation."""
         base_equipment = (form_data.get('equipment') or '').strip()
         skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
+        expertise_skills = TemplateService._extract_expertise_skills(form_data)
         tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
         weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
         ranged_weapon_loadout = (form_data.get('ranged_weapon_loadout') or '').strip()
@@ -600,6 +601,8 @@ class TemplateService:
             sections.append(f"Inventaire: {inventory_items}")
         if skill_proficiencies:
             sections.append(f"Competences maitrisees: {skill_proficiencies}")
+        if expertise_skills:
+            sections.append(f"Expertises: {expertise_skills}")
         if tool_proficiencies:
             sections.append(f"Outils maitrises: {tool_proficiencies}")
         if spellbook_notes:
@@ -608,6 +611,34 @@ class TemplateService:
         if not sections:
             return None
         return " | ".join(sections)
+
+    @staticmethod
+    def _extract_expertise_skills(form_data):
+        """Extrait les expertises sélectionnées via le payload canonique des choix."""
+        if form_data is None:
+            return ""
+
+        selected_proficient_skills = {
+            token.strip()
+            for token in (TemplateService._normalize_skill_proficiencies(form_data) or "").split(",")
+            if token and token.strip()
+        }
+        if not selected_proficient_skills:
+            return ""
+
+        expertise_skills = []
+        for entry in TemplateService._safe_parse_json_list(form_data.get("feat_choices")):
+            if not isinstance(entry, dict):
+                continue
+            if str(entry.get("choice_type") or "").strip() != "expertise":
+                continue
+            skill_id = str(entry.get("value") or "").strip()
+            if not skill_id:
+                continue
+            if skill_id in selected_proficient_skills and skill_id not in expertise_skills:
+                expertise_skills.append(skill_id)
+
+        return ", ".join(expertise_skills)
 
     @staticmethod
     def _safe_parse_json_list(raw_value):
@@ -798,6 +829,7 @@ class TemplateService:
             "armor_loadout": "",
             "inventory_items": "",
             "skill_proficiencies": "",
+            "expertise_skills": "",
             "tool_proficiencies": "",
             "spellbook_notes": "",
         }
@@ -812,6 +844,7 @@ class TemplateService:
             "Armure/Bouclier:": "armor_loadout",
             "Inventaire:": "inventory_items",
             "Competences maitrisees:": "skill_proficiencies",
+            "Expertises:": "expertise_skills",
             "Outils maitrises:": "tool_proficiencies",
             "Sorts/Aptitudes:": "spellbook_notes",
         }
