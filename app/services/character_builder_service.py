@@ -1369,11 +1369,40 @@ class CharacterBuilderService:
 
         return {ability: max(1, min(20, score)) for ability, score in final_scores.items()}
 
+    @staticmethod
+    def _compute_proficiency_bonus(level: int) -> int:
+        normalized_level = max(1, int(level or 1))
+        return 2 + ((normalized_level - 1) // 4)
+
+    def _compute_skill_modifiers(
+        self,
+        final_scores: dict[str, int],
+        proficient_skills: set[str],
+        expertise_skills: set[str],
+        proficiency_bonus: int,
+    ) -> dict[str, int]:
+        modifiers_by_ability = {
+            ability: self._ability_modifier(int(score or 10))
+            for ability, score in final_scores.items()
+        }
+        skill_modifiers: dict[str, int] = {}
+        for skill_id, skill in self.skill_by_id.items():
+            if not isinstance(skill, dict):
+                continue
+            linked_ability = str(skill.get("ability") or "").strip().lower()
+            ability_modifier = modifiers_by_ability.get(linked_ability, 0)
+            proficiency_multiplier = 2 if skill_id in expertise_skills else 1 if skill_id in proficient_skills else 0
+            skill_modifiers[skill_id] = ability_modifier + (proficiency_bonus * proficiency_multiplier)
+        return skill_modifiers
+
     def build_character_output(self, raw_state: dict[str, Any]) -> dict[str, Any]:
         state = self.normalize_character_creation_state(raw_state)
         class_id = str(state.get("class_id") or "")
         background_id = str(state.get("background_id") or "")
         species_id = str(state.get("species_id") or "")
+        final_scores = self._compute_final_ability_scores(state)
+        ability_modifiers = {ability: self._ability_modifier(score) for ability, score in final_scores.items()}
+        proficiency_bonus = self._compute_proficiency_bonus(int(state.get("level", 1) or 1))
         class_data = self.class_by_id.get(class_id, {})
         species_data = self.species_by_id.get(species_id, {})
 
@@ -1412,8 +1441,10 @@ class CharacterBuilderService:
             "equipped_armor_category": None,
             "has_shield": False,
             "shield_armor_class_bonus": 0,
+            "proficiency_bonus": proficiency_bonus,
             "final_ability_scores": {},
             "ability_modifiers": {},
+            "skill_modifiers": {},
             "final_equipment": [],
             "weapon_profiles": [],
         }
@@ -1422,11 +1453,14 @@ class CharacterBuilderService:
         self.apply_species_choices(state, output)
         self.apply_class_choices(state, output)
         self.apply_feat_choices(state, output)
-
-        final_scores = self._compute_final_ability_scores(state)
-        ability_modifiers = {ability: self._ability_modifier(score) for ability, score in final_scores.items()}
         output["final_ability_scores"] = final_scores
         output["ability_modifiers"] = ability_modifiers
+        output["skill_modifiers"] = self._compute_skill_modifiers(
+            final_scores,
+            {str(skill_id) for skill_id in output.get("skills", []) if skill_id},
+            {str(skill_id) for skill_id in output.get("expertise_skills", []) if skill_id},
+            proficiency_bonus,
+        )
         constitution_score = final_scores.get("constitution", 10)
         dexterity_score = final_scores.get("dexterity", 10)
         constitution_modifier = self._ability_modifier(constitution_score)
