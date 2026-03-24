@@ -92,3 +92,41 @@ def test_final_equipment_contains_full_weapon_fields():
     assert dagger["damage"] == {"dice": "1d4", "type": "piercing"}
     assert "finesse" in dagger["properties"]
     assert dagger["mastery"] == "nick"
+
+
+def test_skill_modifiers_use_final_abilities_with_background_bonus_allocations():
+    service = CharacterBuilderService()
+    output = service.build_character_output(
+        _base_state(
+            class_id="barbarian",
+            background_id="soldier",
+            species_id="goliath",
+            base_ability_scores={
+                "strength": 15,
+                "dexterity": 13,
+                "constitution": 14,
+                "intelligence": 8,
+                "wisdom": 10,
+                "charisma": 12,
+            },
+            background_ability_bonus_allocations=[
+                {"ability": "strength", "bonus": 2},
+                {"ability": "constitution", "bonus": 1},
+            ],
+            selected_class_choice_ids={
+                "barbarian_skill_choices": ["athletics", "intimidation"],
+            },
+        )
+    )
+
+    assert output["final_ability_scores"] == {
+        "strength": 17,
+        "dexterity": 13,
+        "constitution": 15,
+        "intelligence": 8,
+        "wisdom": 10,
+        "charisma": 12,
+    }
+    assert output["skill_modifiers"]["athletics"] == 5
+    assert output["skill_modifiers"]["intimidation"] == 3
+    assert output["skill_modifiers"]["perception"] == 0
