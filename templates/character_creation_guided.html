@@ -192,7 +192,7 @@
         }
     </style>
 
-    <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form">
+    <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form" enctype="multipart/form-data">
         <input type="hidden" name="character_type" value="PJ">
         <input type="hidden" name="visibility_level" value="private">
         <input type="hidden" name="ability_mode" id="ability-mode-hidden" value="standard_array">
@@ -396,6 +396,11 @@
                         <div class="appearance-story-field">
                             <label for="guided-skin">Peau</label>
                             <input id="guided-skin" type="text" name="skin" placeholder="Ex: hâlée">
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-image">Photo de profil</label>
+                            <input id="guided-image" type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+                            <small class="text-muted">Formats acceptés : PNG, JPG, JPEG, WEBP.</small>
                         </div>
                         <div class="appearance-story-field appearance-story-field--full">
                             <label for="guided-character-appearance">Apparence du personnage</label>
