@@ -31,3 +31,22 @@ def test_attacks_spellcasting_keeps_unknown_weapon_name():
     result = CharacterSheetPdfService._build_attacks_spellcasting_text(character)
 
     assert result == "Lame du chaos"
+
+
+def test_weapon_table_rows_include_damage_and_attack_bonus():
+    character = _character_with_equipment(
+        "Arme de corps a corps equipee: dagger | Arme a distance equipee: longbow"
+    )
+
+    rows = CharacterSheetPdfService._build_weapon_table_rows(character, max_rows=3)
+
+    assert rows[0] == {
+        "name": "Dague",
+        "attack_bonus": "+5",
+        "damage_type": "1d4+3 Perc",
+    }
+    assert rows[1] == {
+        "name": "Arc long",
+        "attack_bonus": "+4",
+        "damage_type": "1d8+2 Perc",
+    }
