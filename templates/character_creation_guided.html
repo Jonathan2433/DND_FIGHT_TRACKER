@@ -1020,6 +1020,16 @@ function isChoiceOptionSelected(scope, choiceId, optionValue) {
     return Array.isArray(selectedValues) && selectedValues.includes(safeValue);
 }
 
+function getSelectedChoiceCount(scope, choiceId, optionValue) {
+    const normalizedScope = normalizeChoiceScope(scope);
+    const safeChoiceId = String(choiceId || '').trim();
+    const safeValue = String(optionValue || '').trim();
+    if (!normalizedScope || !safeChoiceId || !safeValue) return 0;
+    const selectedByScope = state.selected_choices_by_scope?.[normalizedScope] || {};
+    const selectedValues = Array.isArray(selectedByScope[safeChoiceId]) ? selectedByScope[safeChoiceId] : [];
+    return selectedValues.filter((value) => value === safeValue).length;
+}
+
 function syncPersistedChoiceState(allCheckedInputs = null) {
     const checkedInputs = Array.isArray(allCheckedInputs)
         ? allCheckedInputs
@@ -1037,7 +1047,7 @@ function syncPersistedChoiceState(allCheckedInputs = null) {
         if (!normalizedScope || !choiceId || !value) return;
         const bucket = nextState[normalizedScope];
         if (!Array.isArray(bucket[choiceId])) bucket[choiceId] = [];
-        if (!bucket[choiceId].includes(value)) bucket[choiceId].push(value);
+        bucket[choiceId].push(value);
     });
     state.selected_choices_by_scope = nextState;
 }
@@ -1057,9 +1067,9 @@ function syncSubmissionChoiceInputs(allCheckedInputs = null) {
     bridge.innerHTML = '';
 
     const byScope = {
-        class: new Set(),
-        species: new Set(),
-        feat: new Set(),
+        class: [],
+        species: [],
+        feat: [],
     };
 
     checkedInputs.forEach((input) => {
@@ -1067,15 +1077,15 @@ function syncSubmissionChoiceInputs(allCheckedInputs = null) {
         if (!value) return;
         const scope = String(input.dataset.scope || '').trim();
         if (scope === 'class') {
-            byScope.class.add(value);
+            byScope.class.push(value);
             return;
         }
         if (scope === 'species') {
-            byScope.species.add(value);
+            byScope.species.push(value);
             return;
         }
         if (scope.startsWith('feat_')) {
-            byScope.feat.add(value);
+            byScope.feat.push(value);
         }
     });
 
@@ -1089,9 +1099,9 @@ function syncSubmissionChoiceInputs(allCheckedInputs = null) {
         });
     };
 
-    appendMany('selected_class_choice_ids', Array.from(byScope.class));
-    appendMany('selected_species_choice_ids', Array.from(byScope.species));
-    appendMany('selected_feat_choice_ids', Array.from(byScope.feat));
+    appendMany('selected_class_choice_ids', byScope.class);
+    appendMany('selected_species_choice_ids', byScope.species);
+    appendMany('selected_feat_choice_ids', byScope.feat);
 }
 
 function splitSpellChoices(choices = []) {
@@ -1221,30 +1231,42 @@ function renderEquipment(targetId, payload, scope) {
             const title = document.createElement('p');
             title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
             section.appendChild(title);
-            (item.options || []).forEach((subOption) => {
-                const subRow = document.createElement('label');
-                subRow.classList.add('builder-choice-item');
-                subRow.style.display = 'block';
-                const input = document.createElement('input');
-                input.type = 'checkbox';
-                input.dataset.choiceType = 'equipment';
-                input.dataset.scope = scope;
-                input.dataset.choiceId = item.id;
-                input.dataset.choose = String(item.choose || 1);
-                input.value = subOption.id || subOption.label || subOption.name_fr;
-                input.dataset.optionLabel = subOption.label || subOption.name_fr || subOption.id || input.value;
-                input.addEventListener('change', () => {
-                    const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
-                    if (siblings.length > (item.choose || 1)) {
-                        input.checked = false;
-                        return;
+            const subOptions = item.options || [];
+            const shouldRenderQuantitySlots = (item.choose || 1) > 1 && subOptions.length === 1;
+
+            subOptions.forEach((subOption) => {
+                const slotCount = shouldRenderQuantitySlots ? (item.choose || 1) : 1;
+                const selectedCount = getSelectedChoiceCount(scope, item.id, subOption.id || subOption.label || subOption.name_fr);
+                for (let slotIdx = 0; slotIdx < slotCount; slotIdx += 1) {
+                    const subRow = document.createElement('label');
+                    subRow.classList.add('builder-choice-item');
+                    subRow.style.display = 'block';
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.dataset.choiceType = 'equipment';
+                    input.dataset.scope = scope;
+                    input.dataset.choiceId = item.id;
+                    input.dataset.choose = String(item.choose || 1);
+                    input.value = subOption.id || subOption.label || subOption.name_fr;
+                    input.dataset.optionLabel = subOption.label || subOption.name_fr || subOption.id || input.value;
+                    if (slotIdx < selectedCount) {
+                        input.checked = true;
                     }
-                    renderArmorShieldSelection(latestPayload?.class_payload || {});
-                    syncHiddenFields();
-                });
-                subRow.appendChild(input);
-                subRow.append(` ${subOption.label || subOption.name_fr || subOption.id}`);
-                section.appendChild(subRow);
+                    input.addEventListener('change', () => {
+                        const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
+                        if (siblings.length > (item.choose || 1)) {
+                            input.checked = false;
+                            return;
+                        }
+                        renderArmorShieldSelection(latestPayload?.class_payload || {});
+                        syncHiddenFields();
+                    });
+                    subRow.appendChild(input);
+                    const optionLabel = subOption.label || subOption.name_fr || subOption.id;
+                    const slotSuffix = shouldRenderQuantitySlots ? ` (${slotIdx + 1}/${slotCount})` : '';
+                    subRow.append(` ${optionLabel}${slotSuffix}`);
+                    section.appendChild(subRow);
+                }
             });
         });
 

@@ -74,3 +74,17 @@ def test_extract_builder_state_backfills_spell_scope_entries_from_feat_choices()
         "cleric_cantrips_known": ["guidance", "light"],
         "cleric_prepared_spells": ["bless", "command"],
     }
+
+
+def test_extract_builder_state_preserves_duplicate_values_for_quantity_choices():
+    form = _base_form()
+    form["feat_choices"] = json.dumps(
+        [
+            {"scope": "class", "choice_id": "rogue_dagger_pair", "choice_type": "equipment", "value": "dagger"},
+            {"scope": "class", "choice_id": "rogue_dagger_pair", "choice_type": "equipment", "value": "dagger"},
+        ]
+    )
+
+    state = _extract_builder_state(form)
+
+    assert state["selected_class_choice_ids"] == {"rogue_dagger_pair": ["dagger", "dagger"]}
