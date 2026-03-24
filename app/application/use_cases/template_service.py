@@ -489,13 +489,34 @@ class TemplateService:
             except Exception:
                 distribution[field] = 0
         positive_distribution = {key: value for key, value in distribution.items() if value > 0}
+
+        allocations = cls._safe_parse_json_list(form_data.get("background_ability_bonus_allocations_json"))
+        allocation_distribution = {}
+        for entry in allocations:
+            if not isinstance(entry, dict):
+                continue
+            ability = str(entry.get("ability") or "").strip().lower()
+            if ability not in bg_bonus_fields:
+                continue
+            try:
+                bonus = int(entry.get("bonus", 0) or 0)
+            except Exception:
+                continue
+            if bonus <= 0:
+                continue
+            allocation_distribution[ability] = allocation_distribution.get(ability, 0) + bonus
+        if allocation_distribution:
+            positive_distribution = allocation_distribution
+
         total_bonus = sum(positive_distribution.values())
         if allowed_abilities:
             illegal = [key for key in positive_distribution if key not in allowed_abilities]
             if illegal:
                 raise ValueError(f"Bonus d’origine illégal: {', '.join(illegal)} hors capacités autorisées.")
-            legal_distributions = ({2, 1}, {1, 1, 1})
-            if total_bonus != 3 or set(positive_distribution.values()) not in legal_distributions:
+            sorted_bonuses = sorted(positive_distribution.values(), reverse=True)
+            is_plus_two_plus_one = sorted_bonuses == [2, 1]
+            is_plus_one_three_times = sorted_bonuses == [1, 1, 1]
+            if total_bonus != 3 or not (is_plus_two_plus_one or is_plus_one_three_times):
                 raise ValueError("Les bonus d’origine doivent suivre la règle +2/+1 ou +1/+1/+1.")
 
         selected_by_choice_id = {}
