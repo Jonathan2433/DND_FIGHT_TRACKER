@@ -605,6 +605,25 @@ function formatChoiceTitle(choice) {
     return 'Choix';
 }
 
+function getChoiceBenefitHint(choice) {
+    const label = formatChoiceTitle(choice).toLowerCase();
+    const choiceType = (choice.type || '').toLowerCase();
+    const choiceId = (choice.id || '').toLowerCase();
+    const isSpeciesLineage = choiceType === 'species_trait_option' || choiceId.includes('species_trait_option');
+    const isSpellcastingAbility = choiceId.includes('spellcasting_ability');
+
+    if (choiceType === 'skill_proficiency' || label.includes('compétence')) {
+        return 'Une maîtrise de compétence ajoute votre bonus de maîtrise à tous les jets concernés : vous réussissez plus souvent les actions liées à cette compétence.';
+    }
+    if (isSpeciesLineage) {
+        return 'La lignée choisie définit vos traits de niveau 1 (capacités raciales, sorts, ou avantages passifs). Ce choix influence directement votre style de jeu dès le début.';
+    }
+    if (isSpellcastingAbility) {
+        return 'La capacité d’incantation est la caractéristique utilisée pour vos sorts (attaque magique, DD de sauvegarde et effets dépendants de la magie). Choisissez la plus adaptée à votre build.';
+    }
+    return '';
+}
+
 function setOptions(select, entries) {
     if (!select) return;
     select.innerHTML = '';
@@ -714,6 +733,14 @@ function renderChoiceBlock(choice, container, scope) {
     const label = formatChoiceTitle(choice);
     title.textContent = `${label} — choisissez ${choice.choose}`;
     block.appendChild(title);
+    const benefitHint = getChoiceBenefitHint(choice);
+    if (benefitHint) {
+        const hint = document.createElement('p');
+        hint.classList.add('text-muted');
+        hint.style.margin = '0 0 8px';
+        hint.textContent = benefitHint;
+        block.appendChild(hint);
+    }
 
     options.forEach((option) => {
         const rawOptionLabel = option.display_label || option.label_fr || option.label || option.name_fr || option.id;
@@ -1105,40 +1132,44 @@ function renderArmorShieldSelection(classPayload = {}) {
     target.innerHTML = '';
 
     const equipmentDrivenLoadouts = computeEquipmentDrivenArmorLoadouts();
-    if (!equipmentDrivenLoadouts.length) {
+    const shieldAvailableFromEquipment = computeEquipmentDrivenShieldAvailability();
+
+    const armorTrainingSet = extractArmorTrainingSet(classPayload);
+    const canUseShield = armorTrainingSet.has('shields') && shieldAvailableFromEquipment;
+    if (!equipmentDrivenLoadouts.length && !canUseShield) {
         if (hidden.armorLoadout) hidden.armorLoadout.value = 'Sans armure';
         target.innerHTML = '<p class="text-muted">Aucune armure distincte à choisir pour les options d’équipement sélectionnées.</p>';
         return;
     }
 
-    const armorTrainingSet = extractArmorTrainingSet(classPayload);
     const classAllowedLoadouts = new Set(computeAllowedArmorLoadouts(armorTrainingSet));
     const allowedLoadouts = equipmentDrivenLoadouts.filter((label) => classAllowedLoadouts.has(label));
-    if (!allowedLoadouts.length) {
+    if (!allowedLoadouts.length && !canUseShield) {
         if (hidden.armorLoadout) hidden.armorLoadout.value = 'Sans armure';
         target.innerHTML = '<p class="text-muted">Les options d’équipement choisies ne fournissent pas d’armure que votre classe peut utiliser.</p>';
         return;
     }
 
-    const wrapper = document.createElement('label');
-    wrapper.classList.add('builder-choice-item');
-    wrapper.textContent = 'Sélection d’armure';
+    if (allowedLoadouts.length) {
+        const wrapper = document.createElement('label');
+        wrapper.classList.add('builder-choice-item');
+        wrapper.textContent = 'Sélection d’armure';
 
-    const select = document.createElement('select');
-    select.id = 'armor-loadout-choice';
-    select.classList.add('builder-input');
-    allowedLoadouts.forEach((label) => {
-        const option = document.createElement('option');
-        option.value = label;
-        option.textContent = label;
-        select.appendChild(option);
-    });
-    select.addEventListener('change', syncArmorLoadoutHiddenField);
-    wrapper.appendChild(select);
-    target.appendChild(wrapper);
+        const select = document.createElement('select');
+        select.id = 'armor-loadout-choice';
+        select.classList.add('builder-input');
+        allowedLoadouts.forEach((label) => {
+            const option = document.createElement('option');
+            option.value = label;
+            option.textContent = label;
+            select.appendChild(option);
+        });
+        select.addEventListener('change', syncArmorLoadoutHiddenField);
+        wrapper.appendChild(select);
+        target.appendChild(wrapper);
+    }
 
-    const allowsShield = armorTrainingSet.has('shields') && computeEquipmentDrivenShieldAvailability();
-    if (allowsShield) {
+    if (canUseShield) {
         const shieldWrapper = document.createElement('label');
         shieldWrapper.classList.add('builder-choice-item');
         shieldWrapper.textContent = 'Bouclier';
@@ -1162,7 +1193,11 @@ function renderArmorShieldSelection(classPayload = {}) {
 
     const hint = document.createElement('p');
     hint.classList.add('text-muted');
-    hint.textContent = `Armures proposées selon votre option d’équipement : ${allowedLoadouts.join(', ')}.`;
+    if (allowedLoadouts.length) {
+        hint.textContent = `Armures proposées selon votre option d’équipement : ${allowedLoadouts.join(', ')}.`;
+    } else {
+        hint.textContent = 'Votre option d’équipement permet un bouclier, même sans armure sélectionnable.';
+    }
     target.appendChild(hint);
     syncArmorLoadoutHiddenField();
 }
