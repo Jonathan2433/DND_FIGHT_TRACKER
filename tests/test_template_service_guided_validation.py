@@ -228,3 +228,49 @@ def test_guided_validation_language_choice_rejects_missing_choice_specific_selec
         raise AssertionError("Validation was expected to fail for missing class language choice.")
     except ValueError as exc:
         assert str(exc) == "Choix requis incomplet (rogue_bonus_language_from_thieves_cant): 0/1."
+
+
+def test_extract_expertise_skills_reads_expertise_choices_from_feat_choices():
+    form_data = _base_form_data()
+    form_data["skill_proficiencies"] = "acrobatics, sleight_of_hand, stealth"
+    form_data["feat_choices"] = json.dumps(
+        [
+            {
+                "scope": "class",
+                "choice_id": "rogue_expertise",
+                "choice_type": "expertise",
+                "value": "sleight_of_hand",
+            },
+            {
+                "scope": "class",
+                "choice_id": "rogue_expertise",
+                "choice_type": "expertise",
+                "value": "stealth",
+            },
+        ]
+    )
+
+    assert TemplateService._extract_expertise_skills(form_data) == "sleight_of_hand, stealth"
+
+
+def test_compose_and_split_builder_equipment_preserve_expertise_skills():
+    form_data = _base_form_data()
+    form_data.setlist("equipment", ["dague"])
+    form_data.setlist("skill_proficiencies", ["acrobatics, sleight_of_hand, stealth"])
+    form_data.setlist(
+        "feat_choices",
+        [
+            json.dumps(
+                [
+                    {"choice_type": "expertise", "value": "sleight_of_hand"},
+                    {"choice_type": "expertise", "value": "stealth"},
+                ]
+            )
+        ],
+    )
+
+    equipment_blob = TemplateService._compose_builder_equipment(form_data)
+    parsed = TemplateService.split_builder_equipment(equipment_blob)
+
+    assert "Expertises: sleight_of_hand, stealth" in equipment_blob
+    assert parsed["expertise_skills"] == "sleight_of_hand, stealth"

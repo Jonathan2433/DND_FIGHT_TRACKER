@@ -104,6 +104,20 @@
         {% set ns_skills.selected_skill_ids = ns_skills.selected_skill_ids + [canonical_skill_id] %}
     {% endif %}
 {% endfor %}
+{% set equipment_chunks = character.equipment.split('|')|map('trim')|list if character.equipment else [] %}
+{% set ns_expertise = namespace(selected_skill_ids=[]) %}
+{% for chunk in equipment_chunks %}
+    {% if chunk.startswith('Expertises:') %}
+        {% set expertise_values = chunk.replace('Expertises:', '', 1).split(',') %}
+        {% for raw_expertise in expertise_values %}
+            {% set normalized_raw_expertise = raw_expertise.strip()|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+            {% set canonical_expertise_id = skill_alias_to_id.get(normalized_raw_expertise, normalized_raw_expertise) %}
+            {% if canonical_expertise_id and canonical_expertise_id not in ns_expertise.selected_skill_ids %}
+                {% set ns_expertise.selected_skill_ids = ns_expertise.selected_skill_ids + [canonical_expertise_id] %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
 
 <div class="character-profile">
     <section class="character-hero card">
@@ -314,12 +328,16 @@
                             <div class="combat-skill-grid combat-skill-grid--skills">
                                 {% for skill_id in all_skill_ids %}
                                     {% set is_proficient = skill_id in ns_skills.selected_skill_ids %}
+                                    {% set is_expertise = skill_id in ns_expertise.selected_skill_ids %}
                                     {% set ability_key = skill_ability_map.get(skill_id, 'sagesse') %}
-                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise if is_proficient else 0) %}
+                                    {% set proficiency_multiplier = 2 if is_expertise else 1 if is_proficient else 0 %}
+                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise * proficiency_multiplier) %}
                                     <div class="combat-skill-item">
                                         <span>{{ skill_labels_by_id.get(skill_id, skill_id) }}</span>
                                         <strong>{% if total_skill >= 0 %}+{% endif %}{{ total_skill }}</strong>
-                                        {% if is_proficient %}
+                                        {% if is_expertise %}
+                                            <small>Expertise</small>
+                                        {% elif is_proficient %}
                                             <small>Maitrise</small>
                                         {% endif %}
                                     </div>
