@@ -1674,15 +1674,30 @@ class CharacterBuilderService:
     def _normalize_background_allocations(raw_allocations: Any) -> list[dict[str, Any]]:
         if not isinstance(raw_allocations, list):
             return []
+        ability_aliases = {
+            "force": "strength",
+            "strength": "strength",
+            "dextérité": "dexterity",
+            "dexterite": "dexterity",
+            "dexterity": "dexterity",
+            "constitution": "constitution",
+            "intelligence": "intelligence",
+            "sagesse": "wisdom",
+            "wisdom": "wisdom",
+            "charisme": "charisma",
+            "charisma": "charisma",
+        }
         normalized: list[dict[str, Any]] = []
         for entry in raw_allocations:
             if isinstance(entry, str):
-                normalized.append({"ability": entry, "bonus": 1})
+                ability = ability_aliases.get(str(entry).strip().lower(), str(entry).strip().lower())
+                normalized.append({"ability": ability, "bonus": 1})
                 continue
             if isinstance(entry, dict):
                 ability = entry.get("ability") or entry.get("id")
                 bonus = entry.get("bonus", 1)
                 if ability:
+                    ability = ability_aliases.get(str(ability).strip().lower(), str(ability).strip().lower())
                     try:
                         parsed_bonus = int(bonus)
                     except (TypeError, ValueError):

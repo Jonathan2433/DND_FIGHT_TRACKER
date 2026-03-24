@@ -3,6 +3,7 @@
 import json
 import os
 import uuid
+from flask import current_app
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
@@ -17,6 +18,21 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 
 class TemplateService:
+    ABILITY_ALIASES = {
+        "force": "strength",
+        "strength": "strength",
+        "dextérité": "dexterity",
+        "dexterite": "dexterity",
+        "dexterity": "dexterity",
+        "constitution": "constitution",
+        "intelligence": "intelligence",
+        "sagesse": "wisdom",
+        "wisdom": "wisdom",
+        "charisme": "charisma",
+        "charisma": "charisma",
+    }
+    CANONICAL_ABILITIES = {"strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"}
+
     @staticmethod
     def _normalize_language_label(language_value):
         """Normalise les identifiants de langue du funnel vers les libellés attendus en base."""
@@ -464,8 +480,36 @@ class TemplateService:
         return data if isinstance(data, list) else []
 
     @classmethod
+    def _normalize_background_ability_distribution(cls, raw_distribution):
+        normalized = {}
+        if not isinstance(raw_distribution, dict):
+            return normalized
+
+        for raw_key, raw_value in raw_distribution.items():
+            if raw_key is None:
+                continue
+            key = str(raw_key).strip().lower()
+            key = cls.ABILITY_ALIASES.get(key, key)
+            if key not in cls.CANONICAL_ABILITIES:
+                continue
+            try:
+                value = int(raw_value)
+            except (TypeError, ValueError):
+                continue
+            if value <= 0:
+                continue
+            normalized[key] = normalized.get(key, 0) + value
+        return normalized
+
+    @classmethod
     def _validate_guided_builder_constraints(cls, form_data):
         service = get_character_builder_service()
+        payload_debug = form_data.to_dict(flat=False) if hasattr(form_data, "to_dict") else dict(form_data or {})
+        current_app.logger.info(
+            "Origin bonuses raw payload: %s",
+            payload_debug.get("background_ability_bonus_allocations_json"),
+        )
+        current_app.logger.info("Origin bonuses full payload: %s", payload_debug)
         state = {
             "class_id": form_data.get("character_class") or None,
             "background_id": form_data.get("background_choice") or None,
@@ -481,42 +525,60 @@ class TemplateService:
 
         ability_payload = service.get_ability_score_payload(state)
         allowed_abilities = set(ability_payload.get("allowed_abilities", []))
-        bg_bonus_fields = ["force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"]
-        distribution = {}
-        for field in bg_bonus_fields:
+        legacy_distribution = {}
+        for field in ["force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"]:
             try:
-                distribution[field] = int(form_data.get(f"{field}_bg_bonus", 0) or 0)
+                legacy_distribution[field] = int(form_data.get(f"{field}_bg_bonus", 0) or 0)
             except Exception:
-                distribution[field] = 0
-        positive_distribution = {key: value for key, value in distribution.items() if value > 0}
+                legacy_distribution[field] = 0
+        positive_distribution = cls._normalize_background_ability_distribution(legacy_distribution)
 
         allocations = cls._safe_parse_json_list(form_data.get("background_ability_bonus_allocations_json"))
-        allocation_distribution = {}
+        allocation_distribution_raw = {}
         for entry in allocations:
             if not isinstance(entry, dict):
                 continue
             ability = str(entry.get("ability") or "").strip().lower()
-            if ability not in bg_bonus_fields:
-                continue
             try:
                 bonus = int(entry.get("bonus", 0) or 0)
             except Exception:
                 continue
             if bonus <= 0:
                 continue
-            allocation_distribution[ability] = allocation_distribution.get(ability, 0) + bonus
+            allocation_distribution_raw[ability] = allocation_distribution_raw.get(ability, 0) + bonus
+        allocation_distribution = cls._normalize_background_ability_distribution(allocation_distribution_raw)
         if allocation_distribution:
             positive_distribution = allocation_distribution
+
+        selected_mode = str(form_data.get("background_ability_bonus_mode") or "").strip().lower()
+        option = "A" if selected_mode in {"2-1", "+2/+1", "increase_one_by_2_and_one_by_1"} else "B"
+        current_app.logger.info("Origin bonuses chosen option: %s", option)
+        current_app.logger.info(
+            "Origin bonuses chosen abilities: %s",
+            sorted(positive_distribution.keys()),
+        )
+        current_app.logger.info("Origin bonuses normalized distribution: %s", positive_distribution)
 
         total_bonus = sum(positive_distribution.values())
         if allowed_abilities:
             illegal = [key for key in positive_distribution if key not in allowed_abilities]
             if illegal:
+                current_app.logger.warning(
+                    "Origin bonus validator reject reason: illegal abilities %s (allowed=%s)",
+                    illegal,
+                    sorted(allowed_abilities),
+                )
                 raise ValueError(f"Bonus d’origine illégal: {', '.join(illegal)} hors capacités autorisées.")
             sorted_bonuses = sorted(positive_distribution.values(), reverse=True)
             is_plus_two_plus_one = sorted_bonuses == [2, 1]
             is_plus_one_three_times = sorted_bonuses == [1, 1, 1]
             if total_bonus != 3 or not (is_plus_two_plus_one or is_plus_one_three_times):
+                current_app.logger.warning(
+                    "Origin bonus validator reject reason: invalid distribution=%s (total=%s, sorted=%s)",
+                    positive_distribution,
+                    total_bonus,
+                    sorted_bonuses,
+                )
                 raise ValueError("Les bonus d’origine doivent suivre la règle +2/+1 ou +1/+1/+1.")
 
         selected_by_choice_id = {}
