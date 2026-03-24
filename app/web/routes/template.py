@@ -1,6 +1,7 @@
 # Migrated to app.web.routes
 """Routes pour la gestion des templates et personnages"""
 import json
+from pathlib import Path
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
 from app.application.use_cases import TemplateService
 from app.application.use_cases.campaign_service import CampaignService
@@ -291,7 +292,7 @@ def _split_spell_names(raw_spells):
 
 
 def _normalize_known_spell_key(value):
-    return (
+    normalized = (
         (value or '')
         .strip()
         .lower()
@@ -300,6 +301,40 @@ def _normalize_known_spell_key(value):
         .replace('-', '_')
         .replace(' ', '_')
     )
+    if normalized.startswith('ccolor_'):
+        return normalized[1:]
+    return normalized
+
+
+def _build_legacy_spell_aliases():
+    aliases = {}
+    legacy_catalog_path = Path(current_app.root_path) / 'data' / 'spells_catalog.json'
+    try:
+        payload = json.loads(legacy_catalog_path.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError):
+        return aliases
+
+    if not isinstance(payload, list):
+        return aliases
+
+    for spell in payload:
+        if not isinstance(spell, dict):
+            continue
+
+        canonical_key = ''
+        for candidate in (spell.get('name_fr'), spell.get('Spell_FR'), spell.get('name'), spell.get('Spell')):
+            normalized = _normalize_known_spell_key(candidate)
+            if normalized:
+                canonical_key = normalized
+                break
+        if not canonical_key:
+            continue
+
+        for alias_candidate in (spell.get('name'), spell.get('Spell'), spell.get('id'), spell.get('name_fr'), spell.get('Spell_FR')):
+            alias_key = _normalize_known_spell_key(alias_candidate)
+            if alias_key and alias_key not in aliases:
+                aliases[alias_key] = canonical_key
+    return aliases
 
 
 def _build_spell_lookup():
@@ -311,6 +346,11 @@ def _build_spell_lookup():
             normalized = _normalize_known_spell_key(candidate)
             if normalized and normalized not in lookup:
                 lookup[normalized] = spell
+
+    for alias_key, canonical_key in _build_legacy_spell_aliases().items():
+        canonical_spell = lookup.get(canonical_key)
+        if canonical_spell and alias_key not in lookup:
+            lookup[alias_key] = canonical_spell
     return lookup
 
 
