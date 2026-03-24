@@ -1827,6 +1827,8 @@ async function handleGeneratePdfPreview() {
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
 
     const previousLabel = generateCharacterPdfButton?.textContent || '';
+    const pdfPreviewWindow = window.open('', '_blank', 'noopener,noreferrer');
+
     if (generateCharacterPdfButton) {
         generateCharacterPdfButton.disabled = true;
         generateCharacterPdfButton.textContent = 'Génération...';
@@ -1842,13 +1844,23 @@ async function handleGeneratePdfPreview() {
                 ? payload.errors
                 : ['Impossible de générer le PDF pour le moment.'];
             renderErrorMessages(errors);
+            if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+                pdfPreviewWindow.close();
+            }
             return;
         }
         renderErrorMessages([]);
-        window.open(payload.pdf_url, '_blank', 'noopener,noreferrer');
+        if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+            pdfPreviewWindow.location.href = payload.pdf_url;
+        } else {
+            window.open(payload.pdf_url, '_blank', 'noopener,noreferrer');
+        }
     } catch (error) {
         console.error('Erreur pendant la génération PDF guidée.', error);
         renderErrorMessages(['Une erreur réseau est survenue pendant la génération du PDF.']);
+        if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+            pdfPreviewWindow.close();
+        }
     } finally {
         if (generateCharacterPdfButton) {
             generateCharacterPdfButton.disabled = false;
