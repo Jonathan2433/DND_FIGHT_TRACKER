@@ -416,6 +416,61 @@ class TemplateService:
         return None
 
     @staticmethod
+    def _extract_selected_spells_by_choice(form_data):
+        """Reconstruit les sélections de sorts canonisées par choice_id."""
+        selected_spells_by_choice = {}
+        if not form_data:
+            return selected_spells_by_choice
+
+        for field_name in ("selected_spell_ids_by_choice_json", "selected_spells_by_choice_json"):
+            raw_value = form_data.get(field_name)
+            if not raw_value:
+                continue
+            try:
+                parsed = json.loads(raw_value)
+            except Exception:
+                continue
+            if not isinstance(parsed, dict):
+                continue
+            for choice_id, raw_values in parsed.items():
+                if not choice_id:
+                    continue
+                if isinstance(raw_values, list):
+                    values = [str(item).strip() for item in raw_values if str(item).strip()]
+                elif raw_values is None:
+                    values = []
+                else:
+                    value = str(raw_values).strip()
+                    values = [value] if value else []
+                if values:
+                    selected_spells_by_choice[str(choice_id)] = list(dict.fromkeys(values))
+            if selected_spells_by_choice:
+                return selected_spells_by_choice
+
+        feat_choices = TemplateService._safe_parse_json_list(form_data.get("feat_choices"))
+        allowed_choice_types = {"spell", "cantrip", "prepared_spell", "spellbook_entry"}
+        for entry in feat_choices:
+            if not isinstance(entry, dict):
+                continue
+            scope = str(entry.get("scope") or "").strip()
+            choice_type = str(entry.get("choice_type") or "").strip()
+            if scope not in {"class", "spell"} or choice_type not in allowed_choice_types:
+                continue
+            choice_id = str(entry.get("choice_id") or "").strip()
+            value = str(entry.get("value") or "").strip()
+            if not choice_id or not value:
+                continue
+            selected_spells_by_choice.setdefault(choice_id, [])
+            if value not in selected_spells_by_choice[choice_id]:
+                selected_spells_by_choice[choice_id].append(value)
+
+        return selected_spells_by_choice
+
+    @staticmethod
+    def _uses_choice_based_spell_selection(form_data):
+        return bool(TemplateService._extract_selected_spells_by_choice(form_data))
+
+    @staticmethod
     def _validate_selected_spells_exist(normalized_spells, valid_spells, label):
         if not normalized_spells:
             return
@@ -676,6 +731,7 @@ class TemplateService:
         skill_tokens = [token.strip() for token in (cls._normalize_skill_proficiencies(form_data) or "").split(",") if token.strip()]
         spell_tokens = [token.strip() for token in (form_data.get("selected_level_1_spells") or "").split(",") if token.strip()]
         cantrip_tokens = [token.strip() for token in (form_data.get("selected_cantrips") or "").split(",") if token.strip()]
+        selected_spells_by_choice = cls._extract_selected_spells_by_choice(form_data)
         language_tokens = [token for token in [form_data.get("language_2"), form_data.get("language_3")] if token]
 
         def _validate_required_choices(payload):
@@ -688,7 +744,7 @@ class TemplateService:
                 if choice_type == "skill_proficiency":
                     count = len(skill_tokens)
                 elif choice_type == "spell":
-                    count = len(cantrip_tokens) + len(spell_tokens)
+                    count = len(selected_spells_by_choice.get(choice_id, [])) if selected_spells_by_choice else len(cantrip_tokens) + len(spell_tokens)
                 elif choice_type == "language":
                     count = len(language_tokens)
                 else:
@@ -824,22 +880,24 @@ class TemplateService:
         )
         selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        uses_choice_based_spell_selection = TemplateService._uses_choice_based_spell_selection(form_data)
         TemplateService._validate_equipment_mastery(
             resolved_character.get('character_class') or form_data.get('character_class'),
             form_data.get('weapon_loadout'),
             form_data.get('armor_loadout'),
         )
-        cantrip_catalog = get_cantrips()
-        level_one_catalog = get_spells_for_level(1)
-        TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
-        TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
-        TemplateService._validate_spell_selection_rules(
-            resolved_character.get('character_class') or form_data.get('character_class'),
-            selected_cantrips,
-            selected_level_1_spells,
-            cantrip_catalog,
-            level_one_catalog,
-        )
+        if not uses_choice_based_spell_selection:
+            cantrip_catalog = get_cantrips()
+            level_one_catalog = get_spells_for_level(1)
+            TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
+            TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+            TemplateService._validate_spell_selection_rules(
+                resolved_character.get('character_class') or form_data.get('character_class'),
+                selected_cantrips,
+                selected_level_1_spells,
+                cantrip_catalog,
+                level_one_catalog,
+            )
         selected_languages = [
             TemplateService._normalize_language_label(form_data.get('language_1')),
             TemplateService._normalize_language_label(form_data.get('language_2')),
@@ -985,22 +1043,24 @@ class TemplateService:
         )
         selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        uses_choice_based_spell_selection = TemplateService._uses_choice_based_spell_selection(form_data)
         TemplateService._validate_equipment_mastery(
             resolved_character.get('character_class') or form_data.get('character_class'),
             form_data.get('weapon_loadout'),
             form_data.get('armor_loadout'),
         )
-        cantrip_catalog = get_cantrips()
-        level_one_catalog = get_spells_for_level(1)
-        TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
-        TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
-        TemplateService._validate_spell_selection_rules(
-            resolved_character.get('character_class') or form_data.get('character_class'),
-            selected_cantrips,
-            selected_level_1_spells,
-            cantrip_catalog,
-            level_one_catalog,
-        )
+        if not uses_choice_based_spell_selection:
+            cantrip_catalog = get_cantrips()
+            level_one_catalog = get_spells_for_level(1)
+            TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
+            TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+            TemplateService._validate_spell_selection_rules(
+                resolved_character.get('character_class') or form_data.get('character_class'),
+                selected_cantrips,
+                selected_level_1_spells,
+                cantrip_catalog,
+                level_one_catalog,
+            )
         selected_languages = [
             TemplateService._normalize_language_label(form_data.get('language_1')),
             TemplateService._normalize_language_label(form_data.get('language_2')),
@@ -1155,22 +1215,24 @@ class TemplateService:
             template.selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
         if 'selected_level_1_spells' in form_data:
             template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        uses_choice_based_spell_selection = TemplateService._uses_choice_based_spell_selection(form_data)
         TemplateService._validate_equipment_mastery(
             effective_character_class,
             form_data.get('weapon_loadout'),
             form_data.get('armor_loadout'),
         )
-        cantrip_catalog = get_cantrips()
-        level_one_catalog = get_spells_for_level(1)
-        TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
-        TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
-        TemplateService._validate_spell_selection_rules(
-            effective_character_class,
-            template.selected_cantrips,
-            template.selected_level_1_spells,
-            cantrip_catalog,
-            level_one_catalog,
-        )
+        if not uses_choice_based_spell_selection:
+            cantrip_catalog = get_cantrips()
+            level_one_catalog = get_spells_for_level(1)
+            TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
+            TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+            TemplateService._validate_spell_selection_rules(
+                effective_character_class,
+                template.selected_cantrips,
+                template.selected_level_1_spells,
+                cantrip_catalog,
+                level_one_catalog,
+            )
 
         # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
