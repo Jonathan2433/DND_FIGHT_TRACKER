@@ -250,25 +250,37 @@ def _extract_builder_state(source):
         'selected_equipment_ids': [item for item in getlist('selected_equipment_ids') if item],
         'selected_ability_bonus_ids': [ability for ability in getlist('selected_ability_bonus_ids') if ability],
         'ability_score_method': source.get('ability_score_method') or None,
-        'ability_method_id': source.get('ability_method_id') or None,
         'base_ability_scores': base_ability_scores,
-        'base_abilities': _parse_json_payload(source.get('base_abilities_json') or source.get('base_abilities'), default={}),
         'background_ability_bonus_mode': source.get('background_ability_bonus_mode') or None,
         'background_ability_bonus_allocations': _parse_json_payload(
             source.get('background_ability_bonus_allocations_json'),
             default=[item for item in getlist('background_ability_bonus_allocations') if item],
         ),
         'selected_spell_ids_by_choice': selected_spells_payload,
-        'selected_spells_by_choice': selected_spells_payload,
         'selected_equipment_choices_by_slot': _parse_json_payload(source.get('selected_equipment_choices_by_slot_json'), default={}),
-        'equipment_choices_by_slot': _parse_json_payload(source.get('equipment_choices_by_slot_json'), default={}),
         'selected_class_choice_ids': grouped_choices['class'] or [choice_id for choice_id in getlist('selected_class_choice_ids') if choice_id],
-        'class_choice_ids': grouped_choices['class'] or [choice_id for choice_id in getlist('class_choice_ids') if choice_id],
         'selected_species_choice_ids': grouped_choices['species'] or [choice_id for choice_id in getlist('selected_species_choice_ids') if choice_id],
-        'species_choice_ids': grouped_choices['species'] or [choice_id for choice_id in getlist('species_choice_ids') if choice_id],
         'selected_feat_choice_ids': grouped_choices['feat'] or [choice_id for choice_id in getlist('selected_feat_choice_ids') if choice_id],
-        'feat_choice_ids': grouped_choices['feat'] or [choice_id for choice_id in getlist('feat_choice_ids') if choice_id],
     }
+
+    # Aliases legacy uniquement si explicitement fournis afin de ne pas écraser
+    # les champs canoniques déjà reconstruits depuis le funnel guidé.
+    if source.get('ability_method_id'):
+        state['ability_method_id'] = source.get('ability_method_id')
+    base_abilities_alias = _parse_json_payload(source.get('base_abilities_json') or source.get('base_abilities'), default={})
+    if isinstance(base_abilities_alias, dict) and base_abilities_alias:
+        state['base_abilities'] = base_abilities_alias
+    if source.get('equipment_choices_by_slot_json'):
+        state['equipment_choices_by_slot'] = _parse_json_payload(source.get('equipment_choices_by_slot_json'), default={})
+    if source.get('class_choice_ids'):
+        state['class_choice_ids'] = grouped_choices['class'] or [choice_id for choice_id in getlist('class_choice_ids') if choice_id]
+    if source.get('species_choice_ids'):
+        state['species_choice_ids'] = grouped_choices['species'] or [choice_id for choice_id in getlist('species_choice_ids') if choice_id]
+    if source.get('feat_choice_ids'):
+        state['feat_choice_ids'] = grouped_choices['feat'] or [choice_id for choice_id in getlist('feat_choice_ids') if choice_id]
+    if source.get('selected_spells_by_choice_json'):
+        state['selected_spells_by_choice'] = selected_spells_payload
+
     return get_character_builder_service().normalize_character_creation_state(state)
 
 
