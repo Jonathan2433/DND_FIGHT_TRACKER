@@ -161,3 +161,62 @@ def test_saving_throws_use_class_proficiencies_and_final_ability_scores():
     assert output["saving_throw_modifiers"]["strength"] == 5
     assert output["saving_throw_modifiers"]["constitution"] == 4
     assert output["saving_throw_modifiers"]["dexterity"] == 1
+
+
+def test_magic_initiate_cleric_level_1_options_do_not_include_cantrips():
+    service = CharacterBuilderService()
+    payload = service.get_feat_payload(
+        "magic_initiate_cleric",
+        _base_state(class_id="cleric", background_id="acolyte", species_id="human"),
+    )
+
+    level_one_choice = next(choice for choice in payload["required_choices"] if choice["id"] == "magic_initiate_cleric_level_1_spell")
+    option_ids = {option["id"] for option in level_one_choice.get("options", [])}
+
+    assert "guidance" not in option_ids
+    assert "light" not in option_ids
+    assert "bless" in option_ids
+
+
+def test_magic_initiate_cleric_level_1_spell_validation_rejects_cantrip():
+    service = CharacterBuilderService()
+    state = _base_state(
+        class_id="cleric",
+        background_id="acolyte",
+        species_id="human",
+        selected_feat_choice_ids={
+            "magic_initiate_cleric_spellcasting_ability": ["wisdom"],
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+            "magic_initiate_cleric_level_1_spell": ["guidance"],
+        },
+    )
+
+    errors = service.validate_character_creation_submission(state)
+    assert "Le sort choisi pour Magic Initiate (Cleric) doit être un sort de niveau 1." in errors
+
+
+def test_spell_collections_are_split_and_acolyte_skills_are_merged():
+    service = CharacterBuilderService()
+    state = _base_state(
+        class_id="cleric",
+        background_id="acolyte",
+        species_id="human",
+        selected_class_choice_ids={
+            "cleric_skill_proficiencies": ["history", "insight"],
+            "cleric_cantrips_known": ["guidance", "light", "resistance"],
+            "cleric_prepared_spells": ["bless", "command", "bane", "create_or_destroy_water"],
+            "cleric_divine_order": ["thaumaturge"],
+        },
+        selected_feat_choice_ids={
+            "magic_initiate_cleric_spellcasting_ability": ["wisdom"],
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+            "magic_initiate_cleric_level_1_spell": ["bless"],
+        },
+    )
+    output = service.build_character_output(state)
+
+    assert {"guidance", "light", "resistance"}.issubset(set(output["class_cantrips"]))
+    assert {"bless", "command", "bane", "create_or_destroy_water"}.issubset(set(output["class_prepared_level_1_spells"]))
+    assert set(output["feat_cantrips"]) == {"guidance", "light"}
+    assert output["feat_magic_initiate_level_1_spells"] == ["bless"]
+    assert {"insight", "religion"}.issubset(set(output["skills"]))

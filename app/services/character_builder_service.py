@@ -275,9 +275,17 @@ class CharacterBuilderService:
 
         if catalog.get("choice_type") == "spell" and isinstance(catalog.get("resolver"), dict):
             resolver = catalog["resolver"]
-            class_id = resolver.get("class_id") or (state or {}).get("class_id")
-            spell_level = int(resolver.get("spell_level", 0))
-            return self._resolve_spells_from_class(class_id, max_level=spell_level, exact_level=spell_level)
+            resolver_type = str(resolver.get("type") or "")
+            if resolver_type == "spells_by_class_level":
+                class_id = resolver.get("class_id") or (state or {}).get("class_id")
+                spell_level = int(resolver.get("spell_level", 0))
+                return self._resolve_spells_from_class(class_id, max_level=spell_level, exact_level=spell_level)
+            if resolver_type == "catalog_union":
+                merged: list[dict[str, Any]] = []
+                catalog_ids = resolver.get("catalog_ids", []) if isinstance(resolver.get("catalog_ids"), list) else []
+                for nested_catalog_id in catalog_ids:
+                    merged.extend(self._resolve_subchoice_catalog(str(nested_catalog_id), state))
+                return self._dedupe_options(merged)
 
         return self._expand_ids(catalog.get("items", []), {
             **self.skill_by_id,
@@ -1144,7 +1152,7 @@ class CharacterBuilderService:
                 self._apply_feature_effects(effects, output)
 
     def apply_feat_choices(self, state: dict[str, Any], output: dict[str, Any]) -> None:
-        feat_ids = self._to_string_list(state.get("selected_feat_ids"))
+        feat_ids = self._collect_feat_ids_for_resolution(state)
         for feat_id in feat_ids:
             feat = self.origin_feat_by_id.get(feat_id, {})
             benefits = feat.get("benefits", {}) if isinstance(feat, dict) else {}
@@ -1152,6 +1160,23 @@ class CharacterBuilderService:
             if isinstance(benefits, dict):
                 self._merge_unique(output["languages"], self._to_string_list(benefits.get("languages")))
                 self._merge_unique(output["skills"], self._to_string_list(benefits.get("skill_proficiencies")))
+
+            feat_rule = self._find_feat_rule(feat_id)
+            for choice in feat_rule.get("choices", []) if isinstance(feat_rule, dict) else []:
+                if not isinstance(choice, dict) or choice.get("choice_type") != "spell":
+                    continue
+                selected_for_choice = self._extract_selected_ids_for_choice(choice, state, "selected_feat_choice_ids")
+                if not selected_for_choice:
+                    continue
+                choice_id = str(choice.get("id") or "")
+                for spell_id in selected_for_choice:
+                    spell_level = self._spell_level(spell_id)
+                    if spell_level == 0:
+                        self._merge_unique(output["feat_cantrips"], [spell_id])
+                    if spell_level == 1:
+                        self._merge_unique(output["feat_level_1_spells"], [spell_id])
+                    if choice_id.endswith("level_1_spell"):
+                        self._merge_unique(output["feat_magic_initiate_level_1_spells"], [spell_id])
 
     def _find_feature_option_effects(self, feature: dict[str, Any], option_id: str) -> dict[str, Any]:
         selection = feature.get("selection", {}) if isinstance(feature, dict) else {}
@@ -1177,6 +1202,31 @@ class CharacterBuilderService:
         extra_cantrip = int(effects.get("gain_extra_cantrip_from_class_list", 0) or 0)
         if extra_cantrip:
             output["extra_class_cantrips"] += extra_cantrip
+
+    def _spell_level(self, spell_id: str) -> int | None:
+        spell = self.spell_by_id.get(str(spell_id), {})
+        if not isinstance(spell, dict):
+            return None
+        raw_level = spell.get("level")
+        try:
+            return int(raw_level) if raw_level is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    def _collect_feat_ids_for_resolution(self, state: dict[str, Any]) -> list[str]:
+        feat_ids: list[str] = []
+        background = self.background_by_id.get(str(state.get("background_id") or ""), {})
+        background_origin_feat = background.get("origin_feat", {}) if isinstance(background, dict) else {}
+        background_origin_feat_id = str(background_origin_feat.get("id") or "")
+        if background_origin_feat_id:
+            feat_ids.append(background_origin_feat_id)
+
+        selected_origin_feat_id = str(state.get("selected_origin_feat_id") or "")
+        if selected_origin_feat_id:
+            feat_ids.append(selected_origin_feat_id)
+
+        feat_ids.extend(self._to_string_list(state.get("selected_feat_ids")))
+        return list(dict.fromkeys(feat_ids))
 
     def _apply_species_trait_effects(self, option_details: dict[str, Any], output: dict[str, Any]) -> None:
         benefits = option_details.get("level_1_benefits", {}) if isinstance(option_details, dict) else {}
@@ -1438,6 +1488,8 @@ class CharacterBuilderService:
             "eldritch_invocations": [],
             "fighting_styles": [],
             "class_spells_selected": [],
+            "class_cantrips": [],
+            "class_prepared_level_1_spells": [],
             "class_spellbook_spells": [],
             "class_prepared_spells": [],
             "resolved_class_feature_options": [],
@@ -1446,6 +1498,9 @@ class CharacterBuilderService:
             "species_cantrips": [],
             "species_granted_spells": [],
             "feat_granted_spells": [],
+            "feat_cantrips": [],
+            "feat_level_1_spells": [],
+            "feat_magic_initiate_level_1_spells": [],
             "feat_ids": [],
             "selected_bonus_origin_feat_id": None,
             "extra_class_cantrips": 0,
@@ -1468,6 +1523,12 @@ class CharacterBuilderService:
         self.apply_species_choices(state, output)
         self.apply_class_choices(state, output)
         self.apply_feat_choices(state, output)
+        for spell_id in output.get("class_spells_selected", []):
+            spell_level = self._spell_level(spell_id)
+            if spell_level == 0:
+                self._merge_unique(output["class_cantrips"], [spell_id])
+            elif spell_level == 1:
+                self._merge_unique(output["class_prepared_level_1_spells"], [spell_id])
         output["final_ability_scores"] = final_scores
         output["ability_modifiers"] = ability_modifiers
         output["skill_modifiers"] = self._compute_skill_modifiers(
@@ -1944,8 +2005,34 @@ class CharacterBuilderService:
 
         self._validate_wizard_prepared_spells_against_spellbook(state, errors)
         self._validate_eldritch_invocation_prerequisites(state, errors)
+        self._validate_magic_initiate_level_1_spell_choices(state, errors)
 
         return errors
+
+    def _validate_magic_initiate_level_1_spell_choices(self, state: dict[str, Any], errors: list[str]) -> None:
+        for feat_id in self._collect_feat_ids_for_resolution(state):
+            feat_rule = self._find_feat_rule(feat_id)
+            for choice in feat_rule.get("choices", []) if isinstance(feat_rule, dict) else []:
+                if not isinstance(choice, dict):
+                    continue
+                choice_id = str(choice.get("id") or "")
+                if not choice_id.endswith("level_1_spell"):
+                    continue
+                selected_spells = self._get_raw_selected_ids_for_choice(choice, state, "selected_feat_choice_ids")
+                if not selected_spells:
+                    selected_by_choice = state.get("selected_feat_choice_ids", {})
+                    if isinstance(selected_by_choice, dict):
+                        raw_values = selected_by_choice.get(choice_id)
+                        if isinstance(raw_values, list):
+                            selected_spells = self._to_string_list(raw_values)
+                        elif raw_values:
+                            selected_spells = [str(raw_values)]
+                for spell_id in selected_spells:
+                    if self._spell_level(spell_id) != 1:
+                        if "cleric" in choice_id:
+                            errors.append("Le sort choisi pour Magic Initiate (Cleric) doit être un sort de niveau 1.")
+                        else:
+                            errors.append(f"Le sort choisi pour {choice_id} doit être un sort de niveau 1.")
 
     def _resolve_equipment_options(self, options: list[Any], state: dict[str, Any]) -> list[dict[str, Any]]:
         class_id = str(state.get("class_id") or "")
