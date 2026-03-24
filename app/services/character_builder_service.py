@@ -52,6 +52,7 @@ STEP_COMPONENT_IDS = {
     "choose_languages",
     "assign_ability_scores",
     "choose_equipment",
+    "choose_spells",
     "finalize",
 }
 
@@ -220,6 +221,7 @@ class CharacterBuilderService:
             {"id": "choose_languages", "label": "Langues"},
             {"id": "assign_ability_scores", "label": "Caractéristiques"},
             {"id": "choose_equipment", "label": "Équipement"},
+            {"id": "choose_spells", "label": "Sorts"},
             {"id": "finalize", "label": "Résumé"},
         ]
 
