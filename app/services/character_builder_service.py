@@ -492,6 +492,15 @@ class CharacterBuilderService:
     def _resolve_weapons_with_which_you_have_proficiency(self, class_id: str | None) -> list[dict[str, Any]]:
         class_data = self.class_by_id.get(str(class_id or ""), {})
         proficiency_tokens = {str(token) for token in class_data.get("weapon_proficiencies", []) if token}
+        normalized_tokens = set(proficiency_tokens)
+        alias_map = {
+            "simple_weapons": "simple",
+            "martial_weapons": "martial",
+        }
+        for token in proficiency_tokens:
+            mapped = alias_map.get(token)
+            if mapped:
+                normalized_tokens.add(mapped)
         if not proficiency_tokens:
             return []
 
@@ -503,13 +512,19 @@ class CharacterBuilderService:
             if not weapon_id:
                 continue
             group = str(weapon.get("proficiency_group") or "")
+            if not group:
+                category = str(weapon.get("weapon_category") or "")
+                if category.startswith("simple_"):
+                    group = "simple"
+                elif category.startswith("martial_"):
+                    group = "martial"
             properties = {str(prop) for prop in weapon.get("properties", []) if prop}
             allowed = False
-            if weapon_id in proficiency_tokens:
+            if weapon_id in normalized_tokens:
                 allowed = True
-            elif group in proficiency_tokens:
+            elif group in normalized_tokens:
                 allowed = True
-            elif "martial_finesse_or_light_only" in proficiency_tokens and group == "martial":
+            elif "martial_finesse_or_light_only" in normalized_tokens and group == "martial":
                 allowed = "finesse" in properties or "light" in properties
             if not allowed:
                 continue
