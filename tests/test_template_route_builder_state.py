@@ -88,3 +88,26 @@ def test_extract_builder_state_preserves_duplicate_values_for_quantity_choices()
     state = _extract_builder_state(form)
 
     assert state["selected_class_choice_ids"] == {"rogue_dagger_pair": ["dagger", "dagger"]}
+
+
+def test_extract_builder_state_keeps_flat_base_ability_scores_when_alias_is_missing():
+    form = _base_form()
+    form["ability_score_method"] = "standard_array"
+    form["force_base"] = "15"
+    form["dexterite_base"] = "14"
+    form["constitution_base"] = "13"
+    form["intelligence_base"] = "12"
+    form["sagesse_base"] = "10"
+    form["charisme_base"] = "8"
+
+    state = _extract_builder_state(form)
+
+    assert state["ability_score_method"] == "standard_array"
+    assert state["base_ability_scores"] == {
+        "strength": 15,
+        "dexterity": 14,
+        "constitution": 13,
+        "intelligence": 12,
+        "wisdom": 10,
+        "charisma": 8,
+    }
