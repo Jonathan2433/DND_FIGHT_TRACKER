@@ -528,6 +528,11 @@ const state = {
     ability_score_method: null,
     background_ability_bonus_mode: null,
     background_ability_bonus_allocations: [],
+    selected_choices_by_scope: {
+        class: {},
+        species: {},
+        feat: {},
+    },
 };
 let latestPayload = null;
 const SPELL_CHOICE_TYPES = new Set(['spell', 'prepared_spell', 'spellbook_entry']);
@@ -871,6 +876,9 @@ function renderChoiceBlock(choice, container, scope) {
         if (option.source_choice_value) {
             input.dataset.sourceChoiceValue = option.source_choice_value;
         }
+        if (isChoiceOptionSelected(scope, choice.id, input.value)) {
+            input.checked = true;
+        }
         input.addEventListener('change', () => {
             const siblings = Array.from(block.querySelectorAll('input:checked'));
             if (siblings.length > (choice.choose || 1)) {
@@ -972,7 +980,45 @@ function syncHiddenFields() {
             source_choice_value: x.dataset.sourceChoiceValue || null,
         }));
     hidden.featChoices.value = JSON.stringify(featChoices);
+    syncPersistedChoiceState(allChecked);
     syncSubmissionChoiceInputs(allChecked);
+}
+
+function normalizeChoiceScope(scope) {
+    if (scope === 'class' || scope === 'species') return scope;
+    if (String(scope || '').startsWith('feat_')) return 'feat';
+    return null;
+}
+
+function isChoiceOptionSelected(scope, choiceId, optionValue) {
+    const normalizedScope = normalizeChoiceScope(scope);
+    const safeChoiceId = String(choiceId || '').trim();
+    const safeValue = String(optionValue || '').trim();
+    if (!normalizedScope || !safeChoiceId || !safeValue) return false;
+    const selectedByScope = state.selected_choices_by_scope?.[normalizedScope] || {};
+    const selectedValues = selectedByScope[safeChoiceId];
+    return Array.isArray(selectedValues) && selectedValues.includes(safeValue);
+}
+
+function syncPersistedChoiceState(allCheckedInputs = null) {
+    const checkedInputs = Array.isArray(allCheckedInputs)
+        ? allCheckedInputs
+        : Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+    const nextState = {
+        class: {},
+        species: {},
+        feat: {},
+    };
+    checkedInputs.forEach((input) => {
+        const normalizedScope = normalizeChoiceScope(input.dataset.scope);
+        const choiceId = String(input.dataset.choiceId || '').trim();
+        const value = String(input.value || '').trim();
+        if (!normalizedScope || !choiceId || !value) return;
+        const bucket = nextState[normalizedScope];
+        if (!Array.isArray(bucket[choiceId])) bucket[choiceId] = [];
+        if (!bucket[choiceId].includes(value)) bucket[choiceId].push(value);
+    });
+    state.selected_choices_by_scope = nextState;
 }
 
 function syncSubmissionChoiceInputs(allCheckedInputs = null) {
