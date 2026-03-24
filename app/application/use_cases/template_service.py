@@ -309,7 +309,72 @@ class TemplateService:
         return cls.CLASS_ALIAS_TO_ENGLISH.get(normalized, normalized)
 
     @classmethod
-    def _validate_skill_proficiencies_limit(cls, character_class, normalized_skill_proficiencies):
+    def _validate_skill_proficiencies_limit(cls, character_class, normalized_skill_proficiencies, form_data=None):
+        def _safe_getlist(source, key):
+            getter = getattr(source, "getlist", None)
+            if callable(getter):
+                try:
+                    return [item for item in getter(key) if item]
+                except Exception:
+                    return []
+            return []
+
+        def _normalize_scope(raw_scope):
+            scope = str(raw_scope or "").strip().lower()
+            if scope in {"class", "background", "species"}:
+                return scope
+            if scope == "spell":
+                return "class"
+            if scope.startswith("feat_"):
+                return "feat"
+            return ""
+
+        if form_data is not None:
+            structured_choices = cls._safe_parse_json_list(form_data.get("feat_choices"))
+            class_skill_choices_by_id = {}
+            for entry in structured_choices:
+                if not isinstance(entry, dict):
+                    continue
+                scope = _normalize_scope(entry.get("scope"))
+                if scope != "class":
+                    continue
+                if str(entry.get("choice_type") or "").strip() != "skill_proficiency":
+                    continue
+                choice_id = str(entry.get("choice_id") or "").strip()
+                value = str(entry.get("value") or "").strip()
+                if not choice_id or not value:
+                    continue
+                class_skill_choices_by_id.setdefault(choice_id, [])
+                if value not in class_skill_choices_by_id[choice_id]:
+                    class_skill_choices_by_id[choice_id].append(value)
+
+            if class_skill_choices_by_id:
+                service = get_character_builder_service()
+                class_id = character_class or form_data.get("character_class")
+                class_state = service.normalize_character_creation_state(
+                    {
+                        "class_id": class_id,
+                        "selected_class_choice_ids": _safe_getlist(form_data, "selected_class_choice_ids"),
+                    }
+                )
+                class_payload = service.get_class_payload(class_id, class_state) if class_id else {}
+                required_choices = class_payload.get("required_choices", []) if isinstance(class_payload, dict) else []
+                for choice in required_choices:
+                    if not isinstance(choice, dict):
+                        continue
+                    if str(choice.get("type") or "").strip() != "skill_proficiency":
+                        continue
+                    if not bool(choice.get("required", True)):
+                        continue
+                    choice_id = str(choice.get("id") or "")
+                    choose = int(choice.get("choose", 1) or 1)
+                    selected_for_choice = class_skill_choices_by_id.get(choice_id, [])
+                    if len(selected_for_choice) != choose:
+                        raise ValueError(
+                            f"Choix requis incomplet ({choice_id}): {len(selected_for_choice)}/{choose}."
+                        )
+                return
+
         if not normalized_skill_proficiencies:
             return
         selected_skills = [token.strip() for token in normalized_skill_proficiencies.split(',') if token.strip()]
@@ -750,6 +815,7 @@ class TemplateService:
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
             normalized_skill_proficiencies,
+            form_data=form_data,
         )
         spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
             resolved_character.get('character_class') or form_data.get('character_class'),
@@ -909,6 +975,7 @@ class TemplateService:
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
             normalized_skill_proficiencies,
+            form_data=form_data,
         )
 
         spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
@@ -1060,6 +1127,7 @@ class TemplateService:
         TemplateService._validate_skill_proficiencies_limit(
             effective_character_class,
             template.skill_proficiencies,
+            form_data=form_data,
         )
         template.age = int(form_data.get('age')) if form_data.get('age') else template.age
         template.character_appearance = form_data.get('character_appearance') or None
