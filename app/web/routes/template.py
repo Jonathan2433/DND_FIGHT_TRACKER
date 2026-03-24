@@ -163,8 +163,7 @@ def _extract_choice_selections_by_scope(source):
         if not choice_id or not value:
             continue
         grouped[scope].setdefault(choice_id, [])
-        if value not in grouped[scope][choice_id]:
-            grouped[scope][choice_id].append(value)
+        grouped[scope][choice_id].append(value)
 
     return grouped
 
@@ -192,8 +191,7 @@ def _extract_spell_selections_by_choice(source):
         if not choice_id or not value:
             continue
         spells_by_choice.setdefault(choice_id, [])
-        if value not in spells_by_choice[choice_id]:
-            spells_by_choice[choice_id].append(value)
+        spells_by_choice[choice_id].append(value)
 
     return spells_by_choice
 
