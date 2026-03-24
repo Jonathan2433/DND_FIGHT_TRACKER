@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import json
 import os
 import logging
 import unicodedata
@@ -165,6 +166,22 @@ class CharacterSheetPdfService:
         "arbalete legere": {"damage": "1d8", "damage_type": "Percant", "is_ranged": True, "finesse": False},
         "arbalete de poing": {"damage": "1d6", "damage_type": "Percant", "is_ranged": True, "finesse": False},
     }
+    DAMAGE_TYPE_FR = {
+        "piercing": "Percant",
+        "slashing": "Tranchant",
+        "bludgeoning": "Contondant",
+        "force": "Force",
+        "fire": "Feu",
+        "cold": "Froid",
+        "lightning": "Foudre",
+        "thunder": "Tonnerre",
+        "acid": "Acide",
+        "poison": "Poison",
+        "necrotic": "Necrotique",
+        "radiant": "Radiant",
+        "psychic": "Psychique",
+    }
+    _WEAPONS_CATALOG_CACHE: list[dict[str, Any]] | None = None
 
     @staticmethod
     def _format_mod(value: int) -> str:
@@ -225,6 +242,25 @@ class CharacterSheetPdfService:
         normalized_name = cls._normalize_text_key(weapon_name)
         if not normalized_name:
             return None
+
+        for weapon in cls._load_weapons_catalog():
+            weapon_id = cls._normalize_text_key(weapon.get("id"))
+            fr_name = cls._normalize_text_key(weapon.get("name_fr"))
+            en_name = cls._normalize_text_key(weapon.get("name_en"))
+            if normalized_name not in {weapon_id, fr_name, en_name}:
+                continue
+
+            damage = weapon.get("damage") if isinstance(weapon.get("damage"), dict) else {}
+            attack_type = str(weapon.get("attack_type") or "").lower()
+            properties = {str(prop).lower() for prop in weapon.get("properties", []) if prop}
+            return {
+                "name": weapon.get("name_fr") or weapon.get("name_en") or weapon.get("id") or weapon_name,
+                "damage": str(damage.get("dice") or ""),
+                "damage_type": cls.DAMAGE_TYPE_FR.get(str(damage.get("type") or "").lower(), str(damage.get("type") or "")),
+                "is_ranged": attack_type == "ranged",
+                "finesse": "finesse" in properties,
+            }
+
         if normalized_name in cls.WEAPON_PROFILES:
             return cls.WEAPON_PROFILES[normalized_name]
 
@@ -232,6 +268,19 @@ class CharacterSheetPdfService:
             if normalized_name in key or key in normalized_name:
                 return profile
         return None
+
+    @classmethod
+    def _load_weapons_catalog(cls) -> list[dict[str, Any]]:
+        if cls._WEAPONS_CATALOG_CACHE is not None:
+            return cls._WEAPONS_CATALOG_CACHE
+        weapons_catalog_path = Path(__file__).resolve().parents[2] / "data" / "weapons_catalog.json"
+        try:
+            payload = json.loads(weapons_catalog_path.read_text(encoding="utf-8"))
+        except Exception:
+            logger.exception("Impossible de charger weapons_catalog.json")
+            return []
+        cls._WEAPONS_CATALOG_CACHE = payload if isinstance(payload, list) else []
+        return cls._WEAPONS_CATALOG_CACHE
 
     @staticmethod
     def _extract_weapon_loadouts(equipment_value: str | None) -> list[str]:
@@ -289,7 +338,8 @@ class CharacterSheetPdfService:
             damage_bonus = f"+{ability_mod}" if ability_mod >= 0 else str(ability_mod)
             damage_type = damage_type_short.get(profile["damage_type"], profile["damage_type"])
             damage_block = f"{profile['damage']}{damage_bonus} {damage_type}"
-            attack_lines.append(clamp_line(f"{weapon_name} {attack_bonus} {damage_block}"))
+            display_name = profile.get("name") or weapon_name
+            attack_lines.append(clamp_line(f"{display_name} {attack_bonus} {damage_block}"))
 
         return "\n".join(attack_lines)
 
