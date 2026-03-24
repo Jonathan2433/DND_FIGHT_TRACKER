@@ -10,7 +10,15 @@ class _StubBuilderService:
         return state
 
     def get_ability_score_payload(self, _state):
-        return {"allowed_abilities": ["force", "dexterite", "constitution"]}
+        return {
+            "allowed_abilities": [
+                "force",
+                "dexterite",
+                "constitution",
+                "strength",
+                "dexterity",
+            ]
+        }
 
     def get_class_payload(self, _class_id, _state):
         return {}
@@ -135,3 +143,88 @@ def test_extract_selected_spells_by_choice_uses_canonical_payload():
         "wizard_cantrips_known": ["acid_splash", "blade_ward", "chill_touch"],
         "magic_initiate_cleric_cantrips": ["guidance", "light"],
     }
+
+
+def test_guided_validation_language_choice_uses_choice_specific_selection(monkeypatch):
+    class _NoopLogger:
+        def info(self, *_args, **_kwargs):
+            return None
+
+        def warning(self, *_args, **_kwargs):
+            return None
+
+    class _FakeCurrentApp:
+        logger = _NoopLogger()
+
+    class _RogueBuilderService(_StubBuilderService):
+        def get_class_payload(self, _class_id, _state):
+            return {
+                "required_choices": [
+                    {
+                        "id": "rogue_bonus_language_from_thieves_cant",
+                        "type": "language",
+                        "choose": 1,
+                        "required": True,
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _RogueBuilderService())
+    monkeypatch.setattr(template_service_module, "current_app", _FakeCurrentApp())
+    form_data = _base_form_data()
+    form_data["character_class"] = "rogue"
+    # Langues générales (étape origine)
+    form_data["language_2"] = "elvish"
+    form_data["language_3"] = "goblin"
+    # Choix de langue de classe (Thieves' Cant) porté par choice_id
+    form_data["feat_choices"] = json.dumps(
+        [
+            {
+                "scope": "class",
+                "choice_id": "rogue_bonus_language_from_thieves_cant",
+                "choice_type": "language",
+                "value": "common_sign_language",
+            }
+        ]
+    )
+
+    TemplateService._validate_guided_builder_constraints(form_data)
+
+
+def test_guided_validation_language_choice_rejects_missing_choice_specific_selection(monkeypatch):
+    class _NoopLogger:
+        def info(self, *_args, **_kwargs):
+            return None
+
+        def warning(self, *_args, **_kwargs):
+            return None
+
+    class _FakeCurrentApp:
+        logger = _NoopLogger()
+
+    class _RogueBuilderService(_StubBuilderService):
+        def get_class_payload(self, _class_id, _state):
+            return {
+                "required_choices": [
+                    {
+                        "id": "rogue_bonus_language_from_thieves_cant",
+                        "type": "language",
+                        "choose": 1,
+                        "required": True,
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _RogueBuilderService())
+    monkeypatch.setattr(template_service_module, "current_app", _FakeCurrentApp())
+    form_data = _base_form_data()
+    form_data["character_class"] = "rogue"
+    form_data["language_2"] = "elvish"
+    form_data["language_3"] = "goblin"
+    form_data["feat_choices"] = "[]"
+
+    try:
+        TemplateService._validate_guided_builder_constraints(form_data)
+        raise AssertionError("Validation was expected to fail for missing class language choice.")
+    except ValueError as exc:
+        assert str(exc) == "Choix requis incomplet (rogue_bonus_language_from_thieves_cant): 0/1."
