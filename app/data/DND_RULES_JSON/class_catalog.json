@@ -370,16 +370,24 @@
         "label": "Option A",
         "items": [
           "chain_mail",
-          "greatsword",
-          "flail",
-          "javelin",
-          "javelin",
-          "javelin",
-          "javelin",
-          "javelin",
-          "javelin",
-          "javelin",
-          "javelin",
+          {
+            "placeholder_id": "fighter_primary_melee_weapon",
+            "choice_from_weapon_category": "martial_melee",
+            "choose": 1
+          },
+          {
+            "placeholder_id": "fighter_secondary_weapon",
+            "choice_from_weapon_category": "martial_melee",
+            "choose": 1
+          },
+          {
+            "placeholder_id": "fighter_ranged_pack",
+            "choice_from_item_ids": [
+              "javelin_bundle_8",
+              "light_crossbow_bundle_20"
+            ],
+            "choose": 1
+          },
           "dungeoneers_pack"
         ],
         "gold": 4
@@ -389,8 +397,19 @@
         "label": "Option B",
         "items": [
           "studded_leather_armor",
-          "scimitar",
-          "shortsword",
+          {
+            "placeholder_id": "fighter_option_b_weapon_pair",
+            "choice_from_weapon_filters": {
+              "all_of": [
+                "martial_melee"
+              ],
+              "any_properties": [
+                "finesse",
+                "light"
+              ]
+            },
+            "choose": 2
+          },
           "longbow",
           "arrows_20",
           "quiver",
@@ -634,8 +653,32 @@
         "label": "Option A",
         "items": [
           "studded_leather_armor",
-          "scimitar",
-          "shortsword",
+          {
+            "placeholder_id": "ranger_primary_weapon",
+            "choice_from_weapon_filters": {
+              "any_categories": [
+                "simple_melee",
+                "martial_melee"
+              ],
+              "exclude_properties": [
+                "heavy"
+              ]
+            },
+            "choose": 1
+          },
+          {
+            "placeholder_id": "ranger_secondary_weapon",
+            "choice_from_weapon_filters": {
+              "any_categories": [
+                "simple_melee",
+                "martial_melee"
+              ],
+              "exclude_properties": [
+                "heavy"
+              ]
+            },
+            "choose": 1
+          },
           "longbow",
           "arrows_20",
           "quiver",
@@ -719,10 +762,44 @@
         "label": "Option A",
         "items": [
           "leather_armor",
-          "dagger",
-          "dagger",
-          "shortsword",
-          "shortbow",
+          {
+            "placeholder_id": "rogue_dagger_pair",
+            "choice_from_item_ids": [
+              "dagger"
+            ],
+            "choose": 2
+          },
+          {
+            "placeholder_id": "rogue_primary_weapon",
+            "choice_from_weapon_filters": {
+              "any_categories": [
+                "simple_melee",
+                "martial_melee"
+              ],
+              "any_properties": [
+                "finesse",
+                "light"
+              ]
+            },
+            "choose": 1
+          },
+          {
+            "placeholder_id": "rogue_ranged_weapon",
+            "choice_from_weapon_filters": {
+              "any_categories": [
+                "simple_ranged",
+                "martial_ranged"
+              ],
+              "any_properties": [
+                "finesse",
+                "light"
+              ]
+            },
+            "choice_from_item_ids": [
+              "shortbow"
+            ],
+            "choose": 1
+          },
           "arrows_20",
           "quiver",
           "thieves_tools",

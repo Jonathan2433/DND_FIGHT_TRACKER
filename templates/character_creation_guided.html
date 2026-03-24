@@ -960,8 +960,15 @@ function renderEquipment(targetId, payload, scope) {
         section.hidden = optionIdx !== 0;
         sectionByBundleValue.set(bundleValue, section);
 
+        const selectableItemTypes = new Set([
+            'choice_from_category',
+            'choice_from_catalogs',
+            'choice_from_weapon_category',
+            'choice_from_weapon_filters',
+            'choice_from_item_ids',
+        ]);
         const fixedItems = (option.items || [])
-            .filter((item) => item.type !== 'choice_from_category')
+            .filter((item) => !selectableItemTypes.has(item.type))
             .map((item) => {
                 if (item.type === 'gold_alternative') {
                     return `${item.gold || 0} po`;
@@ -976,7 +983,7 @@ function renderEquipment(targetId, payload, scope) {
             section.appendChild(row);
         });
 
-        (option.items || []).filter((item) => item.type === 'choice_from_category').forEach((item) => {
+        (option.items || []).filter((item) => selectableItemTypes.has(item.type)).forEach((item) => {
             const title = document.createElement('p');
             title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
             section.appendChild(title);
@@ -990,7 +997,8 @@ function renderEquipment(targetId, payload, scope) {
                 input.dataset.scope = scope;
                 input.dataset.choiceId = item.id;
                 input.dataset.choose = String(item.choose || 1);
-                input.value = subOption.label || subOption.name_fr || subOption.id;
+                input.value = subOption.id || subOption.label || subOption.name_fr;
+                input.dataset.optionLabel = subOption.label || subOption.name_fr || subOption.id || input.value;
                 input.addEventListener('change', () => {
                     const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
                     if (siblings.length > (item.choose || 1)) {
