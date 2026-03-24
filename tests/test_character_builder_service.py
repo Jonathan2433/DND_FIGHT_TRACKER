@@ -229,3 +229,43 @@ def test_default_step_definitions_include_choose_spells():
     step_ids = [step["id"] for step in service.get_step_definitions()]
 
     assert "choose_spells" in step_ids
+
+
+def test_spell_selection_by_choice_takes_priority_even_with_scalar_values():
+    service = CharacterBuilderService()
+    wizard_rule = service._find_class_rule("wizard")
+    wizard_cantrip_choice = next(choice for choice in wizard_rule["choices"] if choice["id"] == "wizard_cantrips_known")
+    state = _base_state(
+        class_id="wizard",
+        selected_spell_ids_by_choice={
+            "wizard_cantrips_known": "acid_splash",
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+        },
+        selected_class_choice_ids={
+            "wizard_cantrips_known": ["acid_splash", "blade_ward", "chill_touch", "guidance", "light"],
+        },
+    )
+
+    selected = service._get_raw_selected_ids_for_choice(wizard_cantrip_choice, state, "selected_class_choice_ids")
+
+    assert selected == ["acid_splash"]
+
+
+def test_spell_selection_extract_for_choice_does_not_mix_feat_and_class_cantrips():
+    service = CharacterBuilderService()
+    wizard_rule = service._find_class_rule("wizard")
+    wizard_cantrip_choice = next(choice for choice in wizard_rule["choices"] if choice["id"] == "wizard_cantrips_known")
+    state = _base_state(
+        class_id="wizard",
+        selected_spell_ids_by_choice={
+            "wizard_cantrips_known": "acid_splash",
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+        },
+        selected_class_choice_ids={
+            "wizard_cantrips_known": ["acid_splash", "blade_ward", "chill_touch", "guidance", "light"],
+        },
+    )
+
+    selected = service._extract_selected_ids_for_choice(wizard_cantrip_choice, state, "selected_class_choice_ids")
+
+    assert selected == ["acid_splash"]
