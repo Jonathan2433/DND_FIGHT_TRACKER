@@ -6,6 +6,9 @@ from werkzeug.datastructures import MultiDict
 
 
 class _StubBuilderService:
+    def normalize_character_creation_state(self, state):
+        return state
+
     def get_ability_score_payload(self, _state):
         return {"allowed_abilities": ["force", "dexterite", "constitution"]}
 
@@ -69,3 +72,49 @@ def test_guided_validation_accepts_plus_one_plus_one_plus_one(monkeypatch):
     )
 
     TemplateService._validate_guided_builder_constraints(form_data)
+
+
+def test_skill_limit_uses_class_choice_count_not_total_skill_count(monkeypatch):
+    class _WizardBuilderService(_StubBuilderService):
+        def get_class_payload(self, _class_id, _state):
+            return {
+                "required_choices": [
+                    {
+                        "id": "wizard_skill_proficiencies",
+                        "type": "skill_proficiency",
+                        "choose": 2,
+                        "required": True,
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _WizardBuilderService())
+    form_data = MultiDict(
+        {
+            "character_class": "wizard",
+            "feat_choices": json.dumps(
+                [
+                    {
+                        "scope": "class",
+                        "choice_id": "wizard_skill_proficiencies",
+                        "choice_type": "skill_proficiency",
+                        "value": "arcana",
+                    },
+                    {
+                        "scope": "class",
+                        "choice_id": "wizard_skill_proficiencies",
+                        "choice_type": "skill_proficiency",
+                        "value": "history",
+                    },
+                ]
+            ),
+        }
+    )
+    # Inclut 4 compétences totales (2 de background + 2 de classe): le contrôle ne doit pas échouer.
+    normalized_skill_proficiencies = "Arcana, History, Insight, Religion"
+
+    TemplateService._validate_skill_proficiencies_limit(
+        "wizard",
+        normalized_skill_proficiencies,
+        form_data=form_data,
+    )
