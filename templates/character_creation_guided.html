@@ -287,11 +287,19 @@
                         <p id="ability-point-buy-budget" class="text-muted" hidden></p>
                         <p id="ability-background-limits" class="text-muted"></p>
                         <div class="ability-scores-grid">
-                            {% for key, label in [('force','Force'),('dexterite','Dextérité'),('constitution','Constitution'),('intelligence','Intelligence'),('sagesse','Sagesse'),('charisme','Charisme')] %}
+                            {% for key, label, default_value in [('force','Force',15),('dexterite','Dextérité',14),('constitution','Constitution',13),('intelligence','Intelligence',12),('sagesse','Sagesse',10),('charisme','Charisme',8)] %}
                                 <label>{{ label }}
-                                    <select name="{{ key }}_base" required class="ability-base-field" data-ability-key="{{ key }}">
+                                    <select
+                                        name="{{ key }}_base"
+                                        required
+                                        class="ability-base-field"
+                                        data-ability-key="{{ key }}"
+                                        data-default-value="{{ default_value }}"
+                                        data-placeholder="{{ label }} {{ default_value }}"
+                                    >
+                                        <option value="" disabled>{{ label }} {{ default_value }}</option>
                                         {% for value in [15,14,13,12,10,8] %}
-                                            <option value="{{ value }}" {% if loop.first %}selected{% endif %}>{{ value }}</option>
+                                            <option value="{{ value }}" {% if value == default_value %}selected{% endif %}>{{ value }}</option>
                                         {% endfor %}
                                     </select>
                                 </label>
@@ -666,15 +674,30 @@ function getAbilityBaseFields() {
     return Array.from(form.querySelectorAll('.ability-base-field'));
 }
 
-function setAbilityFieldOptions(fields, values) {
+function setAbilityFieldOptions(fields, values, { preferDefaults = false } = {}) {
     fields.forEach((field) => {
         const currentValue = field.value;
         const options = values.map((value) => ({ id: String(value), label: String(value) }));
-        setOptions(field, options);
-        if (options.some((entry) => entry.id === currentValue)) {
+        field.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = field.dataset.placeholder || '— Sélectionnez —';
+        placeholder.disabled = true;
+        field.appendChild(placeholder);
+        options.forEach((entry) => {
+            const opt = document.createElement('option');
+            opt.value = entry.id;
+            opt.textContent = entry.label;
+            field.appendChild(opt);
+        });
+        if (currentValue && options.some((entry) => entry.id === currentValue)) {
             field.value = currentValue;
+        } else if (preferDefaults && options.some((entry) => entry.id === String(field.dataset.defaultValue || ''))) {
+            field.value = String(field.dataset.defaultValue);
         } else if (options.length) {
             field.value = options[0].id;
+        } else {
+            field.value = '';
         }
     });
 }
@@ -722,9 +745,26 @@ function applyAbilityMethodUI(methodId) {
         const pool = Array.isArray(rules.base_scores_pool) && rules.base_scores_pool.length
             ? rules.base_scores_pool
             : [15, 14, 13, 12, 10, 8];
-        setAbilityFieldOptions(fields, pool);
+        setAbilityFieldOptions(fields, pool, { preferDefaults: true });
     }
+    fields.forEach((field) => { field.dataset.previousValue = field.value || ''; });
     updatePointBuyBudget(methodConfig);
+}
+
+function applyStandardArraySwap(field) {
+    if (!field || (abilityMethod?.value || '') !== 'standard_array') return;
+    const previousValue = field.dataset.previousValue || '';
+    const nextValue = field.value || '';
+    if (!previousValue || !nextValue || previousValue === nextValue) {
+        field.dataset.previousValue = nextValue;
+        return;
+    }
+    const otherField = getAbilityBaseFields().find((candidate) => candidate !== field && candidate.value === nextValue);
+    if (otherField) {
+        otherField.value = previousValue;
+        otherField.dataset.previousValue = previousValue;
+    }
+    field.dataset.previousValue = nextValue;
 }
 
 function formatChoiceTitle(choice) {
@@ -1864,10 +1904,18 @@ function bindWizardEvents() {
         state.ability_score_method = abilityMethod.value || null;
         applyAbilityMethodUI(abilityMethod.value || 'standard_array');
     });
-    getAbilityBaseFields().forEach((field) => field.addEventListener('change', () => {
-        const methodConfig = abilityMethodsById[abilityMethod?.value || ''] || {};
-        updatePointBuyBudget(methodConfig);
-    }));
+    getAbilityBaseFields().forEach((field) => {
+        field.dataset.previousValue = field.value || '';
+        field.addEventListener('focus', () => {
+            field.dataset.previousValue = field.value || '';
+        });
+        field.addEventListener('change', () => {
+            applyStandardArraySwap(field);
+            field.dataset.previousValue = field.value || '';
+            const methodConfig = abilityMethodsById[abilityMethod?.value || ''] || {};
+            updatePointBuyBudget(methodConfig);
+        });
+    });
 }
 
 function renderWizardPanels(effectiveSteps) {
