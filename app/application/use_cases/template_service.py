@@ -758,9 +758,8 @@ class TemplateService:
             if campaign and campaign not in template.campaigns:
                 template.campaigns.append(campaign)
 
-        should_generate_pdf = bool(form_data.get('generate_pdf_sheet'))
-        if should_generate_pdf:
-            template.pdf_filename = CharacterSheetPdfService.generate(template, upload_folder)
+        # Le funnel guide devient la source unique: chaque creation persiste un PDF officiel.
+        template.pdf_filename = CharacterSheetPdfService.generate(template, upload_folder)
 
         db.session.commit()
 
