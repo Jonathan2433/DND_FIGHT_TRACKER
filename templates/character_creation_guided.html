@@ -413,6 +413,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn btn-secondary" type="button" id="export-character-json">Extraire (JSON)</button>
+                    <button class="btn btn-secondary" type="button" id="generate-character-pdf">Générer le PDF</button>
                     <button class="btn btn-primary" type="submit">Créer le personnage</button>
                 </div>
             </section>
@@ -447,6 +448,7 @@ let spellHelp = null;
 let exportCharacterJsonButton = null;
 let abilityMethodDescription = null;
 let pointBuyBudgetHint = null;
+let generateCharacterPdfButton = null;
 
 const hidden = {
     mode: document.getElementById('ability-mode-hidden'),
@@ -1584,6 +1586,7 @@ function bindStepElements() {
     abilityMethod = document.getElementById('ability-method');
     spellHelp = document.getElementById('spell-step-help');
     exportCharacterJsonButton = document.getElementById('export-character-json');
+    generateCharacterPdfButton = document.getElementById('generate-character-pdf');
     abilityMethodDescription = document.getElementById('ability-method-description');
     pointBuyBudgetHint = document.getElementById('ability-point-buy-budget');
     abilityBonusInputs = Object.fromEntries(
@@ -1608,6 +1611,7 @@ function bindWizardEvents() {
 
     abilityMethod?.addEventListener('change', () => { hidden.mode.value = abilityMethod.value; });
     exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
+    generateCharacterPdfButton?.addEventListener('click', handleGeneratePdfPreview);
 
     form.querySelectorAll('[data-next-step]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -1752,6 +1756,56 @@ form.addEventListener('submit', (event) => {
     hidden.mode.value = abilityMethod.value || 'standard_array';
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
 });
+
+async function handleGeneratePdfPreview() {
+    syncStateFromUI();
+    updateOriginBonusHiddenFields();
+    syncHiddenFields();
+    const validationResult = validateBeforeSubmit(latestPayload || {}, state);
+    if (!validationResult.ok) {
+        renderErrorMessages(validationResult.errors);
+        return;
+    }
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
+        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Common.']);
+        return;
+    }
+
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+
+    const previousLabel = generateCharacterPdfButton?.textContent || '';
+    if (generateCharacterPdfButton) {
+        generateCharacterPdfButton.disabled = true;
+        generateCharacterPdfButton.textContent = 'Génération...';
+    }
+    try {
+        const response = await fetch('{{ url_for("template.generate_guided_character_pdf") }}', {
+            method: 'POST',
+            body: new FormData(form),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || !payload.pdf_url) {
+            const errors = Array.isArray(payload?.errors) && payload.errors.length
+                ? payload.errors
+                : ['Impossible de générer le PDF pour le moment.'];
+            renderErrorMessages(errors);
+            return;
+        }
+        renderErrorMessages([]);
+        window.open(payload.pdf_url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+        console.error('Erreur pendant la génération PDF guidée.', error);
+        renderErrorMessages(['Une erreur réseau est survenue pendant la génération du PDF.']);
+    } finally {
+        if (generateCharacterPdfButton) {
+            generateCharacterPdfButton.disabled = false;
+            generateCharacterPdfButton.textContent = previousLabel || 'Générer le PDF';
+        }
+    }
+}
 
 let stepOrder = [];
 let currentStep = null;

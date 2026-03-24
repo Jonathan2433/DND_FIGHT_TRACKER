@@ -784,6 +784,127 @@ class TemplateService:
         return template
 
     @staticmethod
+    def build_transient_character_template(form_data, current_user=None):
+        """Construit un personnage non persiste pour les apercus (ex: generation PDF)."""
+        resolved_character = resolve_character_creation(form_data)
+        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        TemplateService._validate_skill_proficiencies_limit(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            normalized_skill_proficiencies,
+        )
+
+        spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            resolved_character.get('level') or form_data.get('level'),
+            resolved_character,
+        )
+        selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
+        selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
+        TemplateService._validate_equipment_mastery(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            form_data.get('weapon_loadout'),
+            form_data.get('armor_loadout'),
+        )
+        cantrip_catalog = get_cantrips()
+        level_one_catalog = get_spells_for_level(1)
+        TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
+        TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
+        TemplateService._validate_spell_selection_rules(
+            resolved_character.get('character_class') or form_data.get('character_class'),
+            selected_cantrips,
+            selected_level_1_spells,
+            cantrip_catalog,
+            level_one_catalog,
+        )
+        selected_languages = [
+            form_data.get('language_1'),
+            form_data.get('language_2'),
+            form_data.get('language_3'),
+        ]
+        selected_languages = [language for language in selected_languages if language]
+        if len(set(selected_languages)) < 3 or 'Commun' not in selected_languages:
+            raise ValueError("Les langues doivent inclure Commun et 2 langues distinctes.")
+        TemplateService._validate_guided_builder_constraints(form_data)
+
+        identity_bits = []
+        if form_data.get('genre'):
+            identity_bits.append(f"Genre: {form_data.get('genre')}")
+        if form_data.get('alignment'):
+            identity_bits.append(f"Alignement: {form_data.get('alignment')}")
+        if form_data.get('weight'):
+            identity_bits.append(f"Poids: {form_data.get('weight')}")
+        if selected_languages:
+            identity_bits.append(f"Langues: {', '.join(selected_languages)}")
+
+        shared_notes = form_data.get('notes', '')
+        if identity_bits:
+            identity_notes = "\n".join(identity_bits)
+            shared_notes = f"{identity_notes}\n{shared_notes}".strip()
+
+        return CharacterTemplate(
+            character_type=form_data.get('character_type', 'PJ'),
+            is_shared=form_data.get('is_shared', False),
+            is_public=bool(form_data.get('is_public', False)),
+            visibility_level=form_data.get('visibility_level', 'private'),
+            name=form_data.get('name', 'Personnage'),
+            race=resolved_character['race'],
+            character_class=resolved_character['character_class'],
+            level=resolved_character['level'],
+            hp_max=resolved_character['hp_max'],
+            hp_current=resolved_character['hp_max'],
+            ac_base=resolved_character['ac_base'],
+            ac_bonus=0,
+            initiative_bonus=resolved_character['initiative_bonus'],
+            force=resolved_character['force'],
+            dexterite=resolved_character['dexterite'],
+            constitution=resolved_character['constitution'],
+            intelligence=resolved_character['intelligence'],
+            sagesse=resolved_character['sagesse'],
+            charisme=resolved_character['charisme'],
+            maitrise_force=resolved_character['maitrise_force'],
+            maitrise_dexterite=resolved_character['maitrise_dexterite'],
+            maitrise_constitution=resolved_character['maitrise_constitution'],
+            maitrise_intelligence=resolved_character['maitrise_intelligence'],
+            maitrise_sagesse=resolved_character['maitrise_sagesse'],
+            maitrise_charisme=resolved_character['maitrise_charisme'],
+            notes=shared_notes,
+            player_private_notes=form_data.get('player_private_notes', ''),
+            first_name=form_data.get('first_name') or None,
+            gender=form_data.get('genre') or None,
+            player_name=current_user.username if current_user else None,
+            campaign_name=form_data.get('campaign_name') or None,
+            alignment=form_data.get('alignment') or None,
+            languages=', '.join(selected_languages) if selected_languages else None,
+            height=form_data.get('height') or None,
+            weight=form_data.get('weight') or None,
+            eyes=form_data.get('eyes') or None,
+            skin=form_data.get('skin') or None,
+            hair=form_data.get('hair') or None,
+            equipment=TemplateService._compose_builder_equipment(form_data),
+            skill_proficiencies=normalized_skill_proficiencies,
+            age=int(form_data.get('age')) if form_data.get('age') else None,
+            character_appearance=form_data.get('character_appearance') or None,
+            allies_organizations=form_data.get('allies_organizations') or None,
+            additional_features_traits=form_data.get('additional_features_traits') or None,
+            treasure=form_data.get('treasure') or None,
+            symbol_name=form_data.get('symbol_name') or None,
+            spellcasting_class=resolved_character.get('character_class') or form_data.get('spellcasting_class') or None,
+            spellcasting_ability=spellcasting_ability,
+            spell_save_dc=spell_save_dc,
+            spell_attack_bonus=spell_attack_bonus,
+            selected_cantrips=selected_cantrips,
+            selected_level_1_spells=selected_level_1_spells,
+            background_story=TemplateService._compose_background_payload(form_data),
+            current_xp=int(form_data.get('current_xp', 0))
+        )
+
+    @staticmethod
+    def generate_character_sheet_preview_pdf(form_data, upload_folder, current_user=None):
+        """Genere un PDF de previsualisation sans persister le personnage."""
+        transient_character = TemplateService.build_transient_character_template(form_data, current_user=current_user)
+        return CharacterSheetPdfService.generate(transient_character, upload_folder)
+
+    @staticmethod
     def update_character_template(template_id, form_data, files, upload_folder):
         """Mettre à jour un template de personnage"""
         template = CharacterTemplate.query.get_or_404(template_id)
