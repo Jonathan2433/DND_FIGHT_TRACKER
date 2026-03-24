@@ -132,8 +132,45 @@ def _parse_json_payload(raw_value, default):
     return parsed
 
 
+def _extract_choice_selections_by_scope(source):
+    """Reconstruit les sélections de choix depuis le bridge JSON du funnel guidé."""
+    raw_payload = source.get('feat_choices')
+    parsed = _parse_json_payload(raw_payload, default=[])
+    grouped = {
+        'class': {},
+        'species': {},
+        'feat': {},
+    }
+    if not isinstance(parsed, list):
+        return grouped
+
+    for entry in parsed:
+        if not isinstance(entry, dict):
+            continue
+        raw_scope = str(entry.get('scope') or '').strip()
+        if raw_scope == 'class':
+            scope = 'class'
+        elif raw_scope == 'species':
+            scope = 'species'
+        elif raw_scope.startswith('feat_'):
+            scope = 'feat'
+        else:
+            continue
+
+        choice_id = str(entry.get('choice_id') or '').strip()
+        value = str(entry.get('value') or '').strip()
+        if not choice_id or not value:
+            continue
+        grouped[scope].setdefault(choice_id, [])
+        if value not in grouped[scope][choice_id]:
+            grouped[scope][choice_id].append(value)
+
+    return grouped
+
+
 def _extract_builder_state(source):
     getlist = getattr(source, 'getlist', lambda _key: [])
+    grouped_choices = _extract_choice_selections_by_scope(source)
     state = {
         'class_id': source.get('class_id') or None,
         'background_id': source.get('background_id') or None,
@@ -157,12 +194,12 @@ def _extract_builder_state(source):
         'selected_spells_by_choice': _parse_json_payload(source.get('selected_spells_by_choice_json'), default={}),
         'selected_equipment_choices_by_slot': _parse_json_payload(source.get('selected_equipment_choices_by_slot_json'), default={}),
         'equipment_choices_by_slot': _parse_json_payload(source.get('equipment_choices_by_slot_json'), default={}),
-        'selected_class_choice_ids': [choice_id for choice_id in getlist('selected_class_choice_ids') if choice_id],
-        'class_choice_ids': [choice_id for choice_id in getlist('class_choice_ids') if choice_id],
-        'selected_species_choice_ids': [choice_id for choice_id in getlist('selected_species_choice_ids') if choice_id],
-        'species_choice_ids': [choice_id for choice_id in getlist('species_choice_ids') if choice_id],
-        'selected_feat_choice_ids': [choice_id for choice_id in getlist('selected_feat_choice_ids') if choice_id],
-        'feat_choice_ids': [choice_id for choice_id in getlist('feat_choice_ids') if choice_id],
+        'selected_class_choice_ids': grouped_choices['class'] or [choice_id for choice_id in getlist('selected_class_choice_ids') if choice_id],
+        'class_choice_ids': grouped_choices['class'] or [choice_id for choice_id in getlist('class_choice_ids') if choice_id],
+        'selected_species_choice_ids': grouped_choices['species'] or [choice_id for choice_id in getlist('selected_species_choice_ids') if choice_id],
+        'species_choice_ids': grouped_choices['species'] or [choice_id for choice_id in getlist('species_choice_ids') if choice_id],
+        'selected_feat_choice_ids': grouped_choices['feat'] or [choice_id for choice_id in getlist('selected_feat_choice_ids') if choice_id],
+        'feat_choice_ids': grouped_choices['feat'] or [choice_id for choice_id in getlist('feat_choice_ids') if choice_id],
     }
     return get_character_builder_service().normalize_character_creation_state(state)
 
