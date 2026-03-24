@@ -1102,6 +1102,7 @@ class CharacterBuilderService:
         class_data = self.class_by_id.get(class_id, {})
         class_rule = self._find_class_rule(class_id)
         self._merge_unique(output["skills"], self._to_string_list(class_data.get("skill_proficiencies")))
+        self._merge_unique(output["saving_throw_proficiencies"], self._to_string_list(class_data.get("saving_throw_proficiencies")))
         self._merge_unique(output["weapon_proficiencies"], self._to_string_list(class_data.get("weapon_proficiencies")))
         self._merge_unique(output["armor_training"], self._to_string_list(class_data.get("armor_training")))
 
@@ -1395,6 +1396,18 @@ class CharacterBuilderService:
             skill_modifiers[skill_id] = ability_modifier + (proficiency_bonus * proficiency_multiplier)
         return skill_modifiers
 
+    def _compute_saving_throw_modifiers(
+        self,
+        final_scores: dict[str, int],
+        proficiency_bonus: int,
+        saving_throw_proficiencies: set[str],
+    ) -> dict[str, int]:
+        saving_throw_modifiers: dict[str, int] = {}
+        for ability in ("strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"):
+            base_modifier = self._ability_modifier(int(final_scores.get(ability, 10) or 10))
+            saving_throw_modifiers[ability] = base_modifier + (proficiency_bonus if ability in saving_throw_proficiencies else 0)
+        return saving_throw_modifiers
+
     def build_character_output(self, raw_state: dict[str, Any]) -> dict[str, Any]:
         state = self.normalize_character_creation_state(raw_state)
         class_id = str(state.get("class_id") or "")
@@ -1445,6 +1458,8 @@ class CharacterBuilderService:
             "final_ability_scores": {},
             "ability_modifiers": {},
             "skill_modifiers": {},
+            "saving_throw_modifiers": {},
+            "saving_throw_proficiencies": [],
             "final_equipment": [],
             "weapon_profiles": [],
         }
@@ -1460,6 +1475,11 @@ class CharacterBuilderService:
             {str(skill_id) for skill_id in output.get("skills", []) if skill_id},
             {str(skill_id) for skill_id in output.get("expertise_skills", []) if skill_id},
             proficiency_bonus,
+        )
+        output["saving_throw_modifiers"] = self._compute_saving_throw_modifiers(
+            final_scores,
+            proficiency_bonus,
+            {str(ability_id) for ability_id in output.get("saving_throw_proficiencies", []) if ability_id},
         )
         constitution_score = final_scores.get("constitution", 10)
         dexterity_score = final_scores.get("dexterity", 10)

@@ -130,3 +130,34 @@ def test_skill_modifiers_use_final_abilities_with_background_bonus_allocations()
     assert output["skill_modifiers"]["athletics"] == 5
     assert output["skill_modifiers"]["intimidation"] == 3
     assert output["skill_modifiers"]["perception"] == 0
+
+
+def test_saving_throws_use_class_proficiencies_and_final_ability_scores():
+    service = CharacterBuilderService()
+    output = service.build_character_output(
+        _base_state(
+            class_id="barbarian",
+            background_id="soldier",
+            species_id="goliath",
+            base_ability_scores={
+                "strength": 15,
+                "dexterity": 13,
+                "constitution": 14,
+                "intelligence": 8,
+                "wisdom": 10,
+                "charisma": 12,
+            },
+            background_ability_bonus_allocations=[
+                {"ability": "strength", "bonus": 2},
+                {"ability": "constitution", "bonus": 1},
+            ],
+            selected_class_choice_ids={
+                "barbarian_skill_choices": ["athletics", "intimidation"],
+            },
+        )
+    )
+
+    assert set(output["saving_throw_proficiencies"]) == {"strength", "constitution"}
+    assert output["saving_throw_modifiers"]["strength"] == 5
+    assert output["saving_throw_modifiers"]["constitution"] == 4
+    assert output["saving_throw_modifiers"]["dexterity"] == 1

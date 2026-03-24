@@ -267,8 +267,28 @@ class TemplateService:
         return (value or "").strip().lower().replace("’", "'").replace("`", "'")
 
     @staticmethod
-    def _normalize_skill_proficiencies(form_data):
+    def _skill_label_from_id(skill_id):
+        skill = get_character_builder_service().skill_by_id.get(str(skill_id), {})
+        if isinstance(skill, dict):
+            return (
+                skill.get("name_fr")
+                or skill.get("name")
+                or skill.get("name_en")
+                or skill.get("id")
+            )
+        return None
+
+    @classmethod
+    def _normalize_skill_proficiencies(cls, form_data, resolved_character=None):
         """Normalise les competences maitrisees depuis les checkboxes (ou texte legacy)."""
+        resolved_skill_ids = []
+        if isinstance(resolved_character, dict):
+            resolved_skill_ids = [str(item) for item in resolved_character.get('resolved_skill_proficiencies', []) if item]
+        if resolved_skill_ids:
+            resolved_labels = [label for label in (cls._skill_label_from_id(skill_id) for skill_id in resolved_skill_ids) if label]
+            if resolved_labels:
+                return ", ".join(dict.fromkeys(resolved_labels))
+
         selected_skills = [item.strip() for item in form_data.getlist('skill_proficiencies') if item and item.strip()]
         if selected_skills:
             return ", ".join(dict.fromkeys(selected_skills))
@@ -726,7 +746,7 @@ class TemplateService:
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
         resolved_character = resolve_character_creation(form_data)
-        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data, resolved_character=resolved_character)
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
             normalized_skill_proficiencies,
@@ -885,7 +905,7 @@ class TemplateService:
     def build_transient_character_template(form_data, current_user=None):
         """Construit un personnage non persiste pour les apercus (ex: generation PDF)."""
         resolved_character = resolve_character_creation(form_data)
-        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data)
+        normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data, resolved_character=resolved_character)
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
             normalized_skill_proficiencies,
