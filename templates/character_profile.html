@@ -173,6 +173,10 @@
                                     <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
                                 </div>
                                 <div class="stat-box stat-box--highlight">
+                                    <strong>Bonus de maitrise</strong>
+                                    <span>{% if character.bonus_maitrise is not none %}+{{ character.bonus_maitrise }}{% else %}—{% endif %}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
                                     <strong>Vitesse</strong>
                                     <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
                                 </div>
