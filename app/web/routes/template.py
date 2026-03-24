@@ -168,9 +168,49 @@ def _extract_choice_selections_by_scope(source):
     return grouped
 
 
+def _extract_spell_selections_by_choice(source):
+    """Reconstruit les selections de sorts classees par choice_id depuis le bridge JSON."""
+    raw_payload = source.get('feat_choices')
+    parsed = _parse_json_payload(raw_payload, default=[])
+    spells_by_choice = {}
+    spell_choice_types = {'spell', 'cantrip', 'prepared_spell', 'spellbook_entry'}
+    if not isinstance(parsed, list):
+        return spells_by_choice
+
+    for entry in parsed:
+        if not isinstance(entry, dict):
+            continue
+        scope = str(entry.get('scope') or '').strip()
+        if scope != 'class':
+            continue
+        choice_type = str(entry.get('choice_type') or '').strip()
+        if choice_type not in spell_choice_types:
+            continue
+        choice_id = str(entry.get('choice_id') or '').strip()
+        value = str(entry.get('value') or '').strip()
+        if not choice_id or not value:
+            continue
+        spells_by_choice.setdefault(choice_id, [])
+        if value not in spells_by_choice[choice_id]:
+            spells_by_choice[choice_id].append(value)
+
+    return spells_by_choice
+
+
 def _extract_builder_state(source):
     getlist = getattr(source, 'getlist', lambda _key: [])
     grouped_choices = _extract_choice_selections_by_scope(source)
+    grouped_spells = _extract_spell_selections_by_choice(source)
+    raw_selected_spell_ids_by_choice = source.get('selected_spell_ids_by_choice_json')
+    raw_selected_spells_by_choice = source.get('selected_spells_by_choice_json')
+    parsed_selected_spell_ids_by_choice = _parse_json_payload(raw_selected_spell_ids_by_choice, default=None)
+    parsed_selected_spells_by_choice = _parse_json_payload(raw_selected_spells_by_choice, default=None)
+    if isinstance(parsed_selected_spell_ids_by_choice, dict):
+        selected_spells_payload = parsed_selected_spell_ids_by_choice
+    elif isinstance(parsed_selected_spells_by_choice, dict):
+        selected_spells_payload = parsed_selected_spells_by_choice
+    else:
+        selected_spells_payload = grouped_spells
     state = {
         'class_id': source.get('class_id') or None,
         'background_id': source.get('background_id') or None,
@@ -190,8 +230,8 @@ def _extract_builder_state(source):
             source.get('background_ability_bonus_allocations_json'),
             default=[item for item in getlist('background_ability_bonus_allocations') if item],
         ),
-        'selected_spell_ids_by_choice': _parse_json_payload(source.get('selected_spell_ids_by_choice_json'), default={}),
-        'selected_spells_by_choice': _parse_json_payload(source.get('selected_spells_by_choice_json'), default={}),
+        'selected_spell_ids_by_choice': selected_spells_payload,
+        'selected_spells_by_choice': selected_spells_payload,
         'selected_equipment_choices_by_slot': _parse_json_payload(source.get('selected_equipment_choices_by_slot_json'), default={}),
         'equipment_choices_by_slot': _parse_json_payload(source.get('equipment_choices_by_slot_json'), default={}),
         'selected_class_choice_ids': grouped_choices['class'] or [choice_id for choice_id in getlist('selected_class_choice_ids') if choice_id],

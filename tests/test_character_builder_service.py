@@ -220,3 +220,12 @@ def test_spell_collections_are_split_and_acolyte_skills_are_merged():
     assert set(output["feat_cantrips"]) == {"guidance", "light"}
     assert output["feat_magic_initiate_level_1_spells"] == ["bless"]
     assert {"insight", "religion"}.issubset(set(output["skills"]))
+
+
+def test_default_step_definitions_include_choose_spells():
+    service = CharacterBuilderService()
+    service.character_creation_rules = {}
+
+    step_ids = [step["id"] for step in service.get_step_definitions()]
+
+    assert "choose_spells" in step_ids
