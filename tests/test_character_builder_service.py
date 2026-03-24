@@ -320,6 +320,47 @@ def test_default_step_definitions_include_choose_spells():
     assert "choose_spells" in step_ids
 
 
+def test_validate_standard_array_distribution_accepts_flat_legacy_base_fields():
+    service = CharacterBuilderService()
+    state = _base_state(
+        ability_score_method="standard_array",
+        base_ability_scores={},
+        force_base=15,
+        dexterite_base=14,
+        constitution_base=13,
+        intelligence_base=12,
+        sagesse_base=10,
+        charisme_base=8,
+    )
+
+    errors = service.validate_character_creation_submission(state)
+
+    assert "Les caractéristiques de base sont incomplètes ou invalides." not in errors
+    assert "Répartition standard invalide : utilisez exactement 15, 14, 13, 12, 10 et 8 une seule fois." not in errors
+
+
+def test_background_feat_validation_ignores_species_granted_feat_choice_values():
+    service = CharacterBuilderService()
+    state = _base_state(
+        background_id="acolyte",
+        species_id="human",
+        selected_origin_feat_id="crafter",
+        selected_feat_choice_ids={
+            "crafter_tool_proficiencies": ["alchemists_supplies", "brewers_supplies", "calligraphers_supplies"],
+            "magic_initiate_cleric_spellcasting_ability": ["wisdom"],
+            "magic_initiate_cleric_cantrips": ["guidance", "light"],
+            "magic_initiate_cleric_level_1_spell": ["bless"],
+        },
+    )
+
+    errors = service.validate_character_creation_submission(state)
+
+    assert (
+        "Don d'origine de background: certaines sélections ne correspondent à aucun choix autorisé "
+        "(alchemists_supplies, brewers_supplies, calligraphers_supplies)."
+    ) not in errors
+
+
 def test_spell_selection_by_choice_takes_priority_even_with_scalar_values():
     service = CharacterBuilderService()
     wizard_rule = service._find_class_rule("wizard")
