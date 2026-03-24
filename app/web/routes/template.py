@@ -210,6 +210,35 @@ def _extract_builder_state(source):
         selected_spells_payload = parsed_selected_spells_by_choice
     else:
         selected_spells_payload = grouped_spells
+    legacy_ability_field_mapping = {
+        'force_base': 'strength',
+        'strength_base': 'strength',
+        'dexterite_base': 'dexterity',
+        'dextérité_base': 'dexterity',
+        'dexterity_base': 'dexterity',
+        'constitution_base': 'constitution',
+        'intelligence_base': 'intelligence',
+        'sagesse_base': 'wisdom',
+        'wisdom_base': 'wisdom',
+        'charisme_base': 'charisma',
+        'charisma_base': 'charisma',
+    }
+    base_ability_scores = _parse_json_payload(
+        source.get('base_ability_scores_json') or source.get('base_ability_scores'),
+        default={},
+    )
+    if not isinstance(base_ability_scores, dict):
+        base_ability_scores = {}
+
+    for raw_field, canonical_ability in legacy_ability_field_mapping.items():
+        raw_value = source.get(raw_field)
+        if raw_value in (None, ''):
+            continue
+        try:
+            base_ability_scores[canonical_ability] = int(raw_value)
+        except (TypeError, ValueError):
+            continue
+
     state = {
         'class_id': source.get('class_id') or None,
         'background_id': source.get('background_id') or None,
@@ -222,7 +251,7 @@ def _extract_builder_state(source):
         'selected_ability_bonus_ids': [ability for ability in getlist('selected_ability_bonus_ids') if ability],
         'ability_score_method': source.get('ability_score_method') or None,
         'ability_method_id': source.get('ability_method_id') or None,
-        'base_ability_scores': _parse_json_payload(source.get('base_ability_scores_json') or source.get('base_ability_scores'), default={}),
+        'base_ability_scores': base_ability_scores,
         'base_abilities': _parse_json_payload(source.get('base_abilities_json') or source.get('base_abilities'), default={}),
         'background_ability_bonus_mode': source.get('background_ability_bonus_mode') or None,
         'background_ability_bonus_allocations': _parse_json_payload(
