@@ -411,6 +411,33 @@ def create_character_template():
     return redirect(url_for('template.manage_templates'))
 
 
+@bp.route('/character/guided/generate-pdf', methods=['POST'])
+def generate_guided_character_pdf():
+    """Genere un PDF depuis le funnel guide puis retourne son URL publique."""
+    service = get_character_builder_service()
+    validation_errors = service.validate_character_creation_submission(_extract_builder_state(request.form))
+    if validation_errors:
+        return jsonify({'ok': False, 'errors': validation_errors}), 400
+
+    current_user = getattr(g, 'current_user', None)
+    try:
+        pdf_filename = TemplateService.generate_character_sheet_preview_pdf(
+            request.form,
+            current_app.config['UPLOAD_FOLDER'],
+            current_user=current_user,
+        )
+    except ValueError as exc:
+        return jsonify({'ok': False, 'errors': [str(exc)]}), 400
+
+    return jsonify(
+        {
+            'ok': True,
+            'pdf_filename': pdf_filename,
+            'pdf_url': url_for('static', filename=f'uploads/{pdf_filename}'),
+        }
+    )
+
+
 @bp.route('/character/<int:id>/edit', methods=['GET', 'POST'])
 @login_required  # ✅ AJOUT : Protection obligatoire
 def edit_character_template(id):
