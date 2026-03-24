@@ -325,6 +325,67 @@
             </section>
         </template>
 
+        <template id="step-template-appearance_story">
+            <section class="wizard-step" data-step-id="appearance_story" hidden>
+                <div class="form-group">
+                    <h3>Apparence et histoire</h3>
+                    <p class="text-muted">Renseignez les éléments d'identité narratifs de votre personnage.</p>
+
+                    <label for="guided-genre">Genre</label>
+                    <select id="guided-genre" name="genre">
+                        <option value="" selected>Non précisé</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Non-binaire">Non-binaire</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+
+                    <label for="guided-age">Age</label>
+                    <input id="guided-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
+
+                    <label for="guided-height">Taille</label>
+                    <input id="guided-height" type="text" name="height" placeholder="Ex: 1m82">
+
+                    <label for="guided-weight">Poids</label>
+                    <input id="guided-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+
+                    <label for="guided-eyes">Yeux</label>
+                    <input id="guided-eyes" type="text" name="eyes" placeholder="Ex: verts">
+
+                    <label for="guided-hair">Cheveux</label>
+                    <input id="guided-hair" type="text" name="hair" placeholder="Ex: noirs">
+
+                    <label for="guided-skin">Peau</label>
+                    <input id="guided-skin" type="text" name="skin" placeholder="Ex: hâlée">
+
+                    <label for="guided-character-appearance">Apparence du personnage</label>
+                    <textarea id="guided-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
+
+                    <label for="guided-allies-organizations">Allies & organisations</label>
+                    <textarea id="guided-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
+
+                    <label for="guided-symbol-name">Nom du symbole</label>
+                    <input id="guided-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
+
+                    <label for="guided-additional-features">Traits supplementaires</label>
+                    <textarea id="guided-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
+
+                    <label for="guided-treasure">Tresor</label>
+                    <textarea id="guided-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
+
+                    <label for="guided-backstory">Backstory du personnage</label>
+                    <textarea id="guided-backstory" name="backstory_text" rows="3" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
+
+                    <label for="guided-player-private-notes">Notes privees joueur</label>
+                    <textarea id="guided-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
         <template id="step-template-finalize">
             <section class="wizard-step" data-step-id="finalize" hidden>
                 <div class="form-group">
@@ -426,6 +487,7 @@ const STEP_LABELS = {
     choose_languages: 'Choisir les langues',
     choose_equipment: "Choisir l'équipement",
     choose_spells: 'Choisir les sorts',
+    appearance_story: 'Apparence et histoire',
     finalize: 'Résumé final',
 };
 const ARMOR_OPTIONS_BY_CATEGORY = {
@@ -1498,6 +1560,7 @@ const STEP_COMPONENTS = {
     assign_ability_scores: () => document.getElementById('step-template-assign_ability_scores')?.content.cloneNode(true),
     choose_equipment: () => document.getElementById('step-template-choose_equipment')?.content.cloneNode(true),
     choose_spells: () => document.getElementById('step-template-choose_spells')?.content.cloneNode(true),
+    appearance_story: () => document.getElementById('step-template-appearance_story')?.content.cloneNode(true),
     finalize: () => document.getElementById('step-template-finalize')?.content.cloneNode(true),
 };
 
@@ -1822,6 +1885,14 @@ if (!effectiveSteps.includes('choose_spells')) {
         effectiveSteps.splice(finalizeIndex, 0, 'choose_spells');
     } else {
         effectiveSteps.push('choose_spells');
+    }
+}
+if (!effectiveSteps.includes('appearance_story')) {
+    const finalizeIndex = effectiveSteps.indexOf('finalize');
+    if (finalizeIndex >= 0) {
+        effectiveSteps.splice(finalizeIndex, 0, 'appearance_story');
+    } else {
+        effectiveSteps.push('appearance_story');
     }
 }
 renderWizardNav(effectiveSteps);
