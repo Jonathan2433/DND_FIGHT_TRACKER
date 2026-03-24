@@ -55,3 +55,22 @@ def test_extract_builder_state_prefers_explicit_selected_spell_ids_json_when_pro
         "cleric_cantrips_known": ["resistance"],
         "cleric_prepared_spells": ["command"],
     }
+
+
+def test_extract_builder_state_backfills_spell_scope_entries_from_feat_choices():
+    form = _base_form()
+    form["feat_choices"] = json.dumps(
+        [
+            {"scope": "spell", "choice_id": "cleric_cantrips_known", "choice_type": "cantrip", "value": "guidance"},
+            {"scope": "spell", "choice_id": "cleric_cantrips_known", "choice_type": "cantrip", "value": "light"},
+            {"scope": "spell", "choice_id": "cleric_prepared_spells", "choice_type": "prepared_spell", "value": "bless"},
+            {"scope": "spell", "choice_id": "cleric_prepared_spells", "choice_type": "prepared_spell", "value": "command"},
+        ]
+    )
+
+    state = _extract_builder_state(form)
+
+    assert state["selected_spell_ids_by_choice"] == {
+        "cleric_cantrips_known": ["guidance", "light"],
+        "cleric_prepared_spells": ["bless", "command"],
+    }

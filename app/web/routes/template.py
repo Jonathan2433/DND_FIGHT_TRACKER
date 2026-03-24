@@ -181,7 +181,7 @@ def _extract_spell_selections_by_choice(source):
         if not isinstance(entry, dict):
             continue
         scope = str(entry.get('scope') or '').strip()
-        if scope != 'class':
+        if scope not in {'class', 'spell'}:
             continue
         choice_type = str(entry.get('choice_type') or '').strip()
         if choice_type not in spell_choice_types:
@@ -453,6 +453,8 @@ def create_character_template():
     current_app.logger.info("Create character raw form payload: %s", incoming_payload)
     state = _extract_builder_state(request.form)
     current_app.logger.info("Create character normalized builder state: %s", state)
+    current_app.logger.info("selected_spell_ids_by_choice=%s", state.get("selected_spell_ids_by_choice"))
+    current_app.logger.info("state_snapshot=%s", state)
     current_app.logger.info(
         "Origin bonuses raw payload: %s",
         incoming_payload.get("background_ability_bonus_allocations_json"),
@@ -512,6 +514,8 @@ def generate_guided_character_pdf():
     current_app.logger.info("Generate PDF raw form payload: %s", incoming_payload)
     state = _extract_builder_state(request.form)
     current_app.logger.info("Generate PDF normalized builder state: %s", state)
+    current_app.logger.info("selected_spell_ids_by_choice=%s", state.get("selected_spell_ids_by_choice"))
+    current_app.logger.info("state_snapshot=%s", state)
     current_app.logger.info(
         "Origin bonuses raw payload: %s",
         incoming_payload.get("background_ability_bonus_allocations_json"),
