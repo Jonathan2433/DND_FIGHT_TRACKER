@@ -530,6 +530,7 @@ const state = {
     background_ability_bonus_allocations: [],
     selected_choices_by_scope: {
         class: {},
+        background: {},
         species: {},
         feat: {},
     },
@@ -969,8 +970,8 @@ function syncHiddenFields() {
         .filter(Boolean);
     hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
 
-    const featChoices = allChecked
-        .filter((x) => (x.dataset.scope || '').startsWith('feat'))
+    const serializedChoices = allChecked
+        .filter((x) => String(x.dataset.choiceId || '').trim())
         .map((x) => ({
             scope: x.dataset.scope,
             choice_id: x.dataset.choiceId,
@@ -979,13 +980,13 @@ function syncHiddenFields() {
             label: x.dataset.optionLabel || x.value,
             source_choice_value: x.dataset.sourceChoiceValue || null,
         }));
-    hidden.featChoices.value = JSON.stringify(featChoices);
+    hidden.featChoices.value = JSON.stringify(serializedChoices);
     syncPersistedChoiceState(allChecked);
     syncSubmissionChoiceInputs(allChecked);
 }
 
 function normalizeChoiceScope(scope) {
-    if (scope === 'class' || scope === 'species') return scope;
+    if (scope === 'class' || scope === 'background' || scope === 'species') return scope;
     if (String(scope || '').startsWith('feat_')) return 'feat';
     return null;
 }
@@ -1006,6 +1007,7 @@ function syncPersistedChoiceState(allCheckedInputs = null) {
         : Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
     const nextState = {
         class: {},
+        background: {},
         species: {},
         feat: {},
     };
