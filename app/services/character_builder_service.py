@@ -1109,6 +1109,182 @@ class CharacterBuilderService:
         if darkvision_override:
             output["darkvision_range_feet"] = max(output["darkvision_range_feet"] or 0, darkvision_override)
 
+    def resolve_selected_equipment(self, state: dict[str, Any]) -> list[dict[str, Any]]:
+        selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
+        selected_by_slot = state.get("selected_equipment_choices_by_slot")
+        if isinstance(selected_by_slot, dict):
+            for selected_item in selected_by_slot.values():
+                if isinstance(selected_item, list):
+                    selected_equipment_ids.extend(self._to_string_list(selected_item))
+                elif selected_item:
+                    selected_equipment_ids.append(str(selected_item))
+        selected_equipment_ids = list(dict.fromkeys(selected_equipment_ids))
+
+        resolved: list[dict[str, Any]] = []
+        for equipment_id in selected_equipment_ids:
+            equipment = self.equipment_by_id.get(str(equipment_id), {})
+            if not isinstance(equipment, dict) or not equipment:
+                continue
+            resolved.append({"id": str(equipment_id), "quantity": 1, "details": equipment, "source": "selected"})
+            for pack_item in equipment.get("items", []) if isinstance(equipment.get("items"), list) else []:
+                if not isinstance(pack_item, dict):
+                    continue
+                pack_item_id = str(pack_item.get("item_id") or "")
+                if not pack_item_id:
+                    continue
+                pack_equipment = self.equipment_by_id.get(pack_item_id, {})
+                if not isinstance(pack_equipment, dict) or not pack_equipment:
+                    continue
+                resolved.append(
+                    {
+                        "id": pack_item_id,
+                        "quantity": int(pack_item.get("quantity", 1) or 1),
+                        "details": pack_equipment,
+                        "source": f"pack:{equipment_id}",
+                    }
+                )
+        return resolved
+
+    @staticmethod
+    def _parse_weapon_range(properties: list[str]) -> dict[str, int] | None:
+        for prop in properties:
+            token = str(prop or "")
+            if not token.startswith("range_"):
+                continue
+            parts = token.split("_")
+            if len(parts) != 3:
+                continue
+            try:
+                normal_range = int(parts[1])
+                long_range = int(parts[2])
+            except (TypeError, ValueError):
+                continue
+            return {"normal": normal_range, "long": long_range}
+        return None
+
+    def _resolve_weapon_ability(self, weapon: dict[str, Any], abilities: dict[str, int]) -> str:
+        properties = {str(prop) for prop in weapon.get("properties", []) if prop}
+        category = str(weapon.get("weapon_category") or "")
+        is_ranged = category.endswith("_ranged")
+        if "finesse" in properties:
+            return "dexterity" if self._ability_modifier(abilities.get("dexterity", 10)) >= self._ability_modifier(abilities.get("strength", 10)) else "strength"
+        if is_ranged:
+            return "dexterity"
+        return "strength"
+
+    def compute_weapon_profiles(self, resolved_equipment: list[dict[str, Any]], output: dict[str, Any], abilities: dict[str, int]) -> list[dict[str, Any]]:
+        class_id = str(output.get("class_id") or "")
+        class_data = self.class_by_id.get(class_id, {})
+        proficiency_tokens = {str(token) for token in class_data.get("weapon_proficiencies", []) if token}
+        explicit_weapon_proficiencies = {str(token) for token in output.get("weapon_proficiencies", []) if token}
+        profiles: list[dict[str, Any]] = []
+
+        for item in resolved_equipment:
+            details = item.get("details", {})
+            if not isinstance(details, dict):
+                continue
+            if not isinstance(details.get("damage"), dict):
+                continue
+
+            weapon_id = str(item.get("id") or details.get("id") or "")
+            if not weapon_id:
+                continue
+            weapon_category = str(details.get("weapon_category") or "")
+            properties = [str(prop) for prop in details.get("properties", []) if prop]
+            proficiency_group = str(details.get("proficiency_group") or ("simple" if weapon_category.startswith("simple_") else "martial" if weapon_category.startswith("martial_") else ""))
+            is_proficient = (
+                weapon_id in explicit_weapon_proficiencies
+                or weapon_id in proficiency_tokens
+                or proficiency_group in proficiency_tokens
+                or f"{proficiency_group}_weapons" in proficiency_tokens
+            )
+            ability_used = self._resolve_weapon_ability(details, abilities)
+            ability_modifier = self._ability_modifier(int(abilities.get(ability_used, 10) or 10))
+            proficiency_bonus = 2
+            attack_bonus = ability_modifier + (proficiency_bonus if is_proficient else 0)
+
+            profiles.append(
+                {
+                    "id": weapon_id,
+                    "name": self._label(details) or weapon_id,
+                    "weapon_type": weapon_category or None,
+                    "category": proficiency_group or None,
+                    "damage": {
+                        "dice": details.get("damage", {}).get("dice"),
+                        "type": details.get("damage", {}).get("type"),
+                    },
+                    "versatile_damage": details.get("versatile_damage"),
+                    "properties": properties,
+                    "range": self._parse_weapon_range(properties),
+                    "ability_used": ability_used,
+                    "is_proficient": is_proficient,
+                    "attack_bonus": attack_bonus,
+                }
+            )
+        return profiles
+
+    def compute_final_ac(self, resolved_equipment: list[dict[str, Any]], dexterity_modifier: int) -> dict[str, Any]:
+        best_armor_class = 10 + dexterity_modifier
+        equipped_armor_id: str | None = None
+        equipped_armor_category: str | None = None
+        shield_bonus = 0
+
+        for item in resolved_equipment:
+            equipment_id = str(item.get("id") or "")
+            equipment = item.get("details", {})
+            if not isinstance(equipment, dict):
+                continue
+            armor_class_rule = equipment.get("armor_class")
+            if isinstance(armor_class_rule, dict):
+                base_armor = int(armor_class_rule.get("base", 10) or 10)
+                dex_cap = armor_class_rule.get("dex_cap")
+                if dex_cap is None:
+                    applied_dex = dexterity_modifier
+                else:
+                    applied_dex = min(dexterity_modifier, int(dex_cap))
+                armor_class = base_armor + applied_dex
+                if armor_class > best_armor_class:
+                    best_armor_class = armor_class
+                    equipped_armor_id = equipment_id
+                    equipped_armor_category = str(equipment.get("armor_category") or "")
+            armor_bonus = int(equipment.get("armor_class_bonus", 0) or 0)
+            if armor_bonus:
+                shield_bonus += armor_bonus
+
+        return {
+            "base_armor_class": best_armor_class,
+            "equipped_armor_id": equipped_armor_id,
+            "equipped_armor_category": equipped_armor_category or None,
+            "shield_armor_class_bonus": shield_bonus,
+            "has_shield": shield_bonus > 0,
+            "armor_class": best_armor_class + shield_bonus,
+        }
+
+    def _compute_final_ability_scores(self, state: dict[str, Any]) -> dict[str, int]:
+        ability_order = ("strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma")
+        base_scores = state.get("base_ability_scores", {})
+        final_scores: dict[str, int] = {}
+        for ability in ability_order:
+            final_scores[ability] = int(base_scores.get(ability, 10) or 10)
+
+        for allocation in self._normalize_background_allocations(state.get("background_ability_bonus_allocations")):
+            ability = str(allocation.get("ability") or "")
+            if ability not in final_scores:
+                continue
+            final_scores[ability] += int(allocation.get("bonus", 0) or 0)
+
+        for raw_bonus in self._to_string_list(state.get("selected_ability_bonus_ids")):
+            token = str(raw_bonus).strip().lower()
+            for ability in ability_order:
+                if token == ability:
+                    final_scores[ability] += 1
+                    break
+                if token in {f"+1_{ability}", f"{ability}_plus_1", f"{ability}_1"}:
+                    final_scores[ability] += 1
+                    break
+
+        return {ability: max(1, min(20, score)) for ability, score in final_scores.items()}
+
     def build_character_output(self, raw_state: dict[str, Any]) -> dict[str, Any]:
         state = self.normalize_character_creation_state(raw_state)
         class_id = str(state.get("class_id") or "")
@@ -1149,8 +1325,13 @@ class CharacterBuilderService:
             "extra_class_cantrips": 0,
             "selected_equipment_ids": [],
             "equipped_armor_id": None,
+            "equipped_armor_category": None,
             "has_shield": False,
             "shield_armor_class_bonus": 0,
+            "final_ability_scores": {},
+            "ability_modifiers": {},
+            "final_equipment": [],
+            "weapon_profiles": [],
         }
 
         self.apply_background_choices(state, output)
@@ -1158,52 +1339,37 @@ class CharacterBuilderService:
         self.apply_class_choices(state, output)
         self.apply_feat_choices(state, output)
 
-        selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
-        for selected_item in state.get("selected_equipment_choices_by_slot", {}).values() if isinstance(state.get("selected_equipment_choices_by_slot"), dict) else []:
-            if isinstance(selected_item, list):
-                selected_equipment_ids.extend(self._to_string_list(selected_item))
-            elif selected_item:
-                selected_equipment_ids.append(str(selected_item))
-        selected_equipment_ids = list(dict.fromkeys(selected_equipment_ids))
-        output["selected_equipment_ids"] = selected_equipment_ids
-
-        base_scores = state.get("base_ability_scores", {})
-        constitution_score = int(base_scores.get("constitution", 10) or 10)
-        dexterity_score = int(base_scores.get("dexterity", 10) or 10)
+        final_scores = self._compute_final_ability_scores(state)
+        ability_modifiers = {ability: self._ability_modifier(score) for ability, score in final_scores.items()}
+        output["final_ability_scores"] = final_scores
+        output["ability_modifiers"] = ability_modifiers
+        constitution_score = final_scores.get("constitution", 10)
+        dexterity_score = final_scores.get("dexterity", 10)
         constitution_modifier = self._ability_modifier(constitution_score)
         dexterity_modifier = self._ability_modifier(dexterity_score)
         hit_die = int(class_data.get("hit_die", 8) or 8)
-        best_armor_class = 10 + dexterity_modifier
-        equipped_armor_id: str | None = None
-        shield_bonus = 0
 
-        for equipment_id in selected_equipment_ids:
-            equipment = self.equipment_by_id.get(str(equipment_id), {})
-            if not isinstance(equipment, dict):
-                continue
-            armor_class_rule = equipment.get("armor_class")
-            if isinstance(armor_class_rule, dict):
-                base_armor = int(armor_class_rule.get("base", 10) or 10)
-                dex_cap = armor_class_rule.get("dex_cap")
-                if dex_cap is None:
-                    applied_dex = dexterity_modifier
-                else:
-                    applied_dex = min(dexterity_modifier, int(dex_cap))
-                armor_class = base_armor + applied_dex
-                if armor_class > best_armor_class:
-                    best_armor_class = armor_class
-                    equipped_armor_id = str(equipment_id)
-            armor_bonus = int(equipment.get("armor_class_bonus", 0) or 0)
-            if armor_bonus:
-                shield_bonus += armor_bonus
-
-        output["equipped_armor_id"] = equipped_armor_id
-        output["shield_armor_class_bonus"] = shield_bonus
-        output["has_shield"] = shield_bonus > 0
+        resolved_equipment = self.resolve_selected_equipment(state)
+        output["selected_equipment_ids"] = [item["id"] for item in resolved_equipment if item.get("source") == "selected"]
+        output["final_equipment"] = [
+            {
+                "id": item.get("id"),
+                "quantity": int(item.get("quantity", 1) or 1),
+                "source": item.get("source"),
+                "name": self._label(item.get("details", {})),
+            }
+            for item in resolved_equipment
+        ]
+        ac_context = self.compute_final_ac(resolved_equipment, dexterity_modifier)
+        output["equipped_armor_id"] = ac_context.get("equipped_armor_id")
+        output["equipped_armor_category"] = ac_context.get("equipped_armor_category")
+        output["shield_armor_class_bonus"] = int(ac_context.get("shield_armor_class_bonus", 0) or 0)
+        output["has_shield"] = bool(ac_context.get("has_shield"))
+        output["weapon_profiles"] = self.compute_weapon_profiles(resolved_equipment, output, final_scores)
 
         output["derived"] = {
             "hit_points_max": max(1, hit_die + constitution_modifier),
-            "armor_class": best_armor_class + shield_bonus,
+            "armor_class": int(ac_context.get("armor_class", 10 + dexterity_modifier)),
             "initiative_modifier": dexterity_modifier,
         }
         return output
