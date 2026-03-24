@@ -28,7 +28,7 @@ from app.utils.dnd5_rules import (
     AIDEDED_CLASS_OPTIONS,
     AIDEDED_BACKGROUND_OPTIONS,
 )
-from app.utils.spell_catalog import get_cantrips, get_spells_for_level
+from app.utils.spell_catalog import get_cantrips, get_spells_for_level, load_spell_catalog
 from app.utils.character_builder_engine import get_rules_loaders, SpellResolverService
 from app.services.character_builder_service import get_character_builder_service
 from app.web.routes.main import _slugify_spell_name
@@ -288,36 +288,60 @@ def _split_spell_names(raw_spells):
     return [spell.strip() for spell in (raw_spells or '').split(',') if spell.strip()]
 
 
+
+
+def _normalize_known_spell_key(value):
+    return (
+        (value or '')
+        .strip()
+        .lower()
+        .replace("’", "'")
+        .replace("`", "'")
+        .replace('-', '_')
+        .replace(' ', '_')
+    )
+
+
+def _build_spell_lookup():
+    lookup = {}
+    for spell in load_spell_catalog():
+        if not isinstance(spell, dict):
+            continue
+        for candidate in (spell.get('name'), spell.get('name_en'), spell.get('id')):
+            normalized = _normalize_known_spell_key(candidate)
+            if normalized and normalized not in lookup:
+                lookup[normalized] = spell
+    return lookup
+
+
 def _build_known_spells(character_id, profile):
     cantrips = _split_spell_names(profile.get('selected_cantrips')) if profile else []
     level_one_spells = _split_spell_names(profile.get('selected_level_1_spells')) if profile else []
     known_spells = []
+    spell_lookup = _build_spell_lookup()
+
+    def _serialize_known_spell(raw_spell_name, level_label):
+        spell_details = spell_lookup.get(_normalize_known_spell_key(raw_spell_name), {})
+        display_name = spell_details.get('name') or raw_spell_name
+        slug_source = spell_details.get('name') or raw_spell_name
+        slug = _slugify_spell_name(slug_source)
+        return {
+            'name': display_name,
+            'level_label': level_label,
+            'slug': slug,
+            'href': url_for(
+                'main.spell_detail',
+                spell_slug=slug,
+                return_to=url_for('template.character_profile', id=character_id),
+                return_label='Retour personnage',
+            ),
+        }
 
     for spell_name in cantrips:
-        known_spells.append({
-            'name': spell_name,
-            'level_label': 'Sort mineur',
-            'slug': _slugify_spell_name(spell_name),
-            'href': url_for(
-                'main.spell_detail',
-                spell_slug=_slugify_spell_name(spell_name),
-                return_to=url_for('template.character_profile', id=character_id),
-                return_label='Retour personnage',
-            ),
-        })
+        known_spells.append(_serialize_known_spell(spell_name, 'Sort mineur'))
 
     for spell_name in level_one_spells:
-        known_spells.append({
-            'name': spell_name,
-            'level_label': 'Niveau 1',
-            'slug': _slugify_spell_name(spell_name),
-            'href': url_for(
-                'main.spell_detail',
-                spell_slug=_slugify_spell_name(spell_name),
-                return_to=url_for('template.character_profile', id=character_id),
-                return_label='Retour personnage',
-            ),
-        })
+        known_spells.append(_serialize_known_spell(spell_name, 'Niveau 1'))
 
     return known_spells
 
