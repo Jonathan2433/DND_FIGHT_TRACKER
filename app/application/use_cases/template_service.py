@@ -746,7 +746,17 @@ class TemplateService:
                 elif choice_type == "spell":
                     count = len(selected_spells_by_choice.get(choice_id, [])) if selected_spells_by_choice else len(cantrip_tokens) + len(spell_tokens)
                 elif choice_type == "language":
-                    count = len(language_tokens)
+                    # Les choix de langue attachés à une règle (classe/background/espèce/don)
+                    # doivent être validés via leur choice_id dédié et non via le pool global
+                    # de langues d'origine (language_2/language_3).
+                    #
+                    # Fallback legacy: si aucun choice_id n'est présent, on conserve
+                    # l'ancien comptage basé sur les langues globales.
+                    count = (
+                        len(selected_by_choice_id.get(choice_id, []))
+                        if choice_id
+                        else len(language_tokens)
+                    )
                 else:
                     count = len(selected_by_choice_id.get(choice_id, []))
                 if count != choose:
