@@ -528,6 +528,11 @@ const state = {
     ability_score_method: null,
     background_ability_bonus_mode: null,
     background_ability_bonus_allocations: [],
+    backgroundAbilityBonuses: {
+        option: null,
+        selections: {},
+        distribution: {},
+    },
     selected_choices_by_scope: {
         class: {},
         background: {},
@@ -552,6 +557,14 @@ const ARMOR_OPTIONS_BY_CATEGORY = {
     light: ['Armure matelassee', 'Armure de cuir', 'Armure de cuir cloutee'],
     medium: ['Chemise de mailles', 'Cuirasse', 'Demi-plate'],
     heavy: ['Cotte de mailles', 'Harnois'],
+};
+const LEGACY_BG_FIELD_BY_ABILITY = {
+    strength: 'force',
+    dexterity: 'dexterite',
+    constitution: 'constitution',
+    intelligence: 'intelligence',
+    wisdom: 'sagesse',
+    charisma: 'charisme',
 };
 
 const FRIENDLY_LABELS = {
@@ -1546,25 +1559,62 @@ function getBackgroundBonusAllocations() {
     };
 }
 
+function buildOriginBonusStateFromUI() {
+    const { mode, allocations } = getBackgroundBonusAllocations();
+    const option = mode === '2-1' ? 'A' : 'B';
+    const distribution = {};
+    allocations.forEach((entry) => {
+        const ability = String(entry?.ability || '').trim().toLowerCase();
+        const bonus = Number(entry?.bonus || 0);
+        if (!ability || bonus <= 0) return;
+        distribution[ability] = (distribution[ability] || 0) + bonus;
+    });
+
+    const selections = option === 'A'
+        ? {
+            plus2: allocations.find((entry) => Number(entry.bonus) === 2)?.ability || null,
+            plus1: allocations.find((entry) => Number(entry.bonus) === 1)?.ability || null,
+        }
+        : {
+            first: allocations[0]?.ability || null,
+            second: allocations[1]?.ability || null,
+            third: allocations[2]?.ability || null,
+        };
+    return { mode, option, selections, allocations, distribution };
+}
+
+function buildFinalSubmitPayloadDebug() {
+    const formData = new FormData(form);
+    const payload = {};
+    formData.forEach((value, key) => {
+        if (Object.prototype.hasOwnProperty.call(payload, key)) {
+            if (Array.isArray(payload[key])) payload[key].push(value);
+            else payload[key] = [payload[key], value];
+        } else {
+            payload[key] = value;
+        }
+    });
+    payload.background_ability_distribution = { ...(state.backgroundAbilityBonuses?.distribution || {}) };
+    return payload;
+}
+
 function updateOriginBonusHiddenFields() {
     resetBackgroundAbilityBonuses();
-    const { mode, allocations } = getBackgroundBonusAllocations();
-    if (mode === '2-1') {
-        const plusTwo = allocations.find((entry) => entry.bonus === 2)?.ability;
-        const plusOne = allocations.find((entry) => entry.bonus === 1)?.ability;
-        if (plusTwo && abilityBonusInputs[plusTwo]) abilityBonusInputs[plusTwo].value = '2';
-        if (plusOne && abilityBonusInputs[plusOne]) {
-            abilityBonusInputs[plusOne].value = String((parseInt(abilityBonusInputs[plusOne].value || '0', 10) + 1));
-        }
-    } else {
-        allocations.slice(0, 3).forEach((allocation) => {
-            if (abilityBonusInputs[allocation.ability]) abilityBonusInputs[allocation.ability].value = '1';
-        });
-    }
-    hidden.backgroundAbilityBonusMode.value = mode;
-    hidden.backgroundAbilityBonusAllocations.value = JSON.stringify(allocations);
-    state.background_ability_bonus_mode = mode;
-    state.background_ability_bonus_allocations = allocations;
+    const originState = buildOriginBonusStateFromUI();
+    Object.entries(originState.distribution).forEach(([ability, bonus]) => {
+        const legacyKey = LEGACY_BG_FIELD_BY_ABILITY[ability];
+        if (!legacyKey || !abilityBonusInputs[legacyKey]) return;
+        abilityBonusInputs[legacyKey].value = String(bonus);
+    });
+    hidden.backgroundAbilityBonusMode.value = originState.mode;
+    hidden.backgroundAbilityBonusAllocations.value = JSON.stringify(originState.allocations);
+    state.background_ability_bonus_mode = originState.mode;
+    state.background_ability_bonus_allocations = originState.allocations;
+    state.backgroundAbilityBonuses = {
+        option: originState.option,
+        selections: originState.selections,
+        distribution: originState.distribution,
+    };
 }
 
 function renderAbilityBonusControls(abilityPayload) {
@@ -1906,6 +1956,10 @@ form.addEventListener('submit', (event) => {
     hidden.language3.value = language3.value;
     hidden.mode.value = abilityMethod.value || 'standard_array';
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    const debugPayload = buildFinalSubmitPayloadDebug();
+    console.log('origin option', state.backgroundAbilityBonuses?.option);
+    console.log('origin selections', state.backgroundAbilityBonuses?.selections);
+    console.log('final submit payload', debugPayload);
 });
 
 async function handleGeneratePdfPreview() {
@@ -1926,6 +1980,10 @@ async function handleGeneratePdfPreview() {
     hidden.language3.value = language3.value;
     hidden.mode.value = abilityMethod.value || 'standard_array';
     hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    const debugPayload = buildFinalSubmitPayloadDebug();
+    console.log('origin option', state.backgroundAbilityBonuses?.option);
+    console.log('origin selections', state.backgroundAbilityBonuses?.selections);
+    console.log('final submit payload', debugPayload);
 
     const previousLabel = generateCharacterPdfButton?.textContent || '';
     const pdfPreviewWindow = window.open('', '_blank', 'noopener,noreferrer');

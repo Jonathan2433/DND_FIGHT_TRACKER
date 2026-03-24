@@ -409,8 +409,24 @@ def character_builder_spell_options():
 def create_character_template():
     """Créer un template de personnage"""
     service = get_character_builder_service()
-    validation_errors = service.validate_character_creation_submission(_extract_builder_state(request.form))
+    incoming_payload = request.form.to_dict(flat=False)
+    current_app.logger.info("Create character raw form payload: %s", incoming_payload)
+    state = _extract_builder_state(request.form)
+    current_app.logger.info("Create character normalized builder state: %s", state)
+    current_app.logger.info(
+        "Origin bonuses raw payload: %s",
+        incoming_payload.get("background_ability_bonus_allocations_json"),
+    )
+    current_app.logger.info(
+        "Origin bonuses normalized payload: %s",
+        {
+            "mode": state.get("background_ability_bonus_mode"),
+            "allocations": state.get("background_ability_bonus_allocations"),
+        },
+    )
+    validation_errors = service.validate_character_creation_submission(state)
     if validation_errors:
+        current_app.logger.warning("Create character validator rejection reasons: %s", validation_errors)
         return jsonify({'ok': False, 'errors': validation_errors}), 400
 
     if not g.current_user:
@@ -452,8 +468,24 @@ def create_character_template():
 def generate_guided_character_pdf():
     """Genere un PDF depuis le funnel guide puis retourne son URL publique."""
     service = get_character_builder_service()
-    validation_errors = service.validate_character_creation_submission(_extract_builder_state(request.form))
+    incoming_payload = request.form.to_dict(flat=False)
+    current_app.logger.info("Generate PDF raw form payload: %s", incoming_payload)
+    state = _extract_builder_state(request.form)
+    current_app.logger.info("Generate PDF normalized builder state: %s", state)
+    current_app.logger.info(
+        "Origin bonuses raw payload: %s",
+        incoming_payload.get("background_ability_bonus_allocations_json"),
+    )
+    current_app.logger.info(
+        "Origin bonuses normalized payload: %s",
+        {
+            "mode": state.get("background_ability_bonus_mode"),
+            "allocations": state.get("background_ability_bonus_allocations"),
+        },
+    )
+    validation_errors = service.validate_character_creation_submission(state)
     if validation_errors:
+        current_app.logger.warning("Generate PDF validator rejection reasons: %s", validation_errors)
         return jsonify({'ok': False, 'errors': validation_errors}), 400
 
     current_user = getattr(g, 'current_user', None)
