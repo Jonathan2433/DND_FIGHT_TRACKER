@@ -17,6 +17,22 @@ from app.application.use_cases.character_sheet_pdf_service import CharacterSheet
 
 
 class TemplateService:
+    @staticmethod
+    def _normalize_language_label(language_value):
+        """Normalise les identifiants de langue du funnel vers les libellés attendus en base."""
+        if not language_value:
+            return None
+        normalized = str(language_value).strip()
+        if not normalized:
+            return None
+
+        lowered = normalized.lower()
+        canonical_map = {
+            'common': 'Commun',
+            'commun': 'Commun',
+        }
+        return canonical_map.get(lowered, normalized.title())
+
     """Service pour la gestion des templates de personnages et rencontres"""
     ARMOR_MASTERY_BY_CLASS = {
         "barbare": {"light", "medium", "shield"},
@@ -656,9 +672,9 @@ class TemplateService:
             level_one_catalog,
         )
         selected_languages = [
-            form_data.get('language_1'),
-            form_data.get('language_2'),
-            form_data.get('language_3'),
+            TemplateService._normalize_language_label(form_data.get('language_1')),
+            TemplateService._normalize_language_label(form_data.get('language_2')),
+            TemplateService._normalize_language_label(form_data.get('language_3')),
         ]
         selected_languages = [language for language in selected_languages if language]
         if len(set(selected_languages)) < 3 or 'Commun' not in selected_languages:
@@ -816,9 +832,9 @@ class TemplateService:
             level_one_catalog,
         )
         selected_languages = [
-            form_data.get('language_1'),
-            form_data.get('language_2'),
-            form_data.get('language_3'),
+            TemplateService._normalize_language_label(form_data.get('language_1')),
+            TemplateService._normalize_language_label(form_data.get('language_2')),
+            TemplateService._normalize_language_label(form_data.get('language_3')),
         ]
         selected_languages = [language for language in selected_languages if language]
         if len(set(selected_languages)) < 3 or 'Commun' not in selected_languages:

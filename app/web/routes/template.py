@@ -393,7 +393,7 @@ def create_character_template():
             return redirect(url_for('template.manage_templates'))
 
     try:
-        TemplateService.create_character_template(
+        created_character = TemplateService.create_character_template(
             request.form,
             request.files,
             current_app.config['UPLOAD_FOLDER'],
@@ -404,11 +404,11 @@ def create_character_template():
         flash(str(exc), 'error')
         return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
 
-    if campaign_id:
-        flash('PJ créé et automatiquement associé à la campagne.', 'success')
-        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
-
-    return redirect(url_for('template.manage_templates'))
+    flash(
+        f'✅ {created_character.name} bien créé, PDF généré et ajouté dans vos personnages.',
+        'success'
+    )
+    return redirect(url_for('template.character_profile', id=created_character.id))
 
 
 @bp.route('/character/guided/generate-pdf', methods=['POST'])
