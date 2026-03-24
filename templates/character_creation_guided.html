@@ -127,6 +127,33 @@
             font-size: 0.92rem;
             opacity: 0.9;
         }
+        .appearance-story-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+        .appearance-story-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .appearance-story-field--full {
+            grid-column: 1 / -1;
+        }
+        .appearance-story-group-title {
+            grid-column: 1 / -1;
+            margin: 10px 0 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            opacity: 0.95;
+            text-transform: uppercase;
+        }
+        .appearance-story-group-title:first-of-type {
+            margin-top: 0;
+        }
         @media (max-width: 900px) {
             .ability-scores-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -157,6 +184,10 @@
             }
             .origin-bonus-checkboxes {
                 grid-template-columns: 1fr;
+            }
+            .appearance-story-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
         }
     </style>
@@ -330,54 +361,73 @@
                 <div class="form-group">
                     <h3>Apparence et histoire</h3>
                     <p class="text-muted">Renseignez les éléments d'identité narratifs de votre personnage.</p>
+                    <div class="appearance-story-grid">
+                        <p class="appearance-story-group-title">Identité visuelle</p>
+                        <div class="appearance-story-field">
+                            <label for="guided-genre">Genre</label>
+                            <select id="guided-genre" name="genre">
+                                <option value="" selected>Non précisé</option>
+                                <option value="Femme">Femme</option>
+                                <option value="Homme">Homme</option>
+                                <option value="Non-binaire">Non-binaire</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-age">Age</label>
+                            <input id="guided-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-height">Taille</label>
+                            <input id="guided-height" type="text" name="height" placeholder="Ex: 1m82">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-weight">Poids</label>
+                            <input id="guided-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-eyes">Yeux</label>
+                            <input id="guided-eyes" type="text" name="eyes" placeholder="Ex: verts">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-hair">Cheveux</label>
+                            <input id="guided-hair" type="text" name="hair" placeholder="Ex: noirs">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-skin">Peau</label>
+                            <input id="guided-skin" type="text" name="skin" placeholder="Ex: hâlée">
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-character-appearance">Apparence du personnage</label>
+                            <textarea id="guided-character-appearance" name="character_appearance" rows="3" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
+                        </div>
 
-                    <label for="guided-genre">Genre</label>
-                    <select id="guided-genre" name="genre">
-                        <option value="" selected>Non précisé</option>
-                        <option value="Femme">Femme</option>
-                        <option value="Homme">Homme</option>
-                        <option value="Non-binaire">Non-binaire</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-
-                    <label for="guided-age">Age</label>
-                    <input id="guided-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
-
-                    <label for="guided-height">Taille</label>
-                    <input id="guided-height" type="text" name="height" placeholder="Ex: 1m82">
-
-                    <label for="guided-weight">Poids</label>
-                    <input id="guided-weight" type="text" name="weight" placeholder="Ex: 82 kg">
-
-                    <label for="guided-eyes">Yeux</label>
-                    <input id="guided-eyes" type="text" name="eyes" placeholder="Ex: verts">
-
-                    <label for="guided-hair">Cheveux</label>
-                    <input id="guided-hair" type="text" name="hair" placeholder="Ex: noirs">
-
-                    <label for="guided-skin">Peau</label>
-                    <input id="guided-skin" type="text" name="skin" placeholder="Ex: hâlée">
-
-                    <label for="guided-character-appearance">Apparence du personnage</label>
-                    <textarea id="guided-character-appearance" name="character_appearance" rows="2" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
-
-                    <label for="guided-allies-organizations">Allies & organisations</label>
-                    <textarea id="guided-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
-
-                    <label for="guided-symbol-name">Nom du symbole</label>
-                    <input id="guided-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
-
-                    <label for="guided-additional-features">Traits supplementaires</label>
-                    <textarea id="guided-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
-
-                    <label for="guided-treasure">Tresor</label>
-                    <textarea id="guided-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
-
-                    <label for="guided-backstory">Backstory du personnage</label>
-                    <textarea id="guided-backstory" name="backstory_text" rows="3" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
-
-                    <label for="guided-player-private-notes">Notes privees joueur</label>
-                    <textarea id="guided-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
+                        <p class="appearance-story-group-title">Histoire & éléments narratifs</p>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-allies-organizations">Allies & organisations</label>
+                            <textarea id="guided-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-symbol-name">Nom du symbole</label>
+                            <input id="guided-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-additional-features">Traits supplementaires</label>
+                            <textarea id="guided-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-treasure">Tresor</label>
+                            <textarea id="guided-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-backstory">Backstory du personnage</label>
+                            <textarea id="guided-backstory" name="backstory_text" rows="4" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-player-private-notes">Notes privees joueur</label>
+                            <textarea id="guided-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
