@@ -156,6 +156,15 @@ def test_pack_items_are_resolved_into_final_equipment():
     assert "rations" in final_equipment_ids
 
 
+def test_duplicate_selected_equipment_is_preserved_for_builder_choice_pairs():
+    service = CharacterBuilderService()
+    output = service.build_character_output(_base_state(selected_equipment_ids=["dagger", "dagger"]))
+
+    assert output["selected_equipment_ids"] == ["dagger", "dagger"]
+    selected_entries = [item for item in output["final_equipment"] if item.get("id") == "dagger" and item.get("source") == "selected"]
+    assert len(selected_entries) == 2
+
+
 def test_equipment_placeholders_for_weapons_are_resolved_from_catalog_and_proficiencies():
     service = CharacterBuilderService()
     payload = service.get_class_payload("fighter", _base_state(class_id="fighter"))

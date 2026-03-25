@@ -1283,7 +1283,6 @@ class CharacterBuilderService:
                     selected_equipment_ids.extend(self._to_string_list(selected_item))
                 elif selected_item:
                     selected_equipment_ids.append(str(selected_item))
-        selected_equipment_ids = list(dict.fromkeys(selected_equipment_ids))
 
         resolved: list[dict[str, Any]] = []
         for equipment_id in selected_equipment_ids:
@@ -2043,10 +2042,6 @@ class CharacterBuilderService:
         selected_equipment_choices_by_slot = state.get("selected_equipment_choices_by_slot")
         if selected_equipment_choices_by_slot is not None and not isinstance(selected_equipment_choices_by_slot, dict):
             errors.append("Le format des choix d'équipement est invalide.")
-
-        selected_equipment_ids = self._to_string_list(state.get("selected_equipment_ids"))
-        if selected_equipment_ids and len(selected_equipment_ids) != len(set(selected_equipment_ids)):
-            errors.append("Les équipements sélectionnés ne peuvent pas contenir de doublons.")
 
         class_rule = self._find_class_rule(str(class_id)) if class_id else {}
         if isinstance(class_rule, dict):

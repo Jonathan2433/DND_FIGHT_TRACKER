@@ -591,6 +591,16 @@ def create_character_template():
             return redirect(url_for('template.manage_templates'))
 
     try:
+        current_app.logger.info(
+            "CREATE_CHARACTER entrypoint payload snapshot: class_id=%s background_id=%s species_id=%s selected_equipment_ids=%s selected_class_choices=%s selected_species_choices=%s selected_feat_choices=%s",
+            state.get("class_id"),
+            state.get("background_id"),
+            state.get("species_id"),
+            state.get("selected_equipment_ids"),
+            state.get("selected_class_choice_ids"),
+            state.get("selected_species_choice_ids"),
+            state.get("selected_feat_choice_ids"),
+        )
         created_character = TemplateService.create_character_template(
             request.form,
             request.files,
@@ -602,7 +612,12 @@ def create_character_template():
         flash(str(exc), 'error')
         return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
     except Exception:
-        current_app.logger.exception("Unexpected error while creating character template.")
+        current_app.logger.exception(
+            "CREATE_CHARACTER fatal error during final creation. normalized_state=%s raw_form=%s raw_files=%s",
+            state,
+            incoming_payload,
+            list(request.files.keys()),
+        )
         flash(
             "Une erreur interne est survenue pendant la création du personnage. "
             "Merci de réessayer.",
