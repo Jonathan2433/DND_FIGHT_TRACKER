@@ -364,6 +364,79 @@ def add_player_character(campaign_id):
     return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
 
+@bp.route('/<int:campaign_id>/assign_pj', methods=['POST'])
+@login_required
+def assign_player_character(campaign_id):
+    """Transférer un PJ du MJ vers un joueur membre de la campagne."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Campagne non trouvée ou accès interdit.', 'error')
+        return redirect(url_for('main.index'))
+
+    if not g.current_user.is_mj_of(campaign):
+        flash("Seul le MJ peut attribuer un PJ à un joueur.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character_id = request.form.get('character_id', type=int)
+    recipient_user_id = request.form.get('recipient_user_id', type=int)
+    if not character_id or not recipient_user_id:
+        flash('Veuillez sélectionner un PJ et un joueur.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    recipient_membership = CampaignMember.query.filter_by(
+        campaign_id=campaign.id,
+        user_id=recipient_user_id,
+    ).first()
+    if not recipient_membership:
+        flash("Le joueur sélectionné n'est pas membre de cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character = CharacterTemplate.query.filter_by(
+        id=character_id,
+        character_type='PJ',
+        is_active=True,
+    ).first()
+    if not character:
+        flash('PJ introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    if character.owner_id != g.current_user.id:
+        flash("Vous ne pouvez attribuer que des PJ dont vous êtes propriétaire.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    is_character_in_campaign = (
+        character.campaign_id == campaign.id or campaign in character.campaigns
+    )
+    if not is_character_in_campaign:
+        flash("Ce PJ n'est pas rattaché à cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character.owner_id = recipient_user_id
+    character.player_name = recipient_membership.user.username
+    character.campaign_id = campaign.id
+    if campaign not in character.campaigns:
+        character.campaigns.append(campaign)
+    db.session.commit()
+
+    NotificationService.create_notification(
+        user_id=recipient_user_id,
+        title='Nouveau PJ attribué',
+        message=(
+            f'Le MJ vous a attribué le PJ "{character.name}" '
+            f'dans la campagne "{campaign.name}".'
+        ),
+        kind='player_pj_assigned',
+        campaign_id=campaign.id,
+    )
+
+    flash(
+        f'🎁 {character.name} est maintenant attribué à {recipient_membership.user.username}.',
+        'success',
+    )
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
 @bp.route('/<int:campaign_id>/leave', methods=['POST'])
 @login_required
 def leave_campaign(campaign_id):

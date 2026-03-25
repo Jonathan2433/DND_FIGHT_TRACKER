@@ -207,6 +207,32 @@
     <!-- ✅ NOUVELLE SECTION : Gestion des PJ par le MJ -->
     <div class="card">
         <h3>🧙 Personnages Joueurs de la campagne</h3>
+        {% set mj_owned_pjs = campaign_pjs|selectattr('owner_id', 'eq', g.current_user.id)|list %}
+        {% if mj_owned_pjs and members %}
+            <form method="POST" action="{{ url_for('campaign.assign_player_character', campaign_id=campaign.id) }}" class="inl-campaign-020">
+                <label for="assign_character_id">Transmettre un PJ créé par le MJ :</label>
+                <select id="assign_character_id" name="character_id" required>
+                    <option value="">-- Sélectionnez un PJ --</option>
+                    {% for pj in mj_owned_pjs %}
+                        <option value="{{ pj.id }}">{{ pj.name }} (Niv {{ pj.level }})</option>
+                    {% endfor %}
+                </select>
+
+                <label for="assign_recipient_user_id">Joueur destinataire :</label>
+                <select id="assign_recipient_user_id" name="recipient_user_id" required>
+                    <option value="">-- Sélectionnez un joueur --</option>
+                    {% for member in members %}
+                        <option value="{{ member.user_id }}">{{ member.user.username }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn btn-primary">🎁 Transmettre le PJ</button>
+            </form>
+        {% elif not members %}
+            <p>Aucun joueur dans la campagne pour recevoir un PJ.</p>
+        {% else %}
+            <p>Créez d'abord un PJ dont vous êtes propriétaire pour pouvoir le transmettre.</p>
+        {% endif %}
 
         {% if campaign_pjs %}
             <div class="pj-notes-grid">
