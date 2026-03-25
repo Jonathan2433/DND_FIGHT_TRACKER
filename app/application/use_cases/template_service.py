@@ -1129,7 +1129,7 @@ class TemplateService:
             identity_notes = "\n".join(identity_bits)
             shared_notes = f"{identity_notes}\n{shared_notes}".strip()
 
-        return CharacterTemplate(
+        transient_character = CharacterTemplate(
             character_type=form_data.get('character_type', 'PJ'),
             is_shared=form_data.get('is_shared', False),
             is_public=bool(form_data.get('is_public', False)),
@@ -1185,6 +1185,12 @@ class TemplateService:
             background_story=TemplateService._compose_background_payload(form_data),
             current_xp=int(form_data.get('current_xp', 0))
         )
+        transient_character.personality_traits = form_data.get('personality_traits') or None
+        transient_character.ideals = form_data.get('ideals') or None
+        transient_character.bonds = form_data.get('bonds') or None
+        transient_character.flaws = form_data.get('flaws') or None
+        transient_character.inspiration = bool(form_data.get('inspiration'))
+        return transient_character
 
     @staticmethod
     def generate_character_sheet_preview_pdf(form_data, upload_folder, current_user=None):
