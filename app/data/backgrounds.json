@@ -765,7 +765,11 @@
             "quantity": 2
           },
           "thieves_tools",
-          "gaming_set_arr",
+          {
+            "id": "gaming_set",
+            "choice_from_category": "gaming_set",
+            "quantity": 1
+          },
           "bedroll",
           {
             "id": "pouch",
