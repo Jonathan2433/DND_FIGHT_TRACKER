@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, flash, g
+from werkzeug.datastructures import MultiDict
 from app.application.use_cases import TemplateService
 from app.application.use_cases.campaign_service import CampaignService
 from app.models import CharacterTemplate, EncounterTemplate, Combatant, CombatLog
@@ -629,6 +630,81 @@ def create_character_template():
         f'✅ {created_character.name} bien créé, PDF généré et ajouté dans vos personnages.',
         'success'
     )
+    return redirect(url_for('template.character_profile', id=created_character.id))
+
+
+@bp.route('/character/import-json', methods=['POST'])
+@login_required
+def import_character_template_json():
+    """Importe un export JSON de PJ, cree le personnage et redirige vers son profil."""
+    uploaded_file = request.files.get('character_json_file')
+    campaign_id = request.form.get('campaign_id', type=int)
+
+    if campaign_id:
+        campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+        if not campaign:
+            flash('Campagne invalide ou accès interdit.', 'error')
+            return redirect(url_for('template.manage_templates'))
+
+    if not uploaded_file or not uploaded_file.filename:
+        flash('Veuillez sélectionner un fichier JSON à importer.', 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+
+    try:
+        raw_payload = uploaded_file.read().decode('utf-8')
+        parsed_payload = json.loads(raw_payload)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        flash('Fichier JSON invalide : impossible de lire le contenu.', 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+
+    character_form_payload = parsed_payload.get('character_form_payload')
+    if not isinstance(character_form_payload, dict):
+        flash('Fichier JSON invalide : "character_form_payload" manquant.', 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+
+    imported_form_data = MultiDict()
+    for key, value in character_form_payload.items():
+        if key == 'csrf_token':
+            continue
+        if isinstance(value, list):
+            for item in value:
+                imported_form_data.add(key, '' if item is None else str(item))
+        else:
+            imported_form_data.add(key, '' if value is None else str(value))
+
+    if campaign_id and not imported_form_data.get('campaign_id'):
+        imported_form_data.add('campaign_id', str(campaign_id))
+
+    state = _extract_builder_state(imported_form_data)
+    validation_errors = get_character_builder_service().validate_character_creation_submission(state)
+    if validation_errors:
+        flash(f"Import refusé : {' | '.join(validation_errors)}", 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+
+    try:
+        created_character = TemplateService.create_character_template(
+            imported_form_data,
+            MultiDict(),
+            current_app.config['UPLOAD_FOLDER'],
+            current_user_id=g.current_user.id,
+            campaign_id=campaign_id,
+        )
+    except ValueError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+    except Exception:
+        current_app.logger.exception(
+            "IMPORT_CHARACTER_JSON fatal error. payload_keys=%s state=%s",
+            list(character_form_payload.keys()),
+            state,
+        )
+        flash(
+            "Une erreur interne est survenue pendant l'import du personnage.",
+            'error',
+        )
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+
+    flash(f'✅ {created_character.name} importé avec succès, PDF généré et personnage créé.', 'success')
     return redirect(url_for('template.character_profile', id=created_character.id))
 
 
