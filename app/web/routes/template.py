@@ -601,6 +601,14 @@ def create_character_template():
     except ValueError as exc:
         flash(str(exc), 'error')
         return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
+    except Exception:
+        current_app.logger.exception("Unexpected error while creating character template.")
+        flash(
+            "Une erreur interne est survenue pendant la création du personnage. "
+            "Merci de réessayer.",
+            'error',
+        )
+        return redirect(url_for('template.manage_templates', campaign_id=campaign_id) if campaign_id else url_for('template.manage_templates'))
 
     flash(
         f'✅ {created_character.name} bien créé, PDF généré et ajouté dans vos personnages.',
@@ -644,6 +652,16 @@ def generate_guided_character_pdf():
         )
     except ValueError as exc:
         return jsonify({'ok': False, 'errors': [str(exc)]}), 400
+    except Exception:
+        current_app.logger.exception("Unexpected error while generating guided character PDF.")
+        return jsonify(
+            {
+                'ok': False,
+                'errors': [
+                    "Une erreur interne est survenue pendant la génération du PDF."
+                ],
+            }
+        ), 500
 
     return jsonify(
         {
