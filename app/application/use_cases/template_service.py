@@ -1,9 +1,10 @@
 # Migrated to application layer
 """Service métier pour la gestion des templates"""
 import json
+import logging
 import os
 import uuid
-from flask import current_app
+from flask import current_app, has_app_context
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import CharacterTemplate, EncounterTemplate, Combatant
@@ -824,12 +825,13 @@ class TemplateService:
     @classmethod
     def _validate_guided_builder_constraints(cls, form_data):
         service = get_character_builder_service()
+        logger = current_app.logger if has_app_context() else logging.getLogger(__name__)
         payload_debug = form_data.to_dict(flat=False) if hasattr(form_data, "to_dict") else dict(form_data or {})
-        current_app.logger.info(
+        logger.info(
             "Origin bonuses raw payload: %s",
             payload_debug.get("background_ability_bonus_allocations_json"),
         )
-        current_app.logger.info("Origin bonuses full payload: %s", payload_debug)
+        logger.info("Origin bonuses full payload: %s", payload_debug)
         state = {
             "class_id": form_data.get("character_class") or None,
             "background_id": form_data.get("background_choice") or None,
@@ -872,18 +874,18 @@ class TemplateService:
 
         selected_mode = str(form_data.get("background_ability_bonus_mode") or "").strip().lower()
         option = "A" if selected_mode in {"2-1", "+2/+1", "increase_one_by_2_and_one_by_1"} else "B"
-        current_app.logger.info("Origin bonuses chosen option: %s", option)
-        current_app.logger.info(
+        logger.info("Origin bonuses chosen option: %s", option)
+        logger.info(
             "Origin bonuses chosen abilities: %s",
             sorted(positive_distribution.keys()),
         )
-        current_app.logger.info("Origin bonuses normalized distribution: %s", positive_distribution)
+        logger.info("Origin bonuses normalized distribution: %s", positive_distribution)
 
         total_bonus = sum(positive_distribution.values())
         if allowed_abilities:
             illegal = [key for key in positive_distribution if key not in allowed_abilities]
             if illegal:
-                current_app.logger.warning(
+                logger.warning(
                     "Origin bonus validator reject reason: illegal abilities %s (allowed=%s)",
                     illegal,
                     sorted(allowed_abilities),
@@ -893,7 +895,7 @@ class TemplateService:
             is_plus_two_plus_one = sorted_bonuses == [2, 1]
             is_plus_one_three_times = sorted_bonuses == [1, 1, 1]
             if total_bonus != 3 or not (is_plus_two_plus_one or is_plus_one_three_times):
-                current_app.logger.warning(
+                logger.warning(
                     "Origin bonus validator reject reason: invalid distribution=%s (total=%s, sorted=%s)",
                     positive_distribution,
                     total_bonus,
@@ -1066,6 +1068,10 @@ class TemplateService:
     @staticmethod
     def create_character_template(form_data, files, upload_folder, current_user_id=None, campaign_id=None):
         """Créer un nouveau template de personnage"""
+        payload_debug = form_data.to_dict(flat=False) if hasattr(form_data, "to_dict") else dict(form_data or {})
+        current_app.logger.info("CREATE_CHARACTER raw form payload=%s", payload_debug)
+        current_app.logger.info("CREATE_CHARACTER files=%s", list(files.keys()) if files else [])
+
         image = files.get("image")
         pdf = files.get("pdf")
         filename = None
@@ -1088,9 +1094,35 @@ class TemplateService:
 
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
+        current_app.logger.info("CREATE_CHARACTER STEP normalize_builder_state start")
+        normalized_state = {
+            "class_id": form_data.get("character_class") or None,
+            "background_id": form_data.get("background_choice") or None,
+            "species_id": form_data.get("race") or None,
+            "level": int(form_data.get("level", 1) or 1),
+            "language_ids": [token for token in [form_data.get("language_2"), form_data.get("language_3")] if token],
+            "selected_equipment_ids": [token for token in getattr(form_data, "getlist", lambda _k: [])("selected_equipment_ids") if token],
+            "selected_class_choice_ids": TemplateService._safe_parse_json_list(form_data.get("feat_choices")),
+        }
+        current_app.logger.info("CREATE_CHARACTER STEP normalized_state=%s", normalized_state)
+
+        current_app.logger.info("CREATE_CHARACTER STEP build_character_domain_payload start")
         resolved_character = resolve_character_creation(form_data)
+        current_app.logger.info(
+            "CREATE_CHARACTER STEP final_ability_scores=%s",
+            {
+                "force": resolved_character.get("force"),
+                "dexterite": resolved_character.get("dexterite"),
+                "constitution": resolved_character.get("constitution"),
+                "intelligence": resolved_character.get("intelligence"),
+                "sagesse": resolved_character.get("sagesse"),
+                "charisme": resolved_character.get("charisme"),
+            },
+        )
         TemplateService._apply_armor_loadout_to_ac_base(resolved_character, form_data.get('armor_loadout'))
         normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data, resolved_character=resolved_character)
+        current_app.logger.info("CREATE_CHARACTER STEP skill_proficiencies=%s", normalized_skill_proficiencies)
+        current_app.logger.info("CREATE_CHARACTER STEP expertise=%s", TemplateService._extract_expertise_skills(form_data))
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
             normalized_skill_proficiencies,
@@ -1222,6 +1254,19 @@ class TemplateService:
 
         db.session.add(template)
         db.session.flush()
+
+        current_app.logger.info(
+            "CREATE_CHARACTER PERSIST character_payload=%s",
+            {
+                "name": template.name,
+                "race": template.race,
+                "character_class": template.character_class,
+                "level": template.level,
+                "equipment": template.equipment,
+                "skill_proficiencies": template.skill_proficiencies,
+                "languages": template.languages,
+            },
+        )
 
         if resolved_campaign_id:
             from app.models.campaign import Campaign
