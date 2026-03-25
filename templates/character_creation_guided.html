@@ -2105,9 +2105,15 @@ async function handleGeneratePdfPreview() {
         generateCharacterPdfButton.textContent = 'Génération...';
     }
     try {
+        const formData = new FormData(form);
+        const previewDebugEntries = {};
+        ['weapon_loadout', 'ranged_weapon_loadout', 'armor_loadout', 'personality_traits', 'ideals', 'bonds', 'flaws', 'character_appearance', 'allies_organizations', 'additional_features_traits', 'treasure', 'symbol_name'].forEach((key) => {
+            previewDebugEntries[key] = formData.get(key);
+        });
+        console.debug('preview PDF formData (critical fields)', previewDebugEntries);
         const response = await fetch('{{ url_for("template.generate_guided_character_pdf") }}', {
             method: 'POST',
-            body: new FormData(form),
+            body: formData,
         });
         const payload = await response.json();
         if (!response.ok || !payload.ok || !payload.pdf_url) {
