@@ -201,6 +201,40 @@ def test_extract_selected_spells_by_choice_uses_canonical_payload():
     }
 
 
+def test_extract_selected_spells_by_choice_accepts_feat_scoped_spell_choices():
+    form_data = _base_form_data()
+    form_data["selected_cantrips"] = "acid_splash, blade_ward"
+    form_data["selected_level_1_spells"] = "alarm"
+    form_data["feat_choices"] = json.dumps(
+        [
+            {
+                "scope": "feat_background",
+                "choice_id": "magic_initiate_wizard_cantrips",
+                "choice_type": "cantrip",
+                "value": "acid_splash",
+            },
+            {
+                "scope": "feat_background",
+                "choice_id": "magic_initiate_wizard_cantrips",
+                "choice_type": "cantrip",
+                "value": "blade_ward",
+            },
+            {
+                "scope": "feat_background",
+                "choice_id": "magic_initiate_wizard_level_1_spell",
+                "choice_type": "spell",
+                "value": "alarm",
+            },
+        ]
+    )
+
+    selected_by_choice = TemplateService._extract_selected_spells_by_choice(form_data)
+    assert selected_by_choice == {
+        "magic_initiate_wizard_cantrips": ["acid_splash", "blade_ward"],
+        "magic_initiate_wizard_level_1_spell": ["alarm"],
+    }
+
+
 def test_guided_validation_language_choice_uses_choice_specific_selection(monkeypatch):
     class _NoopLogger:
         def info(self, *_args, **_kwargs):
