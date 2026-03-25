@@ -889,12 +889,28 @@ class TemplateService:
                 )
                 raise ValueError("Les bonus d’origine doivent suivre la règle +2/+1 ou +1/+1/+1.")
 
-        selected_by_choice_id = {}
+        selected_by_scope_and_choice_id = {
+            "class": {},
+            "background": {},
+            "species": {},
+            "feat": {},
+        }
         for entry in feat_choices:
             if isinstance(entry, dict):
+                scope = str(entry.get("scope") or "").strip().lower()
+                if scope == "spell":
+                    scope = "class"
+                elif scope.startswith("feat_"):
+                    scope = "feat"
+                if scope not in selected_by_scope_and_choice_id:
+                    continue
                 choice_id = str(entry.get("choice_id") or "")
-                if choice_id:
-                    selected_by_choice_id.setdefault(choice_id, []).append(str(entry.get("value")))
+                value = str(entry.get("value") or "")
+                if not choice_id or not value:
+                    continue
+                selected_values = selected_by_scope_and_choice_id[scope].setdefault(choice_id, [])
+                if value not in selected_values:
+                    selected_values.append(value)
 
         skill_tokens = [token.strip() for token in (cls._normalize_skill_proficiencies(form_data) or "").split(",") if token.strip()]
         spell_tokens = [token.strip() for token in (form_data.get("selected_level_1_spells") or "").split(",") if token.strip()]
@@ -902,7 +918,8 @@ class TemplateService:
         selected_spells_by_choice = cls._extract_selected_spells_by_choice(form_data)
         language_tokens = [token for token in [form_data.get("language_2"), form_data.get("language_3")] if token]
 
-        def _validate_required_choices(payload):
+        def _validate_required_choices(payload, scope):
+            scoped_choices = selected_by_scope_and_choice_id.get(scope, {})
             for choice in payload.get("required_choices", []) if isinstance(payload, dict) else []:
                 if not isinstance(choice, dict) or not choice.get("required", True):
                     continue
@@ -910,7 +927,11 @@ class TemplateService:
                 choose = int(choice.get("choose", 1))
                 choice_type = choice.get("type")
                 if choice_type == "skill_proficiency":
-                    count = len(skill_tokens)
+                    count = (
+                        len(scoped_choices.get(choice_id, []))
+                        if choice_id
+                        else len(skill_tokens)
+                    )
                 elif choice_type == "spell":
                     count = len(selected_spells_by_choice.get(choice_id, [])) if selected_spells_by_choice else len(cantrip_tokens) + len(spell_tokens)
                 elif choice_type == "language":
@@ -921,25 +942,34 @@ class TemplateService:
                     # Fallback legacy: si aucun choice_id n'est présent, on conserve
                     # l'ancien comptage basé sur les langues globales.
                     count = (
-                        len(selected_by_choice_id.get(choice_id, []))
+                        len(scoped_choices.get(choice_id, []))
                         if choice_id
                         else len(language_tokens)
                     )
                 else:
-                    count = len(selected_by_choice_id.get(choice_id, []))
+                    count = len(scoped_choices.get(choice_id, []))
                 if count != choose:
                     raise ValueError(f"Choix requis incomplet ({choice_id}): {count}/{choose}.")
 
-        _validate_required_choices(service.get_class_payload(state["class_id"], state) if state["class_id"] else {})
-        _validate_required_choices(service.get_background_payload(state["background_id"], state) if state["background_id"] else {})
-        _validate_required_choices(service.get_species_payload(state["species_id"], state) if state["species_id"] else {})
+        _validate_required_choices(
+            service.get_class_payload(state["class_id"], state) if state["class_id"] else {},
+            "class",
+        )
+        _validate_required_choices(
+            service.get_background_payload(state["background_id"], state) if state["background_id"] else {},
+            "background",
+        )
+        _validate_required_choices(
+            service.get_species_payload(state["species_id"], state) if state["species_id"] else {},
+            "species",
+        )
 
         if state["background_id"]:
             background_payload = service.get_background_payload(state["background_id"], state)
             for choice in background_payload.get("origin_feat_payload", {}).get("required_choices", []):
                 choice_id = str(choice.get("id") or "")
                 choose = int(choice.get("choose", 1))
-                if len(selected_by_choice_id.get(choice_id, [])) != choose:
+                if len(selected_by_scope_and_choice_id.get("feat", {}).get(choice_id, [])) != choose:
                     raise ValueError(f"Sous-choix de don d’origine incomplet ({choice_id}).")
 
         if state["species_id"] and state["selected_origin_feat_id"]:
@@ -947,7 +977,7 @@ class TemplateService:
             for choice in feat_payload.get("required_choices", []):
                 choice_id = str(choice.get("id") or "")
                 choose = int(choice.get("choose", 1))
-                if len(selected_by_choice_id.get(choice_id, [])) != choose:
+                if len(selected_by_scope_and_choice_id.get("feat", {}).get(choice_id, [])) != choose:
                     raise ValueError(f"Sous-choix de don bonus d’espèce incomplet ({choice_id}).")
 
         class_payload = service.get_class_payload(state["class_id"], state) if state["class_id"] else {}
