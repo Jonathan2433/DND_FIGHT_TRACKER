@@ -83,9 +83,21 @@
       "healing_reroll_or_boost"
     ],
     "mechanics": {
-      "healing_support": {
-        "type": "healing_feat",
-        "notes": "exact_full_rules_text_not_fully_captured_in_current_source_set"
+      "battle_medic": {
+        "type": "action_heal",
+        "activation": "utilize_action",
+        "requires_item": "healers_kit",
+        "consumes_use_of_item": true,
+        "target": "creature_within_5_feet",
+        "heal_formula": "1d4 + proficiency_bonus",
+        "additional_effect": "target_can_spend_one_hit_die",
+        "hit_die_heal_bonus": "proficiency_bonus",
+        "frequency": "no_limit_except_healers_kit_uses"
+      },
+      "healing_rerolls": {
+        "type": "passive",
+        "trigger": "when_you_roll_dice_to_heal_with_spell_or_healers_kit",
+        "effect": "reroll_any_1_on_healing_dice_once_must_use_new_roll"
       }
     },
     "description_short_fr": "Améliore les soins prodigués et apporte une capacité de soutien orientée guérison.",
@@ -110,9 +122,24 @@
       "advantage_disadvantage_manipulation"
     ],
     "mechanics": {
-      "luck_feature": {
-        "type": "luck_feat",
-        "notes": "exact_full_rules_text_not_fully_captured_in_current_source_set"
+      "luck_points": {
+        "type": "resource_pool",
+        "resource_name": "luck_points",
+        "max_count_formula": "proficiency_bonus",
+        "recharge": "long_rest"
+      },
+      "luck_advantage": {
+        "type": "triggered_ability",
+        "trigger": "before_you_know_outcome_of_d20_test",
+        "cost": "1_luck_point",
+        "effect": "roll_additional_d20_and_choose_which_to_use",
+        "timing": "immediately_after_rolling"
+      },
+      "luck_impose_disadvantage": {
+        "type": "triggered_ability",
+        "trigger": "creature_attacks_you_before_outcome_known",
+        "cost": "1_luck_point",
+        "effect": "roll_additional_d20_attacker_must_use_lowest"
       }
     },
     "description_short_fr": "Permet de provoquer des retournements favorables de dé grâce à une réserve de chance.",
@@ -249,9 +276,13 @@
         "choose": 3,
         "from_category": "musical_instrument"
       },
-      "inspiration_support": {
-        "type": "support_feat",
-        "notes": "exact_full_rules_text_not_fully_captured_in_current_source_set"
+      "inspiring_song": {
+        "type": "triggered_ability",
+        "activation": "during_short_or_long_rest",
+        "effect": "grant_heroic_inspiration_to_allies",
+        "target_count_formula": "proficiency_bonus",
+        "target_restriction": "allies_who_can_hear_you_within_30_feet",
+        "frequency": "once_per_long_rest"
       }
     },
     "description_short_fr": "Apporte des maîtrises d’instruments et un effet de soutien inspirant pour le groupe.",
@@ -329,9 +360,27 @@
       "unarmed_combat_boost"
     ],
     "mechanics": {
-      "brawling_feature": {
-        "type": "combat_feat",
-        "notes": "exact_full_rules_text_not_fully_captured_in_current_source_set"
+      "enhanced_unarmed_strike": {
+        "type": "passive",
+        "effect": "unarmed_strike_damage_die_upgrade",
+        "damage_die": "1d4",
+        "damage_type": "bludgeoning"
+      },
+      "improvised_weapon_proficiency": {
+        "type": "passive",
+        "effect": "gain_proficiency_with_improvised_weapons"
+      },
+      "push_on_unarmed_hit": {
+        "type": "triggered_ability",
+        "trigger": "when_you_hit_with_unarmed_strike_as_part_of_attack_action",
+        "effect": "push_target_5_feet_and_can_move_5_feet_without_provoking",
+        "frequency": "once_per_turn",
+        "target_size_max": "one_size_larger_than_you"
+      },
+      "furniture_as_weapon": {
+        "type": "passive",
+        "effect": "when_you_hit_with_improvised_weapon_you_can_push_target_5_feet",
+        "frequency": "once_per_turn"
       }
     },
     "description_short_fr": "Améliore le combat au corps à corps improvisé et le style de bagarre.",
@@ -356,8 +405,11 @@
     ],
     "mechanics": {
       "hit_point_bonus": {
-        "type": "max_hit_points_increase",
-        "notes": "exact_full_rules_text_not_fully_captured_in_current_source_set"
+        "type": "passive_max_hp_increase",
+        "bonus_at_creation": 2,
+        "bonus_per_level": 2,
+        "formula": "2 * character_level",
+        "recalculates_on_level_up": true
       }
     },
     "description_short_fr": "Augmente durablement les points de vie du personnage.",

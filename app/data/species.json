@@ -16,25 +16,32 @@
         "id": "celestial_resistance",
         "name_fr": "Résistance céleste",
         "name_en": "Celestial Resistance",
-        "mechanics_status": "name_validated_details_pending"
+        "damage_resistance": ["necrotic", "radiant"]
       },
       {
         "id": "darkvision",
         "name_fr": "Vision dans le noir",
         "name_en": "Darkvision",
-        "mechanics_status": "name_validated_details_pending"
+        "range_feet": 60
       },
       {
         "id": "healing_hands",
         "name_fr": "Mains guérisseuses",
         "name_en": "Healing Hands",
-        "mechanics_status": "name_validated_details_pending"
+        "activation": "action",
+        "target": "creature_you_touch",
+        "heal_formula": "1d4",
+        "uses": {
+          "count_formula": "proficiency_bonus",
+          "recharge": "long_rest"
+        }
       },
       {
         "id": "light_bearer",
         "name_fr": "Porteur de lumière",
         "name_en": "Light Bearer",
-        "mechanics_status": "name_validated_details_pending"
+        "cantrips_known": ["light"],
+        "spellcasting_ability_choice": ["intelligence", "wisdom", "charisma"]
       }
     ],
     "future_traits": [
