@@ -57,6 +57,11 @@ class CharacterTemplate(db.Model):
     notes = db.Column(db.Text)
     private_notes = db.Column(db.Text)
     player_private_notes = db.Column(db.Text)
+    personality_traits = db.Column(db.Text)
+    ideals = db.Column(db.Text)
+    bonds = db.Column(db.Text)
+    flaws = db.Column(db.Text)
+    inspiration = db.Column(db.Boolean, default=False)
 
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)

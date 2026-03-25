@@ -51,8 +51,21 @@ def _base_form_data():
     })
 
 
+class _NoopLogger:
+    def info(self, *_args, **_kwargs):
+        return None
+
+    def warning(self, *_args, **_kwargs):
+        return None
+
+
+class _FakeCurrentApp:
+    logger = _NoopLogger()
+
+
 def test_guided_validation_accepts_plus_two_plus_one_from_hidden_allocations(monkeypatch):
     monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _StubBuilderService())
+    monkeypatch.setattr(template_service_module, "current_app", _FakeCurrentApp())
     form_data = _base_form_data()
     form_data["background_ability_bonus_allocations_json"] = json.dumps(
         [{"ability": "force", "bonus": 2}, {"ability": "dexterite", "bonus": 1}]
@@ -63,6 +76,7 @@ def test_guided_validation_accepts_plus_two_plus_one_from_hidden_allocations(mon
 
 def test_guided_validation_accepts_plus_one_plus_one_plus_one(monkeypatch):
     monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _StubBuilderService())
+    monkeypatch.setattr(template_service_module, "current_app", _FakeCurrentApp())
     form_data = _base_form_data()
     form_data.update(
         {
