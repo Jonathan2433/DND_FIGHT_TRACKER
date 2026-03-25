@@ -578,7 +578,7 @@ class TemplateService:
     @staticmethod
     def _compose_builder_equipment(form_data):
         """Compose un bloc equipement detaille depuis le funnel de creation."""
-        base_equipment = (form_data.get('equipment') or '').strip()
+        base_equipment = TemplateService._format_equipment_summary(form_data.get('equipment'))
         skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
         expertise_skills = TemplateService._extract_expertise_skills(form_data)
         tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
@@ -611,6 +611,45 @@ class TemplateService:
         if not sections:
             return None
         return " | ".join(sections)
+
+    @staticmethod
+    def _format_equipment_summary(raw_equipment):
+        text = str(raw_equipment or '').strip()
+        if not text:
+            return ''
+
+        formatted_tokens = []
+        for raw_token in text.replace(';', ',').split(','):
+            label = TemplateService._humanize_equipment_token(raw_token)
+            if label and label not in formatted_tokens:
+                formatted_tokens.append(label)
+
+        return ", ".join(formatted_tokens)
+
+    @staticmethod
+    def _humanize_equipment_token(raw_token):
+        token = str(raw_token or '').strip()
+        if not token:
+            return None
+
+        lowered = token.lower()
+        if lowered.startswith('class:'):
+            class_choice = token.split(':', 1)[1].strip()
+            return f"Choix de classe ({class_choice})" if class_choice else None
+        if lowered.startswith('background:'):
+            background_choice = token.split(':', 1)[1].strip()
+            return f"Choix d'historique ({background_choice})" if background_choice else None
+
+        equipment_entry = get_character_builder_service().equipment_by_id.get(token)
+        if isinstance(equipment_entry, dict):
+            return (
+                equipment_entry.get('name_fr')
+                or equipment_entry.get('name')
+                or equipment_entry.get('name_en')
+                or equipment_entry.get('id')
+            )
+
+        return token
 
     @staticmethod
     def _extract_expertise_skills(form_data):
