@@ -31,7 +31,7 @@ class CharacterSheetPdfService:
     # Mapping metier -> noms techniques connus des champs PDF.
     # Le premier nom correspond au template officiel 5E_CharacterSheet_Fillable.pdf.
     FIELD_ALIASES: dict[str, tuple[str, ...]] = {
-        "character_name": ("CharacterName", "Character Name", "CharName"),
+        "character_name": ("CharacterName", "Character Name", "CharName", "CharacterName 2"),
         "class_level": ("ClassLevel", "Class & Level", "ClassLevel1"),
         "background": ("Background",),
         "character_backstory": ("Backstory", "Character Backstory", "CharacterBackstory"),

@@ -581,11 +581,11 @@ class TemplateService:
         base_equipment = TemplateService._format_equipment_summary(form_data.get('equipment'))
         skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
         expertise_skills = TemplateService._extract_expertise_skills(form_data)
-        tool_proficiencies = (form_data.get('tool_proficiencies') or '').strip()
-        weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
-        ranged_weapon_loadout = (form_data.get('ranged_weapon_loadout') or '').strip()
-        armor_loadout = (form_data.get('armor_loadout') or '').strip()
-        inventory_items = (form_data.get('inventory_items') or '').strip()
+        tool_proficiencies = TemplateService._format_equipment_summary(form_data.get('tool_proficiencies'))
+        weapon_loadout = TemplateService._format_loadout_summary(form_data.get('weapon_loadout'))
+        ranged_weapon_loadout = TemplateService._format_loadout_summary(form_data.get('ranged_weapon_loadout'))
+        armor_loadout = TemplateService._format_loadout_summary(form_data.get('armor_loadout'))
+        inventory_items = TemplateService._format_equipment_summary(form_data.get('inventory_items'))
         spellbook_notes = (form_data.get('spellbook_notes') or '').strip()
 
         sections = []
@@ -627,6 +627,23 @@ class TemplateService:
         return ", ".join(formatted_tokens)
 
     @staticmethod
+    def _format_loadout_summary(raw_loadout):
+        text = str(raw_loadout or '').strip()
+        if not text:
+            return ''
+
+        chunks = []
+        for raw_chunk in text.split('+'):
+            tokens = []
+            for raw_token in str(raw_chunk or '').replace(';', ',').split(','):
+                label = TemplateService._humanize_equipment_token(raw_token)
+                if label and label not in tokens:
+                    tokens.append(label)
+            if tokens:
+                chunks.append(", ".join(tokens))
+        return " + ".join(chunks)
+
+    @staticmethod
     def _humanize_equipment_token(raw_token):
         token = str(raw_token or '').strip()
         if not token:
@@ -634,11 +651,9 @@ class TemplateService:
 
         lowered = token.lower()
         if lowered.startswith('class:'):
-            class_choice = token.split(':', 1)[1].strip()
-            return f"Choix de classe ({class_choice})" if class_choice else None
+            return None
         if lowered.startswith('background:'):
-            background_choice = token.split(':', 1)[1].strip()
-            return f"Choix d'historique ({background_choice})" if background_choice else None
+            return None
 
         equipment_entry = get_character_builder_service().equipment_by_id.get(token)
         if isinstance(equipment_entry, dict):
@@ -1222,13 +1237,13 @@ class TemplateService:
             selected_cantrips=selected_cantrips,
             selected_level_1_spells=selected_level_1_spells,
             background_story=TemplateService._compose_background_payload(form_data),
-            current_xp=int(form_data.get('current_xp', 0))
+            current_xp=int(form_data.get('current_xp', 0)),
+            personality_traits=form_data.get('personality_traits') or None,
+            ideals=form_data.get('ideals') or None,
+            bonds=form_data.get('bonds') or None,
+            flaws=form_data.get('flaws') or None,
+            inspiration=bool(form_data.get('inspiration')),
         )
-        transient_character.personality_traits = form_data.get('personality_traits') or None
-        transient_character.ideals = form_data.get('ideals') or None
-        transient_character.bonds = form_data.get('bonds') or None
-        transient_character.flaws = form_data.get('flaws') or None
-        transient_character.inspiration = bool(form_data.get('inspiration'))
         return transient_character
 
     @staticmethod
@@ -1283,6 +1298,11 @@ class TemplateService:
         template.additional_features_traits = form_data.get('additional_features_traits') or None
         template.treasure = form_data.get('treasure') or None
         template.symbol_name = form_data.get('symbol_name') or None
+        template.personality_traits = form_data.get('personality_traits') or None
+        template.ideals = form_data.get('ideals') or None
+        template.bonds = form_data.get('bonds') or None
+        template.flaws = form_data.get('flaws') or None
+        template.inspiration = bool(form_data.get('inspiration'))
         spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
             effective_character_class,
             form_data.get('level') or template.level,
