@@ -207,11 +207,14 @@
     <!-- ✅ NOUVELLE SECTION : Gestion des PJ par le MJ -->
     <div class="card">
         <h3>🧙 Personnages Joueurs de la campagne</h3>
+        {% if not members %}
+            <p>Aucun joueur dans la campagne pour recevoir un PJ.</p>
+        {% endif %}
 
         {% if campaign_pjs %}
             <div class="pj-notes-grid">
                 {% for pj in campaign_pjs %}
-                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-note-card pj-note-card--link">
+                    <div class="pj-note-card">
                         <div class="pj-note-header">
                             <div class="pj-info">
                                 {% if pj.image_filename %}
@@ -233,10 +236,22 @@
                             </div>
 
                             <div class="pj-actions">
-                                <span class="btn btn-primary">👁️ Voir</span>
+                                <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="btn btn-primary">👁️ Voir</a>
+                                {% if is_mj and pj.owner_id == g.current_user.id and members %}
+                                    <form method="POST" action="{{ url_for('campaign.assign_player_character', campaign_id=campaign.id) }}" class="inl-campaign-020">
+                                        <input type="hidden" name="character_id" value="{{ pj.id }}">
+                                        <select name="recipient_user_id" required aria-label="Joueur destinataire de {{ pj.name }}">
+                                            <option value="">-- Choisir un joueur --</option>
+                                            {% for member in members %}
+                                                <option value="{{ member.user_id }}">{{ member.user.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-secondary">🎁 Donner ce PJ</button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
-                    </a>
+                    </div>
                 {% endfor %}
             </div>
         {% else %}
