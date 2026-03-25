@@ -128,6 +128,62 @@ def test_skill_limit_uses_class_choice_count_not_total_skill_count(monkeypatch):
     )
 
 
+def test_guided_validation_skill_choice_uses_class_choice_id_only(monkeypatch):
+    class _NoopLogger:
+        def info(self, *_args, **_kwargs):
+            return None
+
+        def warning(self, *_args, **_kwargs):
+            return None
+
+    class _FakeCurrentApp:
+        logger = _NoopLogger()
+
+    class _MonkBuilderService(_StubBuilderService):
+        def get_class_payload(self, _class_id, _state):
+            return {
+                "required_choices": [
+                    {
+                        "id": "monk_skill_proficiencies",
+                        "type": "skill_proficiency",
+                        "choose": 2,
+                        "required": True,
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(template_service_module, "get_character_builder_service", lambda: _MonkBuilderService())
+    monkeypatch.setattr(template_service_module, "current_app", _FakeCurrentApp())
+
+    form_data = _base_form_data()
+    form_data["character_class"] = "monk"
+    form_data["skill_proficiencies"] = "acrobatics, athletics"
+    form_data["feat_choices"] = json.dumps(
+        [
+            {
+                "scope": "class",
+                "choice_id": "monk_skill_proficiencies",
+                "choice_type": "skill_proficiency",
+                "value": "acrobatics",
+            },
+            {
+                "scope": "class",
+                "choice_id": "monk_skill_proficiencies",
+                "choice_type": "skill_proficiency",
+                "value": "athletics",
+            },
+            {
+                "scope": "species",
+                "choice_id": "human_bonus_skill",
+                "choice_type": "skill_proficiency",
+                "value": "acrobatics",
+            },
+        ]
+    )
+
+    TemplateService._validate_guided_builder_constraints(form_data)
+
+
 def test_extract_selected_spells_by_choice_uses_canonical_payload():
     form_data = _base_form_data()
     form_data["selected_cantrips"] = "guidance, light, acid_splash, blade_ward, chill_touch"
