@@ -1233,6 +1233,64 @@ class CharacterBuilderService:
         if extra_cantrip:
             output["extra_class_cantrips"] += extra_cantrip
 
+    def _resolve_level_1_class_features(self, class_id: str, class_data: dict[str, Any]) -> list[dict[str, Any]]:
+        level_1_feature_keys = self._to_string_list(class_data.get("level_1_features"))
+        if not level_1_feature_keys:
+            return []
+        resolved: list[dict[str, Any]] = []
+        for feature_key in level_1_feature_keys:
+            feature = next(
+                (
+                    entry
+                    for entry in self.class_features
+                    if isinstance(entry, dict)
+                    and str(entry.get("class_id") or "") == class_id
+                    and str(entry.get("feature_key") or "") == feature_key
+                    and int(entry.get("level", 1) or 1) <= 1
+                ),
+                None,
+            )
+            if feature:
+                resolved.append(feature)
+        return resolved
+
+    @staticmethod
+    def _evaluate_ac_formula(formula: str, ability_modifiers: dict[str, int]) -> int | None:
+        token_map = {
+            "dexterity_modifier": int(ability_modifiers.get("dexterity", 0)),
+            "constitution_modifier": int(ability_modifiers.get("constitution", 0)),
+            "wisdom_modifier": int(ability_modifiers.get("wisdom", 0)),
+        }
+        terms = [term.strip() for term in str(formula or "").split("+")]
+        total = 0
+        for term in terms:
+            if not term:
+                continue
+            if term in token_map:
+                total += token_map[term]
+                continue
+            try:
+                total += int(term)
+            except (TypeError, ValueError):
+                return None
+        return total
+
+    @staticmethod
+    def _collect_initiative_bonus_from_sources(*sources: Any) -> int:
+        bonus = 0
+        for source in sources:
+            if not isinstance(source, dict):
+                continue
+            if "initiative_bonus" in source:
+                bonus += int(source.get("initiative_bonus", 0) or 0)
+            passive = source.get("passive_effect")
+            if isinstance(passive, dict) and "initiative_bonus" in passive:
+                bonus += int(passive.get("initiative_bonus", 0) or 0)
+            effects = source.get("effects")
+            if isinstance(effects, dict) and "initiative_bonus" in effects:
+                bonus += int(effects.get("initiative_bonus", 0) or 0)
+        return bonus
+
     def _spell_level(self, spell_id: str) -> int | None:
         spell = self.spell_by_id.get(str(spell_id), {})
         if not isinstance(spell, dict):
@@ -1387,11 +1445,20 @@ class CharacterBuilderService:
             )
         return profiles
 
-    def compute_final_ac(self, resolved_equipment: list[dict[str, Any]], dexterity_modifier: int) -> dict[str, Any]:
-        best_armor_class = 10 + dexterity_modifier
+    def compute_final_ac(
+        self,
+        resolved_equipment: list[dict[str, Any]],
+        ability_modifiers: dict[str, int],
+        class_features: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        dexterity_modifier = int(ability_modifiers.get("dexterity", 0))
         equipped_armor_id: str | None = None
         equipped_armor_category: str | None = None
         shield_bonus = 0
+        armor_base_candidates: list[dict[str, Any]] = [
+            {"ac": 10 + dexterity_modifier, "source": "unarmored_base", "formula": "10 + dexterity_modifier"}
+        ]
+        has_worn_armor = False
 
         for item in resolved_equipment:
             equipment_id = str(item.get("id") or "")
@@ -1400,6 +1467,7 @@ class CharacterBuilderService:
                 continue
             armor_class_rule = equipment.get("armor_class")
             if isinstance(armor_class_rule, dict):
+                has_worn_armor = True
                 base_armor = int(armor_class_rule.get("base", 10) or 10)
                 dex_cap = armor_class_rule.get("dex_cap")
                 if dex_cap is None:
@@ -1407,13 +1475,48 @@ class CharacterBuilderService:
                 else:
                     applied_dex = min(dexterity_modifier, int(dex_cap))
                 armor_class = base_armor + applied_dex
-                if armor_class > best_armor_class:
-                    best_armor_class = armor_class
-                    equipped_armor_id = equipment_id
-                    equipped_armor_category = str(equipment.get("armor_category") or "")
+                armor_base_candidates.append(
+                    {
+                        "ac": armor_class,
+                        "source": f"equipment:{equipment_id}",
+                        "formula": f"{base_armor} + min(dexterity_modifier, {dex_cap})" if dex_cap is not None else f"{base_armor} + dexterity_modifier",
+                        "equipment_id": equipment_id,
+                        "equipment_category": str(equipment.get("armor_category") or ""),
+                    }
+                )
             armor_bonus = int(equipment.get("armor_class_bonus", 0) or 0)
             if armor_bonus:
                 shield_bonus += armor_bonus
+
+        for feature in class_features or []:
+            passive_effect = feature.get("passive_effect") if isinstance(feature, dict) else {}
+            if not isinstance(passive_effect, dict):
+                continue
+            formula = str(passive_effect.get("base_ac_formula") or "")
+            if not formula:
+                continue
+            if bool(passive_effect.get("requires_no_armor")) and has_worn_armor:
+                continue
+            feature_ac = self._evaluate_ac_formula(formula, ability_modifiers)
+            if feature_ac is None:
+                continue
+            shield_allowed = bool(passive_effect.get("shield_allowed", True))
+            armor_base_candidates.append(
+                {
+                    "ac": feature_ac,
+                    "source": f"feature:{feature.get('id')}",
+                    "formula": formula,
+                    "shield_allowed": shield_allowed,
+                }
+            )
+
+        best_candidate = max(armor_base_candidates, key=lambda candidate: int(candidate.get("ac", 0)))
+        best_armor_class = int(best_candidate.get("ac", 10 + dexterity_modifier))
+        if str(best_candidate.get("source", "")).startswith("equipment:"):
+            equipped_armor_id = best_candidate.get("equipment_id")
+            equipped_armor_category = best_candidate.get("equipment_category") or None
+        if best_candidate.get("shield_allowed") is False:
+            shield_bonus = 0
 
         return {
             "base_armor_class": best_armor_class,
@@ -1422,6 +1525,8 @@ class CharacterBuilderService:
             "shield_armor_class_bonus": shield_bonus,
             "has_shield": shield_bonus > 0,
             "armor_class": best_armor_class + shield_bonus,
+            "armor_class_formula": f"{best_candidate.get('formula')} + shield_bonus({shield_bonus})",
+            "armor_class_source": best_candidate.get("source"),
         }
 
     def _compute_final_ability_scores(self, state: dict[str, Any]) -> dict[str, int]:
@@ -1552,6 +1657,10 @@ class CharacterBuilderService:
         self.apply_species_choices(state, output)
         self.apply_class_choices(state, output)
         self.apply_feat_choices(state, output)
+        resolved_class_features = self._resolve_level_1_class_features(class_id, class_data)
+        for feature in resolved_class_features:
+            if isinstance(feature.get("effects"), dict):
+                self._apply_feature_effects(feature.get("effects", {}), output)
         for spell_id in output.get("class_spells_selected", []):
             spell_level = self._spell_level(spell_id)
             if spell_level == 0:
@@ -1576,6 +1685,7 @@ class CharacterBuilderService:
         constitution_modifier = self._ability_modifier(constitution_score)
         dexterity_modifier = self._ability_modifier(dexterity_score)
         hit_die = int(class_data.get("hit_die", 8) or 8)
+        level = int(state.get("level", 1) or 1)
 
         resolved_equipment = self.resolve_selected_equipment(state)
         output["selected_equipment_ids"] = [item["id"] for item in resolved_equipment if item.get("source") == "selected"]
@@ -1595,18 +1705,95 @@ class CharacterBuilderService:
             }
             for item in resolved_equipment
         ]
-        ac_context = self.compute_final_ac(resolved_equipment, dexterity_modifier)
+        ac_context = self.compute_final_ac(resolved_equipment, ability_modifiers, resolved_class_features)
         output["equipped_armor_id"] = ac_context.get("equipped_armor_id")
         output["equipped_armor_category"] = ac_context.get("equipped_armor_category")
         output["shield_armor_class_bonus"] = int(ac_context.get("shield_armor_class_bonus", 0) or 0)
         output["has_shield"] = bool(ac_context.get("has_shield"))
         output["weapon_profiles"] = self.compute_weapon_profiles(resolved_equipment, output, final_scores)
 
+        feat_hp_bonus = 0
+        for feat_id in output.get("feat_ids", []):
+            feat = self.origin_feat_by_id.get(str(feat_id), {})
+            mechanics = feat.get("mechanics", {}) if isinstance(feat, dict) else {}
+            hp_bonus = mechanics.get("hit_point_bonus") if isinstance(mechanics, dict) else {}
+            if isinstance(hp_bonus, dict) and hp_bonus.get("type") == "max_hit_points_increase":
+                feat_hp_bonus += 2 * level
+        base_hp = max(1, hit_die + constitution_modifier)
+        max_hp = base_hp + feat_hp_bonus
+        initiative_bonus = self._collect_initiative_bonus_from_sources(*resolved_class_features)
+        for item in resolved_equipment:
+            initiative_bonus += self._collect_initiative_bonus_from_sources(item.get("details", {}))
+
         output["derived"] = {
-            "hit_points_max": max(1, hit_die + constitution_modifier),
+            "hit_points_max": max_hp,
             "armor_class": int(ac_context.get("armor_class", 10 + dexterity_modifier)),
-            "initiative_modifier": dexterity_modifier,
+            "initiative_modifier": dexterity_modifier + initiative_bonus,
         }
+        output["combat"] = {
+            "hit_points": {
+                "max": max_hp,
+                "current": max_hp,
+                "formula": f"hit_die_max({hit_die}) + constitution_modifier({constitution_modifier}) + passive_bonus({feat_hp_bonus})",
+            },
+            "armor_class": int(ac_context.get("armor_class", 10 + dexterity_modifier)),
+            "initiative_modifier": dexterity_modifier + initiative_bonus,
+            "weapon_masteries": output.get("weapon_masteries", []),
+        }
+
+        output["abilities"] = {
+            ability: {"score": int(final_scores.get(ability, 10)), "modifier": int(ability_modifiers.get(ability, 0))}
+            for ability in ABILITY_ORDER
+        }
+        output["proficiencies"] = {
+            "saving_throws": list(dict.fromkeys(output.get("saving_throw_proficiencies", []))),
+            "skills": list(dict.fromkeys(output.get("skills", []))),
+            "tools": list(dict.fromkeys(output.get("tools", []))),
+            "weapons": list(dict.fromkeys(output.get("weapon_proficiencies", []))),
+            "armor": [entry for entry in list(dict.fromkeys(output.get("armor_training", []))) if entry != "shields"],
+            "shields": ["shields"] if "shields" in output.get("armor_training", []) or output.get("has_shield") else [],
+        }
+        output["features"] = {
+            "class_features": self._to_string_list(class_data.get("level_1_features")),
+            "species_traits": [str(trait.get("id")) for trait in species_data.get("traits_level_1", []) if isinstance(trait, dict) and trait.get("id")],
+            "feats": output.get("feat_ids", []),
+        }
+        output["equipment"] = {
+            "currency": {"gold": 0},
+            "equipped_items": output.get("selected_equipment_ids", []),
+            "inventory_items": output.get("final_equipment", []),
+            "starting_equipment_sources": ["class", "background"],
+        }
+        class_spellcasting_rule = next(
+            (
+                entry
+                for entry in self.spellcasting_rules.get("class_spellcasting_models", [])
+                if isinstance(entry, dict) and str(entry.get("class_id") or "") == class_id
+            ),
+            {},
+        ) if isinstance(self.spellcasting_rules, dict) else {}
+        spellcasting_ability = str(class_spellcasting_rule.get("spellcasting_ability") or "")
+        spellcasting_mod = int(ability_modifiers.get(spellcasting_ability, 0)) if spellcasting_ability else 0
+        is_spellcaster = bool(class_spellcasting_rule.get("has_spellcasting_at_level_1"))
+        output["spellcasting"] = {
+            "is_spellcaster": is_spellcaster,
+            "spellcasting_ability": spellcasting_ability or None,
+            "spell_save_dc": (8 + proficiency_bonus + spellcasting_mod) if spellcasting_ability else None,
+            "spell_attack_bonus": (proficiency_bonus + spellcasting_mod) if spellcasting_ability else None,
+            "focus_options": self._to_string_list(class_spellcasting_rule.get("focus_options")),
+            "spell_slots": class_spellcasting_rule.get("spell_slots", {}),
+            "pact_magic": {
+                "slots": int(class_spellcasting_rule.get("pact_slots", 0) or 0),
+                "slot_level": int(class_spellcasting_rule.get("pact_slot_level", 0) or 0),
+            },
+            "cantrips_known": list(dict.fromkeys([*output.get("class_cantrips", []), *output.get("species_cantrips", []), *output.get("feat_cantrips", [])])),
+            "prepared_spells": list(dict.fromkeys([*output.get("class_prepared_spells", []), *output.get("class_prepared_level_1_spells", [])])),
+            "always_prepared_spells": [entry.get("spell_id") for entry in output.get("species_granted_spells", []) if isinstance(entry, dict) and entry.get("spell_id")],
+            "spellbook_spells": output.get("class_spellbook_spells", []),
+            "species_granted_spells": output.get("species_granted_spells", []),
+            "feat_granted_spells": list(dict.fromkeys([*output.get("feat_level_1_spells", []), *output.get("feat_magic_initiate_level_1_spells", [])])),
+        }
+        output["validation"] = {"is_valid": True, "errors": [], "warnings": []}
         return output
 
     def _find_feat_rule(self, feat_id: str | None) -> dict[str, Any]:
