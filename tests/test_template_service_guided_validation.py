@@ -274,3 +274,34 @@ def test_compose_and_split_builder_equipment_preserve_expertise_skills():
 
     assert "Expertises: sleight_of_hand, stealth" in equipment_blob
     assert parsed["expertise_skills"] == "sleight_of_hand, stealth"
+
+
+def test_compose_builder_equipment_ignores_technical_tokens():
+    form_data = _base_form_data()
+    form_data["equipment"] = "class:Option A,background:A,dague"
+
+    equipment_blob = TemplateService._compose_builder_equipment(form_data)
+
+    assert "class:Option A" not in equipment_blob
+    assert "background:A" not in equipment_blob
+    assert "dague" in equipment_blob.lower()
+
+
+def test_compose_builder_equipment_infers_weapon_loadouts_from_equipment_labels():
+    form_data = _base_form_data()
+    form_data["equipment"] = "Dague, Javelot"
+    form_data["weapon_loadout"] = ""
+    form_data["ranged_weapon_loadout"] = ""
+
+    equipment_blob = TemplateService._compose_builder_equipment(form_data)
+
+    assert "Arme de corps a corps equipee: Dague" in equipment_blob
+    assert "Arme a distance equipee: Javelot" in equipment_blob
+
+
+def test_apply_armor_loadout_to_ac_base_applies_chain_mail_and_shield():
+    resolved_character = {"ac_base": 12}
+
+    TemplateService._apply_armor_loadout_to_ac_base(resolved_character, "Cotte de mailles + Bouclier")
+
+    assert resolved_character["ac_base"] == 18

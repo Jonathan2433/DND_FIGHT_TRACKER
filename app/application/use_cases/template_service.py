@@ -127,6 +127,19 @@ class TemplateService:
         "Chemise de mailles + Bouclier": {"medium", "shield"},
         "Cotte de mailles + Bouclier": {"heavy", "shield"},
     }
+    ARMOR_BASE_AC_BY_LOADOUT = {
+        "Sans armure": 10,
+        "Armure matelassee": 11,
+        "Armure de cuir": 11,
+        "Armure de cuir cloutee": 12,
+        "Chemise de mailles": 13,
+        "Cuirasse": 14,
+        "Demi-plate": 15,
+        "Cotte de mailles": 16,
+        "Harnois": 18,
+        "Bouclier": 10,
+    }
+    RANGED_WEAPON_HINTS = ("arc", "arbalete", "fronde", "javelot", "sarbacane", "dard")
     SKILL_PROFICIENCY_LIMITS_BY_CLASS = {
         "artificier": 2,
         "barbarian": 2,
@@ -578,12 +591,15 @@ class TemplateService:
     @staticmethod
     def _compose_builder_equipment(form_data):
         """Compose un bloc equipement detaille depuis le funnel de creation."""
+        inferred_weapon_loadout, inferred_ranged_weapon_loadout = TemplateService._infer_missing_weapon_loadouts(form_data)
         base_equipment = TemplateService._format_equipment_summary(form_data.get('equipment'))
         skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data) or ''
         expertise_skills = TemplateService._extract_expertise_skills(form_data)
         tool_proficiencies = TemplateService._format_equipment_summary(form_data.get('tool_proficiencies'))
-        weapon_loadout = TemplateService._format_loadout_summary(form_data.get('weapon_loadout'))
-        ranged_weapon_loadout = TemplateService._format_loadout_summary(form_data.get('ranged_weapon_loadout'))
+        weapon_loadout = TemplateService._format_loadout_summary(form_data.get('weapon_loadout') or inferred_weapon_loadout)
+        ranged_weapon_loadout = TemplateService._format_loadout_summary(
+            form_data.get('ranged_weapon_loadout') or inferred_ranged_weapon_loadout
+        )
         armor_loadout = TemplateService._format_loadout_summary(form_data.get('armor_loadout'))
         inventory_items = TemplateService._format_equipment_summary(form_data.get('inventory_items'))
         spellbook_notes = (form_data.get('spellbook_notes') or '').strip()
@@ -665,6 +681,73 @@ class TemplateService:
             )
 
         return token
+
+    @classmethod
+    def _infer_missing_weapon_loadouts(cls, form_data):
+        weapon_loadout = (form_data.get('weapon_loadout') or '').strip()
+        ranged_weapon_loadout = (form_data.get('ranged_weapon_loadout') or '').strip()
+        if weapon_loadout and ranged_weapon_loadout:
+            return weapon_loadout, ranged_weapon_loadout
+
+        labels = cls._extract_equipment_labels(form_data.get('equipment'))
+        if not labels:
+            return weapon_loadout, ranged_weapon_loadout
+
+        def _is_ranged(label):
+            normalized = cls._strip_accents(label).lower()
+            return any(hint in normalized for hint in cls.RANGED_WEAPON_HINTS)
+
+        if not ranged_weapon_loadout:
+            ranged_weapon_loadout = next((label for label in labels if _is_ranged(label)), "")
+        if not weapon_loadout:
+            weapon_loadout = next((label for label in labels if not _is_ranged(label)), "")
+        return weapon_loadout, ranged_weapon_loadout
+
+    @classmethod
+    def _extract_equipment_labels(cls, raw_value):
+        labels = []
+        for raw_token in str(raw_value or '').replace(';', ',').split(','):
+            label = cls._humanize_equipment_token(raw_token)
+            if label and label not in labels:
+                labels.append(label)
+        return labels
+
+    @staticmethod
+    def _strip_accents(value):
+        return (
+            str(value or '')
+            .replace('é', 'e')
+            .replace('è', 'e')
+            .replace('ê', 'e')
+            .replace('ë', 'e')
+            .replace('à', 'a')
+            .replace('â', 'a')
+            .replace('ù', 'u')
+            .replace('û', 'u')
+            .replace('î', 'i')
+            .replace('ï', 'i')
+            .replace('ô', 'o')
+            .replace('ç', 'c')
+        )
+
+    @classmethod
+    def _apply_armor_loadout_to_ac_base(cls, resolved_character, armor_loadout):
+        if not isinstance(resolved_character, dict):
+            return resolved_character
+        normalized = str(armor_loadout or '').strip()
+        if not normalized:
+            return resolved_character
+
+        has_shield = "bouclier" in normalized.lower()
+        armor_label = normalized.replace(" + Bouclier", "").strip()
+        if armor_label == "Bouclier":
+            armor_label = "Sans armure"
+
+        base = cls.ARMOR_BASE_AC_BY_LOADOUT.get(armor_label)
+        if base is None:
+            return resolved_character
+        resolved_character['ac_base'] = base + (2 if has_shield else 0)
+        return resolved_character
 
     @staticmethod
     def _extract_expertise_skills(form_data):
@@ -964,6 +1047,7 @@ class TemplateService:
         resolved_campaign_id = campaign_id if campaign_id is not None else form_data.get('campaign_id')
 
         resolved_character = resolve_character_creation(form_data)
+        TemplateService._apply_armor_loadout_to_ac_base(resolved_character, form_data.get('armor_loadout'))
         normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data, resolved_character=resolved_character)
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
@@ -1079,6 +1163,11 @@ class TemplateService:
             additional_features_traits=form_data.get('additional_features_traits') or None,
             treasure=form_data.get('treasure') or None,
             symbol_name=form_data.get('symbol_name') or None,
+            personality_traits=form_data.get('personality_traits') or None,
+            ideals=form_data.get('ideals') or None,
+            bonds=form_data.get('bonds') or None,
+            flaws=form_data.get('flaws') or None,
+            inspiration=bool(form_data.get('inspiration')),
             spellcasting_class=resolved_character.get('character_class') or form_data.get('spellcasting_class') or None,
             spellcasting_ability=spellcasting_ability,
             spell_save_dc=spell_save_dc,
@@ -1126,6 +1215,7 @@ class TemplateService:
     def build_transient_character_template(form_data, current_user=None):
         """Construit un personnage non persiste pour les apercus (ex: generation PDF)."""
         resolved_character = resolve_character_creation(form_data)
+        TemplateService._apply_armor_loadout_to_ac_base(resolved_character, form_data.get('armor_loadout'))
         normalized_skill_proficiencies = TemplateService._normalize_skill_proficiencies(form_data, resolved_character=resolved_character)
         TemplateService._validate_skill_proficiencies_limit(
             resolved_character.get('character_class') or form_data.get('character_class'),
@@ -1329,6 +1419,10 @@ class TemplateService:
             form_data.get('weapon_loadout'),
             form_data.get('armor_loadout'),
         )
+        if form_data.get('armor_loadout'):
+            armor_applied = {'ac_base': template.ac_base}
+            TemplateService._apply_armor_loadout_to_ac_base(armor_applied, form_data.get('armor_loadout'))
+            template.ac_base = armor_applied['ac_base']
         if not uses_choice_based_spell_selection:
             cantrip_catalog = get_cantrips()
             level_one_catalog = get_spells_for_level(1)
