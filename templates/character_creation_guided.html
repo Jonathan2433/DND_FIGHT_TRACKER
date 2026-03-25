@@ -198,6 +198,7 @@
         <input type="hidden" name="ability_mode" id="ability-mode-hidden" value="standard_array">
         <input type="hidden" name="ability_score_method" id="ability-score-method-hidden" value="standard_array">
         <input type="hidden" name="weapon_loadout" value="">
+        <input type="hidden" name="ranged_weapon_loadout" value="">
         <input type="hidden" name="armor_loadout" value="">
         <input type="hidden" name="class_id" id="class-id-hidden" value="">
         <input type="hidden" name="background_id" id="background-id-hidden" value="">
@@ -417,6 +418,22 @@
 
                         <p class="appearance-story-group-title">Histoire & éléments narratifs</p>
                         <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-personality-traits">Traits de personnalité</label>
+                            <textarea id="guided-personality-traits" name="personality_traits" rows="2" placeholder="Ex: Curieux, méfiant, loyal..."></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-ideals">Idéaux</label>
+                            <textarea id="guided-ideals" name="ideals" rows="2" placeholder="Principes qui guident votre personnage"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-bonds">Liens</label>
+                            <textarea id="guided-bonds" name="bonds" rows="2" placeholder="Personnes, lieux ou serments importants"></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-flaws">Défauts</label>
+                            <textarea id="guided-flaws" name="flaws" rows="2" placeholder="Faiblesses, travers, peurs..."></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
                             <label for="guided-allies-organizations">Allies & organisations</label>
                             <textarea id="guided-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
                         </div>
@@ -525,6 +542,8 @@ const hidden = {
     cantrips: document.getElementById('selected-cantrips-hidden'),
     spells: document.getElementById('selected-level-one-hidden'),
     equipment: document.getElementById('equipment-hidden'),
+    weaponLoadout: form.querySelector('input[name="weapon_loadout"]'),
+    rangedWeaponLoadout: form.querySelector('input[name="ranged_weapon_loadout"]'),
     armorLoadout: form.querySelector('input[name="armor_loadout"]'),
     featChoices: document.getElementById('feat-choices-hidden'),
     backgroundAbilityBonusMode: document.getElementById('background-ability-bonus-mode-hidden'),
@@ -579,6 +598,8 @@ const LEGACY_BG_FIELD_BY_ABILITY = {
     wisdom: 'sagesse',
     charisma: 'charisme',
 };
+const MELEE_WEAPON_HINTS = ['epee', 'dague', 'hache', 'masse', 'lance', 'baton', 'marteau', 'glaive', 'fleau', 'hallebarde'];
+const RANGED_WEAPON_HINTS = ['arc', 'arbalete', 'fronde', 'javelot', 'sarbacane', 'dard'];
 
 const FRIENDLY_LABELS = {
     saving_throw_proficiencies: 'Jets de sauvegarde maîtrisés',
@@ -1023,10 +1044,25 @@ function syncHiddenFields() {
     const selectedEquipment = allChecked
         .filter((x) => x.dataset.choiceType === 'equipment')
         .map((x) => x.value);
+    const selectedEquipmentLabels = allChecked
+        .filter((x) => x.dataset.choiceType === 'equipment')
+        .map((x) => x.dataset.optionLabel || x.value)
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
     const selectedBundles = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
         .map((x) => x.value)
         .filter(Boolean);
     hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
+    const normalizeWeaponLabel = (label) => String(label || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    const findWeaponByHints = (hints) => selectedEquipmentLabels.find((label) => {
+        const normalized = normalizeWeaponLabel(label);
+        return hints.some((hint) => normalized.includes(hint));
+    }) || '';
+    if (hidden.weaponLoadout) hidden.weaponLoadout.value = findWeaponByHints(MELEE_WEAPON_HINTS);
+    if (hidden.rangedWeaponLoadout) hidden.rangedWeaponLoadout.value = findWeaponByHints(RANGED_WEAPON_HINTS);
 
     const serializedChoices = allChecked
         .filter((x) => String(x.dataset.choiceId || '').trim())
