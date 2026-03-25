@@ -429,6 +429,17 @@ class TemplateService:
         return None
 
     @staticmethod
+    def _normalize_choice_scope(raw_scope):
+        scope = str(raw_scope or "").strip().lower()
+        if scope in {"class", "background", "species", "feat"}:
+            return scope
+        if scope == "spell":
+            return "class"
+        if scope.startswith("feat_"):
+            return "feat"
+        return ""
+
+    @staticmethod
     def _extract_selected_spells_by_choice(form_data):
         """Reconstruit les sélections de sorts canonisées par choice_id."""
         selected_spells_by_choice = {}
@@ -467,7 +478,8 @@ class TemplateService:
                 continue
             scope = str(entry.get("scope") or "").strip()
             choice_type = str(entry.get("choice_type") or "").strip()
-            if scope not in {"class", "spell"} or choice_type not in allowed_choice_types:
+            normalized_scope = TemplateService._normalize_choice_scope(scope)
+            if normalized_scope not in {"class", "background", "species", "feat"} or choice_type not in allowed_choice_types:
                 continue
             choice_id = str(entry.get("choice_id") or "").strip()
             value = str(entry.get("value") or "").strip()
