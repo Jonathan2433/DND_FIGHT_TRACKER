@@ -1455,6 +1455,7 @@ class CharacterBuilderService:
         equipped_armor_id: str | None = None
         equipped_armor_category: str | None = None
         shield_bonus = 0
+        has_equipped_shield = False
         armor_base_candidates: list[dict[str, Any]] = [
             {"ac": 10 + dexterity_modifier, "source": "unarmored_base", "formula": "10 + dexterity_modifier"}
         ]
@@ -1487,6 +1488,8 @@ class CharacterBuilderService:
             armor_bonus = int(equipment.get("armor_class_bonus", 0) or 0)
             if armor_bonus:
                 shield_bonus += armor_bonus
+                if str(equipment.get("item_category") or "") == "shield":
+                    has_equipped_shield = True
 
         for feature in class_features or []:
             passive_effect = feature.get("passive_effect") if isinstance(feature, dict) else {}
@@ -1496,6 +1499,8 @@ class CharacterBuilderService:
             if not formula:
                 continue
             if bool(passive_effect.get("requires_no_armor")) and has_worn_armor:
+                continue
+            if bool(passive_effect.get("requires_no_shield")) and has_equipped_shield:
                 continue
             feature_ac = self._evaluate_ac_formula(formula, ability_modifiers)
             if feature_ac is None:
