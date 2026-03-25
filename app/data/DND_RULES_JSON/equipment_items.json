@@ -8,11 +8,22 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "sp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d4", "type": "bludgeoning" },
-    "properties": ["light"],
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light"
+    ],
     "mastery": "slow"
   },
   {
@@ -24,11 +35,25 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 1,
-    "damage": { "dice": "1d4", "type": "piercing" },
-    "properties": ["finesse", "light", "thrown", "range_20_60"],
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light",
+      "thrown",
+      "range_20_60"
+    ],
     "mastery": "nick"
   },
   {
@@ -40,11 +65,21 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "sp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "sp"
+    },
     "weight_lb": 10,
-    "damage": { "dice": "1d8", "type": "bludgeoning" },
-    "properties": ["two_handed"],
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two_handed"
+    ],
     "mastery": "push"
   },
   {
@@ -56,11 +91,24 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d6", "type": "slashing" },
-    "properties": ["light", "thrown", "range_20_60"],
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "light",
+      "thrown",
+      "range_20_60"
+    ],
     "mastery": "vex"
   },
   {
@@ -72,11 +120,23 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "sp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d6", "type": "piercing" },
-    "properties": ["thrown", "range_30_120"],
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "range_30_120"
+    ],
     "mastery": "slow"
   },
   {
@@ -88,10 +148,19 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 4,
-    "damage": { "dice": "1d6", "type": "bludgeoning" },
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
     "properties": [],
     "mastery": "sap"
   },
@@ -104,12 +173,27 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "focus_candidate"],
-    "cost": { "quantity": 2, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "focus_candidate"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "sp"
+    },
     "weight_lb": 4,
-    "damage": { "dice": "1d6", "type": "bludgeoning" },
-    "versatile_damage": { "dice": "1d8", "type": "bludgeoning" },
-    "properties": ["versatile"],
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "versatile_damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
     "mastery": "topple"
   },
   {
@@ -121,11 +205,22 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d4", "type": "slashing" },
-    "properties": ["light"],
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ],
     "mastery": "nick"
   },
   {
@@ -137,12 +232,28 @@
     "item_category": "weapon",
     "weapon_category": "simple_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 3,
-    "damage": { "dice": "1d6", "type": "piercing" },
-    "versatile_damage": { "dice": "1d8", "type": "piercing" },
-    "properties": ["thrown", "range_20_60", "versatile"],
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "versatile_damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "range_20_60",
+      "versatile"
+    ],
     "mastery": "sap"
   },
   {
@@ -154,11 +265,25 @@
     "item_category": "weapon",
     "weapon_category": "simple_ranged",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 25, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
     "weight_lb": 5,
-    "damage": { "dice": "1d8", "type": "piercing" },
-    "properties": ["ammunition", "loading", "range_80_320", "two_handed"],
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading",
+      "range_80_320",
+      "two_handed"
+    ],
     "mastery": "slow"
   },
   {
@@ -170,11 +295,24 @@
     "item_category": "weapon",
     "weapon_category": "simple_ranged",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 25, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d6", "type": "piercing" },
-    "properties": ["ammunition", "range_80_320", "two_handed"],
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "range_80_320",
+      "two_handed"
+    ],
     "mastery": "vex"
   },
   {
@@ -186,10 +324,19 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d8", "type": "bludgeoning" },
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
     "properties": [],
     "mastery": "sap"
   },
@@ -202,11 +349,23 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 20, "unit": "gp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 20,
+      "unit": "gp"
+    },
     "weight_lb": 6,
-    "damage": { "dice": "1d10", "type": "slashing" },
-    "properties": ["heavy", "reach", "two_handed"],
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
     "mastery": "graze"
   },
   {
@@ -218,11 +377,23 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 30, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 30,
+      "unit": "gp"
+    },
     "weight_lb": 7,
-    "damage": { "dice": "1d12", "type": "slashing" },
-    "properties": ["heavy", "two_handed"],
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
     "mastery": "cleave"
   },
   {
@@ -234,11 +405,23 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 50, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
     "weight_lb": 6,
-    "damage": { "dice": "2d6", "type": "slashing" },
-    "properties": ["heavy", "two_handed"],
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
     "mastery": "graze"
   },
   {
@@ -250,12 +433,26 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 15, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 15,
+      "unit": "gp"
+    },
     "weight_lb": 3,
-    "damage": { "dice": "1d8", "type": "slashing" },
-    "versatile_damage": { "dice": "1d10", "type": "slashing" },
-    "properties": ["versatile"],
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing"
+    },
+    "versatile_damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "versatile"
+    ],
     "mastery": "sap"
   },
   {
@@ -267,11 +464,21 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 25, "unit": "gp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d8", "type": "piercing" },
-    "properties": ["finesse"],
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse"
+    ],
     "mastery": "vex"
   },
   {
@@ -283,11 +490,23 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 25, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
     "weight_lb": 3,
-    "damage": { "dice": "1d6", "type": "slashing" },
-    "properties": ["finesse", "light"],
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
     "mastery": "nick"
   },
   {
@@ -299,11 +518,23 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d6", "type": "piercing" },
-    "properties": ["finesse", "light"],
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
     "mastery": "vex"
   },
   {
@@ -315,12 +546,25 @@
     "item_category": "weapon",
     "weapon_category": "martial_melee",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 15, "unit": "gp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 15,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d8", "type": "bludgeoning" },
-    "versatile_damage": { "dice": "1d10", "type": "bludgeoning" },
-    "properties": ["versatile"],
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "versatile_damage": {
+      "dice": "1d10",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
     "mastery": "push"
   },
   {
@@ -332,14 +576,27 @@
     "item_category": "weapon",
     "weapon_category": "martial_ranged",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 50, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
     "weight_lb": 2,
-    "damage": { "dice": "1d8", "type": "piercing" },
-    "properties": ["ammunition", "heavy", "range_150_600", "two_handed"],
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "range_150_600",
+      "two_handed"
+    ],
     "mastery": "slow"
   },
-
   {
     "id": "padded_armor",
     "name_fr": "Armure matelassée",
@@ -349,11 +606,21 @@
     "item_category": "armor",
     "armor_category": "light",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 8,
-    "armor_class": { "base": 11, "dex_cap": null },
-    "properties": ["stealth_disadvantage"]
+    "armor_class": {
+      "base": 11,
+      "dex_cap": null
+    },
+    "properties": [
+      "stealth_disadvantage"
+    ]
   },
   {
     "id": "leather_armor",
@@ -364,10 +631,19 @@
     "item_category": "armor",
     "armor_category": "light",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 10,
-    "armor_class": { "base": 11, "dex_cap": null },
+    "armor_class": {
+      "base": 11,
+      "dex_cap": null
+    },
     "properties": []
   },
   {
@@ -379,10 +655,19 @@
     "item_category": "armor",
     "armor_category": "light",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 45, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 45,
+      "unit": "gp"
+    },
     "weight_lb": 13,
-    "armor_class": { "base": 12, "dex_cap": null },
+    "armor_class": {
+      "base": 12,
+      "dex_cap": null
+    },
     "properties": []
   },
   {
@@ -394,10 +679,18 @@
     "item_category": "armor",
     "armor_category": "medium",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 12,
-    "armor_class": { "base": 12, "dex_cap": 2 },
+    "armor_class": {
+      "base": 12,
+      "dex_cap": 2
+    },
     "properties": []
   },
   {
@@ -409,10 +702,19 @@
     "item_category": "armor",
     "armor_category": "medium",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 50, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
     "weight_lb": 20,
-    "armor_class": { "base": 13, "dex_cap": 2 },
+    "armor_class": {
+      "base": 13,
+      "dex_cap": 2
+    },
     "properties": []
   },
   {
@@ -424,11 +726,23 @@
     "item_category": "armor",
     "armor_category": "heavy",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 75, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 75,
+      "unit": "gp"
+    },
     "weight_lb": 55,
-    "armor_class": { "base": 16, "dex_cap": 0 },
-    "properties": ["stealth_disadvantage", "strength_13_required"]
+    "armor_class": {
+      "base": 16,
+      "dex_cap": 0
+    },
+    "properties": [
+      "stealth_disadvantage",
+      "strength_13_required"
+    ]
   },
   {
     "id": "shield",
@@ -438,12 +752,17 @@
     "entity_type": "equipment_item",
     "item_category": "shield",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 6,
     "armor_class_bonus": 2
   },
-
   {
     "id": "arrow",
     "name_fr": "Flèche",
@@ -452,8 +771,13 @@
     "entity_type": "equipment_item",
     "item_category": "ammunition",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "cp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "cp"
+    },
     "weight_lb": 0.05
   },
   {
@@ -464,8 +788,13 @@
     "entity_type": "equipment_item",
     "item_category": "ammunition",
     "available_at_character_level_1": true,
-    "selection_tags": ["buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "cp" },
+    "selection_tags": [
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "cp"
+    },
     "weight_lb": 0.075
   },
   {
@@ -476,11 +805,20 @@
     "entity_type": "equipment_item",
     "item_category": "ammunition_bundle",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 1,
     "contains": [
-      { "item_id": "arrow", "quantity": 20 }
+      {
+        "item_id": "arrow",
+        "quantity": 20
+      }
     ]
   },
   {
@@ -491,11 +829,20 @@
     "entity_type": "equipment_item",
     "item_category": "ammunition_bundle",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 1.5,
     "contains": [
-      { "item_id": "crossbow_bolt", "quantity": 20 }
+      {
+        "item_id": "crossbow_bolt",
+        "quantity": 20
+      }
     ]
   },
   {
@@ -506,8 +853,14 @@
     "entity_type": "equipment_item",
     "item_category": "container",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 1
   },
   {
@@ -518,11 +871,16 @@
     "entity_type": "equipment_item",
     "item_category": "container",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "sp"
+    },
     "weight_lb": 1
   },
-
   {
     "id": "arcane_focus_crystal",
     "name_fr": "Focaliseur arcanique : cristal",
@@ -532,8 +890,15 @@
     "item_category": "focus",
     "focus_category": "arcane",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 1
   },
   {
@@ -545,8 +910,15 @@
     "item_category": "focus",
     "focus_category": "arcane",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 20, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 20,
+      "unit": "gp"
+    },
     "weight_lb": 3
   },
   {
@@ -558,8 +930,15 @@
     "item_category": "focus",
     "focus_category": "arcane",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 4
   },
   {
@@ -571,8 +950,15 @@
     "item_category": "focus",
     "focus_category": "druidic",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 0
   },
   {
@@ -584,8 +970,15 @@
     "item_category": "focus",
     "focus_category": "druidic",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 4
   },
   {
@@ -597,11 +990,17 @@
     "item_category": "focus",
     "focus_category": "holy",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation", "spellcasting_focus"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation",
+      "spellcasting_focus"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 1
   },
-
   {
     "id": "book_prayers",
     "name_fr": "Livre de prières",
@@ -610,8 +1009,13 @@
     "entity_type": "equipment_item",
     "item_category": "book",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 0, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 0,
+      "unit": "gp"
+    },
     "weight_lb": 5
   },
   {
@@ -622,8 +1026,14 @@
     "entity_type": "equipment_item",
     "item_category": "book",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 25, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 25,
+      "unit": "gp"
+    },
     "weight_lb": 5,
     "variant_support": true
   },
@@ -635,11 +1045,16 @@
     "entity_type": "equipment_item",
     "item_category": "book",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 50, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 50,
+      "unit": "gp"
+    },
     "weight_lb": 3
   },
-
   {
     "id": "bedroll",
     "name_fr": "Couchage",
@@ -648,8 +1063,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 7
   },
   {
@@ -660,8 +1081,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "sp"
+    },
     "weight_lb": 3
   },
   {
@@ -672,8 +1099,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 5
   },
   {
@@ -684,8 +1117,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 3
   },
   {
@@ -696,8 +1135,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 2
   },
   {
@@ -708,8 +1153,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "sp"
+    },
     "weight_lb": 1
   },
   {
@@ -720,8 +1171,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 6
   },
   {
@@ -732,8 +1189,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 0.5
   },
   {
@@ -744,8 +1207,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "sp"
+    },
     "weight_lb": 1
   },
   {
@@ -756,8 +1225,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "sp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "sp"
+    },
     "weight_lb": 0
   },
   {
@@ -768,8 +1243,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 0
   },
   {
@@ -780,8 +1261,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 10
   },
   {
@@ -792,8 +1279,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 5
   },
   {
@@ -804,8 +1297,14 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 20
   },
   {
@@ -816,11 +1315,16 @@
     "entity_type": "equipment_item",
     "item_category": "gear",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 10
   },
-
   {
     "id": "robe",
     "name_fr": "Robe",
@@ -829,8 +1333,14 @@
     "entity_type": "equipment_item",
     "item_category": "clothes",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 1, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 1,
+      "unit": "gp"
+    },
     "weight_lb": 4
   },
   {
@@ -841,8 +1351,14 @@
     "entity_type": "equipment_item",
     "item_category": "clothes",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 2, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 2,
+      "unit": "gp"
+    },
     "weight_lb": 4
   },
   {
@@ -853,8 +1369,14 @@
     "entity_type": "equipment_item",
     "item_category": "clothes",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 15, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 15,
+      "unit": "gp"
+    },
     "weight_lb": 6
   },
   {
@@ -865,11 +1387,16 @@
     "entity_type": "equipment_item",
     "item_category": "clothes",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment", "buyable_at_character_creation"],
-    "cost": { "quantity": 5, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment",
+      "buyable_at_character_creation"
+    ],
+    "cost": {
+      "quantity": 5,
+      "unit": "gp"
+    },
     "weight_lb": 4
   },
-
   {
     "id": "burglars_pack",
     "name_fr": "Sac d'exploration du cambrioleur",
@@ -878,8 +1405,13 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 16, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 16,
+      "unit": "gp"
+    },
     "weight_lb": 47
   },
   {
@@ -890,8 +1422,13 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 12, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 12,
+      "unit": "gp"
+    },
     "weight_lb": 61.5
   },
   {
@@ -902,8 +1439,13 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 40, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 40,
+      "unit": "gp"
+    },
     "weight_lb": 38
   },
   {
@@ -914,8 +1456,13 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 10, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 10,
+      "unit": "gp"
+    },
     "weight_lb": 59
   },
   {
@@ -926,8 +1473,13 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 19, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 19,
+      "unit": "gp"
+    },
     "weight_lb": 24
   },
   {
@@ -938,8 +1490,57 @@
     "entity_type": "equipment_item",
     "item_category": "pack",
     "available_at_character_level_1": true,
-    "selection_tags": ["starting_equipment"],
-    "cost": { "quantity": 40, "unit": "gp" },
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "cost": {
+      "quantity": 40,
+      "unit": "gp"
+    },
     "weight_lb": 10
+  },
+  {
+    "id": "javelin_bundle_8",
+    "name_fr": "8 javelots",
+    "name_en": "8 Javelins",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "equipment_item",
+    "item_category": "weapon_bundle",
+    "available_at_character_level_1": true,
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "items": [
+      {
+        "item_id": "javelin",
+        "quantity": 8
+      }
+    ]
+  },
+  {
+    "id": "light_crossbow_bundle_20",
+    "name_fr": "Arbalète légère + munitions",
+    "name_en": "Light Crossbow + ammunition",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "equipment_item",
+    "item_category": "weapon_bundle",
+    "available_at_character_level_1": true,
+    "selection_tags": [
+      "starting_equipment"
+    ],
+    "items": [
+      {
+        "item_id": "light_crossbow",
+        "quantity": 1
+      },
+      {
+        "item_id": "arrows_20",
+        "quantity": 1
+      },
+      {
+        "item_id": "quiver",
+        "quantity": 1
+      }
+    ]
   }
 ]

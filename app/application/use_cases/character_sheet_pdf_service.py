@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import json
 import os
 import logging
 import unicodedata
@@ -11,6 +12,7 @@ from typing import Any
 
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import BooleanObject, NameObject, TextStringObject
+from app.utils.dnd5_rules import SPECIES_RULES
 
 
 logger = logging.getLogger(__name__)
@@ -29,9 +31,10 @@ class CharacterSheetPdfService:
     # Mapping metier -> noms techniques connus des champs PDF.
     # Le premier nom correspond au template officiel 5E_CharacterSheet_Fillable.pdf.
     FIELD_ALIASES: dict[str, tuple[str, ...]] = {
-        "character_name": ("CharacterName", "Character Name", "CharName"),
+        "character_name": ("CharacterName", "Character Name", "CharName", "CharacterName 2"),
         "class_level": ("ClassLevel", "Class & Level", "ClassLevel1"),
         "background": ("Background",),
+        "character_backstory": ("Backstory", "Character Backstory", "CharacterBackstory"),
         "player_name": ("PlayerName", "Player Name"),
         "race": ("Race ", "Race"),
         "alignment": ("Alignment",),
@@ -73,6 +76,15 @@ class CharacterSheetPdfService:
         "bonds": ("Bonds",),
         "flaws": ("Flaws",),
         "attacks_spellcasting": ("AttacksSpellcasting", "Attacks & Spellcasting"),
+        "weapon_1_name": ("Wpn Name",),
+        "weapon_1_attack_bonus": ("Wpn1 AtkBonus",),
+        "weapon_1_damage_type": ("Wpn1 Damage",),
+        "weapon_2_name": ("Wpn Name 2",),
+        "weapon_2_attack_bonus": ("Wpn2 AtkBonus", "Wpn2 AtkBonus "),
+        "weapon_2_damage_type": ("Wpn2 Damage", "Wpn2 Damage "),
+        "weapon_3_name": ("Wpn Name 3",),
+        "weapon_3_attack_bonus": ("Wpn3 AtkBonus", "Wpn3 AtkBonus  "),
+        "weapon_3_damage_type": ("Wpn3 Damage", "Wpn3 Damage "),
         "allies_organizations": ("AlliesOrganizations", "Allies & Organizations"),
         "character_appearance": ("CharacterAppearance", "CHARACTER APPEARANCE"),
         "additional_features_traits": ("AdditionalFeatandTraits", "Additional Features and Traits"),
@@ -165,6 +177,22 @@ class CharacterSheetPdfService:
         "arbalete legere": {"damage": "1d8", "damage_type": "Percant", "is_ranged": True, "finesse": False},
         "arbalete de poing": {"damage": "1d6", "damage_type": "Percant", "is_ranged": True, "finesse": False},
     }
+    DAMAGE_TYPE_FR = {
+        "piercing": "Percant",
+        "slashing": "Tranchant",
+        "bludgeoning": "Contondant",
+        "force": "Force",
+        "fire": "Feu",
+        "cold": "Froid",
+        "lightning": "Foudre",
+        "thunder": "Tonnerre",
+        "acid": "Acide",
+        "poison": "Poison",
+        "necrotic": "Necrotique",
+        "radiant": "Radiant",
+        "psychic": "Psychique",
+    }
+    _WEAPONS_CATALOG_CACHE: list[dict[str, Any]] | None = None
 
     @staticmethod
     def _format_mod(value: int) -> str:
@@ -185,6 +213,49 @@ class CharacterSheetPdfService:
             .replace("à", "a")
             .replace("ï", "i")
         )
+
+    @staticmethod
+    def _as_bool(value: Any) -> bool:
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return value != 0
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "on", "oui"}
+        return bool(value)
+
+    @classmethod
+    def _derive_speed(cls, character) -> str:
+        explicit_speed_keys = ("speed", "walk_speed", "movement_speed")
+        for key in explicit_speed_keys:
+            raw_value = getattr(character, key, None)
+            if raw_value in (None, ""):
+                continue
+            if isinstance(raw_value, dict):
+                walk = raw_value.get("walk")
+                if walk not in (None, ""):
+                    return str(walk)
+                continue
+            return str(raw_value)
+
+        normalized_race = cls._normalize_class_name(getattr(character, "race", ""))
+        for species_name, species_rules in SPECIES_RULES.items():
+            if cls._normalize_class_name(species_name) == normalized_race:
+                return str(species_rules.get("speed", 30))
+        return "30"
+
+    @staticmethod
+    def _extract_roleplay_traits(character) -> dict[str, str]:
+        fields = {
+            "personality_traits": "personality_traits",
+            "ideals": "ideals",
+            "bonds": "bonds",
+            "flaws": "flaws",
+        }
+        return {
+            key: str(getattr(character, attr, "") or "")
+            for key, attr in fields.items()
+        }
 
     @staticmethod
     def _to_multiline(value: str | None) -> str:
@@ -225,6 +296,25 @@ class CharacterSheetPdfService:
         normalized_name = cls._normalize_text_key(weapon_name)
         if not normalized_name:
             return None
+
+        for weapon in cls._load_weapons_catalog():
+            weapon_id = cls._normalize_text_key(weapon.get("id"))
+            fr_name = cls._normalize_text_key(weapon.get("name_fr"))
+            en_name = cls._normalize_text_key(weapon.get("name_en"))
+            if normalized_name not in {weapon_id, fr_name, en_name}:
+                continue
+
+            damage = weapon.get("damage") if isinstance(weapon.get("damage"), dict) else {}
+            attack_type = str(weapon.get("attack_type") or "").lower()
+            properties = {str(prop).lower() for prop in weapon.get("properties", []) if prop}
+            return {
+                "name": weapon.get("name_fr") or weapon.get("name_en") or weapon.get("id") or weapon_name,
+                "damage": str(damage.get("dice") or ""),
+                "damage_type": cls.DAMAGE_TYPE_FR.get(str(damage.get("type") or "").lower(), str(damage.get("type") or "")),
+                "is_ranged": attack_type == "ranged",
+                "finesse": "finesse" in properties,
+            }
+
         if normalized_name in cls.WEAPON_PROFILES:
             return cls.WEAPON_PROFILES[normalized_name]
 
@@ -232,6 +322,19 @@ class CharacterSheetPdfService:
             if normalized_name in key or key in normalized_name:
                 return profile
         return None
+
+    @classmethod
+    def _load_weapons_catalog(cls) -> list[dict[str, Any]]:
+        if cls._WEAPONS_CATALOG_CACHE is not None:
+            return cls._WEAPONS_CATALOG_CACHE
+        weapons_catalog_path = Path(__file__).resolve().parents[2] / "data" / "weapons_catalog.json"
+        try:
+            payload = json.loads(weapons_catalog_path.read_text(encoding="utf-8"))
+        except Exception:
+            logger.exception("Impossible de charger weapons_catalog.json")
+            return []
+        cls._WEAPONS_CATALOG_CACHE = payload if isinstance(payload, list) else []
+        return cls._WEAPONS_CATALOG_CACHE
 
     @staticmethod
     def _extract_weapon_loadouts(equipment_value: str | None) -> list[str]:
@@ -255,15 +358,9 @@ class CharacterSheetPdfService:
 
     @classmethod
     def _build_attacks_spellcasting_text(cls, character) -> str:
-        weapon_names = cls._extract_weapon_loadouts(character.equipment)
-        if not weapon_names:
+        rows = cls._build_weapon_table_rows(character, max_rows=5)
+        if not rows:
             return ""
-
-        damage_type_short = {
-            "Tranchant": "Trch",
-            "Percant": "Perc",
-            "Contondant": "Cont",
-        }
 
         def clamp_line(value: str, limit: int = 36) -> str:
             text = " ".join((value or "").split())
@@ -271,11 +368,30 @@ class CharacterSheetPdfService:
                 return text
             return f"{text[:limit - 1].rstrip()}…"
 
-        attack_lines: list[str] = []
-        for weapon_name in weapon_names[:5]:
+        lines: list[str] = []
+        for row in rows:
+            if row["attack_bonus"] and row["damage_type"]:
+                lines.append(clamp_line(f"{row['name']} {row['attack_bonus']} {row['damage_type']}"))
+            else:
+                lines.append(clamp_line(row["name"]))
+        return "\n".join(lines)
+
+    @classmethod
+    def _build_weapon_table_rows(cls, character, *, max_rows: int = 3) -> list[dict[str, str]]:
+        weapon_names = cls._extract_weapon_loadouts(character.equipment)
+        if not weapon_names:
+            return []
+
+        damage_type_short = {
+            "Tranchant": "Trch",
+            "Percant": "Perc",
+            "Contondant": "Cont",
+        }
+        rows: list[dict[str, str]] = []
+        for weapon_name in weapon_names[:max_rows]:
             profile = cls._resolve_weapon_profile(weapon_name)
             if not profile:
-                attack_lines.append(clamp_line(weapon_name))
+                rows.append({"name": weapon_name, "attack_bonus": "", "damage_type": ""})
                 continue
 
             if profile["is_ranged"]:
@@ -288,10 +404,14 @@ class CharacterSheetPdfService:
             attack_bonus = cls._format_mod(ability_mod + character.bonus_maitrise)
             damage_bonus = f"+{ability_mod}" if ability_mod >= 0 else str(ability_mod)
             damage_type = damage_type_short.get(profile["damage_type"], profile["damage_type"])
-            damage_block = f"{profile['damage']}{damage_bonus} {damage_type}"
-            attack_lines.append(clamp_line(f"{weapon_name} {attack_bonus} {damage_block}"))
-
-        return "\n".join(attack_lines)
+            rows.append(
+                {
+                    "name": str(profile.get("name") or weapon_name),
+                    "attack_bonus": attack_bonus,
+                    "damage_type": f"{profile['damage']}{damage_bonus} {damage_type}",
+                }
+            )
+        return rows
 
     @classmethod
     def _build_dynamic_spell_field_values(
@@ -525,8 +645,11 @@ class CharacterSheetPdfService:
 
         spellcasting_class, spellcasting_ability, spell_save_dc, spell_attack_bonus = cls._derive_spellcasting_from_class(character)
         attacks_spellcasting = cls._build_attacks_spellcasting_text(character)
+        weapon_rows = cls._build_weapon_table_rows(character, max_rows=3)
         proficiencies_languages = ", ".join(filter(None, [character.skill_proficiencies or "", character.languages or ""]))
         background_name, backstory_text = cls._split_background_payload(character.background_story)
+        roleplay_traits = cls._extract_roleplay_traits(character)
+        features_traits_source = character.additional_features_traits or character.notes
 
         values_by_business_key: dict[str, Any] = {
             "character_name": character.name or "",
@@ -535,7 +658,7 @@ class CharacterSheetPdfService:
             "player_name": character.player_name or "",
             "race": character.race or "",
             "alignment": character.alignment or "",
-            "experience_points": "",
+            "experience_points": str(character.current_xp or 0),
             "strength": str(character.force or 10),
             "strength_mod": cls._format_mod(character.mod_force),
             "dexterity": str(character.dexterite or 10),
@@ -551,26 +674,36 @@ class CharacterSheetPdfService:
             "proficiency_bonus": cls._format_mod(character.bonus_maitrise),
             "armor_class": str(character.ac_total),
             "initiative": cls._format_mod(character.initiative_bonus or 0),
-            "speed": "30",
+            "speed": cls._derive_speed(character),
             "hp_max": str(character.hp_max or 0),
             "hp_current": str(character.hp_current_effective),
             "temp_hp": str(character.temp_hp or 0),
             "languages": character.languages or "",
             "proficiencies_languages": cls._normalize_multiline(proficiencies_languages, width=22, max_lines=8),
             "equipment": cls._normalize_multiline(character.equipment, width=24, max_lines=10),
-            "features_traits": cls._normalize_multiline(character.notes, width=30, max_lines=16),
+            "features_traits": cls._normalize_multiline(features_traits_source, width=30, max_lines=16),
             "passive_wisdom": str(10 + character.mod_sagesse + (character.bonus_maitrise if skill_flags["perception"] else 0)),
+            "proficiency_checkbox": "Yes" if cls._as_bool(getattr(character, "inspiration", False)) else "Off",
             "age": str(character.age or ""),
             "height": character.height or "",
             "weight": character.weight or "",
             "eyes": character.eyes or "",
             "skin": character.skin or "",
             "hair": character.hair or "",
-            "personality_traits": "",
-            "ideals": "",
-            "bonds": "",
-            "flaws": "",
+            "personality_traits": cls._normalize_multiline(roleplay_traits["personality_traits"], width=30, max_lines=6),
+            "ideals": cls._normalize_multiline(roleplay_traits["ideals"], width=30, max_lines=6),
+            "bonds": cls._normalize_multiline(roleplay_traits["bonds"], width=30, max_lines=6),
+            "flaws": cls._normalize_multiline(roleplay_traits["flaws"], width=30, max_lines=6),
             "attacks_spellcasting": attacks_spellcasting,
+            "weapon_1_name": weapon_rows[0]["name"] if len(weapon_rows) > 0 else "",
+            "weapon_1_attack_bonus": weapon_rows[0]["attack_bonus"] if len(weapon_rows) > 0 else "",
+            "weapon_1_damage_type": weapon_rows[0]["damage_type"] if len(weapon_rows) > 0 else "",
+            "weapon_2_name": weapon_rows[1]["name"] if len(weapon_rows) > 1 else "",
+            "weapon_2_attack_bonus": weapon_rows[1]["attack_bonus"] if len(weapon_rows) > 1 else "",
+            "weapon_2_damage_type": weapon_rows[1]["damage_type"] if len(weapon_rows) > 1 else "",
+            "weapon_3_name": weapon_rows[2]["name"] if len(weapon_rows) > 2 else "",
+            "weapon_3_attack_bonus": weapon_rows[2]["attack_bonus"] if len(weapon_rows) > 2 else "",
+            "weapon_3_damage_type": weapon_rows[2]["damage_type"] if len(weapon_rows) > 2 else "",
             "allies_organizations": cls._normalize_multiline(character.allies_organizations, width=32, max_lines=12),
             "character_appearance": cls._normalize_multiline(character.character_appearance, width=30, max_lines=16),
             "additional_features_traits": cls._normalize_multiline(character.additional_features_traits, width=32, max_lines=16),

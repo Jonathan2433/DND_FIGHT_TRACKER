@@ -17,40 +17,107 @@
     ('Sagesse', character.sauvegarde_sagesse, character.maitrise_sagesse),
     ('Charisme', character.sauvegarde_charisme, character.maitrise_charisme)
 ] %}
-{% set skill_ability_map = {
-    'Acrobaties': 'dexterite',
-    'Acrobatics': 'dexterite',
-    'Arcanes': 'intelligence',
-    'Arcana': 'intelligence',
-    'Athletisme': 'force',
-    'Athletics': 'force',
-    'Dressage': 'sagesse',
-    'Animal Handling': 'sagesse',
-    "Escamotage": 'dexterite',
-    'Sleight of Hand': 'dexterite',
-    'Discretion': 'dexterite',
-    'Stealth': 'dexterite',
-    'Histoire': 'intelligence',
-    'History': 'intelligence',
-    'Intimidation': 'charisme',
-    'Investigation': 'intelligence',
-    'Medecine': 'sagesse',
-    'Medicine': 'sagesse',
-    'Nature': 'intelligence',
-    'Perception': 'sagesse',
-    'Perspicacite': 'sagesse',
-    'Insight': 'sagesse',
-    'Representation': 'charisme',
-    'Performance': 'charisme',
-    'Persuasion': 'charisme',
-    'Religion': 'intelligence',
-    'Survie': 'sagesse',
-    'Survival': 'sagesse',
-    'Tromperie': 'charisme',
-    'Deception': 'charisme'
+{% set skill_labels_by_id = {
+    'acrobatics': 'Acrobaties',
+    'arcana': 'Arcanes',
+    'athletics': 'Athlétisme',
+    'animal_handling': 'Dressage',
+    'deception': 'Tromperie',
+    'history': 'Histoire',
+    'insight': 'Perspicacité',
+    'intimidation': 'Intimidation',
+    'investigation': 'Investigation',
+    'medicine': 'Médecine',
+    'nature': 'Nature',
+    'perception': 'Perception',
+    'performance': 'Représentation',
+    'persuasion': 'Persuasion',
+    'religion': 'Religion',
+    'sleight_of_hand': 'Escamotage',
+    'stealth': 'Discrétion',
+    'survival': 'Survie'
 } %}
-{% set all_skills = ['Acrobaties', 'Arcanes', 'Athletisme', 'Dressage', 'Discretion', 'Escamotage', 'Histoire', 'Intimidation', 'Investigation', 'Medecine', 'Nature', 'Perception', 'Perspicacite', 'Persuasion', 'Religion', 'Representation', 'Survie', 'Tromperie'] %}
-{% set selected_skills = character.skill_proficiencies.split(',')|map('trim')|reject('equalto', '')|list if character.skill_proficiencies else [] %}
+{% set skill_ability_map = {
+    'acrobatics': 'dexterite',
+    'animal_handling': 'sagesse',
+    'arcana': 'intelligence',
+    'athletics': 'force',
+    'deception': 'charisme',
+    'history': 'intelligence',
+    'insight': 'sagesse',
+    'intimidation': 'charisme',
+    'investigation': 'intelligence',
+    'medicine': 'sagesse',
+    'nature': 'intelligence',
+    'perception': 'sagesse',
+    'performance': 'charisme',
+    'persuasion': 'charisme',
+    'religion': 'intelligence',
+    'sleight_of_hand': 'dexterite',
+    'stealth': 'dexterite',
+    'survival': 'sagesse'
+} %}
+{% set skill_alias_to_id = {
+    'acrobatics': 'acrobatics',
+    'acrobaties': 'acrobatics',
+    'animal handling': 'animal_handling',
+    'dressage': 'animal_handling',
+    'arcana': 'arcana',
+    'arcanes': 'arcana',
+    'athletics': 'athletics',
+    'athletisme': 'athletics',
+    'deception': 'deception',
+    'tromperie': 'deception',
+    'history': 'history',
+    'histoire': 'history',
+    'insight': 'insight',
+    'perspicacite': 'insight',
+    'intuition': 'insight',
+    'intimidation': 'intimidation',
+    'investigation': 'investigation',
+    'medicine': 'medicine',
+    'medecine': 'medicine',
+    'nature': 'nature',
+    'perception': 'perception',
+    'performance': 'performance',
+    'representation': 'performance',
+    'persuasion': 'persuasion',
+    'religion': 'religion',
+    'sleight of hand': 'sleight_of_hand',
+    'escamotage': 'sleight_of_hand',
+    'stealth': 'stealth',
+    'discretion': 'stealth',
+    'survival': 'survival',
+    'survie': 'survival'
+} %}
+{% set all_skill_ids = [
+    'acrobatics', 'arcana', 'athletics', 'animal_handling', 'deception', 'history',
+    'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception',
+    'performance', 'persuasion', 'religion', 'sleight_of_hand', 'stealth', 'survival'
+] %}
+{% set selected_skills_raw = character.skill_proficiencies.split(',')|map('trim')|reject('equalto', '')|list if character.skill_proficiencies else [] %}
+{% set ns_skills = namespace(selected_skill_ids=[]) %}
+{% for raw_skill in selected_skills_raw %}
+    {% set normalized_raw_skill = raw_skill|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+    {% set canonical_skill_id = skill_alias_to_id.get(normalized_raw_skill, normalized_raw_skill) %}
+    {% if canonical_skill_id and canonical_skill_id not in ns_skills.selected_skill_ids %}
+        {% set ns_skills.selected_skill_ids = ns_skills.selected_skill_ids + [canonical_skill_id] %}
+    {% endif %}
+{% endfor %}
+{% set equipment_chunks = character.equipment.split('|')|map('trim')|list if character.equipment else [] %}
+{% set ns_expertise = namespace(selected_skill_ids=[]) %}
+{% for chunk in equipment_chunks %}
+    {% if chunk.startswith('Expertises:') %}
+        {% set expertise_values = chunk.replace('Expertises:', '', 1).split(',') %}
+        {% for raw_expertise in expertise_values %}
+            {% set normalized_raw_expertise = raw_expertise.strip()|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+            {% set canonical_expertise_id = skill_alias_to_id.get(normalized_raw_expertise, normalized_raw_expertise) %}
+            {% if canonical_expertise_id and canonical_expertise_id not in ns_expertise.selected_skill_ids %}
+                {% set ns_expertise.selected_skill_ids = ns_expertise.selected_skill_ids + [canonical_expertise_id] %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
 
 <div class="character-profile">
     <section class="character-hero card">
@@ -118,6 +185,10 @@
                                 <div class="stat-box stat-box--highlight">
                                     <strong>Initiative</strong>
                                     <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Bonus de maitrise</strong>
+                                    <span>{% if character.bonus_maitrise is not none %}+{{ character.bonus_maitrise }}{% else %}—{% endif %}</span>
                                 </div>
                                 <div class="stat-box stat-box--highlight">
                                     <strong>Vitesse</strong>
@@ -255,14 +326,18 @@
                         <article class="combat-skill-panel">
                             <h3>Skills</h3>
                             <div class="combat-skill-grid combat-skill-grid--skills">
-                                {% for skill in all_skills %}
-                                    {% set is_proficient = skill in selected_skills %}
-                                    {% set ability_key = skill_ability_map.get(skill, 'sagesse') %}
-                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise if is_proficient else 0) %}
+                                {% for skill_id in all_skill_ids %}
+                                    {% set is_proficient = skill_id in ns_skills.selected_skill_ids %}
+                                    {% set is_expertise = skill_id in ns_expertise.selected_skill_ids %}
+                                    {% set ability_key = skill_ability_map.get(skill_id, 'sagesse') %}
+                                    {% set proficiency_multiplier = 2 if is_expertise else 1 if is_proficient else 0 %}
+                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise * proficiency_multiplier) %}
                                     <div class="combat-skill-item">
-                                        <span>{{ skill }}</span>
+                                        <span>{{ skill_labels_by_id.get(skill_id, skill_id) }}</span>
                                         <strong>{% if total_skill >= 0 %}+{% endif %}{{ total_skill }}</strong>
-                                        {% if is_proficient %}
+                                        {% if is_expertise %}
+                                            <small>Expertise</small>
+                                        {% elif is_proficient %}
                                             <small>Maitrise</small>
                                         {% endif %}
                                     </div>
@@ -278,7 +353,9 @@
                         <div class="skill-proficiency-list">
                             {% for skill in character.skill_proficiencies.split(',') if skill.strip() %}
                                 {% set skill_name = skill.strip() %}
-                                {% set ability_key = skill_ability_map.get(skill_name, 'sagesse') %}
+                                {% set normalized_skill_name = skill_name|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+                                {% set skill_id = skill_alias_to_id.get(normalized_skill_name, normalized_skill_name) %}
+                                {% set ability_key = skill_ability_map.get(skill_id, 'sagesse') %}
                                 {% set skill_total = ability_mods.get(ability_key, 0) + character.bonus_maitrise %}
                                 <span class="skill-proficiency-tag"
                                       title="Bonus total : {% if skill_total >= 0 %}+{% endif %}{{ skill_total }} (modificateur + maitrise)">

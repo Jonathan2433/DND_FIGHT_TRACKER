@@ -1,3 +1,8 @@
+import json
+
+from app.services.character_builder_service import get_character_builder_service
+from app.utils.character_builder_engine import CharacterBuilderService, ValidationService, get_rules_loaders
+
 """Règles simplifiées DnD 5e (version 2024) pour le funnel de création de personnage."""
 
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
@@ -643,7 +648,161 @@ def _resolve_base_scores(form_data):
 
 
 def resolve_character_creation(form_data):
-    """Calcule les stats finales et les valeurs dérivées selon les règles 2024."""
+    """Calcule les stats finales et les valeurs dérivées selon les règles 2024.
+
+    Priorité: moteur JSON `app/data/DND_RULES_JSON` si présent; sinon fallback historique.
+    """
+    loaders = get_rules_loaders()
+    if loaders.has_knowledge_base():
+        getlist = getattr(form_data, "getlist", lambda _key: [])
+        builder_service = get_character_builder_service()
+
+        def _parse_json_field(field_name, default):
+            raw_value = form_data.get(field_name)
+            if not raw_value:
+                return default
+            try:
+                parsed = json.loads(raw_value)
+            except (TypeError, ValueError):
+                return default
+            return parsed
+
+        grouped_choices = {"class": {}, "species": {}, "feat": {}}
+        for entry in _parse_json_field("feat_choices", []):
+            if not isinstance(entry, dict):
+                continue
+            raw_scope = str(entry.get("scope") or "").strip()
+            if raw_scope == "class":
+                scope = "class"
+            elif raw_scope == "species":
+                scope = "species"
+            elif raw_scope.startswith("feat_"):
+                scope = "feat"
+            else:
+                continue
+            choice_id = str(entry.get("choice_id") or "").strip()
+            value = str(entry.get("value") or "").strip()
+            if not choice_id or not value:
+                continue
+            grouped_choices[scope].setdefault(choice_id, [])
+            if value not in grouped_choices[scope][choice_id]:
+                grouped_choices[scope][choice_id].append(value)
+
+        legacy_base_scores = {}
+        for field in ("force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"):
+            raw_value = form_data.get(f"{field}_base", form_data.get(field))
+            if raw_value in (None, ""):
+                continue
+            try:
+                legacy_base_scores[field] = int(raw_value)
+            except (TypeError, ValueError):
+                continue
+
+        legacy_background_allocations = []
+        for field in ("force", "dexterite", "constitution", "intelligence", "sagesse", "charisme"):
+            try:
+                bonus_value = int(form_data.get(f"{field}_bg_bonus", 0) or 0)
+            except (TypeError, ValueError):
+                continue
+            if bonus_value > 0:
+                legacy_background_allocations.append({"ability": field, "bonus": bonus_value})
+
+        ability_aliases = {
+            "force": "strength",
+            "strength": "strength",
+            "dexterite": "dexterity",
+            "dextérité": "dexterity",
+            "dexterity": "dexterity",
+            "constitution": "constitution",
+            "intelligence": "intelligence",
+            "sagesse": "wisdom",
+            "wisdom": "wisdom",
+            "charisme": "charisma",
+            "charisma": "charisma",
+        }
+
+        def _normalize_ability_scores(raw_scores):
+            if not isinstance(raw_scores, dict):
+                return {}
+            normalized_scores = {}
+            for raw_key, raw_value in raw_scores.items():
+                canonical_key = ability_aliases.get(str(raw_key).strip().lower(), str(raw_key).strip().lower())
+                if canonical_key not in {"strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"}:
+                    continue
+                try:
+                    normalized_scores[canonical_key] = int(raw_value)
+                except (TypeError, ValueError):
+                    continue
+            return normalized_scores
+
+        parsed_base_scores = _normalize_ability_scores(_parse_json_field("base_ability_scores_json", {}))
+        parsed_base_alias_scores = _normalize_ability_scores(_parse_json_field("base_abilities_json", {}))
+        normalized_legacy_base_scores = _normalize_ability_scores(legacy_base_scores)
+        parsed_background_allocations = _parse_json_field("background_ability_bonus_allocations_json", [])
+
+        raw_state = {
+            "class_id": form_data.get("character_class") or None,
+            "background_id": form_data.get("background_choice") or None,
+            "species_id": form_data.get("race") or None,
+            "level": int(form_data.get("level", 1) or 1),
+            "language_ids": [lang for lang in [form_data.get("language_2"), form_data.get("language_3")] if lang],
+            "selected_language_ids": [lang for lang in getlist("selected_language_ids") if lang],
+            "selected_origin_feat_id": form_data.get("selected_origin_feat_id") or None,
+            "selected_feat_ids": [feat for feat in getlist("selected_feat_ids") if feat],
+            "selected_equipment_ids": [item for item in getlist("selected_equipment_ids") if item],
+            "selected_ability_bonus_ids": [ability for ability in getlist("selected_ability_bonus_ids") if ability],
+            "ability_score_method": form_data.get("ability_score_method") or None,
+            "ability_method_id": form_data.get("ability_method_id") or None,
+            "base_ability_scores": parsed_base_scores or normalized_legacy_base_scores,
+            "base_abilities": parsed_base_alias_scores or normalized_legacy_base_scores,
+            "background_ability_bonus_mode": form_data.get("background_ability_bonus_mode") or None,
+            "background_ability_bonus_allocations": parsed_background_allocations or legacy_background_allocations,
+            "selected_spell_ids_by_choice": _parse_json_field("selected_spell_ids_by_choice_json", {}),
+            "selected_spells_by_choice": _parse_json_field("selected_spells_by_choice_json", {}),
+            "selected_equipment_choices_by_slot": _parse_json_field("selected_equipment_choices_by_slot_json", {}),
+            "equipment_choices_by_slot": _parse_json_field("equipment_choices_by_slot_json", {}),
+            "selected_class_choice_ids": grouped_choices["class"] or [choice_id for choice_id in getlist("selected_class_choice_ids") if choice_id],
+            "class_choice_ids": grouped_choices["class"] or [choice_id for choice_id in getlist("class_choice_ids") if choice_id],
+            "selected_species_choice_ids": grouped_choices["species"] or [choice_id for choice_id in getlist("selected_species_choice_ids") if choice_id],
+            "species_choice_ids": grouped_choices["species"] or [choice_id for choice_id in getlist("species_choice_ids") if choice_id],
+            "selected_feat_choice_ids": grouped_choices["feat"] or [choice_id for choice_id in getlist("selected_feat_choice_ids") if choice_id],
+            "feat_choice_ids": grouped_choices["feat"] or [choice_id for choice_id in getlist("feat_choice_ids") if choice_id],
+        }
+        normalized_state = builder_service.normalize_character_creation_state(raw_state)
+        output = builder_service.build_character_output(normalized_state)
+        final_scores = output.get("final_ability_scores", {})
+        derived = output.get("derived", {})
+        saving_throws = {str(entry) for entry in output.get("saving_throw_proficiencies", []) if entry}
+
+        ability_map = {
+            "force": "strength",
+            "dexterite": "dexterity",
+            "constitution": "constitution",
+            "intelligence": "intelligence",
+            "sagesse": "wisdom",
+            "charisme": "charisma",
+        }
+
+        payload = {
+            "race": form_data.get("race", "Human"),
+            "character_class": form_data.get("character_class", "Fighter"),
+            "level": int(normalized_state.get("level", 1) or 1),
+            "hp_max": int(derived.get("hit_points_max", 1) or 1),
+            "ac_base": int(derived.get("armor_class", 10) or 10),
+            "initiative_bonus": int(derived.get("initiative_modifier", 0) or 0),
+            "resolved_skill_proficiencies": [str(skill_id) for skill_id in output.get("skills", []) if skill_id],
+        }
+        for french_ability, canonical_ability in ability_map.items():
+            payload[french_ability] = int(final_scores.get(canonical_ability, 10) or 10)
+            payload[f"maitrise_{french_ability}"] = canonical_ability in saving_throws
+
+        validation_payload = dict(payload)
+        validation_payload.pop("resolved_skill_proficiencies", None)
+        validation_errors = ValidationService(loaders).validate(validation_payload)
+        if validation_errors:
+            raise ValueError(validation_errors[0])
+        return payload
+
     level = _clamp(int(form_data.get("level", 1)), 1, 20)
     race = form_data.get("race", "Human")
     character_class = form_data.get("character_class", "Fighter")

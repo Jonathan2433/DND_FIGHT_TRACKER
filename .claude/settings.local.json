@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -name *.log -newer app/web/routes/template.py)",
+      "Bash(find /c/Users/Utilisateur/Documents/FIGHT_TRACKER -name *.log)",
+      "Bash(python -m pytest tests/test_template_service_guided_validation.py -x --tb=short)",
+      "Bash(pip install:*)",
+      "Bash(python -m pytest tests/ -x --tb=short)",
+      "Bash(python -m pytest tests/ --tb=short -q)",
+      "Bash(find /c/Users/Utilisateur/Documents/FIGHT_TRACKER/app/data -name *.json)",
+      "Bash(python3:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(pip show:*)",
+      "Bash(python -m pytest tests/test_template_service_guided_validation.py -v)"
+    ]
+  }
+}

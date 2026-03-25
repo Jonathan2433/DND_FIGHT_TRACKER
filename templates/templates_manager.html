@@ -8,17 +8,41 @@
             <h1 class="section-title templates-title">Gestion des personnages</h1>
         </div>
         <div class="templates-header-actions">
-            <button class="btn btn-primary" type="button" onclick="document.getElementById('create-form').style.display='block'">
+            <a class="btn btn-primary" href="{{ url_for('template.create_character_template_guided') }}">
                 Nouveau PJ
-            </button>
+            </a>
+            <form
+                id="import-character-json-form"
+                action="{{ url_for('template.import_character_template_json') }}"
+                method="POST"
+                enctype="multipart/form-data"
+                class="inline-import-json-form"
+            >
+                {% if campaign_context %}
+                    <input type="hidden" name="campaign_id" value="{{ campaign_context.id }}">
+                {% endif %}
+                <input
+                    id="import-character-json-input"
+                    type="file"
+                    name="character_json_file"
+                    accept="application/json,.json"
+                    hidden
+                >
+                <button type="button" class="btn btn-secondary" id="import-character-json-button">
+                    Nouveau PJ via import JSON
+                </button>
+            </form>
             {% if can_create_pnj and pnj_campaign_context %}
                 <a class="btn btn-secondary" href="{{ url_for('pnj.create_pnj', campaign_id=pnj_campaign_context.id) }}">Nouveau PNJ</a>
             {% endif %}
         </div>
     </div>
 
-    <div id="create-form" class="card template-create-form inl-core-004">
+    <div id="create-form" class="card template-create-form inl-core-004" hidden aria-hidden="true">
         <h2>Creer un personnage joueur</h2>
+        <p class="section-head__copy">
+            Ancien funnel conserve en shadow pour fallback technique. Le funnel guide est desormais la voie par defaut.
+        </p>
 
         <form action="{{ url_for('template.create_character_template') }}" method="POST" enctype="multipart/form-data" id="character-create-form">
             {% if campaign_context %}
@@ -620,4 +644,22 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/template_creation_funnel.js') }}"></script>
+<script>
+(() => {
+    const importForm = document.getElementById('import-character-json-form');
+    const importButton = document.getElementById('import-character-json-button');
+    const importInput = document.getElementById('import-character-json-input');
+    if (!importForm || !importButton || !importInput) return;
+
+    importButton.addEventListener('click', () => {
+        importInput.click();
+    });
+
+    importInput.addEventListener('change', () => {
+        const file = importInput.files?.[0];
+        if (!file) return;
+        importForm.submit();
+    });
+})();
+</script>
 {% endblock %}
