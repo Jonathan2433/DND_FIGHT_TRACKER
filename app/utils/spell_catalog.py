@@ -33,7 +33,10 @@ def _build_spell_classes_from_rules_json() -> dict[str, set[str]]:
         canonical_class = spell_resolver.canonical_class(class_name)
         for spell_names in by_level.values():
             for spell_name in spell_names:
-                classes_by_spell.setdefault(spell_name, set()).add(canonical_class)
+                normalized_spell_name = _normalize_spell_name(str(spell_name))
+                if not normalized_spell_name:
+                    continue
+                classes_by_spell.setdefault(normalized_spell_name, set()).add(canonical_class)
 
     return classes_by_spell
 
@@ -52,6 +55,8 @@ def _normalize_spell_entry(raw_spell: dict[str, Any]) -> dict[str, Any]:
     classes = raw_spell.get("classes")
     if not classes:
         classes = raw_spell.get("Classes")
+    if not classes and isinstance(raw_spell.get("available_to"), dict):
+        classes = raw_spell["available_to"].get("classes")
     if isinstance(classes, str):
         classes = [item.strip() for item in classes.split(",") if item.strip()]
     elif not isinstance(classes, list):
@@ -169,7 +174,9 @@ def _load_spell_catalog_from_rules_json() -> list[dict[str, Any]]:
     normalized: list[dict[str, Any]] = []
     for spell in loaders.spell_by_id.values():
         normalized_entry = _normalize_spell_entry(spell)
-        spell_key = _normalize_spell_name(spell.get("name") or spell.get("name_fr") or spell.get("id") or "")
+        spell_key = _normalize_spell_name(
+            spell.get("name_en") or spell.get("name") or spell.get("name_fr") or spell.get("id") or ""
+        )
         extra_classes = classes_by_spell.get(spell_key, set())
         current_classes = {str(item).strip().lower() for item in normalized_entry.get("classes") or [] if str(item).strip()}
         normalized_entry["classes"] = sorted(current_classes | extra_classes)
@@ -229,7 +236,9 @@ def load_spell_catalog() -> list[dict[str, Any]]:
         if not isinstance(spell, dict):
             continue
         normalized_spell = _normalize_spell_entry(spell)
-        spell_key = _normalize_spell_name(spell.get("name") or spell.get("name_fr") or spell.get("id") or "")
+        spell_key = _normalize_spell_name(
+            spell.get("name_en") or spell.get("name") or spell.get("name_fr") or spell.get("id") or ""
+        )
         extra_classes = classes_by_spell.get(spell_key, set())
         current_classes = {str(item).strip().lower() for item in normalized_spell.get("classes") or [] if str(item).strip()}
         normalized_spell["classes"] = sorted(current_classes | extra_classes)
