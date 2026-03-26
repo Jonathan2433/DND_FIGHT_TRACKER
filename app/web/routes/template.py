@@ -134,6 +134,50 @@ def _parse_json_payload(raw_value, default):
     return parsed
 
 
+def _resolve_species_speed(species_name, profile_data=None):
+    """Retourner la vitesse de déplacement (en pieds) depuis le profil ou l'espèce."""
+    if isinstance(profile_data, dict):
+        for explicit_key in ('walk_speed', 'movement_speed'):
+            explicit_value = profile_data.get(explicit_key)
+            if explicit_value not in (None, ''):
+                return explicit_value
+
+        raw_speed = profile_data.get('speed')
+        if isinstance(raw_speed, dict):
+            walk_speed = raw_speed.get('walk')
+            if walk_speed not in (None, ''):
+                return walk_speed
+        elif raw_speed not in (None, ''):
+            return raw_speed
+
+    species_rules = get_localized_species_rules()
+    if not species_name:
+        return None
+
+    normalized_species_name = str(species_name).strip().casefold()
+    reverse_labels = {
+        str(label).strip().casefold(): key
+        for key, label in SPECIES_LABELS_FR.items()
+        if label
+    }
+    candidate_keys = [species_name, reverse_labels.get(normalized_species_name)]
+
+    if normalized_species_name:
+        for species_key in species_rules:
+            if str(species_key).strip().casefold() == normalized_species_name:
+                candidate_keys.append(species_key)
+                break
+
+    for candidate in candidate_keys:
+        if not candidate:
+            continue
+        candidate_speed = species_rules.get(candidate, {}).get('speed')
+        if candidate_speed not in (None, ''):
+            return candidate_speed
+
+    return None
+
+
 def _extract_choice_selections_by_scope(source):
     """Reconstruit les sélections de choix depuis le bridge JSON du funnel guidé."""
     raw_payload = source.get('feat_choices')
@@ -879,9 +923,8 @@ def character_profile(id):
         )
         .scalar()
     ) or 0
-    species_rules = get_localized_species_rules()
     species_key = (visible_payload['data'].get('race') if visible_payload else None) or character.race
-    speed_value = species_rules.get(species_key, {}).get('speed')
+    speed_value = _resolve_species_speed(species_key, visible_payload['data'] if visible_payload else None)
     known_spells = _build_known_spells(character.id, visible_payload['data'] if visible_payload else {})
     can_award_xp = False
     can_view_xp = False
