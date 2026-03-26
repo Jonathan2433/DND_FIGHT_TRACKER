@@ -430,6 +430,48 @@ class TemplateService:
         return None
 
     @staticmethod
+    def _normalize_spell_token(value):
+        return (
+            str(value or "")
+            .strip()
+            .lower()
+            .replace("’", "'")
+            .replace("-", "_")
+            .replace(" ", "_")
+        )
+
+    @classmethod
+    def _build_spell_selection_aliases(cls, valid_spells):
+        aliases = {}
+        for spell in valid_spells or []:
+            if not isinstance(spell, dict):
+                continue
+            display_name = str(spell.get("name") or "").strip()
+            if not display_name:
+                continue
+            for candidate in (spell.get("name"), spell.get("name_en"), spell.get("id")):
+                normalized_candidate = cls._normalize_spell_token(candidate)
+                if normalized_candidate and normalized_candidate not in aliases:
+                    aliases[normalized_candidate] = display_name
+        return aliases
+
+    @classmethod
+    def _canonicalize_selected_spells(cls, normalized_spells, valid_spells):
+        if not normalized_spells:
+            return None
+        aliases = cls._build_spell_selection_aliases(valid_spells)
+        canonical_values = []
+        for raw_value in [item.strip() for item in normalized_spells.split(",") if item.strip()]:
+            normalized_value = cls._normalize_spell_token(raw_value)
+            canonical_value = aliases.get(normalized_value)
+            if canonical_value:
+                canonical_values.append(canonical_value)
+            else:
+                canonical_values.append(raw_value)
+        deduped = list(dict.fromkeys(canonical_values))
+        return ", ".join(deduped) if deduped else None
+
+    @staticmethod
     def _normalize_choice_scope(raw_scope):
         scope = str(raw_scope or "").strip().lower()
         if scope in {"class", "background", "species", "feat"}:
@@ -501,8 +543,16 @@ class TemplateService:
         if not normalized_spells:
             return
         valid_names = {spell["name"] for spell in valid_spells}
+        valid_aliases = TemplateService._build_spell_selection_aliases(valid_spells)
         selected_names = [item.strip() for item in normalized_spells.split(",") if item.strip()]
-        invalid_names = [name for name in selected_names if name not in valid_names]
+        invalid_names = []
+        for name in selected_names:
+            if name in valid_names:
+                continue
+            if TemplateService._normalize_spell_token(name) in valid_aliases:
+                continue
+            invalid_names.append(name)
+        invalid_names = list(dict.fromkeys(invalid_names))
         if invalid_names:
             raise ValueError(
                 f"{label} invalides detectes dans la selection: {', '.join(invalid_names)}."
@@ -1144,6 +1194,8 @@ class TemplateService:
         if not uses_choice_based_spell_selection:
             cantrip_catalog = get_cantrips()
             level_one_catalog = get_spells_for_level(1)
+            selected_cantrips = TemplateService._canonicalize_selected_spells(selected_cantrips, cantrip_catalog)
+            selected_level_1_spells = TemplateService._canonicalize_selected_spells(selected_level_1_spells, level_one_catalog)
             TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
             TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
             TemplateService._validate_spell_selection_rules(
@@ -1326,6 +1378,8 @@ class TemplateService:
         if not uses_choice_based_spell_selection:
             cantrip_catalog = get_cantrips()
             level_one_catalog = get_spells_for_level(1)
+            selected_cantrips = TemplateService._canonicalize_selected_spells(selected_cantrips, cantrip_catalog)
+            selected_level_1_spells = TemplateService._canonicalize_selected_spells(selected_level_1_spells, level_one_catalog)
             TemplateService._validate_selected_spells_exist(selected_cantrips, cantrip_catalog, "Sorts mineurs")
             TemplateService._validate_selected_spells_exist(selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
             TemplateService._validate_spell_selection_rules(
@@ -1513,6 +1567,8 @@ class TemplateService:
         if not uses_choice_based_spell_selection:
             cantrip_catalog = get_cantrips()
             level_one_catalog = get_spells_for_level(1)
+            template.selected_cantrips = TemplateService._canonicalize_selected_spells(template.selected_cantrips, cantrip_catalog)
+            template.selected_level_1_spells = TemplateService._canonicalize_selected_spells(template.selected_level_1_spells, level_one_catalog)
             TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
             TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
             TemplateService._validate_spell_selection_rules(
