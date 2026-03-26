@@ -6,6 +6,8 @@
 from datetime import datetime, timedelta
 from flask import url_for
 from app.extensions import db
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
 from app.models.user import User
 from app.application.use_cases.email_service import EmailService
@@ -335,25 +337,77 @@ class CampaignService:
     @staticmethod
     def delete_campaign(campaign_id, user_id):
         """Supprimer une campagne (MJ proprietaire uniquement)."""
+        from app.models import (
+            CampaignInspirationLog,
+            CharacterTemplate,
+            Combat,
+            CombatLog,
+            Episode,
+            EpisodeUserNote,
+            Notification,
+            StoryArc,
+            XPLog,
+        )
+        from app.models.character import character_campaign_association
+
         campaign = Campaign.query.get_or_404(campaign_id)
 
         if campaign.mj_id != user_id:
             return {"error": "Seul le MJ proprietaire peut supprimer cette campagne"}
 
         member_ids = [m.user_id for m in campaign.members]
-        for member_id in member_ids:
-            NotificationService.create_notification(
-                member_id,
-                "Campagne fermée",
-                f'Le MJ a fermé la campagne "{campaign.name}".',
-                kind='campaign_closed',
-                campaign_id=campaign.id,
-                auto_commit=False,
+
+        try:
+            # Notifications "campagne fermée" sans FK sur campagne (la campagne va être supprimée).
+            for member_id in member_ids:
+                NotificationService.create_notification(
+                    member_id,
+                    "Campagne fermée",
+                    f'Le MJ a fermé la campagne "{campaign.name}".',
+                    kind='campaign_closed',
+                    campaign_id=None,
+                    auto_commit=False,
+                )
+
+            # Rompre les liens FK optionnels vers la campagne avant suppression.
+            Notification.query.filter_by(campaign_id=campaign.id).update(
+                {"campaign_id": None},
+                synchronize_session=False,
+            )
+            CharacterTemplate.query.filter_by(campaign_id=campaign.id).update(
+                {"campaign_id": None},
+                synchronize_session=False,
             )
 
-        db.session.delete(campaign)
-        db.session.commit()
-        return {"success": True}
+            # Supprimer les dépendances non-cascadées de la campagne.
+            story_arc_ids_subquery = db.session.query(StoryArc.id).filter_by(campaign_id=campaign.id)
+            episode_ids_subquery = db.session.query(Episode.id).filter(Episode.story_arc_id.in_(story_arc_ids_subquery))
+            combat_ids_subquery = db.session.query(Combat.id).filter_by(campaign_id=campaign.id)
+
+            EpisodeUserNote.query.filter(EpisodeUserNote.episode_id.in_(episode_ids_subquery)).delete(synchronize_session=False)
+            CampaignInspirationLog.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+            XPLog.query.filter(XPLog.combat_id.in_(combat_ids_subquery)).delete(synchronize_session=False)
+            CombatLog.query.filter(CombatLog.combat_id.in_(combat_ids_subquery)).delete(synchronize_session=False)
+            db.session.execute(
+                character_campaign_association.delete().where(
+                    character_campaign_association.c.campaign_id == campaign.id
+                )
+            )
+            Combat.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+            Episode.query.filter(Episode.story_arc_id.in_(story_arc_ids_subquery)).delete(synchronize_session=False)
+            StoryArc.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+            CampaignInvitation.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+            JoinRequest.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+            CampaignMember.query.filter_by(campaign_id=campaign.id).delete(synchronize_session=False)
+
+            db.session.delete(campaign)
+            db.session.commit()
+            return {"success": True}
+        except SQLAlchemyError:
+            db.session.rollback()
+            return {
+                "error": "Impossible de supprimer cette campagne pour le moment. Réessayez dans quelques instants."
+            }
 
 
     @staticmethod
