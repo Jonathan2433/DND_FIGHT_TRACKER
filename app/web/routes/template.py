@@ -789,34 +789,11 @@ def edit_character_template(id):
         flash('Personnage modifié avec succès !', 'success')
         return redirect(url_for('template.character_profile', id=id))
 
-    equipment_fields = TemplateService.split_builder_equipment(template.equipment)
-    background_fields = TemplateService.split_background_payload(template.background_story)
-    selected_skills = {
-        token.strip() for token in (template.skill_proficiencies or '').split(',') if token.strip()
-    }
-    selected_cantrips = {
-        token.strip() for token in (template.selected_cantrips or '').split(',') if token.strip()
-    }
-    selected_level_one_spells = {
-        token.strip() for token in (template.selected_level_1_spells or '').split(',') if token.strip()
-    }
-
     return render_template(
         "edit_character.html",
         character=template,
-        dnd_species_catalog=AIDEDED_SPECIES_OPTIONS,
-        dnd_classes_catalog=AIDEDED_CLASS_OPTIONS,
-        dnd_background_catalog=AIDEDED_BACKGROUND_OPTIONS,
         dnd_alignments=ALIGNMENTS_FR,
         common_languages=COMMON_LANGUAGES,
-        dnd_skill_options=AIDEDED_SKILL_OPTIONS,
-        equipment_fields=equipment_fields,
-        background_fields=background_fields,
-        selected_skills=selected_skills,
-        selected_cantrips=selected_cantrips,
-        selected_level_one_spells=selected_level_one_spells,
-        cantrip_catalog=get_cantrips(),
-        level_one_spell_catalog=get_spells_for_level(1),
     )
 
 
