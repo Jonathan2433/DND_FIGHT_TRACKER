@@ -319,3 +319,44 @@ class EmailService:
         )
 
         return EmailService._send_message(msg, "email rappel session campagne")
+
+    @staticmethod
+    def send_pj_assignment_email(user_email, username, campaign_name, character_name, campaign_url):
+        """Envoyer un email lorsqu'un MJ attribue un PJ à un joueur."""
+        subject = f"🎁 Nouveau PJ attribué : {character_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Un PJ vous attend !",
+            intro=f"Salut {username}, le MJ vient de vous confier un nouveau personnage.",
+            cta_label="🎲 Voir la campagne",
+            cta_url=campaign_url,
+            body_content=(
+                "Le MJ vous a attribué le PJ "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{character_name}&nbsp;&raquo;</strong> "
+                f"dans la campagne <strong>{campaign_name}</strong>."
+            ),
+            footer_content=(
+                "Connectez-vous pour consulter la fiche et préparer votre prochaine session."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Nouveau PJ attribué
+
+        Salut {username},
+
+        Le MJ vous a attribué le PJ "{character_name}" dans la campagne "{campaign_name}".
+
+        Consultez votre campagne ici :
+        {campaign_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email attribution PJ")

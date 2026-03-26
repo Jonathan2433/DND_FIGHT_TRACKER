@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
+from app.application.use_cases.email_service import EmailService
 from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required, mj_or_admin_required
 from app.models.campaign import (
@@ -429,6 +430,16 @@ def assign_player_character(campaign_id):
         kind='player_pj_assigned',
         campaign_id=campaign.id,
     )
+    recipient_user = recipient_membership.user
+    if recipient_user and recipient_user.email:
+        campaign_url = url_for('campaign.view_campaign', campaign_id=campaign.id, _external=True)
+        EmailService.send_pj_assignment_email(
+            user_email=recipient_user.email,
+            username=recipient_user.username,
+            campaign_name=campaign.name,
+            character_name=character.name,
+            campaign_url=campaign_url,
+        )
 
     flash(
         f'🎁 {character.name} est maintenant attribué à {recipient_membership.user.username}.',
