@@ -1487,135 +1487,27 @@ class TemplateService:
     def update_character_template(template_id, form_data, files, upload_folder):
         """Mettre à jour un template de personnage"""
         template = CharacterTemplate.query.get_or_404(template_id)
-        immutable_pj_identity = template.character_type == 'PJ'
-        effective_character_class = template.character_class if immutable_pj_identity else form_data.get('character_class')
-        effective_character_class = effective_character_class or template.character_class
+        if not (form_data.get('name') or '').strip():
+            raise ValueError("Le nom du personnage est obligatoire.")
 
-        # Mise à jour des données de base
-        template.name = form_data['name']
-        template.character_class = template.character_class if immutable_pj_identity else form_data['character_class']
-        template.race = template.race if immutable_pj_identity else (form_data.get('race') or template.race)
-        template.background_story = template.background_story if immutable_pj_identity else TemplateService._compose_background_payload(form_data)
-        template.level = int(form_data['level'])
-        template.hp_max = int(form_data['hp_max'])
-        template.hp_current = template.hp_max if template.hp_current is None else min(template.hp_current, template.hp_max)
-        template.ac_base = int(form_data['ac_base'])
-        template.initiative_bonus = int(form_data['initiative_bonus'])
-        template.notes = form_data.get('notes', '')
-        template.player_private_notes = form_data.get('player_private_notes', '')
+        # Limiter strictement l'édition aux informations d'identité, d'apparence, de média et de visibilité.
+        template.name = form_data.get('name', '').strip()
         template.player_name = form_data.get('player_name') or None
         template.campaign_name = form_data.get('campaign_name') or None
         template.gender = form_data.get('gender') or form_data.get('genre') or None
         template.alignment = form_data.get('alignment') or None
-        template.languages = form_data.get('languages') or template.languages
+        template.languages = form_data.get('languages') or None
+        template.age = int(form_data.get('age')) if form_data.get('age') else None
+
         template.height = form_data.get('height') or None
         template.weight = form_data.get('weight') or None
         template.eyes = form_data.get('eyes') or None
         template.skin = form_data.get('skin') or None
         template.hair = form_data.get('hair') or None
-        detailed_equipment = TemplateService._compose_builder_equipment(form_data)
-        template.equipment = detailed_equipment or form_data.get('equipment') or None
-        template.skill_proficiencies = (
-            template.skill_proficiencies if immutable_pj_identity else TemplateService._normalize_skill_proficiencies(form_data)
-        )
-        TemplateService._validate_skill_proficiencies_limit(
-            effective_character_class,
-            template.skill_proficiencies,
-            form_data=form_data,
-        )
-        template.age = int(form_data.get('age')) if form_data.get('age') else template.age
         template.character_appearance = form_data.get('character_appearance') or None
-        template.allies_organizations = form_data.get('allies_organizations') or None
-        template.additional_features_traits = form_data.get('additional_features_traits') or None
-        template.treasure = form_data.get('treasure') or None
-        template.symbol_name = form_data.get('symbol_name') or None
-        template.personality_traits = form_data.get('personality_traits') or None
-        template.ideals = form_data.get('ideals') or None
-        template.bonds = form_data.get('bonds') or None
-        template.flaws = form_data.get('flaws') or None
-        template.inspiration = bool(form_data.get('inspiration'))
-        spellcasting_ability, spell_save_dc, spell_attack_bonus = TemplateService._derive_spellcasting_stats(
-            effective_character_class,
-            form_data.get('level') or template.level,
-            {
-                'force': int(form_data.get('force', template.force or 10) or 10),
-                'dexterite': int(form_data.get('dexterite', template.dexterite or 10) or 10),
-                'constitution': int(form_data.get('constitution', template.constitution or 10) or 10),
-                'intelligence': int(form_data.get('intelligence', template.intelligence or 10) or 10),
-                'sagesse': int(form_data.get('sagesse', template.sagesse or 10) or 10),
-                'charisme': int(form_data.get('charisme', template.charisme or 10) or 10),
-            },
-        )
-        template.spellcasting_class = effective_character_class
-        template.spellcasting_ability = spellcasting_ability
-        template.spell_save_dc = spell_save_dc
-        template.spell_attack_bonus = spell_attack_bonus
-        if 'selected_cantrips' in form_data:
-            template.selected_cantrips = TemplateService._normalize_selected_spells(form_data, 'selected_cantrips')
-        if 'selected_level_1_spells' in form_data:
-            template.selected_level_1_spells = TemplateService._normalize_selected_spells(form_data, 'selected_level_1_spells')
-        uses_choice_based_spell_selection = TemplateService._uses_choice_based_spell_selection(form_data)
-        TemplateService._validate_equipment_mastery(
-            effective_character_class,
-            form_data.get('weapon_loadout'),
-            form_data.get('armor_loadout'),
-        )
-        if form_data.get('armor_loadout'):
-            armor_applied = {'ac_base': template.ac_base}
-            TemplateService._apply_armor_loadout_to_ac_base(armor_applied, form_data.get('armor_loadout'))
-            template.ac_base = armor_applied['ac_base']
-        if not uses_choice_based_spell_selection:
-            cantrip_catalog = get_cantrips()
-            level_one_catalog = get_spells_for_level(1)
-            template.selected_cantrips = TemplateService._canonicalize_selected_spells(template.selected_cantrips, cantrip_catalog)
-            template.selected_level_1_spells = TemplateService._canonicalize_selected_spells(template.selected_level_1_spells, level_one_catalog)
-            TemplateService._validate_selected_spells_exist(template.selected_cantrips, cantrip_catalog, "Sorts mineurs")
-            TemplateService._validate_selected_spells_exist(template.selected_level_1_spells, level_one_catalog, "Sorts de niveau 1")
-            TemplateService._validate_spell_selection_rules(
-                effective_character_class,
-                template.selected_cantrips,
-                template.selected_level_1_spells,
-                cantrip_catalog,
-                level_one_catalog,
-            )
 
-        # ✅ AJOUT : Gestion du champ is_public
         template.is_public = bool(form_data.get('is_public', False))
         template.visibility_level = form_data.get('visibility_level', 'private')
-
-        # Mise à jour des caractéristiques
-        template.force = int(form_data.get('force', template.force or 10))
-        template.dexterite = int(form_data.get('dexterite', template.dexterite or 10))
-        template.constitution = int(form_data.get('constitution', template.constitution or 10))
-        template.intelligence = int(form_data.get('intelligence', template.intelligence or 10))
-        template.sagesse = int(form_data.get('sagesse', template.sagesse or 10))
-        template.charisme = int(form_data.get('charisme', template.charisme or 10))
-
-        # Mise à jour des maîtrises (préserve les valeurs si la section n'est pas présente dans le formulaire)
-        mastery_fields_present = any(
-            field in form_data
-            for field in (
-                'maitrise_force',
-                'maitrise_dexterite',
-                'maitrise_constitution',
-                'maitrise_intelligence',
-                'maitrise_sagesse',
-                'maitrise_charisme',
-                'force',
-                'dexterite',
-                'constitution',
-                'intelligence',
-                'sagesse',
-                'charisme',
-            )
-        )
-        if mastery_fields_present:
-            template.maitrise_force = 'maitrise_force' in form_data
-            template.maitrise_dexterite = 'maitrise_dexterite' in form_data
-            template.maitrise_constitution = 'maitrise_constitution' in form_data
-            template.maitrise_intelligence = 'maitrise_intelligence' in form_data
-            template.maitrise_sagesse = 'maitrise_sagesse' in form_data
-            template.maitrise_charisme = 'maitrise_charisme' in form_data
 
         # Gestion des fichiers
         image = files.get("image")
