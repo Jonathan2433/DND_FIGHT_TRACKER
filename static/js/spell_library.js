@@ -14,7 +14,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = Array.from(grid.querySelectorAll('.spell-card'));
     const filterIds = ['school', 'casting_time', 'class', 'duration', 'level'];
 
-    const toOptionValue = (value) => (value || '').trim();
+    const CLASS_LABELS = {
+        artificer: 'Artificier',
+        bard: 'Barde',
+        cleric: 'Clerc',
+        druid: 'Druide',
+        fighter: 'Guerrier',
+        monk: 'Moine',
+        paladin: 'Paladin',
+        ranger: 'Rôdeur',
+        rogue: 'Roublard',
+        sorcerer: 'Ensorceleur',
+        warlock: 'Occultiste',
+        wizard: 'Magicien',
+    };
+
+    const normalizeValue = (value) => (value || '').trim().toLowerCase();
+
+    const translateClass = (classKey) => CLASS_LABELS[normalizeValue(classKey)] || classKey;
+
+    const parseClassList = (rawClasses) => (rawClasses || '')
+        .split(',')
+        .map((value) => normalizeValue(value))
+        .filter(Boolean);
 
     const loadFavorites = () => {
         try {
@@ -70,13 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filterId === 'class') {
                 raw
                     .split(',')
-                    .map((value) => toOptionValue(value))
+                    .map((value) => normalizeValue(value))
                     .filter(Boolean)
                     .forEach((value) => values.add(value));
                 return;
             }
 
-            values.add(toOptionValue(raw));
+            values.add((raw || '').trim());
         });
 
         const sortedValues = Array.from(values).sort((a, b) => {
@@ -91,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.value = value;
             option.textContent = filterId === 'level'
                 ? (Number(value) === 0 ? 'Sort mineur (Niveau 0)' : `Niveau ${value}`)
-                : value;
+                : (filterId === 'class' ? translateClass(value) : value);
             select.appendChild(option);
         });
     });
@@ -102,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             school: form.elements.school.value,
             level: form.elements.level.value,
             castingTime: form.elements.casting_time.value,
-            class: form.elements['class'].value,
+            class: normalizeValue(form.elements['class']?.value),
             duration: form.elements.duration.value,
             concentration: form.elements.concentration.value,
             ritual: form.elements.ritual.value,
@@ -117,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 (!filters.school || card.dataset.school === filters.school) &&
                 (!filters.level || card.dataset.level === filters.level) &&
                 (!filters.castingTime || card.dataset.castingTime === filters.castingTime) &&
-                (!filters.class || (card.dataset.classes || '').split(',').includes(filters.class)) &&
+                (!filters.class || parseClassList(card.dataset.classes).includes(filters.class)) &&
                 (!filters.duration || card.dataset.duration === filters.duration) &&
                 (!filters.concentration || card.dataset.concentration === filters.concentration) &&
                 (!filters.ritual || card.dataset.ritual === filters.ritual) &&

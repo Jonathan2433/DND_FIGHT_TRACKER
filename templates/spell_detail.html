@@ -17,6 +17,26 @@
             · {{ spell.school or 'École non renseignée' }}
         </p>
 
+        {% set class_labels = {
+            'artificer': 'Artificier',
+            'bard': 'Barde',
+            'cleric': 'Clerc',
+            'druid': 'Druide',
+            'fighter': 'Guerrier',
+            'monk': 'Moine',
+            'paladin': 'Paladin',
+            'ranger': 'Rôdeur',
+            'rogue': 'Roublard',
+            'sorcerer': 'Ensorceleur',
+            'warlock': 'Occultiste',
+            'wizard': 'Magicien'
+        } %}
+        {% set translated_classes = [] %}
+        {% for class_name in (spell.classes or []) %}
+            {% set class_key = (class_name or '')|lower %}
+            {% set _ = translated_classes.append(class_labels.get(class_key, class_name)) %}
+        {% endfor %}
+
         <ul class="spell-card__facts">
             <li><strong>Temps d'incantation :</strong> {{ spell.casting_time or '—' }}</li>
             <li><strong>Portée :</strong> {{ spell.range or '—' }}</li>
@@ -24,7 +44,7 @@
             <li><strong>Durée :</strong> {{ spell.duration or '—' }}</li>
             <li><strong>Concentration :</strong> {{ spell.concentration }}</li>
             <li><strong>Rituel :</strong> {{ spell.ritual }}</li>
-            <li><strong>Classes :</strong> {{ (spell.classes or [])|join(', ') or '—' }}</li>
+            <li><strong>Classes :</strong> {{ translated_classes|join(', ') or '—' }}</li>
             <li><strong>Source :</strong> {{ spell.source or '—' }}</li>
         </ul>
 
