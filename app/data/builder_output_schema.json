@@ -82,13 +82,16 @@
       "required": true,
       "properties": {
         "class_id": {
-          "type": "string"
+          "type": "string",
+          "enum": ["barbarian", "bard", "cleric", "druid", "fighter", "monk", "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"]
         },
         "background_id": {
-          "type": "string"
+          "type": "string",
+          "enum": ["acolyte", "artisan", "charlatan", "criminal", "entertainer", "farmer", "guard", "guide", "hermit", "merchant", "noble", "sage", "sailor", "scribe", "soldier", "wayfarer"]
         },
         "species_id": {
-          "type": "string"
+          "type": "string",
+          "enum": ["aasimar", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "human", "orc", "tiefling"]
         },
         "size": {
           "type": "string",
@@ -373,6 +376,46 @@
             "$ref": "#/definitions/inventory_item_block"
           }
         },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "weapon_id": { "type": "string" },
+              "name_fr": { "type": "string" },
+              "name_en": { "type": "string" },
+              "damage_dice": { "type": "string" },
+              "damage_type": {
+                "type": "string",
+                "enum": ["bludgeoning", "piercing", "slashing"]
+              },
+              "attack_bonus": { "type": "integer" },
+              "damage_bonus": { "type": "integer" },
+              "properties": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "range": {
+                "type": ["string", "null"]
+              },
+              "mastery_id": {
+                "type": ["string", "null"]
+              },
+              "is_proficient": { "type": "boolean" },
+              "quantity": { "type": "integer", "minimum": 1 }
+            },
+            "required_fields": [
+              "weapon_id",
+              "damage_dice",
+              "damage_type",
+              "attack_bonus",
+              "damage_bonus",
+              "properties",
+              "is_proficient",
+              "quantity"
+            ]
+          }
+        },
         "starting_equipment_sources": {
           "type": "array",
           "items": {
@@ -400,6 +443,7 @@
         "currency",
         "equipped_items",
         "inventory_items",
+        "weapons",
         "starting_equipment_sources"
       ]
     },

@@ -41,6 +41,63 @@ def test_armor_and_shield_ac_rules_are_applied_from_selected_equipment():
     assert with_heavy["derived"]["armor_class"] == 18  # 16 + DEX cap 0 + shield 2
 
 
+def test_monk_unarmored_defense_applies_when_no_armor_and_no_shield():
+    service = CharacterBuilderService()
+    state = _base_state(
+        class_id="monk",
+        base_ability_scores={
+            "strength": 10,
+            "dexterity": 16,
+            "constitution": 12,
+            "intelligence": 10,
+            "wisdom": 16,
+            "charisma": 10,
+        },
+        selected_equipment_ids=[],
+    )
+
+    output = service.build_character_output(state)
+    assert output["derived"]["armor_class"] == 16  # 10 + DEX(3) + WIS(3)
+
+
+def test_monk_unarmored_defense_is_blocked_by_shield():
+    service = CharacterBuilderService()
+    state = _base_state(
+        class_id="monk",
+        base_ability_scores={
+            "strength": 10,
+            "dexterity": 16,
+            "constitution": 12,
+            "intelligence": 10,
+            "wisdom": 16,
+            "charisma": 10,
+        },
+        selected_equipment_ids=["shield"],
+    )
+
+    output = service.build_character_output(state)
+    assert output["derived"]["armor_class"] == 15  # base 10 + DEX(3) + shield 2
+
+
+def test_barbarian_unarmored_defense_applies_and_allows_shield():
+    service = CharacterBuilderService()
+    state = _base_state(
+        class_id="barbarian",
+        base_ability_scores={
+            "strength": 16,
+            "dexterity": 14,
+            "constitution": 16,
+            "intelligence": 10,
+            "wisdom": 10,
+            "charisma": 8,
+        },
+        selected_equipment_ids=["shield"],
+    )
+
+    output = service.build_character_output(state)
+    assert output["derived"]["armor_class"] == 17  # 10 + DEX(2) + CON(3) + shield 2
+
+
 def test_validate_standard_array_distribution_accepts_exact_pool():
     service = CharacterBuilderService()
     errors = service.validate_character_creation_submission(

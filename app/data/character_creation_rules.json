@@ -193,12 +193,25 @@
     "starting_equipment_items_must_have_selection_tag": "starting_equipment",
     "pack_resolution_enabled": true,
     "coins_are_tracked_separately_from_items": true,
-    "weapon_catalog_source": "weapons_catalog.corrected.json"
+    "weapon_catalog_source": "weapons_catalog.corrected.json",
+    "source_of_truth_chain": {
+      "packs": "starting_equipment_packs.json -> item_ids must exist in equipment_items.json or equipment_items_adventuring_gear.json",
+      "items": "equipment_items.json is canonical for item properties",
+      "weapons": "weapons_catalog.json is canonical for damage_dice, damage_type, range, properties, mastery",
+      "armor": "equipment_items.json is canonical for armor_class_bonus",
+      "derived_stats": "builder output computes AC/damage from catalog, never hardcoded"
+    }
   },
   "spellcasting_rules": {
     "only_level_0_and_1_spells_in_scope": true,
     "spell_lists_source": "spells_by_class.json",
     "spell_details_source": "spells.json",
+    "canonical_spell_source": "spells.json",
+    "legacy_spell_catalog": {
+      "file": "spells_catalog.json",
+      "status": "legacy_not_used_by_builder",
+      "note": "spells_catalog.json is a legacy flat-format file. spells.json is the single canonical source for spell details. spells_by_class.json derives its spell_ids from spells.json. Do NOT read spells_catalog.json in the builder pipeline."
+    },
     "prepared_vs_known_rules_must_follow_class_features": true,
     "magic_initiate_uses_its_own_spell_list_choice_rules": true,
     "species_granted_spells_do_not_expand_class_spell_list": true,
@@ -228,6 +241,86 @@
     "must_have_legal_equipment_selection": true,
     "must_have_legal_spell_selection_if_spellcasting_class": true,
     "must_have_legal_internal_choices_for_features_and_feats": true
+  },
+  "cross_validation_invariants": {
+    "strict_reference_integrity": true,
+    "invariants": [
+      {
+        "id": "background_feat_exists",
+        "rule": "every backgrounds.json[].origin_feat.id MUST exist in origin_feats.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "class_choice_rule_exists",
+        "rule": "every class_choice_rules.json[].class_id MUST exist in class_catalog.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "spell_id_in_spells_by_class_exists",
+        "rule": "every spell_id in spells_by_class.json[].levels.* MUST exist in spells.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "subchoice_spell_ids_exist",
+        "rule": "every spell_id listed in subchoices_catalog.json spell entries MUST exist in spells.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "equipment_item_ids_exist",
+        "rule": "every item_id referenced in starting_equipment_packs.json MUST exist in equipment_items.json or equipment_items_adventuring_gear.json",
+        "severity": "error"
+      },
+      {
+        "id": "weapon_ids_exist",
+        "rule": "every weapon_id in class starting equipment MUST exist in weapons_catalog.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "tool_ids_exist",
+        "rule": "every tool_id in backgrounds.json[].tool_proficiency.item MUST exist in tools.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "language_ids_exist",
+        "rule": "every language_id referenced in languages choices MUST exist in languages.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "skill_ids_exist",
+        "rule": "every skill_id in class_choice_rules restricted_to MUST exist in skills.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "species_choice_rules_match_species",
+        "rule": "every species_choice_rules.json[].species_id MUST exist in species.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "spellcasting_class_coverage",
+        "rule": "every class_id in class_catalog.json MUST appear in spellcasting_rules.json class_spellcasting_models OR non_spellcasting_classes",
+        "severity": "error"
+      },
+      {
+        "id": "fighting_style_prerequisites",
+        "rule": "every fighting_style referenced in class_choice_rules MUST exist in fighting_styles.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "eldritch_invocation_prerequisites",
+        "rule": "every invocation referenced in class_choice_rules MUST exist in eldritch_invocations.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "weapon_mastery_ids_exist",
+        "rule": "every mastery_id in weapons_catalog.json MUST exist in weapon_masteries.json[].id",
+        "severity": "error"
+      },
+      {
+        "id": "no_orphan_feat_variants",
+        "rule": "every origin_feats.json[].parent_feat_id (where entity_type=feat_variant) MUST reference an existing feat id",
+        "severity": "error"
+      }
+    ]
   },
   "json_dependencies": {
     "core": [
