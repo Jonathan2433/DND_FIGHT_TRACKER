@@ -237,12 +237,11 @@
                      {% if can_manage_combat_state and not limited_profile %}data-live-character-context
                      data-character-id="{{ character.id }}"
                      data-active-combat-ids='{{ active_combat_ids|tojson }}'{% endif %}>
-                    <h2>Etat de combat (persistant)</h2>
+                    <h2>Etat de combat</h2>
                     <div class="profile-actions__content">
                         {% if can_manage_combat_state and not limited_profile %}
                             <div class="combat-state-layout">
                                 <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form combat-state-form--horizontal">
-                                    <p class="combat-state-form__intro">Ajustez rapidement les valeurs de combat sans quitter la fiche personnage.</p>
                                     <label class="combat-state-input">
                                         <span>Modifier PV actuels</span>
                                         <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
@@ -276,7 +275,6 @@
                 <div class="section-head">
                     <div class="section-head__content">
                         <h2 class="section-head__title">Caracteristiques</h2>
-                        <p class="section-head__copy">Vue compacte des statistiques, modificateurs et sauvegardes.</p>
                     </div>
                 </div>
 
@@ -467,7 +465,6 @@
                     <div class="section-head">
                         <div class="section-head__content">
                             <h2 class="section-head__title">Notes</h2>
-                            <p class="section-head__copy">Notes partagees, notes privees joueur (proprietaire uniquement) et notes privees MJ.</p>
                         </div>
                     </div>
 
@@ -555,7 +552,6 @@
 
                     {% if character.pdf_filename %}
                         <div class="pdf-preview-container">
-                            <h3>Fiche PDF</h3>
                             <div class="pdf-actions-row">
                                 {% if can_edit %}
                                     <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
