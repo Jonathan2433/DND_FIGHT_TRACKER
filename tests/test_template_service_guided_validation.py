@@ -249,6 +249,30 @@ def test_extract_selected_spells_by_choice_accepts_feat_scoped_spell_choices():
     }
 
 
+def test_validate_selected_spells_exist_accepts_builder_ids():
+    cantrip_catalog = [
+        {"name": "Trait de feu", "name_en": "Fire Bolt", "id": "fire_bolt"},
+        {"name": "Main du mage", "name_en": "Mage Hand", "id": "mage_hand"},
+    ]
+
+    TemplateService._validate_selected_spells_exist(
+        "fire_bolt, mage_hand",
+        cantrip_catalog,
+        "Sorts mineurs",
+    )
+
+
+def test_canonicalize_selected_spells_maps_ids_to_display_names():
+    cantrip_catalog = [
+        {"name": "Trait de feu", "name_en": "Fire Bolt", "id": "fire_bolt"},
+        {"name": "Main du mage", "name_en": "Mage Hand", "id": "mage_hand"},
+    ]
+
+    assert TemplateService._canonicalize_selected_spells("fire_bolt, mage_hand", cantrip_catalog) == (
+        "Trait de feu, Main du mage"
+    )
+
+
 def test_guided_validation_language_choice_uses_choice_specific_selection(monkeypatch):
     class _NoopLogger:
         def info(self, *_args, **_kwargs):
