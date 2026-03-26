@@ -459,6 +459,8 @@
 
 .known-spell-card {
     text-decoration: none;
+    padding: 14px 16px;
+    min-height: 106px;
 }
 
 .known-spell-card h3 {
@@ -1139,6 +1141,10 @@
     .character-notes-pdf-layout > .profile-generate-pdf {
         grid-column: auto;
     }
+
+    .known-spells-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 900px) {
@@ -1199,6 +1205,10 @@
 
     .visibility-toggle {
         grid-template-columns: 1fr;
+    }
+
+    .known-spells-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
