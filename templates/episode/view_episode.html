@@ -28,6 +28,71 @@
     </section>
 
     <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <h2 class="section-head__title">Resume de l'episode</h2>
+                <p class="section-head__copy">
+                    Statut:
+                    <strong>{{ episode.summary_status or 'not_generated' }}</strong>
+                    {% if episode.summary_generated_at %}
+                        · Genere le {{ episode.summary_generated_at.strftime('%d/%m/%Y %H:%M') }}
+                    {% endif %}
+                    {% if episode.summary_model_name %}
+                        · Modele {{ episode.summary_model_name }}
+                    {% endif %}
+                </p>
+            </div>
+            {% if is_mj %}
+                <div class="campaign-actions">
+                    <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
+                        <input type="hidden" name="send_email" value="0">
+                        <button type="submit" class="btn btn-primary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
+                            {% if episode.summary_public %}Regenerer le resume{% else %}Generer le resume{% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
+                        <input type="hidden" name="send_email" value="1">
+                        <button type="submit" class="btn btn-secondary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
+                            Generer et envoyer
+                        </button>
+                    </form>
+                    {% if episode.summary_public %}
+                        <form method="POST" action="{{ url_for('episode.send_episode_summary_email', episode_id=episode.id) }}">
+                            <button type="submit" class="btn btn-secondary">
+                                Envoyer par email
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% if episode.summary_public %}
+            <p class="section-head__copy" style="white-space: pre-line;">{{ episode.summary_public }}</p>
+        {% else %}
+            <p class="section-head__copy">Aucun resume public genere pour le moment.</p>
+        {% endif %}
+        {% if is_mj and episode.summary_generation_error %}
+            <p class="section-head__copy" style="color: var(--color-danger, #dc2626); margin-top: .75rem;">
+                Derniere erreur de generation : {{ episode.summary_generation_error }}
+            </p>
+        {% endif %}
+        {% if is_mj and episode.summary_email_status %}
+            <p class="section-head__copy" style="margin-top: .5rem;">
+                Email :
+                <strong>{{ episode.summary_email_status }}</strong>
+                {% if episode.summary_last_emailed_at %}
+                    · Dernier envoi le {{ episode.summary_last_emailed_at.strftime('%d/%m/%Y %H:%M') }}
+                {% endif %}
+            </p>
+            {% if episode.summary_email_error %}
+                <p class="section-head__copy" style="color: var(--color-danger, #dc2626);">
+                    Derniere erreur email : {{ episode.summary_email_error }}
+                </p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="card">
         <h2 class="section-head__title">Ma note partagee</h2>
         <form method="POST" action="{{ url_for('episode.update_my_notes', episode_id=episode.id) }}">
             <textarea name="notes" class="form-control" rows="8" placeholder="Votre note partagee...">{{ my_note.notes or '' }}</textarea>
