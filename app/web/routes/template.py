@@ -929,6 +929,7 @@ def character_profile(id):
     can_award_xp = False
     can_view_xp = False
     is_campaign_mj = False
+    show_xp_section = not bool(character.campaign or character.campaigns)
     can_manage_combat_state = _can_manage_character_combat_state(character, current_user)
     active_combat_ids, prioritized_combatant = _get_character_live_combat_context(character.id)
 
@@ -939,6 +940,7 @@ def character_profile(id):
         is_campaign_mj = is_main_campaign_mj or can_manage_from_campaigns
         can_view_xp = is_campaign_mj
         can_award_xp = is_campaign_mj
+        show_xp_section = show_xp_section or is_campaign_mj
 
     return render_template(
         'character_profile.html',
@@ -953,6 +955,7 @@ def character_profile(id):
         can_edit=character.can_be_edited_by(current_user) if current_user else False,
         can_view_xp=can_view_xp,
         can_award_xp=can_award_xp,
+        show_xp_section=show_xp_section,
         is_campaign_mj=is_campaign_mj,
         can_manage_combat_state=can_manage_combat_state,
         active_combat_ids=active_combat_ids,
