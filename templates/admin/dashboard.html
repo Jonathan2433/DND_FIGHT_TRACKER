@@ -91,7 +91,7 @@
         {% for user in users %}
             <tr>
                 <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.username }}</td>
-                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.email }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user_stats[user.id].masked_email }}</td>
                 <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.role }}</td>
                 <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '—' }}</td>
                 <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}</td>
