@@ -933,18 +933,12 @@ def character_profile(id):
     active_combat_ids, prioritized_combatant = _get_character_live_combat_context(character.id)
 
     if current_user:
-        is_admin = current_user.role == 'Admin'
         can_manage_from_campaigns = any(current_user.is_mj_of(c) for c in character.campaigns)
         is_main_campaign_mj = bool(character.campaign and current_user.is_mj_of(character.campaign))
 
         is_campaign_mj = is_main_campaign_mj or can_manage_from_campaigns
-
-        if is_admin:
-            can_view_xp = True
-            can_award_xp = True
-        elif is_campaign_mj:
-            can_view_xp = is_campaign_mj
-            can_award_xp = is_campaign_mj
+        can_view_xp = is_campaign_mj
+        can_award_xp = is_campaign_mj
 
     return render_template(
         'character_profile.html',
