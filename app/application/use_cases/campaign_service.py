@@ -275,6 +275,28 @@ class CampaignService:
 
         return campaign
 
+
+    @staticmethod
+    def detach_member_characters_from_campaign(campaign_id, user_id):
+        """Retirer de la campagne les PJ du joueur concerné."""
+        from app.models import CharacterTemplate
+
+        player_pjs = CharacterTemplate.query.filter_by(
+            owner_id=user_id,
+            character_type='PJ',
+            is_active=True,
+        ).filter(
+            (CharacterTemplate.campaign_id == campaign_id) |
+            CharacterTemplate.campaigns.any(id=campaign_id)
+        ).all()
+
+        for character in player_pjs:
+            if character.campaign_id == campaign_id:
+                character.campaign_id = None
+                character.campaign_name = None
+            if any(c.id == campaign_id for c in character.campaigns):
+                character.campaigns = [c for c in character.campaigns if c.id != campaign_id]
+
     @staticmethod
     def leave_campaign(campaign_id, user_id):
         """Quitter une campagne"""
@@ -292,6 +314,7 @@ class CampaignService:
         if not member:
             return {"error": "Vous n'êtes pas membre de cette campagne"}
 
+        CampaignService.detach_member_characters_from_campaign(campaign_id, user_id)
         db.session.delete(member)
         db.session.commit()
 
