@@ -11,10 +11,22 @@ class Episode(db.Model):
     story_arc_id = db.Column(db.Integer, db.ForeignKey('story_arc.id'), nullable=False)
     title = db.Column(db.String(120), nullable=False)
     summary_shared = db.Column(db.Text)
+    summary_public = db.Column(db.Text)
+    summary_generated_at = db.Column(db.DateTime)
+    summary_status = db.Column(db.String(32), nullable=False, default='not_generated')
+    summary_source_hash = db.Column(db.String(128))
+    summary_generation_error = db.Column(db.Text)
+    summary_generated_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    summary_model_name = db.Column(db.String(120))
+    summary_email_status = db.Column(db.String(32), nullable=False, default='not_sent')
+    summary_email_error = db.Column(db.Text)
+    summary_last_emailed_at = db.Column(db.DateTime)
+    summary_last_emailed_hash = db.Column(db.String(128))
     order_index = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     story_arc = db.relationship('StoryArc', backref=db.backref('episodes', lazy=True, order_by='Episode.order_index'))
+    summary_generated_by_user = db.relationship('User', foreign_keys=[summary_generated_by_user_id])
 
 
 class EpisodeUserNote(db.Model):
