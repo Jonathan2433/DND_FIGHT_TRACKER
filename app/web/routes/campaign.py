@@ -564,6 +564,7 @@ def remove_member(campaign_id, user_id):
 
     if member:
         removed_username = member.user.username
+        CampaignService.detach_member_characters_from_campaign(campaign_id, user_id)
         db.session.delete(member)
         db.session.commit()
 
