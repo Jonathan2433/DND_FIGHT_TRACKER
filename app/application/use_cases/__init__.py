@@ -9,6 +9,7 @@ from .email_service import EmailService
 from .episode_service import EpisodeService
 from .group_service import GroupService
 from .notification_service import NotificationService
+from .ollama_service import OllamaService
 from .story_arc_service import StoryArcService
 from .template_service import TemplateService
 from .xp_service import XPService
@@ -23,6 +24,7 @@ __all__ = [
     "EpisodeService",
     "GroupService",
     "NotificationService",
+    "OllamaService",
     "StoryArcService",
     "TemplateService",
     "XPService",
