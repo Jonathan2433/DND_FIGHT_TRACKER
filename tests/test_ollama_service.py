@@ -90,3 +90,35 @@ def test_generate_chat_raises_on_empty_content(monkeypatch, app_context):
 
     with pytest.raises(OllamaRequestError, match='reponse vide'):
         OllamaService.generate_chat(messages=[{'role': 'user', 'content': 'Bonjour'}])
+
+
+def test_generate_chat_retries_localhost_and_127(monkeypatch, app_context):
+    called_urls = []
+
+    def fake_urlopen(request, timeout):
+        called_urls.append(request.full_url)
+        if request.full_url.startswith('http://localhost:11434'):
+            raise ollama_module.URLError(ConnectionRefusedError(111, 'Connection refused'))
+        return _FakeResponse(json.dumps({'message': {'content': 'OK fallback'}}).encode('utf-8'))
+
+    monkeypatch.setattr(ollama_module, 'urlopen', fake_urlopen)
+
+    content = OllamaService.generate_chat(messages=[{'role': 'user', 'content': 'Bonjour'}])
+
+    assert content == 'OK fallback'
+    assert called_urls == [
+        'http://localhost:11434/api/chat',
+        'http://127.0.0.1:11434/api/chat',
+    ]
+
+
+def test_generate_chat_unavailable_lists_tested_endpoints(monkeypatch, app_context):
+    app_context.config['OLLAMA_FALLBACK_BASE_URLS'] = 'http://ollama:11434'
+
+    def fake_urlopen(_request, timeout):
+        raise ollama_module.URLError(ConnectionRefusedError(111, 'Connection refused'))
+
+    monkeypatch.setattr(ollama_module, 'urlopen', fake_urlopen)
+
+    with pytest.raises(OllamaRequestError, match='Endpoints testes'):
+        OllamaService.generate_chat(messages=[{'role': 'user', 'content': 'Bonjour'}])
