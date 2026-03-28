@@ -7,6 +7,7 @@ from .combat_service import CombatService
 from .combatant_service import CombatantService
 from .email_service import EmailService
 from .episode_service import EpisodeService
+from .episode_summary_service import EpisodeSummaryService
 from .group_service import GroupService
 from .notification_service import NotificationService
 from .ollama_service import OllamaService
@@ -22,6 +23,7 @@ __all__ = [
     "CombatantService",
     "EmailService",
     "EpisodeService",
+    "EpisodeSummaryService",
     "GroupService",
     "NotificationService",
     "OllamaService",
