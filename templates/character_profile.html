@@ -383,7 +383,7 @@
                 </section>
             {% endif %}
 
-            {% if not limited_profile %}
+            {% if not limited_profile and show_xp_section %}
             <section class="xp-section">
                 <div class="section-head">
                     <div class="section-head__content">
@@ -441,7 +441,7 @@
                     <p class="section-head__copy">Seul le MJ de la campagne peut consulter l'historique XP.</p>
                 {% endif %}
             </section>
-            {% else %}
+            {% elif limited_profile %}
                 <section class="xp-section">
                     <div class="section-head">
                         <div class="section-head__content">
