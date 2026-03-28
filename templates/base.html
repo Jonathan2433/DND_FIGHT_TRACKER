@@ -67,6 +67,10 @@
                             {% if current_user and current_user.has_mj_capability() %}
                                 <a href="{{ url_for('campaign.create_campaign') }}" class="site-nav__link site-nav__link--accent">Nouvelle campagne</a>
                             {% endif %}
+
+                            {% if current_user and current_user.role == 'Admin' %}
+                                <a href="{{ url_for('admin.dashboard') }}" class="site-nav__link">Back office</a>
+                            {% endif %}
                         {% endif %}
                     </div>
 

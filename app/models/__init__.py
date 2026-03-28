@@ -16,6 +16,7 @@ from .campaign import (
 )
 from .story_arc import StoryArc
 from .notification import Notification
+from .activity import SiteActivityLog
 from .episode import Episode, EpisodeUserNote
 
 # Exposition des modèles
@@ -36,6 +37,7 @@ __all__ = [
     'CampaignInspirationLog',
     'StoryArc',
     'Notification',
+    'SiteActivityLog',
     'Episode',
     'EpisodeUserNote'
 ]

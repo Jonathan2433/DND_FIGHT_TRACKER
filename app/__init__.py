@@ -1,5 +1,7 @@
 """Factory Pattern pour l'application Flask"""
-from flask import Flask, g, session
+from datetime import datetime
+
+from flask import Flask, g, request, session
 import os
 from dotenv import load_dotenv
 
@@ -50,6 +52,28 @@ def create_app(config_name='default'):
         else:
             from app.application.use_cases.auth_service import AuthService
             g.current_user = AuthService.get_user_by_id(user_id)
+
+
+    @app.before_request
+    def track_request_start():
+        """Stocker l'horodatage de départ pour le tracking."""
+        g.request_started_at = datetime.utcnow()
+
+    @app.after_request
+    def persist_request_activity(response):
+        """Persist le tracking technique des requêtes (best effort)."""
+        try:
+            from app.application.use_cases.admin_service import AdminService
+
+            AdminService.log_request_activity(
+                request=request,
+                response=response,
+                started_at=g.get('request_started_at'),
+            )
+        except Exception:
+            app.logger.exception("Echec du tracking d'activite")
+
+        return response
 
     @app.context_processor
     def inject_user():
