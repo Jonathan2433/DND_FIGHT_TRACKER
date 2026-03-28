@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Back Office Admin{% endblock %}
+
+{% block content %}
+<section class="dashboard-header" style="margin-bottom: 1.5rem;">
+    <h1>Back Office Administrateur</h1>
+    <p>Vue des 30 derniers jours (activité, inscription, campagnes, modération).</p>
+</section>
+
+<section class="dashboard-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;">
+    <article class="card" style="padding:1rem;border:1px solid #ddd;border-radius:12px;">
+        <h3>Utilisateurs actifs</h3>
+        <p style="font-size:1.6rem;font-weight:700;">{{ metrics.active_users }}</p>
+        <small>sur 30 jours</small>
+    </article>
+    <article class="card" style="padding:1rem;border:1px solid #ddd;border-radius:12px;">
+        <h3>Requêtes tracées</h3>
+        <p style="font-size:1.6rem;font-weight:700;">{{ metrics.total_requests }}</p>
+        <small>depuis {{ metrics.since.strftime('%d/%m/%Y') }}</small>
+    </article>
+    <article class="card" style="padding:1rem;border:1px solid #ddd;border-radius:12px;">
+        <h3>Nouveaux inscrits</h3>
+        <p style="font-size:1.6rem;font-weight:700;">{{ metrics.new_users }}</p>
+        <small>sur 30 jours</small>
+    </article>
+    <article class="card" style="padding:1rem;border:1px solid #ddd;border-radius:12px;">
+        <h3>Campagnes actives</h3>
+        <p style="font-size:1.6rem;font-weight:700;">{{ metrics.active_campaigns }}/{{ metrics.total_campaigns }}</p>
+        <small>total plateforme</small>
+    </article>
+</section>
+
+<section style="margin-bottom: 2rem;">
+    <h2>Répartition des campagnes par MJ</h2>
+    <ul>
+        {% for username, campaign_count in metrics.campaigns_by_mj %}
+            <li><strong>{{ username }}</strong> — {{ campaign_count }} campagne(s)</li>
+        {% else %}
+            <li>Aucune campagne enregistrée.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section style="margin-bottom: 2rem;overflow:auto;">
+    <h2>Journal d'activité récent</h2>
+    <table class="table" style="width:100%;border-collapse:collapse;">
+        <thead>
+        <tr>
+            <th style="text-align:left;padding:.5rem;">Date</th>
+            <th style="text-align:left;padding:.5rem;">Utilisateur</th>
+            <th style="text-align:left;padding:.5rem;">Méthode</th>
+            <th style="text-align:left;padding:.5rem;">Route</th>
+            <th style="text-align:left;padding:.5rem;">Status</th>
+            <th style="text-align:left;padding:.5rem;">Durée</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in metrics.recent_activity %}
+            <tr>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.user.username if log.user else 'Visiteur' }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.method }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.path }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.status_code }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ log.duration_ms or 0 }} ms</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" style="padding:.5rem;">Aucune activité tracée.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section style="overflow:auto;">
+    <h2>Modération utilisateurs</h2>
+    <table class="table" style="width:100%;border-collapse:collapse;">
+        <thead>
+        <tr>
+            <th style="text-align:left;padding:.5rem;">User</th>
+            <th style="text-align:left;padding:.5rem;">Email</th>
+            <th style="text-align:left;padding:.5rem;">Rôle</th>
+            <th style="text-align:left;padding:.5rem;">Inscrit le</th>
+            <th style="text-align:left;padding:.5rem;">Dernière connexion</th>
+            <th style="text-align:left;padding:.5rem;">Campagnes</th>
+            <th style="text-align:left;padding:.5rem;">État</th>
+            <th style="text-align:left;padding:.5rem;">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.username }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.email }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.role }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '—' }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">
+                    MJ: {{ user_stats[user.id].campaigns_owned }} / Membre: {{ user_stats[user.id].campaigns_joined }}
+                </td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">{{ 'Actif' if user.is_active else 'Désactivé' }}</td>
+                <td style="padding:.5rem;border-top:1px solid #eee;">
+                    {% if user.id != current_user.id %}
+                        {% if user.is_active %}
+                            <form method="POST" action="{{ url_for('admin.deactivate_user', user_id=user.id) }}">
+                                <button type="submit" class="btn btn-danger">Désactiver</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{{ url_for('admin.reactivate_user', user_id=user.id) }}">
+                                <button type="submit" class="btn btn-secondary">Réactiver</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <em>Votre compte</em>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
