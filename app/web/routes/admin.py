@@ -3,6 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 
 from app.application.use_cases.admin_service import AdminService
 from app.utils.decorators import admin_required
+from app.utils.helpers import mask_email
 
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -19,6 +20,7 @@ def dashboard():
         user.id: {
             'campaigns_owned': len(user.owned_campaigns),
             'campaigns_joined': AdminService.campaign_membership_count(user.id),
+            'masked_email': mask_email(user.email),
         }
         for user in users
     }

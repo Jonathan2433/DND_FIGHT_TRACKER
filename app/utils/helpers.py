@@ -114,3 +114,24 @@ def get_initiative_order(combatants):
 def safe_filename(filename):
     """Sécuriser un nom de fichier"""
     return secure_filename(filename) if filename else None
+
+
+def mask_email(email):
+    """Masquer un email pour éviter l'affichage en clair."""
+    if not email:
+        return "—"
+
+    if "@" not in email:
+        return "***"
+
+    local_part, domain = email.split("@", 1)
+    masked_local = (local_part[0] + "***") if local_part else "***"
+
+    if "." in domain:
+        domain_name, extension = domain.rsplit(".", 1)
+        masked_domain_name = (domain_name[0] + "***") if domain_name else "***"
+        masked_extension = extension[-2:] if len(extension) > 2 else extension
+        return f"{masked_local}@{masked_domain_name}.{masked_extension}"
+
+    masked_domain = (domain[0] + "***") if domain else "***"
+    return f"{masked_local}@{masked_domain}"
