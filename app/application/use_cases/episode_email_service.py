@@ -61,6 +61,9 @@ class EpisodeEmailService:
             db.session.commit()
             raise EpisodeEmailServiceError('Resume vide: envoi email annule.')
 
+        if not force and episode.summary_email_status == 'pending':
+            raise EpisodeEmailServiceError('Un envoi email est deja en cours pour cet episode.')
+
         if not force and episode.summary_last_emailed_hash and episode.summary_last_emailed_hash == source_hash:
             return {
                 'sent': False,
@@ -77,6 +80,11 @@ class EpisodeEmailService:
             episode.summary_email_error = 'Aucun destinataire email valide pour cette campagne.'
             db.session.commit()
             raise EpisodeEmailServiceError('Aucun destinataire email valide pour cette campagne.')
+
+        # Verrou applicatif simple pour eviter les doubles envois concurrents.
+        episode.summary_email_status = 'pending'
+        episode.summary_email_error = None
+        db.session.commit()
 
         episode_url = (
             f"{current_app.config.get('BASE_URL', '').rstrip('/')}/episode/{episode.id}"

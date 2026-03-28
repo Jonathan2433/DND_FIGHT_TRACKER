@@ -101,6 +101,9 @@ class EpisodeSummaryService:
             episode.summary_generation_error = None
             episode.summary_generated_by_user_id = user.id
             episode.summary_model_name = current_app.config.get('OLLAMA_MODEL', OllamaService.DEFAULT_MODEL)
+            # Nouveau contenu: l'etat d'email repart a "not_sent" jusqu'au prochain envoi.
+            episode.summary_email_status = 'not_sent'
+            episode.summary_email_error = None
             db.session.commit()
 
         except Exception as exc:  # noqa: BLE001 - handling status transition and persistence

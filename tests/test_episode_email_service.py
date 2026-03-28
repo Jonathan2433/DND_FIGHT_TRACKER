@@ -48,6 +48,7 @@ def test_send_episode_summary_email_skips_if_hash_already_emailed(app_context):
         title='Le sceau brise',
         order_index=7,
         summary_public='Resume deja envoye',
+        summary_email_status='not_sent',
         summary_last_emailed_hash='abc',
     )
 
@@ -101,7 +102,7 @@ def test_send_episode_summary_email_updates_episode_on_success(monkeypatch, app_
     assert episode.summary_email_status == 'sent'
     assert episode.summary_last_emailed_hash == 'hash-1'
     assert isinstance(episode.summary_last_emailed_at, datetime)
-    assert commits['count'] == 1
+    assert commits['count'] == 2
 
 
 def test_send_episode_summary_email_fails_with_empty_summary(monkeypatch, app_context):
@@ -127,3 +128,16 @@ def test_send_episode_summary_email_fails_with_empty_summary(monkeypatch, app_co
 
     assert episode.summary_email_status == 'failed'
     assert commits['count'] == 1
+
+
+def test_send_episode_summary_email_refuses_when_pending(app_context):
+    episode = SimpleNamespace(
+        id=9,
+        title='Episode verrouille',
+        summary_public='Un resume deja pret.',
+        summary_email_status='pending',
+        summary_last_emailed_hash=None,
+    )
+
+    with pytest.raises(EpisodeEmailServiceError, match='deja en cours'):
+        EpisodeEmailService.send_episode_summary_email(episode=episode, source_hash='hash-pending')
