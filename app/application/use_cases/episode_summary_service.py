@@ -8,6 +8,7 @@ from typing import Any
 
 from flask import current_app
 
+from app.application.use_cases.episode_email_service import EpisodeEmailService
 from app.application.use_cases.ollama_service import OllamaService
 from app.extensions import db
 from app.models.combat import Combat, CombatLog
@@ -52,7 +53,11 @@ class EpisodeSummaryService:
     )
 
     @staticmethod
-    def generate_public_summary_for_episode(episode_id: int, triggered_by_user_id: int) -> dict[str, Any]:
+    def generate_public_summary_for_episode(
+        episode_id: int,
+        triggered_by_user_id: int,
+        send_email: bool = False,
+    ) -> dict[str, Any]:
         """Generer (ou reutiliser) un resume public pour un episode."""
         episode = Episode.query.get_or_404(episode_id)
         user = User.query.get_or_404(triggered_by_user_id)
@@ -106,13 +111,23 @@ class EpisodeSummaryService:
                 raise
             raise EpisodeSummaryGenerationError(str(exc)) from exc
 
-        return {
+        result = {
             'summary': summary_text,
             'skipped': False,
             'source_hash': source_hash,
             'generated_at': episode.summary_generated_at,
             'model_name': episode.summary_model_name,
         }
+
+        if send_email:
+            email_result = EpisodeEmailService.send_episode_summary_email(
+                episode=episode,
+                source_hash=source_hash,
+                summary_text=summary_text,
+            )
+            result['email'] = email_result
+
+        return result
 
     @staticmethod
     def build_public_source_payload(episode: Episode) -> dict[str, Any]:
