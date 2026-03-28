@@ -383,12 +383,12 @@
                 </section>
             {% endif %}
 
-            {% if not limited_profile and can_view_xp %}
+            {% if not limited_profile %}
             <section class="xp-section">
                 <div class="section-head">
                     <div class="section-head__content">
                         <h2 class="section-head__title">Progression</h2>
-                        <p class="section-head__copy">Niveau actuel, avancee sur la barre d'XP et attribution manuelle selon vos droits.</p>
+                        <p class="section-head__copy">Niveau actuel et avancee sur la barre d'XP.</p>
                     </div>
                 </div>
 
@@ -438,9 +438,7 @@
                         <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">Historique XP</a>
                     </div>
                 {% elif current_user and character.campaign %}
-                    <p class="section-head__copy">Seul le MJ de la campagne peut consulter l'historique et la progression XP.</p>
-                {% else %}
-                    <p class="section-head__copy">Connectez-vous pour acceder a l'historique XP.</p>
+                    <p class="section-head__copy">Seul le MJ de la campagne peut consulter l'historique XP.</p>
                 {% endif %}
             </section>
             {% else %}
