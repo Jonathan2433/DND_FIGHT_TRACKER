@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import urlparse
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
@@ -53,7 +54,6 @@ class OllamaService:
         if not selected_model:
             raise OllamaConfigurationError("OLLAMA_MODEL est requis pour appeler Ollama.")
 
-        endpoint = OllamaService._build_chat_endpoint()
         payload = {
             "model": selected_model,
             "messages": messages,
@@ -69,13 +69,6 @@ class OllamaService:
         }
 
         body = json.dumps(payload).encode("utf-8")
-        request = Request(
-            endpoint,
-            data=body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-
         timeout = timeout_seconds
         if timeout is None:
             timeout = int(
@@ -85,22 +78,48 @@ class OllamaService:
                 )
             )
 
-        try:
-            with urlopen(request, timeout=timeout) as response:
-                response_body = response.read().decode("utf-8")
-        except HTTPError as exc:
-            error_body = ""
+        last_unavailable_error = None
+        tried_endpoints = []
+        response_body = None
+
+        for endpoint in OllamaService._build_candidate_chat_endpoints():
+            request = Request(
+                endpoint,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            tried_endpoints.append(endpoint)
+
             try:
-                error_body = exc.read().decode("utf-8")
-            except Exception:
+                with urlopen(request, timeout=timeout) as response:
+                    response_body = response.read().decode("utf-8")
+                break
+            except HTTPError as exc:
                 error_body = ""
+                try:
+                    error_body = exc.read().decode("utf-8")
+                except Exception:
+                    error_body = ""
+                raise OllamaRequestError(
+                    f"Erreur HTTP Ollama ({exc.code}): {error_body or exc.reason}"
+                ) from exc
+            except URLError as exc:
+                last_unavailable_error = exc
+                continue
+            except TimeoutError as exc:
+                raise OllamaRequestError("Timeout lors de l'appel Ollama.") from exc
+
+        if response_body is None:
+            reason = "inconnue"
+            if last_unavailable_error is not None:
+                reason = str(last_unavailable_error.reason)
+            endpoint_list = ", ".join(tried_endpoints)
             raise OllamaRequestError(
-                f"Erreur HTTP Ollama ({exc.code}): {error_body or exc.reason}"
-            ) from exc
-        except URLError as exc:
-            raise OllamaRequestError(f"Ollama indisponible: {exc.reason}") from exc
-        except TimeoutError as exc:
-            raise OllamaRequestError("Timeout lors de l'appel Ollama.") from exc
+                "Ollama indisponible: "
+                f"{reason}. Endpoints testes: {endpoint_list}. "
+                "Verifiez OLLAMA_BASE_URL et que le service Ollama est demarre."
+            ) from last_unavailable_error
 
         try:
             parsed = json.loads(response_body)
@@ -114,12 +133,40 @@ class OllamaService:
         return content
 
     @staticmethod
-    def _build_chat_endpoint():
-        base_url = OllamaService._get_config("OLLAMA_BASE_URL", OllamaService.DEFAULT_BASE_URL)
+    def _build_chat_endpoint(base_url=None):
+        if base_url is None:
+            base_url = OllamaService._get_config("OLLAMA_BASE_URL", OllamaService.DEFAULT_BASE_URL)
         if not base_url:
             raise OllamaConfigurationError("OLLAMA_BASE_URL est requis.")
         normalized = base_url if str(base_url).endswith("/") else f"{base_url}/"
         return urljoin(normalized, "api/chat")
+
+    @staticmethod
+    def _build_candidate_chat_endpoints():
+        base_url = OllamaService._get_config("OLLAMA_BASE_URL", OllamaService.DEFAULT_BASE_URL)
+        if not base_url:
+            raise OllamaConfigurationError("OLLAMA_BASE_URL est requis.")
+
+        candidates = [str(base_url).strip()]
+        parsed = urlparse(str(base_url).strip())
+        host = (parsed.hostname or "").lower()
+        if host == "localhost":
+            candidates.append(str(base_url).replace("localhost", "127.0.0.1", 1))
+        elif host == "127.0.0.1":
+            candidates.append(str(base_url).replace("127.0.0.1", "localhost", 1))
+
+        fallback_urls = OllamaService._get_config("OLLAMA_FALLBACK_BASE_URLS", "")
+        if fallback_urls:
+            for candidate in str(fallback_urls).split(","):
+                value = candidate.strip()
+                if value:
+                    candidates.append(value)
+
+        unique = []
+        for candidate in candidates:
+            if candidate and candidate not in unique:
+                unique.append(candidate)
+        return [OllamaService._build_chat_endpoint(base_url=item) for item in unique]
 
     @staticmethod
     def _get_config(key, default=None):
