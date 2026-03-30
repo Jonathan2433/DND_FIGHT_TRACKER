@@ -36,20 +36,23 @@ class EpisodeSummaryService:
     """Orchestration de la collecte de donnees et de la generation de resume public."""
 
     SYSTEM_PROMPT = (
-        "Tu es l'assistant narratif d'Exalquest. "
-        "Ta tache est de rediger un resume d'episode de campagne JDR a partir "
-        "d'informations fournies par l'application.\n\n"
-        "Regles imperatives :\n"
+        "Tu es l'assistant narratif d'Exalquest.\n\n"
+        "Ta mission est de rédiger un résumé public d'épisode de campagne JDR à partir des informations fournies.\n\n"
+        "Règles impératives :\n"
         "- Tu n'inventes aucun fait.\n"
-        "- Tu n'ajoutes aucun personnage, lieu, objet ou evenement absent du contexte.\n"
-        "- Tu reformules et organises uniquement les informations fournies.\n"
-        "- Tu rediges en francais.\n"
-        "- Le style doit etre fluide, narratif, clair et agreable a lire.\n"
-        "- Le resume doit rester comprehensible pour les joueurs.\n"
-        "- Tu ne dois pas exposer d'informations cachees ou techniques.\n"
-        "- N'utilise pas de listes a puces dans la sortie finale.\n"
-        "- Ne parle pas de notes, logs, donnees, contexte ou LLM.\n"
-        "- Tu produis directement le resume final, entre 250 et 500 mots."
+        "- Tu n'ajoutes aucun personnage, lieu, objet ou événement absent des informations fournies.\n"
+        "- Tu utilises uniquement le contexte transmis.\n"
+        "- Si une information est absente, incertaine ou contradictoire, tu ne l'interprètes pas librement.\n"
+        "- Tu rédiges en français.\n"
+        "- Le style doit être narratif, fluide, clair et agréable à lire.\n"
+        "- Le texte doit rester compréhensible pour les joueurs.\n"
+        "- Tu ne mentionnes jamais les notes, logs, données, contexte, application, consignes ou modèle.\n"
+        "- Tu ne produis ni titre, ni section, ni liste à puces.\n"
+        "- Tu produis directement le résumé final.\n\n"
+        "Objectif :\n"
+        "- Un résumé public entre 250 et 500 mots.\n"
+        "- Un texte continu en paragraphes.\n"
+        "- Un ton d'aventure fantasy sobre et fidèle aux faits."
     )
 
     @staticmethod
@@ -310,55 +313,82 @@ class EpisodeSummaryService:
     @staticmethod
     def _render_source_payload_text(source_payload: dict[str, Any]) -> str:
         campaign_name = source_payload.get('campaign', {}).get('name') or 'Campagne inconnue'
-        arc_name = source_payload.get('story_arc', {}).get('name') or 'Arc non precise'
+        arc_name = source_payload.get('story_arc', {}).get('name') or 'Arc non précisé'
         episode = source_payload.get('episode', {})
-        episode_title = episode.get('title') or 'Episode sans titre'
+        episode_title = episode.get('title') or 'Épisode sans titre'
         episode_order = episode.get('order_index')
+        episode_order_text = f' (ordre {episode_order})' if episode_order is not None else ''
 
-        header = [
-            f'Campagne : {campaign_name}',
-            f'Arc : {arc_name}',
-            f'Episode : {episode_title}' + (f' (ordre {episode_order})' if episode_order is not None else ''),
-            '',
-            'Notes du MJ :',
-            source_payload.get('mj_notes') or '- Aucune note MJ fournie.',
-            '',
-            'Notes des joueurs :',
-        ]
+        mj_notes = source_payload.get('mj_notes') or ''
+        mj_notes_block = mj_notes.strip() if mj_notes.strip() else 'Aucune note MJ fournie.'
 
         player_notes = source_payload.get('player_notes') or []
         if player_notes:
+            player_notes_lines = []
             for note in player_notes:
-                header.append(f"- {note.get('username', 'Joueur')} : {note.get('content', '').strip()}")
+                username = note.get('username', 'Joueur')
+                content = (note.get('content') or '').strip()
+                if content:
+                    player_notes_lines.append(f'- {username} : {content}')
+            player_notes_block = '\n'.join(player_notes_lines) if player_notes_lines else 'Aucune note joueur disponible.'
         else:
-            header.append('- Aucune note joueur disponible.')
+            player_notes_block = 'Aucune note joueur disponible.'
 
-        header.extend(['', 'Combats :'])
         combats = source_payload.get('combats') or []
         if combats:
+            combat_lines = []
             for combat in combats:
-                header.append(f"Combat {combat.get('order')} : {combat.get('name')}")
-                pjs = ', '.join(combat.get('participants_pj') or []) or 'non renseignes'
-                enemies = ', '.join(combat.get('enemies') or []) or 'non renseignes'
-                header.append(f'- Participants PJ : {pjs}')
-                header.append(f'- Ennemis : {enemies}')
+                order = combat.get('order')
+                name = combat.get('name') or f'Combat {order}'
+                pjs = ', '.join(combat.get('participants_pj') or []) or 'non renseignés'
+                enemies = ', '.join(combat.get('enemies') or []) or 'non renseignés'
+                issue = combat.get('issue') or 'issue inconnue'
                 events = combat.get('notable_events') or []
+
+                combat_lines.append(f'Combat {order} : {name}')
+                combat_lines.append(f'- Participants PJ : {pjs}')
+                combat_lines.append(f'- Ennemis : {enemies}')
+
                 if events:
-                    header.append('- Faits marquants :')
+                    combat_lines.append('- Faits marquants :')
                     for event in events:
-                        header.append(f'  - {event}')
-                header.append(f"- Issue : {combat.get('issue', 'issue inconnue')}")
+                        combat_lines.append(f'  - {event}')
+
+                combat_lines.append(f'- Issue : {issue}')
+                combat_lines.append('')
+            combats_block = '\n'.join(combat_lines).strip()
         else:
-            header.append('- Aucun combat rattache a cet episode.')
+            combats_block = 'Aucun combat rattaché à cet épisode.'
 
-        header.extend([
-            '',
-            'Consignes :',
-            '- Redige un resume narratif clair et fluide de l\'episode.',
-            '- N\'invente aucun fait absent du contexte.',
-            '- Mentionne les evenements majeurs, les decouvertes et les combats importants.',
-            '- Ton: aventure fantasy, sobre.',
-            '- Longueur cible: 250 a 500 mots.',
-        ])
-
-        return '\n'.join(header)
+        return (
+            'Tâche :\n'
+            "Rédige un résumé narratif public de l'épisode ci-dessous.\n\n"
+            'Priorité des informations :\n'
+            '1. Notes du MJ\n'
+            '2. Notes des joueurs\n'
+            '3. Combats et faits marquants des combats\n\n'
+            'Règles de traitement :\n'
+            '- Utilise en priorité les faits présents dans les notes du MJ.\n'
+            "- Complète avec les notes des joueurs uniquement lorsqu'elles apportent des éléments cohérents et utiles.\n"
+            '- Utilise les combats pour intégrer les affrontements importants, leurs faits marquants et leur issue.\n'
+            '- Respecte la chronologie générale suggérée par les informations fournies.\n'
+            '- Si plusieurs sources expriment le même fait, ne le mentionne qu’une seule fois.\n'
+            '- Si une information est ambiguë, isolée ou contradictoire, reformule-la avec prudence ou ignore-la.\n'
+            '- Ne transforme jamais une hypothèse en certitude.\n'
+            "- Conserve les noms propres exactement tels qu'ils apparaissent.\n"
+            "- Mets l'accent sur les événements majeurs, les découvertes importantes, les tensions, les décisions et les combats significatifs.\n"
+            "- N'ajoute aucun détail technique ou méta.\n\n"
+            "Contexte de l'épisode :\n\n"
+            '[IDENTITE]\n'
+            f'Campagne : {campaign_name}\n'
+            f'Arc : {arc_name}\n'
+            f'Épisode : {episode_title}{episode_order_text}\n\n'
+            '[NOTES_MJ]\n'
+            f'{mj_notes_block}\n\n'
+            '[NOTES_JOUEURS]\n'
+            f'{player_notes_block}\n\n'
+            '[COMBATS]\n'
+            f'{combats_block}\n\n'
+            'Résultat attendu :\n'
+            "Rédige maintenant le résumé final de l'épisode, en français, sous forme de texte narratif continu, entre 250 et 500 mots."
+        )
