@@ -222,7 +222,7 @@ class EpisodeSummaryService:
                             f'Le résumé de l\'épisode "{episode.title}" est disponible, '
                             f"mais l'envoi email a échoué : {result.get('email_error')}."
                         ),
-                        kind='episode_summary',
+                        kind=f'episode_summary:{episode.id}',
                         campaign_id=episode.story_arc.campaign_id,
                     )
                 else:
@@ -230,7 +230,7 @@ class EpisodeSummaryService:
                         triggered_by_user_id,
                         "Résumé d'épisode généré",
                         f'Le résumé de l\'épisode "{episode.title}" est disponible.',
-                        kind='episode_summary',
+                        kind=f'episode_summary:{episode.id}',
                         campaign_id=episode.story_arc.campaign_id,
                     )
             except Exception as exc:  # noqa: BLE001 - background job failure must always notify
@@ -249,7 +249,7 @@ class EpisodeSummaryService:
                     triggered_by_user_id,
                     "Échec de génération du résumé",
                     f'La génération du résumé de l\'épisode "{episode_title}" a échoué : {exc}',
-                    kind='episode_summary',
+                    kind=f'episode_summary:{episode_id}',
                     campaign_id=campaign_id,
                 )
             finally:
