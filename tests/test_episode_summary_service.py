@@ -140,6 +140,45 @@ def test_generate_public_summary_success_updates_episode(monkeypatch):
         assert commits['count'] == 2
 
 
+def test_background_job_creates_episode_scoped_notification(monkeypatch):
+    app = Flask(__name__)
+
+    with app.app_context():
+        episode = SimpleNamespace(
+            id=12,
+            title='Le guet-apens des Gobelins',
+            story_arc=SimpleNamespace(campaign_id=5),
+        )
+        created_notifications = []
+
+        monkeypatch.setattr(
+            EpisodeSummaryService,
+            'generate_public_summary_for_episode',
+            staticmethod(lambda **kwargs: {'email_error': None}),
+        )
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.Episode.query',
+            SimpleNamespace(get=lambda _id: episode),
+        )
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.NotificationService.create_notification',
+            lambda *args, **kwargs: created_notifications.append({'args': args, 'kwargs': kwargs}),
+        )
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.db.session',
+            SimpleNamespace(remove=lambda: None),
+        )
+
+        EpisodeSummaryService._run_public_summary_generation_job(
+            app=app,
+            episode_id=12,
+            triggered_by_user_id=99,
+        )
+
+    assert len(created_notifications) == 1
+    assert created_notifications[0]['kwargs']['kind'] == 'episode_summary:12'
+
+
 def test_generate_public_summary_email_error_does_not_fail_generation(monkeypatch):
     app = Flask(__name__)
     app.config['OLLAMA_MODEL'] = 'llama3.2:1b'

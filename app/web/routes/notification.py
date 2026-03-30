@@ -50,6 +50,11 @@ def _campaign_invitation_action_urls(user_id, notification):
 
 
 def _notification_target(user_id, notification):
+    if notification.kind.startswith('episode_summary:'):
+        episode_id = notification.kind.split(':', 1)[1]
+        if episode_id.isdigit():
+            return url_for('episode.view_episode', episode_id=int(episode_id))
+
     if notification.kind == 'campaign_invitation' and notification.campaign_id:
         return url_for('campaign.review_invitation', campaign_id=notification.campaign_id)
 
