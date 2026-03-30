@@ -5,7 +5,8 @@ from flask import Flask, g, request, session
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.environ.get("FLASK_CONFIG") in (None, "", "development"):
+    load_dotenv()
 
 
 def create_app(config_name='default'):
@@ -23,6 +24,8 @@ def create_app(config_name='default'):
     # Configuration
     from config import config
     app.config.from_object(config[config_name])
+    if app.config.get("REQUIRE_DATABASE_URL") and not os.environ.get("DATABASE_URL"):
+        raise RuntimeError("DATABASE_URL is required for preprod/production environments.")
 
     # Créer le dossier d'upload s'il n'existe pas
     upload_folder = os.path.abspath(
