@@ -29,14 +29,14 @@ def upgrade():
         {'owner_id': fallback_owner_id}
     )
 
-    op.alter_column('encounter_template', 'owner_id', nullable=False)
-    op.create_foreign_key(
-        'fk_encounter_template_owner_id_user',
-        'encounter_template',
-        'user',
-        ['owner_id'],
-        ['id']
-    )
+    with op.batch_alter_table('encounter_template') as batch_op:
+        batch_op.alter_column('owner_id', existing_type=sa.Integer(), nullable=False)
+        batch_op.create_foreign_key(
+            'fk_encounter_template_owner_id_user',
+            'user',
+            ['owner_id'],
+            ['id']
+        )
 
     # JoinRequest cleanup
     with op.batch_alter_table('join_request') as batch_op:
@@ -60,5 +60,6 @@ def downgrade():
     with op.batch_alter_table('join_request') as batch_op:
         batch_op.add_column(sa.Column('is_public', sa.Boolean(), nullable=True))
 
-    op.drop_constraint('fk_encounter_template_owner_id_user', 'encounter_template', type_='foreignkey')
-    op.drop_column('encounter_template', 'owner_id')
+    with op.batch_alter_table('encounter_template') as batch_op:
+        batch_op.drop_constraint('fk_encounter_template_owner_id_user', type_='foreignkey')
+        batch_op.drop_column('owner_id')
