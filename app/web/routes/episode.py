@@ -143,7 +143,7 @@ def update_my_private_notes(episode_id):
 @bp.route('/<int:episode_id>/summary/generate', methods=['POST'])
 @login_required
 def generate_episode_summary(episode_id):
-    """Generer ou regenerer le resume public de l'episode (MJ uniquement)."""
+    """Lancer la generation du resume public de l'episode en arriere-plan (MJ uniquement)."""
     episode = Episode.query.get_or_404(episode_id)
     campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
     if not campaign:
@@ -155,34 +155,17 @@ def generate_episode_summary(episode_id):
     force_regenerate = (request.form.get('force_regenerate') or '').lower() in {'1', 'true', 'on', 'yes'}
 
     try:
-        source_payload = EpisodeSummaryService.build_public_source_payload(episode)
-        source_hash = EpisodeSummaryService.compute_source_hash(source_payload)
-
-        if force_regenerate:
-            episode.summary_source_hash = None
-
-        result = EpisodeSummaryService.generate_public_summary_for_episode(
+        EpisodeSummaryService.enqueue_public_summary_generation(
             episode_id=episode_id,
             triggered_by_user_id=g.current_user.id,
-            send_email=False,
+            send_email=send_email,
+            force_email=force_email,
+            force_regenerate=force_regenerate,
         )
-
-        if result.get('skipped'):
-            flash('Aucun changement detecte: le resume existant est deja a jour.', 'info')
-        else:
-            flash('Resume d\'episode genere avec succes.', 'success')
-
-        if send_email:
-            email_result = EpisodeEmailService.send_episode_summary_email(
-                episode=episode,
-                source_hash=source_hash,
-                summary_text=(result.get('summary') or episode.summary_public or ''),
-                force=force_email,
-            )
-            if email_result.get('sent'):
-                flash(f"Resume envoye par email ({email_result.get('recipient_count', 0)} destinataires).", 'success')
-            elif email_result.get('skipped'):
-                flash('Email non renvoye: ce resume a deja ete diffuse.', 'info')
+        flash(
+            'La generation du resume a ete lancee. Vous serez notifie a la fin du traitement.',
+            'info',
+        )
 
     except EpisodeSummaryAlreadyRunningError as exc:
         flash(str(exc), 'warning')
@@ -190,8 +173,6 @@ def generate_episode_summary(episode_id):
         flash(str(exc), 'error')
     except EpisodeSummaryGenerationError as exc:
         flash(f'Echec de generation du resume: {exc}', 'error')
-    except EpisodeEmailServiceError as exc:
-        flash(f'Resume genere, mais envoi email en echec: {exc}', 'warning')
 
     return redirect(url_for('episode.view_episode', episode_id=episode_id))
 
