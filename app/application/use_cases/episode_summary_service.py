@@ -52,7 +52,7 @@ class EpisodeSummaryService:
         "- Tu ne produis ni titre, ni section, ni liste à puces.\n"
         "- Tu produis directement le résumé final.\n\n"
         "Objectif :\n"
-        "- Un résumé public entre 250 et 500 mots.\n"
+        "- Un résumé public entre 150 et 300 mots.\n"
         "- Un texte continu en paragraphes.\n"
         "- Un ton d'aventure fantasy sobre et fidèle aux faits."
     )
@@ -303,7 +303,7 @@ class EpisodeSummaryService:
         normalized = '\n\n'.join(lines)
 
         # Garde-fou minimum pour eviter une reponse trop pauvre.
-        if len(normalized) < 120:
+        if len(normalized) < 100 :
             raise EpisodeSummaryGenerationError('Le resume genere est trop court pour etre exploitable.')
 
         return normalized
@@ -510,5 +510,5 @@ class EpisodeSummaryService:
             '[COMBATS]\n'
             f'{combats_block}\n\n'
             'Résultat attendu :\n'
-            "Rédige maintenant le résumé final de l'épisode, en français, sous forme de texte narratif continu, entre 250 et 500 mots."
+            "Rédige maintenant le résumé final de l'épisode, en français, sous forme de texte narratif continu, entre 150 et 300 mots."
         )
