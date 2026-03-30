@@ -9,6 +9,7 @@ from app.application.use_cases.episode_summary_service import (
     EpisodeSummaryGenerationError,
     EpisodeSummaryService,
 )
+from app.application.use_cases.episode_email_service import EpisodeEmailServiceError
 
 
 def test_compute_source_hash_is_stable_for_same_payload_content():
@@ -137,3 +138,87 @@ def test_generate_public_summary_success_updates_episode(monkeypatch):
         assert episode.summary_model_name == 'llama3.2:1b'
         assert isinstance(episode.summary_generated_at, datetime)
         assert commits['count'] == 2
+
+
+def test_generate_public_summary_email_error_does_not_fail_generation(monkeypatch):
+    app = Flask(__name__)
+    app.config['OLLAMA_MODEL'] = 'llama3.2:1b'
+
+    with app.app_context():
+        campaign = SimpleNamespace(mj_id=42)
+        episode = SimpleNamespace(
+            id=1,
+            summary_public=None,
+            summary_source_hash=None,
+            summary_status='not_generated',
+            summary_generation_error=None,
+            summary_generated_at=None,
+            summary_generated_by_user_id=None,
+            summary_model_name=None,
+            story_arc=SimpleNamespace(campaign=campaign),
+        )
+        user = SimpleNamespace(id=42, role='MJ', is_mj_of=lambda _campaign: True)
+
+        monkeypatch.setattr('app.application.use_cases.episode_summary_service.Episode.query', SimpleNamespace(get_or_404=lambda _id: episode))
+        monkeypatch.setattr('app.application.use_cases.episode_summary_service.User.query', SimpleNamespace(get_or_404=lambda _id: user))
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.db.session',
+            SimpleNamespace(commit=lambda: None),
+        )
+        monkeypatch.setattr(EpisodeSummaryService, 'build_public_source_payload', staticmethod(lambda _episode: {'k': 'v'}))
+        monkeypatch.setattr(EpisodeSummaryService, 'compute_source_hash', staticmethod(lambda _payload: 'hash-1'))
+        monkeypatch.setattr(EpisodeSummaryService, 'build_public_prompt_from_payload', staticmethod(lambda _payload: 'PROMPT'))
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.OllamaService.generate_summary',
+            staticmethod(lambda **kwargs: ' '.join(['resume'] * 40)),
+        )
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.EpisodeEmailService.send_episode_summary_email',
+            staticmethod(lambda **kwargs: (_ for _ in ()).throw(EpisodeEmailServiceError('smtp down'))),
+        )
+
+        result = EpisodeSummaryService.generate_public_summary_for_episode(1, 42, send_email=True)
+
+        assert episode.summary_status == 'generated'
+        assert result['email']['sent'] is False
+        assert 'smtp down' in result['email_error']
+
+
+def test_enqueue_public_summary_generation_marks_pending_and_starts_thread(monkeypatch):
+    app = Flask(__name__)
+    with app.app_context():
+        campaign = SimpleNamespace(id=9)
+        episode = SimpleNamespace(
+            id=1,
+            title='Episode 1',
+            summary_status='not_generated',
+            summary_generation_error='old',
+            story_arc=SimpleNamespace(campaign=campaign),
+        )
+        user = SimpleNamespace(id=42, role='MJ', is_mj_of=lambda _campaign: True)
+        commits = {'count': 0}
+        started = {'value': False}
+
+        class _FakeThread:
+            def __init__(self, target, kwargs, daemon):
+                self.target = target
+                self.kwargs = kwargs
+                self.daemon = daemon
+
+            def start(self):
+                started['value'] = True
+
+        monkeypatch.setattr('app.application.use_cases.episode_summary_service.Episode.query', SimpleNamespace(get_or_404=lambda _id: episode))
+        monkeypatch.setattr('app.application.use_cases.episode_summary_service.User.query', SimpleNamespace(get_or_404=lambda _id: user))
+        monkeypatch.setattr(
+            'app.application.use_cases.episode_summary_service.db.session',
+            SimpleNamespace(commit=lambda: commits.__setitem__('count', commits['count'] + 1)),
+        )
+        monkeypatch.setattr('app.application.use_cases.episode_summary_service.threading.Thread', _FakeThread)
+
+        EpisodeSummaryService.enqueue_public_summary_generation(1, 42, send_email=True)
+
+        assert episode.summary_status == 'pending'
+        assert episode.summary_generation_error is None
+        assert commits['count'] == 1
+        assert started['value'] is True

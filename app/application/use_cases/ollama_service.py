@@ -27,7 +27,7 @@ class OllamaService:
 
     DEFAULT_BASE_URL = "http://127.0.0.1:11434"
     DEFAULT_MODEL = "llama3.2:1b"
-    DEFAULT_TIMEOUT_SECONDS = 120
+    DEFAULT_TIMEOUT_SECONDS = 600
     DEFAULT_TEMPERATURE = 0.4
 
     @staticmethod

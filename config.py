@@ -39,7 +39,7 @@ class Config:
     # Ollama configuration
     OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://127.0.0.1:11434')
     OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'llama3.2:1b')
-    OLLAMA_TIMEOUT_SECONDS = int(os.environ.get('OLLAMA_TIMEOUT_SECONDS', 120))
+    OLLAMA_TIMEOUT_SECONDS = int(os.environ.get('OLLAMA_TIMEOUT_SECONDS', 600))
 
     # Security
     WTF_CSRF_ENABLED = True

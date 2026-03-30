@@ -4,11 +4,13 @@ from __future__ import annotations
 from datetime import datetime
 import hashlib
 import json
+import threading
 from typing import Any
 
 from flask import current_app
 
-from app.application.use_cases.episode_email_service import EpisodeEmailService
+from app.application.use_cases.episode_email_service import EpisodeEmailService, EpisodeEmailServiceError
+from app.application.use_cases.notification_service import NotificationService
 from app.application.use_cases.ollama_service import OllamaService
 from app.extensions import db
 from app.models.combat import Combat, CombatLog
@@ -57,6 +59,10 @@ class EpisodeSummaryService:
         episode_id: int,
         triggered_by_user_id: int,
         send_email: bool = False,
+        force_email: bool = False,
+        force_regenerate: bool = False,
+        allow_pending: bool = False,
+        mark_pending: bool = True,
     ) -> dict[str, Any]:
         """Generer (ou reutiliser) un resume public pour un episode."""
         episode = Episode.query.get_or_404(episode_id)
@@ -68,10 +74,17 @@ class EpisodeSummaryService:
         source_payload = EpisodeSummaryService.build_public_source_payload(episode)
         source_hash = EpisodeSummaryService.compute_source_hash(source_payload)
 
-        if episode.summary_status == 'pending':
+        if episode.summary_status == 'pending' and not allow_pending:
             raise EpisodeSummaryAlreadyRunningError('Une generation est deja en cours pour cet episode.')
 
-        if episode.summary_public and episode.summary_source_hash == source_hash:
+        if force_regenerate:
+            episode.summary_source_hash = None
+
+        if episode.summary_public and episode.summary_source_hash == source_hash and not force_regenerate:
+            if episode.summary_status == 'pending':
+                episode.summary_status = 'generated'
+                episode.summary_generation_error = None
+                db.session.commit()
             return {
                 'summary': episode.summary_public,
                 'skipped': True,
@@ -79,9 +92,10 @@ class EpisodeSummaryService:
                 'source_hash': source_hash,
             }
 
-        episode.summary_status = 'pending'
-        episode.summary_generation_error = None
-        db.session.commit()
+        if mark_pending:
+            episode.summary_status = 'pending'
+            episode.summary_generation_error = None
+            db.session.commit()
 
         try:
             user_prompt = EpisodeSummaryService.build_public_prompt_from_payload(source_payload)
@@ -123,14 +137,120 @@ class EpisodeSummaryService:
         }
 
         if send_email:
-            email_result = EpisodeEmailService.send_episode_summary_email(
-                episode=episode,
-                source_hash=source_hash,
-                summary_text=summary_text,
-            )
-            result['email'] = email_result
+            try:
+                email_result = EpisodeEmailService.send_episode_summary_email(
+                    episode=episode,
+                    source_hash=source_hash,
+                    summary_text=summary_text,
+                    force=force_email,
+                )
+                result['email'] = email_result
+            except EpisodeEmailServiceError as exc:
+                result['email'] = {'sent': False, 'error': str(exc)}
+                result['email_error'] = str(exc)
 
         return result
+
+    @staticmethod
+    def enqueue_public_summary_generation(
+        episode_id: int,
+        triggered_by_user_id: int,
+        send_email: bool = False,
+        force_email: bool = False,
+        force_regenerate: bool = False,
+    ) -> None:
+        """Lancer la generation de resume en arriere-plan puis retourner immediatement."""
+        episode = Episode.query.get_or_404(episode_id)
+        user = User.query.get_or_404(triggered_by_user_id)
+        campaign = episode.story_arc.campaign
+        EpisodeSummaryService._assert_can_manage_summary(user, campaign)
+
+        if episode.summary_status == 'pending':
+            raise EpisodeSummaryAlreadyRunningError('Une generation est deja en cours pour cet episode.')
+
+        episode.summary_status = 'pending'
+        episode.summary_generation_error = None
+        db.session.commit()
+
+        app = current_app._get_current_object()
+        worker = threading.Thread(
+            target=EpisodeSummaryService._run_public_summary_generation_job,
+            kwargs={
+                'app': app,
+                'episode_id': episode_id,
+                'triggered_by_user_id': triggered_by_user_id,
+                'send_email': send_email,
+                'force_email': force_email,
+                'force_regenerate': force_regenerate,
+            },
+            daemon=True,
+        )
+        worker.start()
+
+    @staticmethod
+    def _run_public_summary_generation_job(
+        app,
+        episode_id: int,
+        triggered_by_user_id: int,
+        send_email: bool = False,
+        force_email: bool = False,
+        force_regenerate: bool = False,
+    ) -> None:
+        with app.app_context():
+            try:
+                result = EpisodeSummaryService.generate_public_summary_for_episode(
+                    episode_id=episode_id,
+                    triggered_by_user_id=triggered_by_user_id,
+                    send_email=send_email,
+                    force_email=force_email,
+                    force_regenerate=force_regenerate,
+                    allow_pending=True,
+                    mark_pending=False,
+                )
+                episode = Episode.query.get(episode_id)
+                if not episode:
+                    return
+
+                if result.get('email_error'):
+                    NotificationService.create_notification(
+                        triggered_by_user_id,
+                        "Résumé d'épisode généré",
+                        (
+                            f'Le résumé de l\'épisode "{episode.title}" est disponible, '
+                            f"mais l'envoi email a échoué : {result.get('email_error')}."
+                        ),
+                        kind='episode_summary',
+                        campaign_id=episode.story_arc.campaign_id,
+                    )
+                else:
+                    NotificationService.create_notification(
+                        triggered_by_user_id,
+                        "Résumé d'épisode généré",
+                        f'Le résumé de l\'épisode "{episode.title}" est disponible.',
+                        kind='episode_summary',
+                        campaign_id=episode.story_arc.campaign_id,
+                    )
+            except Exception as exc:  # noqa: BLE001 - background job failure must always notify
+                episode = Episode.query.get(episode_id)
+                if episode:
+                    episode.summary_status = 'failed'
+                    episode.summary_generation_error = str(exc)
+                    db.session.commit()
+                    campaign_id = episode.story_arc.campaign_id
+                    episode_title = episode.title
+                else:
+                    campaign_id = None
+                    episode_title = str(episode_id)
+
+                NotificationService.create_notification(
+                    triggered_by_user_id,
+                    "Échec de génération du résumé",
+                    f'La génération du résumé de l\'épisode "{episode_title}" a échoué : {exc}',
+                    kind='episode_summary',
+                    campaign_id=campaign_id,
+                )
+            finally:
+                db.session.remove()
 
     @staticmethod
     def build_public_source_payload(episode: Episode) -> dict[str, Any]:

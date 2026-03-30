@@ -66,6 +66,15 @@
                 </div>
             {% endif %}
         </div>
+        {% if episode.summary_status == 'pending' %}
+            <div class="status-banner info" style="margin-bottom: 1rem;">
+                La generation du resume est en cours. Cela peut prendre plusieurs minutes.
+            </div>
+        {% elif episode.summary_status == 'failed' %}
+            <div class="status-banner danger" style="margin-bottom: 1rem;">
+                La generation du resume a echoue.
+            </div>
+        {% endif %}
         {% if episode.summary_public %}
             <p class="section-head__copy" style="white-space: pre-line;">{{ episode.summary_public }}</p>
         {% else %}
