@@ -46,12 +46,18 @@
                 <div class="campaign-actions">
                     <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
                         <input type="hidden" name="send_email" value="0">
+                        {% if episode.summary_public %}
+                            <input type="hidden" name="force_regenerate" value="1">
+                        {% endif %}
                         <button type="submit" class="btn btn-primary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
                             {% if episode.summary_public %}Regenerer le resume{% else %}Generer le resume{% endif %}
                         </button>
                     </form>
                     <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
                         <input type="hidden" name="send_email" value="1">
+                        {% if episode.summary_public %}
+                            <input type="hidden" name="force_regenerate" value="1">
+                        {% endif %}
                         <button type="submit" class="btn btn-secondary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
                             Generer et envoyer
                         </button>
