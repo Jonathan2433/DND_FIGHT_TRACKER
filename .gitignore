@@ -2,6 +2,9 @@
 .env
 .env.*
 
+.env
+.env.preprod
+
 # Alembic cache
 migrations/__pycache__/
 migrations/versions/__pycache__/

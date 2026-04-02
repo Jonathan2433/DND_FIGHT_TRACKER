@@ -31,6 +31,13 @@ services:
     volumes:
       - ./static/uploads:/app/static/uploads
     command: gunicorn -w 1 --threads 100 -b 0.0.0.0:5000 run:app
+    networks:
+      - default
+      - jarvis_prod_net
 
 volumes:
   postgres_data_preprod:
+
+networks:
+  jarvis_prod_net:
+    external: true
