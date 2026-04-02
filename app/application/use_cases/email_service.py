@@ -146,10 +146,44 @@ class EmailService:
         return EmailService._send_message(msg, "email de vérification")
 
     @staticmethod
-    def send_password_reset_email(user_email, username, reset_url):
-        """Envoyer un email de reset de mot de passe (pour plus tard)"""
-        # Implémentation pour plus tard
-        pass
+    def send_password_reset_email(user_email, username, reset_url, expires_minutes=30):
+        """Envoyer un email de reinitialisation de mot de passe."""
+        subject = "🔐 Réinitialisation de votre mot de passe ExalQuest"
+
+        html_body = EmailService._build_email_shell(
+            title="Réinitialiser votre mot de passe",
+            intro=f"Bonjour {username}, nous avons reçu une demande de réinitialisation.",
+            cta_label="🔐 Choisir un nouveau mot de passe",
+            cta_url=reset_url,
+            body_content=(
+                "Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe. "
+                "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email."
+            ),
+            footer_content=(
+                f"Ce lien de sécurité expire dans {expires_minutes} minutes et n'est utilisable qu'une seule fois."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Reinitialisation de mot de passe
+
+        Bonjour {username},
+
+        Pour choisir un nouveau mot de passe, utilisez ce lien :
+        {reset_url}
+
+        Ce lien expire dans {expires_minutes} minutes et n'est utilisable qu'une seule fois.
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email reset mot de passe")
 
     @staticmethod
     def send_campaign_invitation(user_email, campaign_name, invitation_url, username):
