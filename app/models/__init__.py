@@ -5,7 +5,7 @@ from .combat import Combat, Combatant, CombatLog
 from .character import CharacterTemplate
 from .encounter import EncounterTemplate
 from .experience import XPLog
-from .user import User, EmailVerification
+from .user import User, EmailVerification, PasswordResetToken
 from .campaign import (
     Campaign,
     CampaignSession,
@@ -29,6 +29,7 @@ __all__ = [
     'XPLog',
     'User',
     'EmailVerification',
+    'PasswordResetToken',
     'Campaign',
     'CampaignSession',
     'CampaignMember',

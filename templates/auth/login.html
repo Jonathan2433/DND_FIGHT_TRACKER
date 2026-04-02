@@ -34,6 +34,10 @@
         </button>
     </form>
 
+        <p class="inl-auth-007" style="margin-top:-.25rem;">
+            <a href="{{ url_for('auth.forgot_password') }}" class="inl-auth-008">Mot de passe oublié ?</a>
+        </p>
+
     <p class="inl-auth-007">
         Pas encore de compte ?
         <a href="{{ url_for('auth.register', next=next_url) if next_url else url_for('auth.register') }}" class="inl-auth-008">S'inscrire</a>
