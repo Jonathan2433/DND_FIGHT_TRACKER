@@ -71,6 +71,71 @@
                         <button type="submit" class="btn-primary">Ajouter</button>
                     </form>
                 </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>⚔️ Charger un ennemie</summary>
+                    <form method="POST" action="{{ url_for('combat.load_encounter', combat_id=combat.id) }}" class="template-form">
+                        <select name="encounter_id">
+                            {% for enc in encounter_templates %}
+                                <option value="{{ enc.id }}">{{ enc.name }} ({{ enc.difficulty }})</option>
+                            {% endfor %}
+                        </select>
+
+                        <button type="submit" class="btn-primary">Charger</button>
+                    </form>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>👥 Ajouter des PJ</summary>
+                    <form method="POST"
+                          action="{{ url_for('combat.add_character_template', combat_id=combat.id) }}"
+                          class="template-form">
+
+                        <select name="template_id">
+                            {% for char in character_templates %}
+                                <option value="{{ char.id }}">
+                                    {{ char.name }} ({{ char.character_class }} {{ char.level }})
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="number"
+                               name="initiative"
+                               placeholder="Initiative"
+                               required>
+
+                        <button type="submit" class="btn-primary">
+                            Ajouter PJ
+                        </button>
+
+                    </form>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>🐲 Ajouter un monstre</summary>
+                    <form method="POST"
+                          action="{{ url_for('combat.add_template', combat_id=combat.id) }}"
+                          enctype="multipart/form-data"
+                          class="grid-form">
+
+                        <select name="template">
+                            {% for name, template in MONSTER_TEMPLATES.items() %}
+                                <option value="{{ name }}" data-image="{{ template.image }}">{{ template.display_name or name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="monster-template-preview">
+                            <img src="" alt="Portrait du monstre" data-monster-template-preview hidden>
+                        </div>
+
+                        <input type="number" name="quantity" value="1" min="1">
+                        <input type="number" name="initiative" placeholder="Initiative (optionnel)">
+                        <input type="file" name="monster_image" accept="image/*">
+                        <input type="url" name="monster_image_url" placeholder="URL image (https://...)">
+
+                        <button type="submit" class="btn-primary">Ajouter</button>
+                    </form>
+                </details>
             </div>
         </section>
 
@@ -283,17 +348,18 @@
 
             <form method="POST"
                   action="{{ url_for('combat.create_group', combat_id=combat.id) }}">
-
-                {% for c in singles %}
-                    {% if not c.is_dead and not c.has_fled %}
-                        <div>
-                            <input type="checkbox"
-                                   name="selected_combatants"
-                                   value="{{ c.id }}">
-                            {{ c.name }} (Init {{ c.initiative }})
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                <div class="combat-grouping-list">
+                    {% for c in singles %}
+                        {% if not c.is_dead and not c.has_fled %}
+                            <label class="combat-grouping-option">
+                                <input type="checkbox"
+                                       name="selected_combatants"
+                                       value="{{ c.id }}">
+                                <span>{{ c.name }} (Init {{ c.initiative }})</span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
 
                 <br>
                 <button type="submit" class="btn-primary">Regrouper</button>
