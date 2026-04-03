@@ -16,6 +16,9 @@
                 <div class="combat-top-menu__links">
                     <a class="btn-secondary" href="#combatants-list">Aller aux combattants</a>
                     <a class="btn-secondary" href="#battlemap-section">Battle map</a>
+                    <a class="btn-secondary" href="#add-encounter-section">Charger un ennemie</a>
+                    <a class="btn-secondary" href="#add-pj-section">Ajouter des PJ</a>
+                    <a class="btn-secondary" href="#add-monster-section">Ajouter un monstre</a>
                 </div>
             </div>
 
@@ -201,7 +204,7 @@
         <!-- ========================= -->
         <!-- TEMPLATES PJ -->
         <!-- ========================= -->
-        <section class="card">
+        <section class="card" id="add-pj-section">
             <h3>👥 Ajouter des PJ</h3>
 
             <form method="POST"
@@ -231,7 +234,7 @@
         <!-- ========================= -->
         <!-- ENCOUNTERS COMPLETS -->
         <!-- ========================= -->
-        <section class="card">
+        <section class="card" id="add-encounter-section">
             <h3>⚔️ Charger un ennemie</h3>
 
             <form method="POST" action="{{ url_for('combat.load_encounter', combat_id=combat.id) }}" class="template-form">
@@ -248,7 +251,7 @@
         <!-- ========================= -->
         <!-- AJOUT MONSTRES LOST MINE -->
         <!-- ========================= -->
-        <section class="card">
+        <section class="card" id="add-monster-section">
             <h3>Ajouter un monstre</h3>
 
             <form method="POST"
@@ -283,17 +286,18 @@
 
             <form method="POST"
                   action="{{ url_for('combat.create_group', combat_id=combat.id) }}">
-
-                {% for c in singles %}
-                    {% if not c.is_dead and not c.has_fled %}
-                        <div>
-                            <input type="checkbox"
-                                   name="selected_combatants"
-                                   value="{{ c.id }}">
-                            {{ c.name }} (Init {{ c.initiative }})
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                <div class="combat-group-checkboxes">
+                    {% for c in singles %}
+                        {% if not c.is_dead and not c.has_fled %}
+                            <label class="combat-group-checkboxes__item">
+                                <input type="checkbox"
+                                       name="selected_combatants"
+                                       value="{{ c.id }}">
+                                <span>{{ c.name }} (Init {{ c.initiative }})</span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
 
                 <br>
                 <button type="submit" class="btn-primary">Regrouper</button>
