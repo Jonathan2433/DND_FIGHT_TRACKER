@@ -10,6 +10,135 @@
 
         <h2>{{ combat.name }} — Round {{ combat.round }}</h2>
 
+        <section class="card combat-top-menu">
+            <details class="combat-top-menu__dropdown">
+                <summary class="combat-top-menu__summary">⚡ Actions rapides MJ</summary>
+
+                <div class="combat-top-menu__content">
+                    <div class="combat-top-menu__links">
+                        <a class="btn-secondary" href="#combatants-list">Aller aux combattants</a>
+                        <a class="btn-secondary" href="#battlemap-section">Battle map</a>
+                    </div>
+
+                <details class="combat-top-menu__panel">
+                    <summary>📨 Inviter des joueurs</summary>
+
+                    <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
+                        <div class="combat-invite-list" role="group" aria-label="Joueurs à inviter">
+                            {% if campaign_players %}
+                            {% for player in campaign_players %}
+                            <label class="combat-invite-option">
+                                <input type="checkbox" name="player_ids" value="{{ player.id }}">
+                                <span>{{ player.username }} — {{ player.email }}</span>
+                            </label>
+                            {% endfor %}
+                            {% else %}
+                            <p class="combat-invite-empty">Aucun joueur dans la campagne</p>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn-primary">Envoyer invitation au combat</button>
+                    </form>
+
+                    <p>Ou partagez ce lien direct :</p>
+                    <div class="combat-invite-row">
+                        <input type="text" value="{{ url_for('combat.join_combat', combat_id=combat.id, _external=True) }}" readonly data-combat-invite-link>
+                        <button type="button" class="btn-secondary" data-copy-combat-link>Copier</button>
+                        <a href="{{ url_for('combat.join_combat', combat_id=combat.id) }}" class="btn-primary" target="_blank">Tester rejoindre</a>
+                    </div>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>➕ Ajouter un combattant</summary>
+                    <form method="POST"
+                          action="{{ url_for('combat.add_combatant', combat_id=combat.id) }}"
+                          class="grid-form">
+
+                        <input type="text" name="name" placeholder="Nom" required>
+
+                        <select name="type">
+                            <option value="PJ">PJ</option>
+                            <option value="Ennemi">Ennemi</option>
+                            <option value="Boss">Boss</option>
+                            <option value="Neutre">Neutre</option>
+                        </select>
+
+                        <input type="number" name="hp_max" placeholder="PV Max" required>
+                        <input type="number" name="hp_current" placeholder="PV Actuels">
+                        <input type="number" name="ac" placeholder="CA" required>
+                        <input type="number" name="initiative" placeholder="Initiative" required>
+
+                        <button type="submit" class="btn-primary">Ajouter</button>
+                    </form>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>⚔️ Charger un ennemie</summary>
+                    <form method="POST" action="{{ url_for('combat.load_encounter', combat_id=combat.id) }}" class="template-form">
+                        <select name="encounter_id">
+                            {% for enc in encounter_templates %}
+                                <option value="{{ enc.id }}">{{ enc.name }} ({{ enc.difficulty }})</option>
+                            {% endfor %}
+                        </select>
+
+                        <button type="submit" class="btn-primary">Charger</button>
+                    </form>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>👥 Ajouter des PJ</summary>
+                    <form method="POST"
+                          action="{{ url_for('combat.add_character_template', combat_id=combat.id) }}"
+                          class="template-form">
+
+                        <select name="template_id">
+                            {% for char in character_templates %}
+                                <option value="{{ char.id }}">
+                                    {{ char.name }} ({{ char.character_class }} {{ char.level }})
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="number"
+                               name="initiative"
+                               placeholder="Initiative"
+                               required>
+
+                        <button type="submit" class="btn-primary">
+                            Ajouter PJ
+                        </button>
+
+                    </form>
+                </details>
+
+                <details class="combat-top-menu__panel">
+                    <summary>🐲 Ajouter un monstre</summary>
+                    <form method="POST"
+                          action="{{ url_for('combat.add_template', combat_id=combat.id) }}"
+                          enctype="multipart/form-data"
+                          class="grid-form">
+
+                        <select name="template">
+                            {% for name, template in MONSTER_TEMPLATES.items() %}
+                                <option value="{{ name }}" data-image="{{ template.image }}">{{ template.display_name or name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="monster-template-preview">
+                            <img src="" alt="Portrait du monstre" data-monster-template-preview hidden>
+                        </div>
+
+                        <input type="number" name="quantity" value="1" min="1">
+                        <input type="number" name="initiative" placeholder="Initiative (optionnel)">
+                        <input type="file" name="monster_image" accept="image/*">
+                        <input type="url" name="monster_image_url" placeholder="URL image (https://...)">
+
+                        <button type="submit" class="btn-primary">Ajouter</button>
+                    </form>
+                </details>
+                </div>
+            </details>
+        </section>
+
         <!-- PANNEAU DE CONTRÔLE FLOTTANT -->
         <div class="floating-hud combat-control-hud">
 
@@ -53,49 +182,19 @@
 
         </div>
 
-        <section class="card combat-invite-card">
-            <h3>📨 Inviter des joueurs au combat</h3>
-            <p>Cochez un ou plusieurs joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
-
-            <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
-                <div class="combat-invite-list" role="group" aria-label="Joueurs à inviter">
-                    {% if campaign_players %}
-                    {% for player in campaign_players %}
-                    <label class="combat-invite-option">
-                        <input type="checkbox" name="player_ids" value="{{ player.id }}">
-                        <span>{{ player.username }} — {{ player.email }}</span>
-                    </label>
-                    {% endfor %}
-                    {% else %}
-                    <p class="combat-invite-empty">Aucun joueur dans la campagne</p>
-                    {% endif %}
-                </div>
-                <button type="submit" class="btn-primary">Envoyer invitation au combat</button>
-            </form>
-
-            <p>Ou partagez ce lien direct :</p>
-            <div class="combat-invite-row">
-                <input type="text" value="{{ url_for('combat.join_combat', combat_id=combat.id, _external=True) }}" readonly data-combat-invite-link>
-                <button type="button" class="btn-secondary" data-copy-combat-link>Copier</button>
-                <a href="{{ url_for('combat.join_combat', combat_id=combat.id) }}" class="btn-primary" target="_blank">Tester rejoindre</a>
-            </div>
-        </section>
-
         <hr>
 
-        <section class="card">
+        <section class="card" id="battlemap-section">
             <div class="battlemap-header-row">
                 <h3>🗺️ Battle map (MJ)</h3>
                 <button type="button" class="btn-secondary btn-battlemap-fullscreen" data-battlemap-fullscreen-toggle>
                     ⛶ Plein écran battle map
                 </button>
             </div>
-            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" class="template-form">
+            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" id="battle-map-upload-form" class="template-form">
                 <input type="file" name="battlemap_media" accept="image/*,video/mp4,video/webm" required>
                 <button type="submit" class="btn-primary">Uploader le fond</button>
             </form>
-
-            <p>Clique-glisse les tokens pour les déplacer. Position sauvegardée automatiquement.</p>
             <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
                 <div id="battlemap-board" class="battlemap-board">
                 {% if combat.battlemap_media_filename %}
@@ -159,110 +258,7 @@
             </div>
         </section>
 
-        <!-- ========================= -->
-        <!-- AJOUT MANUEL -->
-        <!-- ========================= -->
-        <section class="card">
-            <h3>➕ Ajouter un combattant</h3>
 
-            <form method="POST"
-                  action="{{ url_for('combat.add_combatant', combat_id=combat.id) }}"
-                  class="grid-form">
-
-                <input type="text" name="name" placeholder="Nom" required>
-
-                <select name="type">
-                    <option value="PJ">PJ</option>
-                    <option value="Ennemi">Ennemi</option>
-                    <option value="Boss">Boss</option>
-                    <option value="Neutre">Neutre</option>
-                </select>
-
-                <input type="number" name="hp_max" placeholder="PV Max" required>
-                <input type="number" name="hp_current" placeholder="PV Actuels">
-                <input type="number" name="ac" placeholder="CA" required>
-                <input type="number" name="initiative" placeholder="Initiative" required>
-
-                <button type="submit" class="btn-primary">Ajouter</button>
-            </form>
-        </section>
-
-        <!-- ========================= -->
-        <!-- TEMPLATES PJ -->
-        <!-- ========================= -->
-        <section class="card">
-            <h3>👥 Ajouter des PJ</h3>
-
-            <form method="POST"
-                  action="{{ url_for('combat.add_character_template', combat_id=combat.id) }}"
-                  class="template-form">
-
-                <select name="template_id">
-                    {% for char in character_templates %}
-                        <option value="{{ char.id }}">
-                            {{ char.name }} ({{ char.character_class }} {{ char.level }})
-                        </option>
-                    {% endfor %}
-                </select>
-
-                <input type="number"
-                       name="initiative"
-                       placeholder="Initiative"
-                       required>
-
-                <button type="submit" class="btn-primary">
-                    Ajouter PJ
-                </button>
-
-            </form>
-        </section>
-
-        <!-- ========================= -->
-        <!-- ENCOUNTERS COMPLETS -->
-        <!-- ========================= -->
-        <section class="card">
-            <h3>⚔️ Charger un ennemie</h3>
-
-            <form method="POST" action="{{ url_for('combat.load_encounter', combat_id=combat.id) }}" class="template-form">
-                <select name="encounter_id">
-                    {% for enc in encounter_templates %}
-                        <option value="{{ enc.id }}">{{ enc.name }} ({{ enc.difficulty }})</option>
-                    {% endfor %}
-                </select>
-
-                <button type="submit" class="btn-primary">Charger</button>
-            </form>
-        </section>
-
-        <!-- ========================= -->
-        <!-- AJOUT MONSTRES LOST MINE -->
-        <!-- ========================= -->
-        <section class="card">
-            <h3>Ajouter un monstre</h3>
-
-            <form method="POST"
-                  action="{{ url_for('combat.add_template', combat_id=combat.id) }}"
-                  enctype="multipart/form-data"
-                  class="grid-form">
-
-                <select name="template">
-                    {% for name, template in MONSTER_TEMPLATES.items() %}
-                        <option value="{{ name }}" data-image="{{ template.image }}">{{ template.display_name or name }}</option>
-                    {% endfor %}
-                </select>
-
-                <div class="monster-template-preview">
-                    <img src="" alt="Portrait du monstre" data-monster-template-preview hidden>
-                </div>
-
-                <input type="number" name="quantity" value="1" min="1">
-                <input type="number" name="initiative" placeholder="Initiative (optionnel)">
-                <input type="file" name="monster_image" accept="image/*">
-                <input type="url" name="monster_image_url" placeholder="URL image (https://...)">
-
-                <button type="submit" class="btn-primary">Ajouter</button>
-            </form>
-        </section>
 
         <!-- ========================= -->
         <!-- REGROUPEMENT -->
@@ -272,17 +268,18 @@
 
             <form method="POST"
                   action="{{ url_for('combat.create_group', combat_id=combat.id) }}">
-
-                {% for c in singles %}
-                    {% if not c.is_dead and not c.has_fled %}
-                        <div>
-                            <input type="checkbox"
-                                   name="selected_combatants"
-                                   value="{{ c.id }}">
-                            {{ c.name }} (Init {{ c.initiative }})
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                <div class="combat-grouping-list">
+                    {% for c in singles %}
+                        {% if not c.is_dead and not c.has_fled %}
+                            <label class="combat-grouping-option">
+                                <input type="checkbox"
+                                       name="selected_combatants"
+                                       value="{{ c.id }}">
+                                <span>{{ c.name }} (Init {{ c.initiative }})</span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
 
                 <br>
                 <button type="submit" class="btn-primary">Regrouper</button>
@@ -351,120 +348,128 @@
         <!-- ========================= -->
         <!-- COMBATTANTS INDIVIDUELS -->
         <!-- ========================= -->
-        {% for c in singles %}
-        <div class="combatant
-            {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
-            {{ c.type|lower }}"
-            {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
+        <div id="combatants-list">
+            {% for c in singles %}
+            <div class="combatant
+                {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
+                {{ c.type|lower }}
+                {% if c.is_dead or c.has_fled %}combatant-inactive{% endif %}"
+                {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
 
-            <div class="combatant-header">
-                <h3>
-                    {{ c.name }}
-                    {% if loop.index0 == combat.current_turn %}
-                        <span class="turn-badge">🎯 Tour en cours</span>
-                    {% endif %}
-                </h3>
-                <span class="initiative">Init {{ c.initiative }}</span>
-            </div>
-
-            <div>
-                CA : {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})
-            </div>
-
-            <form method="POST"
-                  action="{{ url_for('combatant.modify_ac', id=c.id) }}"
-                  class="damage-form">
-                <input type="number" name="amount" placeholder="+/- CA">
-                <button type="submit" class="btn-secondary">Modifier CA</button>
-            </form>
-
-            <div class="hp-bar-container">
-                {% set hp_ratio = (c.hp_current / c.hp_max) if c.hp_max else 0 %}
-                <div class="hp-bar js-width {% if hp_ratio > 0.6 %}hp-green{% elif hp_ratio > 0.3 %}hp-yellow{% elif hp_ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
-                     data-width="{{ hp_ratio * 100 }}%">
+                <div class="combatant-header">
+                    <h3>
+                        {{ c.name }}
+                        {% if c.is_dead %}
+                            <span class="combatant-state-badge">💀 Mort</span>
+                        {% elif c.has_fled %}
+                            <span class="combatant-state-badge">🏃 En fuite</span>
+                        {% endif %}
+                        {% if loop.index0 == combat.current_turn %}
+                            <span class="turn-badge">🎯 Tour en cours</span>
+                        {% endif %}
+                    </h3>
+                    <span class="initiative">Init {{ c.initiative }}</span>
                 </div>
-            </div>
 
-            <div>{{ c.hp_current }} / {{ c.hp_max }} PV</div>
-            <div class="temp-hp-container">
-                <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 }}%"></div>
-            </div>
+                <div class="combatant-summary-grid">
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">CA</span>
+                        <span class="summary-value">{{ c.ac_total }}</span>
+                        <span class="summary-detail">base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %}</span>
+                    </div>
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">PV</span>
+                        <span class="summary-value">{{ c.hp_current }} / {{ c.hp_max }}</span>
+                    </div>
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">Temp</span>
+                        <span class="summary-value">+{{ c.temp_hp }}</span>
+                    </div>
+                </div>
 
-            <div>
-                {{ c.hp_current }} / {{ c.hp_max }} PV
-                {% if c.temp_hp > 0 %}
-                    <span class="temp-hp-text">(+{{ c.temp_hp }} temp)</span>
-                {% endif %}
-            </div>
+                <div class="combatant-bars-row">
+                    <div class="hp-bar-container">
+                        {% set hp_ratio = (c.hp_current / c.hp_max) if c.hp_max else 0 %}
+                        <div class="hp-bar js-width {% if hp_ratio > 0.6 %}hp-green{% elif hp_ratio > 0.3 %}hp-yellow{% elif hp_ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                             data-width="{{ hp_ratio * 100 }}%">
+                        </div>
+                    </div>
+                    <div class="temp-hp-container">
+                        <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 if c.hp_max else 0 }}%"></div>
+                    </div>
+                </div>
 
-            <form method="POST"
-                  action="{{ url_for('combatant.modify_temp_hp', id=c.id) }}"
-                  class="damage-form">
-                <input type="number" name="amount" placeholder="PV Temporaires">
-                <button type="submit" class="btn-primary">Ajouter Temp</button>
-            </form>
+                <div class="combatant-adjust-row">
+                    <form method="POST"
+                          action="{{ url_for('combatant.modify_ac', id=c.id) }}"
+                          class="damage-form damage-form-compact">
+                        <input type="number" name="amount" placeholder="+/- CA">
+                        <button type="submit" class="btn-secondary">CA</button>
+                    </form>
 
-            <!-- CONDITIONS -->
-            <div class="conditions">
-                {% set active_conditions = c.conditions.split(",") if c.conditions else [] %}
-                {% for condition in conditions_list %}
-                    <a href="{{ url_for('combatant.toggle_condition', id=c.id, condition=condition) }}"
-                       class="condition-badge
-                       {% if condition in active_conditions %}active-condition{% endif %}"
-                       title="{{ conditions_descriptions[condition] }}">
-                        {{ condition }}
-                    </a>
-                {% endfor %}
-            </div>
+                    <form method="POST"
+                          action="{{ url_for('combatant.modify_temp_hp', id=c.id) }}"
+                          class="damage-form damage-form-compact">
+                        <input type="number" name="amount" placeholder="PV Temp">
+                        <button type="submit" class="btn-primary">Temp</button>
+                    </form>
+                </div>
 
-            <!-- ACTIONS COMBAT -->
-            <div class="combat-actions">
-                <form method="POST"
-                      action="{{ url_for('combatant.damage', id=c.id) }}"
-                      class="damage-form">
-                    <input type="number" name="amount" placeholder="Dégâts">
-                    <button type="submit" class="btn-danger">Infliger</button>
-                </form>
+                <!-- CONDITIONS -->
+                <div class="conditions">
+                    {% set active_conditions = c.conditions.split(",") if c.conditions else [] %}
+                    {% for condition in conditions_list %}
+                        <a href="{{ url_for('combatant.toggle_condition', id=c.id, condition=condition) }}"
+                           class="condition-badge
+                           {% if condition in active_conditions %}active-condition{% endif %}"
+                           title="{{ conditions_descriptions[condition] }}">
+                            {{ condition }}
+                        </a>
+                    {% endfor %}
+                </div>
 
-                <form method="POST"
-                      action="{{ url_for('combatant.heal', id=c.id) }}"
-                      class="damage-form">
-                    <input type="number" name="amount" placeholder="Soin">
-                    <button type="submit" class="btn-primary">Soigner</button>
-                </form>
-            </div>
+                <!-- ACTIONS COMBAT -->
+                <div class="combat-actions combat-actions-inline">
+                    <form method="POST"
+                          action="{{ url_for('combatant.damage', id=c.id) }}"
+                          class="damage-form">
+                        <input type="number" name="amount" placeholder="Dégâts">
+                        <button type="submit" class="btn-danger">Infliger</button>
+                    </form>
 
-            <!-- ÉTATS SPÉCIAUX -->
-            {% if c.is_dead %}
-                <div class="dead">💀 Mort</div>
-                <a href="{{ url_for('combatant.toggle_visibility', id=c.id) }}"
-                   class="btn-secondary">👁 Masquer</a>
-            {% endif %}
+                    <form method="POST"
+                          action="{{ url_for('combatant.heal', id=c.id) }}"
+                          class="damage-form">
+                        <input type="number" name="amount" placeholder="Soin">
+                        <button type="submit" class="btn-primary">Soigner</button>
+                    </form>
+                </div>
 
-            {% if c.has_fled %}
-                <div class="fled">🏃 En fuite</div>
-            {% endif %}
 
-            <!-- ACTIONS ADMINISTRATIVES -->
-            <div class="admin-actions">
-
-                <form method="GET" action="{{ url_for('combatant.toggle_fled', id=c.id) }}" class="inl-combat-001">
-                    {% if c.has_fled %}
-                        <button type="submit" class="btn-secondary">🔄 Revient</button>
-                    {% else %}
-                        <button type="submit" class="btn-warning">🏃 Fuite</button>
+                <!-- ACTIONS ADMINISTRATIVES -->
+                <div class="admin-actions admin-actions-inline">
+                    {% if c.is_dead %}
+                    <a href="{{ url_for('combatant.toggle_visibility', id=c.id) }}"
+                       class="btn-secondary">👁 Masquer</a>
                     {% endif %}
-                </form>
 
-                <form method="POST" action="{{ url_for('combatant.delete_combatant', id=c.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');" class="inl-combat-001">
-                    <button type="submit" class="btn-danger">🗑 Supprimer</button>
-                </form>
+                    <form method="GET" action="{{ url_for('combatant.toggle_fled', id=c.id) }}" class="inl-combat-001">
+                        {% if c.has_fled %}
+                            <button type="submit" class="btn-secondary">🔄 Revient</button>
+                        {% else %}
+                            <button type="submit" class="btn-warning">🏃 Fuite</button>
+                        {% endif %}
+                    </form>
+
+                    <form method="POST" action="{{ url_for('combatant.delete_combatant', id=c.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');" class="inl-combat-001">
+                        <button type="submit" class="btn-danger">🗑 Supprimer</button>
+                    </form>
+
+                </div>
 
             </div>
-
+            {% endfor %}
         </div>
-        {% endfor %}
-
     </div>
 
     <!-- ========================= -->
