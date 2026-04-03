@@ -183,9 +183,8 @@
         grid-template-columns: 1fr;
     }
 
-    .combat-top-menu__header {
-        flex-direction: column;
-        align-items: flex-start;
+    .combat-top-menu__links {
+        width: 100%;
     }
 
     .combatant-summary-grid,
