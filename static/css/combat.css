@@ -1039,6 +1039,101 @@ body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscree
     margin-top: 18px;
 }
 
+.combat-top-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px;
+}
+
+.combat-top-menu a {
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--primary-a30);
+    color: var(--color-text-primary);
+    background: var(--overlay-white-05);
+    font-weight: 600;
+}
+
+.combat-top-menu a:hover {
+    border-color: var(--color-primary);
+    background: var(--primary-a20);
+}
+
+.combat-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.combat-collapsible {
+    margin: 0;
+}
+
+.combat-collapsible > summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.combat-collapsible > summary::-webkit-details-marker {
+    display: none;
+}
+
+.combat-collapsible > summary::after {
+    content: "▾";
+    float: right;
+    opacity: 0.75;
+}
+
+.combat-collapsible[open] > summary::after {
+    content: "▴";
+}
+
+.combat-collapsible > :not(summary) {
+    margin-top: 10px;
+}
+
+.combatants-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.combatant.combatant--compact {
+    padding: 14px;
+    margin-bottom: 0;
+    border-left-width: 4px;
+}
+
+.combatant--compact .combatant-header h3 {
+    font-size: 18px;
+}
+
+.combatant--compact .damage-form,
+.combatant--compact .group-actions,
+.combatant--compact .combat-actions,
+.combatant--compact .admin-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.combatant--compact .conditions {
+    margin-top: 8px;
+}
+
+.combatant--compact .turn-badge {
+    margin-left: 6px;
+}
+
 .combat-invite-form {
     display: grid;
     gap: 10px;
@@ -1115,4 +1210,11 @@ body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscree
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--overlay-white-30);
+}
+
+@media (max-width: 860px) {
+    .combatants-board,
+    .combat-admin-grid {
+        grid-template-columns: 1fr;
+    }
 }

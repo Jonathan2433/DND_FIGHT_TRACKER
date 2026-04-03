@@ -10,6 +10,13 @@
 
         <h2>{{ combat.name }} — Round {{ combat.round }}</h2>
 
+        <nav class="card combat-top-menu" aria-label="Menu combat MJ">
+            <a href="#combat-management">⚙️ Gestion rapide</a>
+            <a href="#battlemap-section">🗺️ Battle map</a>
+            <a href="#groups-section">🛡️ Groupes</a>
+            <a href="#combatants-section">🎯 Combattants</a>
+        </nav>
+
         <!-- PANNEAU DE CONTRÔLE FLOTTANT -->
         <div class="floating-hud combat-control-hud">
 
@@ -53,8 +60,9 @@
 
         </div>
 
-        <section class="card combat-invite-card">
-            <h3>📨 Inviter des joueurs au combat</h3>
+        <section id="combat-management" class="combat-admin-grid">
+        <details class="card combat-collapsible combat-invite-card">
+            <summary>📨 Inviter des joueurs au combat</summary>
             <p>Cochez un ou plusieurs joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
 
             <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
@@ -79,11 +87,9 @@
                 <button type="button" class="btn-secondary" data-copy-combat-link>Copier</button>
                 <a href="{{ url_for('combat.join_combat', combat_id=combat.id) }}" class="btn-primary" target="_blank">Tester rejoindre</a>
             </div>
-        </section>
+        </details>
 
-        <hr>
-
-        <section class="card">
+        <section id="battlemap-section" class="card">
             <div class="battlemap-header-row">
                 <h3>🗺️ Battle map (MJ)</h3>
                 <button type="button" class="btn-secondary btn-battlemap-fullscreen" data-battlemap-fullscreen-toggle>
@@ -159,11 +165,8 @@
             </div>
         </section>
 
-        <!-- ========================= -->
-        <!-- AJOUT MANUEL -->
-        <!-- ========================= -->
-        <section class="card">
-            <h3>➕ Ajouter un combattant</h3>
+        <details class="card combat-collapsible" open>
+            <summary>➕ Ajouter un combattant</summary>
 
             <form method="POST"
                   action="{{ url_for('combat.add_combatant', combat_id=combat.id) }}"
@@ -185,13 +188,13 @@
 
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
-        </section>
+        </details>
 
         <!-- ========================= -->
         <!-- TEMPLATES PJ -->
         <!-- ========================= -->
-        <section class="card">
-            <h3>👥 Ajouter des PJ</h3>
+        <details class="card combat-collapsible">
+            <summary>👥 Ajouter des PJ</summary>
 
             <form method="POST"
                   action="{{ url_for('combat.add_character_template', combat_id=combat.id) }}"
@@ -215,13 +218,13 @@
                 </button>
 
             </form>
-        </section>
+        </details>
 
         <!-- ========================= -->
         <!-- ENCOUNTERS COMPLETS -->
         <!-- ========================= -->
-        <section class="card">
-            <h3>⚔️ Charger un ennemie</h3>
+        <details class="card combat-collapsible">
+            <summary>⚔️ Charger un ennemie</summary>
 
             <form method="POST" action="{{ url_for('combat.load_encounter', combat_id=combat.id) }}" class="template-form">
                 <select name="encounter_id">
@@ -232,13 +235,13 @@
 
                 <button type="submit" class="btn-primary">Charger</button>
             </form>
-        </section>
+        </details>
 
         <!-- ========================= -->
         <!-- AJOUT MONSTRES LOST MINE -->
         <!-- ========================= -->
-        <section class="card">
-            <h3>Ajouter un monstre</h3>
+        <details class="card combat-collapsible">
+            <summary>🐲 Ajouter un monstre</summary>
 
             <form method="POST"
                   action="{{ url_for('combat.add_template', combat_id=combat.id) }}"
@@ -262,13 +265,13 @@
 
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
-        </section>
+        </details>
 
         <!-- ========================= -->
         <!-- REGROUPEMENT -->
         <!-- ========================= -->
-        <section class="card">
-            <h3>🛡 Regrouper des combattants</h3>
+        <details class="card combat-collapsible">
+            <summary>🛡 Regrouper des combattants</summary>
 
             <form method="POST"
                   action="{{ url_for('combat.create_group', combat_id=combat.id) }}">
@@ -287,15 +290,15 @@
                 <br>
                 <button type="submit" class="btn-primary">Regrouper</button>
             </form>
+        </details>
         </section>
-
-        <hr>
 
         <!-- ========================= -->
         <!-- GROUPES -->
         <!-- ========================= -->
+        <section id="groups-section" class="combatants-board">
         {% for group_id, members in groups.items() %}
-        <div class="combatant horde">
+        <div class="combatant combatant--compact horde">
 
             <h3>
                 {{ members[0].group_name }} x{{ members|length }}
@@ -347,12 +350,14 @@
 
         </div>
         {% endfor %}
+        </section>
 
         <!-- ========================= -->
         <!-- COMBATTANTS INDIVIDUELS -->
         <!-- ========================= -->
+        <section id="combatants-section" class="combatants-board">
         {% for c in singles %}
-        <div class="combatant
+        <div class="combatant combatant--compact
             {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
             {{ c.type|lower }}"
             {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
@@ -385,7 +390,6 @@
                 </div>
             </div>
 
-            <div>{{ c.hp_current }} / {{ c.hp_max }} PV</div>
             <div class="temp-hp-container">
                 <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 }}%"></div>
             </div>
@@ -464,6 +468,7 @@
 
         </div>
         {% endfor %}
+        </section>
 
     </div>
 
