@@ -727,6 +727,10 @@
     gap: 10px;
 }
 
+.admin-actions .admin-actions-inline{
+    display: flex;
+}
+
 .combat-actions-inline form,
 .admin-actions-inline form,
 .admin-actions-inline > a {
