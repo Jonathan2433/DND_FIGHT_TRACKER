@@ -11,15 +11,15 @@
         <h2>{{ combat.name }} — Round {{ combat.round }}</h2>
 
         <section class="card combat-top-menu">
-            <div class="combat-top-menu__header">
-                <h3>⚡ Actions rapides MJ</h3>
-                <div class="combat-top-menu__links">
-                    <a class="btn-secondary" href="#combatants-list">Aller aux combattants</a>
-                    <a class="btn-secondary" href="#battlemap-section">Battle map</a>
-                </div>
-            </div>
+            <details class="combat-top-menu__dropdown" open>
+                <summary class="combat-top-menu__summary">⚡ Actions rapides MJ</summary>
 
-            <div class="combat-top-menu__content">
+                <div class="combat-top-menu__content">
+                    <div class="combat-top-menu__links">
+                        <a class="btn-secondary" href="#combatants-list">Aller aux combattants</a>
+                        <a class="btn-secondary" href="#battlemap-section">Battle map</a>
+                    </div>
+
                 <details class="combat-top-menu__panel">
                     <summary>📨 Inviter des joueurs</summary>
                     <p>Cochez un ou plusieurs joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
@@ -136,7 +136,8 @@
                         <button type="submit" class="btn-primary">Ajouter</button>
                     </form>
                 </details>
-            </div>
+                </div>
+            </details>
         </section>
 
         <!-- PANNEAU DE CONTRÔLE FLOTTANT -->
