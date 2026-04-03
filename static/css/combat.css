@@ -1,6 +1,10 @@
 /* ===================== */
 /* COMBATTANTS */
 /* ===================== */
+#battle-map-upload-form {
+    display: flex;
+    gap: 20px;
+}
 
 .combatant {
     background: var(--color-surface-alt);

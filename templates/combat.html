@@ -22,7 +22,6 @@
 
                 <details class="combat-top-menu__panel">
                     <summary>📨 Inviter des joueurs</summary>
-                    <p>Cochez un ou plusieurs joueurs de la campagne puis envoyez une invitation (notification in-app + email).</p>
 
                     <form method="POST" action="{{ url_for('combat.invite_players_to_combat', combat_id=combat.id) }}" class="combat-invite-form">
                         <div class="combat-invite-list" role="group" aria-label="Joueurs à inviter">
@@ -192,12 +191,10 @@
                     ⛶ Plein écran battle map
                 </button>
             </div>
-            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" class="template-form">
+            <form method="POST" action="{{ url_for('combat.upload_battlemap_media', combat_id=combat.id) }}" enctype="multipart/form-data" id="battle-map-upload-form" class="template-form">
                 <input type="file" name="battlemap_media" accept="image/*,video/mp4,video/webm" required>
                 <button type="submit" class="btn-primary">Uploader le fond</button>
             </form>
-
-            <p>Clique-glisse les tokens pour les déplacer. Position sauvegardée automatiquement.</p>
             <div id="battlemap-fullscreen-target" class="battlemap-fullscreen-target">
                 <div id="battlemap-board" class="battlemap-board">
                 {% if combat.battlemap_media_filename %}
