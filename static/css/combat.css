@@ -755,7 +755,6 @@
 .admin-actions-inline {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
     align-items: stretch;
     gap: 10px;
 }
