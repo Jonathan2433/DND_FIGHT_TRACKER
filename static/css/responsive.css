@@ -183,6 +183,21 @@
         grid-template-columns: 1fr;
     }
 
+    .combat-top-menu__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .combatant-summary-grid,
+    .combatant-adjust-row {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-actions-inline,
+    .admin-actions-inline {
+        flex-direction: column;
+    }
+
     .create-campaign-container,
     .create-form-card {
         padding: 20px;

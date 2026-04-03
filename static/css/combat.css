@@ -715,6 +715,25 @@
     margin-top: 12px;
 }
 
+.combat-actions-inline,
+.admin-actions-inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.combat-actions-inline form,
+.admin-actions-inline form,
+.admin-actions-inline > a {
+    flex: 1 1 180px;
+}
+
+.combat-actions-inline .damage-form,
+.admin-actions-inline .damage-form {
+    margin-top: 0;
+}
+
 .capture-container {
     margin-top: 15px;
     text-align: center;
@@ -1037,6 +1056,112 @@ body.battlemap-mobile-expanded #battlemap-fullscreen-target .battlemap-fullscree
 
 .combat-invite-card {
     margin-top: 18px;
+}
+
+.combat-top-menu {
+    margin-top: 18px;
+    padding: 18px;
+}
+
+.combat-top-menu__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.combat-top-menu__header h3 {
+    margin: 0;
+}
+
+.combat-top-menu__links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.combat-top-menu__content {
+    display: grid;
+    gap: 10px;
+}
+
+.combat-top-menu__panel {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--overlay-white-10);
+    background: var(--overlay-white-05);
+    padding: 10px 12px;
+}
+
+.combat-top-menu__panel summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.combat-top-menu__panel[open] summary {
+    margin-bottom: 10px;
+}
+
+.combatant {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.combatant-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.combatant-summary-item {
+    background: var(--overlay-white-05);
+    border: 1px solid var(--overlay-white-10);
+    border-radius: var(--radius-lg);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.04em;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.summary-detail {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+}
+
+.combatant-bars-row {
+    margin-top: 10px;
+}
+
+.combatant-bars-row .hp-bar-container {
+    margin-top: 0;
+}
+
+.combatant-adjust-row {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.damage-form-compact {
+    margin-top: 0;
+}
+
+.damage-form-compact input {
+    min-width: 0;
 }
 
 .combat-invite-form {
