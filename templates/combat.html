@@ -350,130 +350,130 @@
         <!-- ========================= -->
         <!-- COMBATTANTS INDIVIDUELS -->
         <!-- ========================= -->
-        <div id="combatants-list"></div>
-        {% for c in singles %}
-        <div class="combatant
-            {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
-            {{ c.type|lower }}"
-            {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
+        <div id="combatants-list">
+            {% for c in singles %}
+            <div class="combatant
+                {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
+                {{ c.type|lower }}"
+                {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
 
-            <div class="combatant-header">
-                <h3>
-                    {{ c.name }}
-                    {% if loop.index0 == combat.current_turn %}
-                        <span class="turn-badge">🎯 Tour en cours</span>
-                    {% endif %}
-                </h3>
-                <span class="initiative">Init {{ c.initiative }}</span>
-            </div>
+                <div class="combatant-header">
+                    <h3>
+                        {{ c.name }}
+                        {% if loop.index0 == combat.current_turn %}
+                            <span class="turn-badge">🎯 Tour en cours</span>
+                        {% endif %}
+                    </h3>
+                    <span class="initiative">Init {{ c.initiative }}</span>
+                </div>
 
-            <div class="combatant-summary-grid">
-                <div class="combatant-summary-item">
-                    <span class="summary-label">CA</span>
-                    <span class="summary-value">{{ c.ac_total }}</span>
-                    <span class="summary-detail">base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %}</span>
-                </div>
-                <div class="combatant-summary-item">
-                    <span class="summary-label">PV</span>
-                    <span class="summary-value">{{ c.hp_current }} / {{ c.hp_max }}</span>
-                </div>
-                <div class="combatant-summary-item">
-                    <span class="summary-label">Temp</span>
-                    <span class="summary-value">+{{ c.temp_hp }}</span>
-                </div>
-            </div>
-
-            <div class="combatant-bars-row">
-                <div class="hp-bar-container">
-                    {% set hp_ratio = (c.hp_current / c.hp_max) if c.hp_max else 0 %}
-                    <div class="hp-bar js-width {% if hp_ratio > 0.6 %}hp-green{% elif hp_ratio > 0.3 %}hp-yellow{% elif hp_ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
-                         data-width="{{ hp_ratio * 100 }}%">
+                <div class="combatant-summary-grid">
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">CA</span>
+                        <span class="summary-value">{{ c.ac_total }}</span>
+                        <span class="summary-detail">base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %}</span>
+                    </div>
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">PV</span>
+                        <span class="summary-value">{{ c.hp_current }} / {{ c.hp_max }}</span>
+                    </div>
+                    <div class="combatant-summary-item">
+                        <span class="summary-label">Temp</span>
+                        <span class="summary-value">+{{ c.temp_hp }}</span>
                     </div>
                 </div>
-                <div class="temp-hp-container">
-                    <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 if c.hp_max else 0 }}%"></div>
+
+                <div class="combatant-bars-row">
+                    <div class="hp-bar-container">
+                        {% set hp_ratio = (c.hp_current / c.hp_max) if c.hp_max else 0 %}
+                        <div class="hp-bar js-width {% if hp_ratio > 0.6 %}hp-green{% elif hp_ratio > 0.3 %}hp-yellow{% elif hp_ratio > 0.1 %}hp-orange{% else %}hp-red{% endif %}"
+                             data-width="{{ hp_ratio * 100 }}%">
+                        </div>
+                    </div>
+                    <div class="temp-hp-container">
+                        <div class="temp-hp-bar js-width" data-width="{{ (c.temp_hp / c.hp_max) * 100 if c.hp_max else 0 }}%"></div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="combatant-adjust-row">
-                <form method="POST"
-                      action="{{ url_for('combatant.modify_ac', id=c.id) }}"
-                      class="damage-form damage-form-compact">
-                    <input type="number" name="amount" placeholder="+/- CA">
-                    <button type="submit" class="btn-secondary">CA</button>
-                </form>
+                <div class="combatant-adjust-row">
+                    <form method="POST"
+                          action="{{ url_for('combatant.modify_ac', id=c.id) }}"
+                          class="damage-form damage-form-compact">
+                        <input type="number" name="amount" placeholder="+/- CA">
+                        <button type="submit" class="btn-secondary">CA</button>
+                    </form>
 
-                <form method="POST"
-                      action="{{ url_for('combatant.modify_temp_hp', id=c.id) }}"
-                      class="damage-form damage-form-compact">
-                    <input type="number" name="amount" placeholder="PV Temp">
-                    <button type="submit" class="btn-primary">Temp</button>
-                </form>
-            </div>
+                    <form method="POST"
+                          action="{{ url_for('combatant.modify_temp_hp', id=c.id) }}"
+                          class="damage-form damage-form-compact">
+                        <input type="number" name="amount" placeholder="PV Temp">
+                        <button type="submit" class="btn-primary">Temp</button>
+                    </form>
+                </div>
 
-            <!-- CONDITIONS -->
-            <div class="conditions">
-                {% set active_conditions = c.conditions.split(",") if c.conditions else [] %}
-                {% for condition in conditions_list %}
-                    <a href="{{ url_for('combatant.toggle_condition', id=c.id, condition=condition) }}"
-                       class="condition-badge
-                       {% if condition in active_conditions %}active-condition{% endif %}"
-                       title="{{ conditions_descriptions[condition] }}">
-                        {{ condition }}
-                    </a>
-                {% endfor %}
-            </div>
+                <!-- CONDITIONS -->
+                <div class="conditions">
+                    {% set active_conditions = c.conditions.split(",") if c.conditions else [] %}
+                    {% for condition in conditions_list %}
+                        <a href="{{ url_for('combatant.toggle_condition', id=c.id, condition=condition) }}"
+                           class="condition-badge
+                           {% if condition in active_conditions %}active-condition{% endif %}"
+                           title="{{ conditions_descriptions[condition] }}">
+                            {{ condition }}
+                        </a>
+                    {% endfor %}
+                </div>
 
-            <!-- ACTIONS COMBAT -->
-            <div class="combat-actions combat-actions-inline">
-                <form method="POST"
-                      action="{{ url_for('combatant.damage', id=c.id) }}"
-                      class="damage-form">
-                    <input type="number" name="amount" placeholder="Dégâts">
-                    <button type="submit" class="btn-danger">Infliger</button>
-                </form>
+                <!-- ACTIONS COMBAT -->
+                <div class="combat-actions combat-actions-inline">
+                    <form method="POST"
+                          action="{{ url_for('combatant.damage', id=c.id) }}"
+                          class="damage-form">
+                        <input type="number" name="amount" placeholder="Dégâts">
+                        <button type="submit" class="btn-danger">Infliger</button>
+                    </form>
 
-                <form method="POST"
-                      action="{{ url_for('combatant.heal', id=c.id) }}"
-                      class="damage-form">
-                    <input type="number" name="amount" placeholder="Soin">
-                    <button type="submit" class="btn-primary">Soigner</button>
-                </form>
-            </div>
+                    <form method="POST"
+                          action="{{ url_for('combatant.heal', id=c.id) }}"
+                          class="damage-form">
+                        <input type="number" name="amount" placeholder="Soin">
+                        <button type="submit" class="btn-primary">Soigner</button>
+                    </form>
+                </div>
 
-            <!-- ÉTATS SPÉCIAUX -->
-            {% if c.is_dead %}
-                <div class="dead">💀 Mort</div>
-            {% endif %}
-
-            {% if c.has_fled %}
-                <div class="fled">🏃 En fuite</div>
-            {% endif %}
-
-            <!-- ACTIONS ADMINISTRATIVES -->
-            <div class="admin-actions admin-actions-inline">
+                <!-- ÉTATS SPÉCIAUX -->
                 {% if c.is_dead %}
-                <a href="{{ url_for('combatant.toggle_visibility', id=c.id) }}"
-                   class="btn-secondary">👁 Masquer</a>
+                    <div class="dead">💀 Mort</div>
                 {% endif %}
 
-                <form method="GET" action="{{ url_for('combatant.toggle_fled', id=c.id) }}" class="inl-combat-001">
-                    {% if c.has_fled %}
-                        <button type="submit" class="btn-secondary">🔄 Revient</button>
-                    {% else %}
-                        <button type="submit" class="btn-warning">🏃 Fuite</button>
-                    {% endif %}
-                </form>
+                {% if c.has_fled %}
+                    <div class="fled">🏃 En fuite</div>
+                {% endif %}
 
-                <form method="POST" action="{{ url_for('combatant.delete_combatant', id=c.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');" class="inl-combat-001">
-                    <button type="submit" class="btn-danger">🗑 Supprimer</button>
-                </form>
+                <!-- ACTIONS ADMINISTRATIVES -->
+                <div class="admin-actions admin-actions-inline">
+                    {% if c.is_dead %}
+                    <a href="{{ url_for('combatant.toggle_visibility', id=c.id) }}"
+                       class="btn-secondary">👁 Masquer</a>
+                    {% endif %}
+
+                    <form method="GET" action="{{ url_for('combatant.toggle_fled', id=c.id) }}" class="inl-combat-001">
+                        {% if c.has_fled %}
+                            <button type="submit" class="btn-secondary">🔄 Revient</button>
+                        {% else %}
+                            <button type="submit" class="btn-warning">🏃 Fuite</button>
+                        {% endif %}
+                    </form>
+
+                    <form method="POST" action="{{ url_for('combatant.delete_combatant', id=c.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ c.name }} ?');" class="inl-combat-001">
+                        <button type="submit" class="btn-danger">🗑 Supprimer</button>
+                    </form>
+
+                </div>
 
             </div>
-
+            {% endfor %}
         </div>
-        {% endfor %}
-
     </div>
 
     <!-- ========================= -->
