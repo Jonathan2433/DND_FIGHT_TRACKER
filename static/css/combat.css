@@ -753,6 +753,7 @@
 
 .combat-actions-inline,
 .admin-actions-inline {
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: stretch;
