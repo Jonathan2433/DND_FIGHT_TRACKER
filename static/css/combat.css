@@ -243,6 +243,11 @@
     margin-bottom: 8px;
 }
 
+#combatants-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .combatant-name {
     font-size: 16px;
     font-weight: bold;
