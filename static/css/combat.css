@@ -18,7 +18,12 @@
 
 .combatant.ennemi {
     border-color: var(--color-danger);
-    background: linear-gradient(135deg, var(--danger-a30), var(--color-surface-alt));
+    background: linear-gradient(
+        135deg,
+        var(--danger-a80) 0%,
+        var(--dark-red-a80) 45%,
+        var(--color-surface-alt) 100%
+    );
 }
 
 .combatant.combatant-inactive {
