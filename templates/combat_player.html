@@ -79,7 +79,7 @@
                                         <div class="pj-avatar">{{ c.name[:2]|upper }}</div>
                                     {% endif %}
                                 </div>
-                                <div class="pj-name">{{ c.name }}</div>
+                                <div class="pj-name">{{ c.name }}{% if c.is_dead %} <span class="pj-name-status">💀 Mort</span>{% elif c.has_fled %} <span class="pj-name-status">🏃 En fuite</span>{% endif %}</div>
                                 <div class="pj-ac">CA {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})</div>
 
                                 <div class="pj-hp-container">
@@ -100,11 +100,6 @@
                                     </div>
                                 </div>
 
-                                {% if c.is_dead %}
-                                    <div class="pj-status-text">💀 Mort</div>
-                                {% elif c.has_fled %}
-                                    <div class="pj-status-text">🏃 En fuite</div>
-                                {% endif %}
 
                                 {% if c.conditions %}
                                     <div class="pj-conditions">
@@ -318,7 +313,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="pj-name">{{ c.name }}</div>
+                        <div class="pj-name">{{ c.name }}{% if c.is_dead %} <span class="pj-name-status">💀 Mort</span>{% elif c.has_fled %} <span class="pj-name-status">🏃 En fuite</span>{% endif %}</div>
                         <div class="pj-ac">CA {{ c.ac_total }} (base {{ c.ac_base }}{% if c.ac_bonus > 0 %} + {{ c.ac_bonus }} temp{% elif c.ac_bonus < 0 %} - {{ -c.ac_bonus }} temp{% endif %})</div>
 
                         <div class="pj-hp-container">
@@ -339,11 +334,6 @@
                             </div>
                         </div>
 
-                        {% if c.is_dead %}
-                            <div class="pj-status-text">💀 Mort</div>
-                        {% elif c.has_fled %}
-                            <div class="pj-status-text">🏃 En fuite</div>
-                        {% endif %}
 
                         {% if c.conditions %}
                             <div class="pj-conditions">
@@ -914,7 +904,7 @@ function updatePJBar(combatState) {
                     }
                     ${isActive ? '<div class="pj-turn-indicator"></div>' : ''}
                 </div>
-                <div class="pj-name">${c.name}</div>
+                <div class="pj-name">${c.name}${c.is_dead ? ' <span class="pj-name-status">💀 Mort</span>' : c.has_fled ? ' <span class="pj-name-status">🏃 En fuite</span>' : ''}</div>
                 <div class="pj-ac">${formatAcDisplay(c)}</div>
                 <div class="pj-hp-container">
                     <div class="pj-hp-bar">
@@ -929,9 +919,7 @@ function updatePJBar(combatState) {
                         ${c.temp_hp > 0 ? `(+${c.temp_hp})` : ''}
                     </div>
                 </div>
-                ${c.is_dead ? '<div class="pj-status-text">💀 Mort</div>' : ''}
-                ${c.has_fled ? '<div class="pj-status-text">🏃 En fuite</div>' : ''}
-                ${c.conditions.length > 0 ?
+                                ${c.conditions.length > 0 ?
                     `<div class="pj-conditions">
                         ${c.conditions.map(cond => cond.trim() ? `<span class="pj-condition-tag">${cond.trim()}</span>` : '').join('')}
                     </div>` :
@@ -986,7 +974,7 @@ function updateBattlemapFullscreenHud(combatants, currentActorId) {
                             ? `<img src="${getBattlemapMediaUrl(combatant.notes)}" alt="${combatant.name}" class="hud-pj-img">`
                             : `<div class="pj-avatar">${combatant.name.substring(0, 2).toUpperCase()}</div>`}
                     </div>
-                    <div class="pj-name">${combatant.name}</div>
+                    <div class="pj-name">${combatant.name}${combatant.is_dead ? ' <span class="pj-name-status">💀 Mort</span>' : combatant.has_fled ? ' <span class="pj-name-status">🏃 En fuite</span>' : ''}</div>
                     <div class="pj-ac">${formatAcDisplay(combatant)}</div>
                     <div class="pj-hp-container">
                         <div class="pj-hp-bar">
@@ -999,9 +987,7 @@ function updateBattlemapFullscreenHud(combatants, currentActorId) {
                             ${combatant.hp_current}/${combatant.hp_max}${combatant.temp_hp > 0 ? ` (+${combatant.temp_hp})` : ''}
                         </div>
                     </div>
-                    ${combatant.is_dead ? '<div class="pj-status-text">💀 Mort</div>' : ''}
-                    ${combatant.has_fled ? '<div class="pj-status-text">🏃 En fuite</div>' : ''}
-                    ${conditions.length > 0
+                                        ${conditions.length > 0
                         ? `<div class="pj-conditions">
                             ${conditions.map((condition) => condition.trim() ? `<span class="pj-condition-tag">${condition.trim()}</span>` : '').join('')}
                           </div>`

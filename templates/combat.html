@@ -355,12 +355,18 @@
             {% for c in singles %}
             <div class="combatant
                 {% if loop.index0 == combat.current_turn %}active-turn{% endif %}
-                {{ c.type|lower }}"
+                {{ c.type|lower }}
+                {% if c.is_dead or c.has_fled %}combatant-inactive{% endif %}"
                 {% if loop.index0 == combat.current_turn %}id="current-turn"{% endif %}>
 
                 <div class="combatant-header">
                     <h3>
                         {{ c.name }}
+                        {% if c.is_dead %}
+                            <span class="combatant-state-badge">💀 Mort</span>
+                        {% elif c.has_fled %}
+                            <span class="combatant-state-badge">🏃 En fuite</span>
+                        {% endif %}
                         {% if loop.index0 == combat.current_turn %}
                             <span class="turn-badge">🎯 Tour en cours</span>
                         {% endif %}
@@ -442,14 +448,6 @@
                     </form>
                 </div>
 
-                <!-- ÉTATS SPÉCIAUX -->
-                {% if c.is_dead %}
-                    <div class="dead">💀 Mort</div>
-                {% endif %}
-
-                {% if c.has_fled %}
-                    <div class="fled">🏃 En fuite</div>
-                {% endif %}
 
                 <!-- ACTIONS ADMINISTRATIVES -->
                 <div class="admin-actions admin-actions-inline">
