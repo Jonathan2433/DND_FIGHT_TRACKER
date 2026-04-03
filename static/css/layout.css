@@ -4,7 +4,7 @@
 
 .combat-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 200px);
     gap: 30px;
 }
 

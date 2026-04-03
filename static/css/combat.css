@@ -4,6 +4,7 @@
 #battle-map-upload-form {
     display: flex;
     gap: 20px;
+    padding: 10px;
 }
 
 .combatant {
