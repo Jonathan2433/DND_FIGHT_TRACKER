@@ -6,6 +6,16 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+STEP_COMPONENT_IDS = {
+    "choose_class",
+    "choose_background",
+    "choose_species",
+    "choose_languages",
+    "assign_ability_scores",
+    "choose_equipment",
+    "finalize",
+}
+
 
 BUILDER_STATE_DEFAULTS: dict[str, Any] = {
     "class_id": None,
