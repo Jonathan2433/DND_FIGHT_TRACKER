@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}ExalQuest{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -22,6 +23,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exp_history.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/campaign.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notes_mj_pj.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spell_library.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/core-inline.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/auth-inline.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/objectives/campaign-inline.css') }}">
@@ -57,12 +59,20 @@
                     <div class="site-nav__links">
                         <a href="{{ url_for('main.index') }}" class="site-nav__link">Accueil</a>
                         <a href="{{ url_for('campaign.list_campaigns') }}" class="site-nav__link">Campagnes</a>
+                        <a href="{{ url_for('main.spell_library') }}" class="site-nav__link">Sorts</a>
+                        {% if session.user_id %}
+                            <a href="{{ url_for('main.favorite_spells') }}" class="site-nav__link">Mes sorts</a>
+                        {% endif %}
 
                         {% if session.user_id %}
                             <a href="{{ url_for('template.manage_templates') }}" class="site-nav__link">Personnages</a>
 
                             {% if current_user and current_user.has_mj_capability() %}
                                 <a href="{{ url_for('campaign.create_campaign') }}" class="site-nav__link site-nav__link--accent">Nouvelle campagne</a>
+                            {% endif %}
+
+                            {% if current_user and current_user.role == 'Admin' %}
+                                <a href="{{ url_for('admin.dashboard') }}" class="site-nav__link">Back office</a>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -76,43 +86,51 @@
                                     class="site-notification__toggle"
                                     aria-haspopup="true"
                                     aria-expanded="false"
-                                    aria-label="Ouvrir les notifications"
+                                    aria-label="Ouvrir le menu utilisateur"
                                     data-notification-toggle
                                 >
+                                    <span class="site-notification__menu-icon" aria-hidden="true">☰</span>
                                     <span class="site-notification__icon" aria-hidden="true">🔔</span>
                                     {% if unread_notifications_count %}
-                                        <span class="site-notification__badge">{{ unread_notifications_count }}</span>
+                                        <span class="site-notification__badge" data-notification-badge>{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </button>
                                 <div class="site-notification__panel" data-notification-panel>
+                                    <div class="site-notification__account-links">
+                                        <a href="{{ url_for('auth.profile') }}" class="site-notification__account-link">Profil</a>
+                                        <a href="{{ url_for('auth.logout') }}" class="site-notification__account-link">Deconnexion</a>
+                                    </div>
                                     <div class="site-notification__panel-header">
                                         <strong>Notifications</strong>
                                         <a href="{{ url_for('notification.index') }}" class="site-notification__all">Voir tout</a>
                                     </div>
 
-                                    {% if header_notifications %}
-                                        <div class="site-notification__list">
-                                            {% for notif in header_notifications %}
-                                                <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="site-notification__item-form">
-                                                    <button type="submit" class="site-notification__item {% if not notif.is_read %}is-unread{% endif %}">
-                                                        <span class="site-notification__item-title">{{ notif.title }}</span>
-                                                        <span class="site-notification__item-message">{{ notif.message }}</span>
-                                                        <span class="site-notification__item-date">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                                                    </button>
-                                                </form>
-                                            {% endfor %}
-                                        </div>
+                                    <div class="site-notification__list" data-notification-list>
+                                        {% for notif in header_notifications %}
+                                            <form method="POST" action="{{ url_for('notification.open_notification', notification_id=notif.id) }}" class="site-notification__item-form">
+                                                <button type="submit" class="site-notification__item {% if not notif.is_read %}is-unread{% endif %}">
+                                                    <span class="site-notification__item-title">{{ notif.title }}</span>
+                                                    <span class="site-notification__item-message">{{ notif.message }}</span>
+                                                    <span class="site-notification__item-date">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                                </button>
+                                            </form>
+                                        {% endfor %}
+                                    </div>
 
-                                        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all">
+                                    <p class="site-notification__empty {% if header_notifications %}is-hidden{% endif %}" data-notification-empty>Aucune notification pour le moment.</p>
+
+                                    <div class="site-notification__bulk-actions {% if not header_notifications %}is-hidden{% endif %}" data-notification-bulk-actions>
+                                        <form method="POST" action="{{ url_for('notification.mark_all_read') }}" class="site-notification__mark-all" data-notification-mark-all>
                                             <button type="submit" class="btn btn-secondary">Tout marquer comme lu</button>
                                         </form>
-                                    {% else %}
-                                        <p class="site-notification__empty">Aucune notification pour le moment.</p>
-                                    {% endif %}
+                                        <form method="POST" action="{{ url_for('notification.clear_all') }}" class="site-notification__clear-all" data-notification-clear-all>
+                                            <button type="submit" class="btn btn-danger">Tout effacer</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                            <a href="{{ url_for('auth.profile') }}" class="site-nav__link">Profil</a>
-                            <a href="{{ url_for('auth.logout') }}" class="site-nav__link">Deconnexion</a>
+                            <a href="{{ url_for('auth.profile') }}" class="site-nav__link site-nav__link--mobile-only">Profil</a>
+                            <a href="{{ url_for('auth.logout') }}" class="site-nav__link site-nav__link--mobile-only">Deconnexion</a>
                         {% else %}
                             <a href="{{ url_for('auth.login') }}" class="site-nav__link">Connexion</a>
                             <a href="{{ url_for('auth.register') }}" class="site-nav__link site-nav__link--accent">Inscription</a>
@@ -152,8 +170,10 @@
                 </div>
 
                 <div class="site-footer__links">
-                    <a href="{{ url_for('main.index') }}">Accueil</a>
+                    <!--<a href="{{ url_for('main.index') }}">Accueil</a>-->
                     <a href="{{ url_for('campaign.list_campaigns') }}">Campagnes</a>
+                    <a href="{{ url_for('main.spell_library') }}">Sorts</a>
+                    <a href="{{ url_for('main.favorite_spells') }}">Mes sorts</a>
                     {% if session.user_id %}
                         <a href="{{ url_for('template.manage_templates') }}">Personnages</a>
                         <a href="{{ url_for('auth.profile') }}">Profil</a>
@@ -169,6 +189,7 @@
             </div>
         </footer>
     </div>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/dynamic_style.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
     <script src="{{ url_for('static', filename='js/notification_center.js') }}"></script>

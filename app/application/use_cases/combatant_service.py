@@ -2,12 +2,24 @@
 """Service métier pour la gestion des combattants"""
 from datetime import datetime
 from app.extensions import db
-from app.models import Combat, Combatant, CombatLog
+from app.models import Combat, Combatant, CombatLog, CharacterTemplate
 from app.utils import get_current_actor, get_initiative_order
 
 
 class CombatantService:
     """Service pour les actions sur les combattants"""
+
+    @staticmethod
+    def _sync_character_state(combatant):
+        """Synchroniser l'etat de combat vers la fiche de personnage liee."""
+        if not combatant.character_template_id:
+            return
+
+        character = CharacterTemplate.query.get(combatant.character_template_id)
+        if not character:
+            return
+
+        character.hp_current = max(0, min(combatant.hp_current, character.hp_max))
 
     @staticmethod
     def add_combatant(combat_id, name, type, hp_max, hp_current, initiative, ac_base):
@@ -88,6 +100,7 @@ class CombatantService:
         )
 
         db.session.add(log)
+        CombatantService._sync_character_state(combatant)
         db.session.commit()
 
         return combatant
@@ -121,6 +134,7 @@ class CombatantService:
         )
 
         db.session.add(log)
+        CombatantService._sync_character_state(combatant)
         db.session.commit()
 
         return combatant
@@ -146,6 +160,7 @@ class CombatantService:
         )
 
         db.session.add(log)
+        CombatantService._sync_character_state(combatant)
         db.session.commit()
 
         return combatant

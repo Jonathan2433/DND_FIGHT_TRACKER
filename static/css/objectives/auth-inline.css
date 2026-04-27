@@ -10,6 +10,22 @@
 .inl-auth-008 { color: var(--color-primary); }
 .inl-auth-009 { max-width: 600px; margin: 50px auto; background: var(--color-surface); padding: 30px; border-radius: var(--radius-2xl); }
 .inl-auth-010 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.inl-auth-011 { color: var(--color-text-primary); }
+.inl-auth-011 { color: var(--color-text-primary); overflow-wrap: anywhere; word-break: break-word; }
 .inl-auth-012 { color: var(--color-warning); }
 .inl-auth-013 { text-align: center; margin-top: 30px; }
+.inl-auth-014 { position: relative; }
+.inl-auth-015 { padding-right: 44px; }
+.inl-auth-016 { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; }
+.inl-auth-016:hover { color: var(--color-text-primary); }
+
+@media (max-width: 768px) {
+    .inl-auth-009 {
+        margin: 24px 12px;
+        padding: 20px;
+    }
+
+    .inl-auth-010 {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}

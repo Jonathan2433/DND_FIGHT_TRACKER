@@ -1,0 +1,472 @@
+[
+  {
+    "id": "standard_languages",
+    "name_fr": "Langues standard",
+    "name_en": "Standard Languages",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "language",
+    "source_ref": "languages.json",
+    "items": [
+      "common_sign_language",
+      "draconic",
+      "dwarvish",
+      "elvish",
+      "giant",
+      "gnomish",
+      "goblin",
+      "halfling",
+      "orc"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    }
+  },
+  {
+    "id": "artisans_tools",
+    "name_fr": "Outils d'artisan",
+    "name_en": "Artisan's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "tool",
+    "source_ref": "tools.json",
+    "items": [
+      "alchemists_supplies",
+      "brewers_supplies",
+      "calligraphers_supplies",
+      "carpenters_tools",
+      "cartographers_tools",
+      "cobblers_tools",
+      "cooks_utensils",
+      "glassblowers_tools",
+      "jewelers_tools",
+      "leatherworkers_tools",
+      "masons_tools",
+      "painters_supplies",
+      "potters_tools",
+      "smiths_tools",
+      "tinkers_tools",
+      "weavers_tools",
+      "woodcarvers_tools"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    }
+  },
+  {
+    "id": "gaming_set",
+    "name_fr": "Jeux",
+    "name_en": "Gaming Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "tool",
+    "source_ref": "tools.json",
+    "items": [
+      "dice_set",
+      "dragonchess_set",
+      "playing_card_set",
+      "three_dragon_ante_set"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    }
+  },
+  {
+    "id": "musical_instrument",
+    "name_fr": "Instruments de musique",
+    "name_en": "Musical Instrument",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "tool",
+    "source_ref": "tools.json",
+    "items": [
+      "bagpipes",
+      "drum",
+      "dulcimer",
+      "flute",
+      "horn",
+      "lute",
+      "lyre",
+      "pan_flute",
+      "shawm",
+      "viol"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    }
+  },
+  {
+    "id": "any_skill",
+    "name_fr": "N'importe quelle compétence",
+    "name_en": "Any Skill",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "skill",
+    "source_ref": "skills.json",
+    "items": [
+      "acrobatics",
+      "animal_handling",
+      "arcana",
+      "athletics",
+      "deception",
+      "history",
+      "insight",
+      "intimidation",
+      "investigation",
+      "medicine",
+      "nature",
+      "perception",
+      "performance",
+      "persuasion",
+      "religion",
+      "sleight_of_hand",
+      "stealth",
+      "survival"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    }
+  },
+  {
+    "id": "any_tool",
+    "name_fr": "N'importe quel outil",
+    "name_en": "Any Tool",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "tool",
+    "source_ref": "tools.json",
+    "items_from_catalogs": [
+      "artisans_tools",
+      "gaming_set",
+      "musical_instrument"
+    ],
+    "additional_items": [
+      "disguise_kit",
+      "forgery_kit",
+      "herbalism_kit",
+      "navigators_tools",
+      "poisoners_kit",
+      "thieves_tools"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false,
+      "flatten_nested_catalogs": true
+    }
+  },
+  {
+    "id": "skills_or_tools",
+    "name_fr": "Compétences ou outils",
+    "name_en": "Skills or Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "mixed",
+    "items_from_catalogs": [
+      "any_skill",
+      "any_tool"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false,
+      "flatten_nested_catalogs": true
+    }
+  },
+  {
+    "id": "cleric_cantrips_level_1",
+    "name_fr": "Cantrips de Clerc",
+    "name_en": "Cleric Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "cleric",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "cleric",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "druid_cantrips_level_1",
+    "name_fr": "Cantrips de Druide",
+    "name_en": "Druid Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "druid",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "druid",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "bard_cantrips_level_1",
+    "name_fr": "Cantrips de Barde",
+    "name_en": "Bard Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "bard",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "bard",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "sorcerer_cantrips_level_1",
+    "name_fr": "Cantrips d'Ensorceleur",
+    "name_en": "Sorcerer Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "sorcerer",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "sorcerer",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "warlock_cantrips_level_1",
+    "name_fr": "Cantrips d'Occultiste",
+    "name_en": "Warlock Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "warlock",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "warlock",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "wizard_cantrips_level_1",
+    "name_fr": "Cantrips de Magicien",
+    "name_en": "Wizard Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "wizard",
+    "spell_level": 0,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "wizard",
+      "spell_level": 0
+    }
+  },
+  {
+    "id": "cleric_spells_level_1",
+    "name_fr": "Sorts de Clerc de niveau 1",
+    "name_en": "Cleric Level 1 Spells",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "cleric",
+    "spell_level": 1,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "cleric",
+      "spell_level": 1
+    }
+  },
+  {
+    "id": "druid_spells_level_1",
+    "name_fr": "Sorts de Druide de niveau 1",
+    "name_en": "Druid Level 1 Spells",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "druid",
+    "spell_level": 1,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "druid",
+      "spell_level": 1
+    }
+  },
+  {
+    "id": "wizard_spells_level_1",
+    "name_fr": "Sorts de Magicien de niveau 1",
+    "name_en": "Wizard Level 1 Spells",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "source_ref": "spells_by_class.json",
+    "class_id": "wizard",
+    "spell_level": 1,
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "spells_by_class_level",
+      "source_ref": "spells_by_class.json",
+      "class_id": "wizard",
+      "spell_level": 1
+    }
+  },
+  {
+    "id": "magic_initiate_cleric_cantrips",
+    "name_fr": "Cantrips pour Initié à la magie (Clerc)",
+    "name_en": "Magic Initiate (Cleric) Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "cleric_cantrips_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "cleric_cantrips_level_1"
+      ]
+    }
+  },
+  {
+    "id": "magic_initiate_cleric_spell_level_1",
+    "name_fr": "Sort de niveau 1 pour Initié à la magie (Clerc)",
+    "name_en": "Magic Initiate (Cleric) Level 1 Spell",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "cleric_spells_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "cleric_spells_level_1"
+      ]
+    }
+  },
+  {
+    "id": "magic_initiate_druid_cantrips",
+    "name_fr": "Cantrips pour Initié à la magie (Druide)",
+    "name_en": "Magic Initiate (Druid) Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "druid_cantrips_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "druid_cantrips_level_1"
+      ]
+    }
+  },
+  {
+    "id": "magic_initiate_druid_spell_level_1",
+    "name_fr": "Sort de niveau 1 pour Initié à la magie (Druide)",
+    "name_en": "Magic Initiate (Druid) Level 1 Spell",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "druid_spells_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "druid_spells_level_1"
+      ]
+    }
+  },
+  {
+    "id": "magic_initiate_wizard_cantrips",
+    "name_fr": "Cantrips pour Initié à la magie (Magicien)",
+    "name_en": "Magic Initiate (Wizard) Cantrips",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "wizard_cantrips_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "wizard_cantrips_level_1"
+      ]
+    }
+  },
+  {
+    "id": "magic_initiate_wizard_spell_level_1",
+    "name_fr": "Sort de niveau 1 pour Initié à la magie (Magicien)",
+    "name_en": "Magic Initiate (Wizard) Level 1 Spell",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "subchoice_catalog",
+    "choice_type": "spell",
+    "items_from_catalogs": [
+      "wizard_spells_level_1"
+    ],
+    "selection_rules": {
+      "allow_duplicates": false
+    },
+    "resolver": {
+      "type": "catalog_union",
+      "catalog_ids": [
+        "wizard_spells_level_1"
+      ]
+    }
+  }
+]

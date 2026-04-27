@@ -1,9 +1,12 @@
 """Factory Pattern pour l'application Flask"""
-from flask import Flask, g, session
+from datetime import datetime
+
+from flask import Flask, g, request, session
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.environ.get("FLASK_CONFIG") in (None, "", "development"):
+    load_dotenv()
 
 
 def create_app(config_name='default'):
@@ -21,6 +24,8 @@ def create_app(config_name='default'):
     # Configuration
     from config import config
     app.config.from_object(config[config_name])
+    if app.config.get("REQUIRE_DATABASE_URL") and not os.environ.get("DATABASE_URL"):
+        raise RuntimeError("DATABASE_URL is required for preprod/production environments.")
 
     # Créer le dossier d'upload s'il n'existe pas
     upload_folder = os.path.abspath(
@@ -51,6 +56,28 @@ def create_app(config_name='default'):
             from app.application.use_cases.auth_service import AuthService
             g.current_user = AuthService.get_user_by_id(user_id)
 
+
+    @app.before_request
+    def track_request_start():
+        """Stocker l'horodatage de départ pour le tracking."""
+        g.request_started_at = datetime.utcnow()
+
+    @app.after_request
+    def persist_request_activity(response):
+        """Persist le tracking technique des requêtes (best effort)."""
+        try:
+            from app.application.use_cases.admin_service import AdminService
+
+            AdminService.log_request_activity(
+                request=request,
+                response=response,
+                started_at=g.get('request_started_at'),
+            )
+        except Exception:
+            app.logger.exception("Echec du tracking d'activite")
+
+        return response
+
     @app.context_processor
     def inject_user():
         """Rendre current_user et ses notifications disponibles dans tous les templates"""
@@ -71,6 +98,7 @@ def create_app(config_name='default'):
 
     register_blueprints(app)
     register_socketio_events()
+    register_cli_commands(app)
 
     return app
 
@@ -84,5 +112,28 @@ def register_blueprints(app):
 def register_socketio_events():
     """Enregistrement des événements SocketIO via le web layer."""
     from app.extensions import socketio
-    from app.web.sockets import register_socketio_events as register_web_socket_events
+    from app.web.sockets import register_all_socketio_events as register_web_socket_events
     register_web_socket_events(socketio)
+
+
+def register_cli_commands(app):
+    """Enregistrer les commandes CLI applicatives."""
+
+    @app.cli.command('send-session-reminders')
+    def send_session_reminders_command():
+        """Envoyer les emails de rappel de session à J-7."""
+        from app.application.use_cases.campaign_session_reminder_service import CampaignSessionReminderService
+
+        result = CampaignSessionReminderService.send_weekly_session_reminders()
+        app.logger.info(
+            'Rappels sessions: cible=%s, trouvées=%s, envoyées=%s, échecs=%s',
+            result['target_date'],
+            result['sessions_found'],
+            result['sessions_sent'],
+            result['sessions_failed'],
+        )
+
+        print(
+            f"Session reminders => target={result['target_date']} "
+            f"found={result['sessions_found']} sent={result['sessions_sent']} failed={result['sessions_failed']}"
+        )

@@ -1,12 +1,23 @@
 # Migrated to app.web.routes
 """Routes pour la gestion des campagnes"""
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g
 from app.application.use_cases.campaign_service import CampaignService
 from app.application.use_cases.auth_service import AuthService
+from app.application.use_cases.email_service import EmailService
 from app.application.use_cases.notification_service import NotificationService
 from app.utils.decorators import login_required, mj_or_admin_required
-from app.models.campaign import Campaign, CampaignMember, CampaignInvitation, JoinRequest
+from app.models.campaign import (
+    Campaign,
+    CampaignSession,
+    CampaignMember,
+    CampaignInvitation,
+    JoinRequest,
+    CampaignInspirationLog,
+)
 from app.models.combat import Combat
+from app.models.episode import Episode
 from app.models.user import User
 from app.models import CharacterTemplate
 from app.extensions import db
@@ -70,6 +81,17 @@ def view_campaign(campaign_id):
 
     current_arc = next((arc for arc in campaign.story_arcs if arc.status == 'en_cours'), None)
 
+    campaign_sessions = CampaignSession.query.filter_by(campaign_id=campaign.id).order_by(
+        CampaignSession.scheduled_for.asc()
+    ).all()
+    campaign_episodes = Episode.query.join(Episode.story_arc).filter(
+        Episode.story_arc.has(campaign_id=campaign.id)
+    ).order_by(Episode.created_at.desc()).all()
+
+    inspiration_logs = CampaignInspirationLog.query.filter_by(
+        campaign_id=campaign.id
+    ).order_by(CampaignInspirationLog.created_at.desc()).limit(20).all()
+
     # PJ du joueur courant pouvant être ajoutés à cette campagne
     available_player_pjs = []
     player_campaign_pjs = []
@@ -114,10 +136,70 @@ def view_campaign(campaign_id):
         is_mj=g.current_user.is_mj_of(campaign),
         combats_count=combats_count,
         current_arc=current_arc,
+        campaign_sessions=campaign_sessions,
+        campaign_episodes=campaign_episodes,
+        inspiration_logs=inspiration_logs,
         available_player_pjs=available_player_pjs,
         player_campaign_pjs=player_campaign_pjs,
         visible_campaign_pnjs=visible_campaign_pnjs
     )
+
+
+@bp.route('/<int:campaign_id>/inspiration/update', methods=['POST'])
+@login_required
+def update_inspiration_points(campaign_id):
+    """Ajuster les points d'inspiration communs (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Campagne non trouvée ou accès interdit.', 'error')
+        return redirect(url_for('main.index'))
+
+    if not g.current_user.is_mj_of(campaign):
+        flash("Seul le MJ peut modifier les points d'inspiration.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    episode_id = request.form.get('episode_id', type=int)
+    delta = request.form.get('delta', type=int)
+
+    if episode_id is None or delta is None:
+        flash('Episode et ajustement obligatoires.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    if delta == 0:
+        flash("L'ajustement doit être différent de 0.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    episode = Episode.query.join(Episode.story_arc).filter(
+        Episode.id == episode_id,
+        Episode.story_arc.has(campaign_id=campaign.id)
+    ).first()
+    if not episode:
+        flash("L'épisode sélectionné n'appartient pas à cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    previous_total = campaign.inspiration_points or 0
+    new_total = previous_total + delta
+    if new_total < 0:
+        flash("Impossible d'avoir un total de points d'inspiration négatif.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
+
+    campaign.inspiration_points = new_total
+    db.session.add(CampaignInspirationLog(
+        campaign_id=campaign.id,
+        episode_id=episode.id,
+        adjusted_by_user_id=g.current_user.id,
+        delta=delta,
+        previous_total=previous_total,
+        new_total=new_total,
+    ))
+    db.session.commit()
+
+    if delta > 0:
+        flash(f'+{delta} point(s) d’inspiration ajouté(s) au pot commun.', 'success')
+    else:
+        flash(f'{abs(delta)} point(s) d’inspiration retiré(s) du pot commun.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign.id))
 
 
 @bp.route('/<int:campaign_id>/invite', methods=['POST'])
@@ -167,6 +249,23 @@ def decline_invitation(token):
         flash('Invitation refusee.', 'info')
 
     return redirect(url_for('main.index'))
+
+
+@bp.route('/invitation/<int:campaign_id>/review')
+@login_required
+def review_invitation(campaign_id):
+    """Afficher une page dédiée pour accepter/refuser une invitation de campagne."""
+    invitation = CampaignService.get_pending_invitation_for_user(campaign_id, g.current_user.id)
+
+    if not invitation:
+        flash('Invitation introuvable ou déjà traitée.', 'error')
+        return redirect(url_for('notification.index'))
+
+    return render_template(
+        'campaign/review_invitation.html',
+        campaign=invitation.campaign,
+        invitation=invitation,
+    )
 
 
 @bp.route('/<int:campaign_id>/request_join', methods=['POST'])
@@ -263,6 +362,89 @@ def add_player_character(campaign_id):
     )
 
     flash(f'🎉 {character.name} est maintenant associé à cette campagne !', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/assign_pj', methods=['POST'])
+@login_required
+def assign_player_character(campaign_id):
+    """Transférer un PJ du MJ vers un joueur membre de la campagne."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign:
+        flash('Campagne non trouvée ou accès interdit.', 'error')
+        return redirect(url_for('main.index'))
+
+    if not g.current_user.is_mj_of(campaign):
+        flash("Seul le MJ peut attribuer un PJ à un joueur.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character_id = request.form.get('character_id', type=int)
+    recipient_user_id = request.form.get('recipient_user_id', type=int)
+    if not character_id or not recipient_user_id:
+        flash('Veuillez sélectionner un PJ et un joueur.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    recipient_membership = CampaignMember.query.filter_by(
+        campaign_id=campaign.id,
+        user_id=recipient_user_id,
+    ).first()
+    if not recipient_membership:
+        flash("Le joueur sélectionné n'est pas membre de cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character = CharacterTemplate.query.filter_by(
+        id=character_id,
+        character_type='PJ',
+        is_active=True,
+    ).first()
+    if not character:
+        flash('PJ introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    if character.owner_id != g.current_user.id:
+        flash("Vous ne pouvez attribuer que des PJ dont vous êtes propriétaire.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    is_character_in_campaign = (
+        character.campaign_id == campaign.id or campaign in character.campaigns
+    )
+    if not is_character_in_campaign:
+        flash("Ce PJ n'est pas rattaché à cette campagne.", 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    character.owner_id = recipient_user_id
+    character.player_name = recipient_membership.user.username
+    character.campaign_id = campaign.id
+    if campaign not in character.campaigns:
+        character.campaigns.append(campaign)
+    db.session.commit()
+
+    NotificationService.create_notification(
+        user_id=recipient_user_id,
+        title='Nouveau PJ attribué',
+        message=(
+            f'Le MJ vous a attribué le PJ "{character.name}" '
+            f'dans la campagne "{campaign.name}".'
+        ),
+        kind='player_pj_assigned',
+        campaign_id=campaign.id,
+    )
+    recipient_user = recipient_membership.user
+    if recipient_user and recipient_user.email:
+        campaign_url = url_for('campaign.view_campaign', campaign_id=campaign.id, _external=True)
+        EmailService.send_pj_assignment_email(
+            user_email=recipient_user.email,
+            username=recipient_user.username,
+            campaign_name=campaign.name,
+            character_name=character.name,
+            campaign_url=campaign_url,
+        )
+
+    flash(
+        f'🎁 {character.name} est maintenant attribué à {recipient_membership.user.username}.',
+        'success',
+    )
     return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
 
 
@@ -382,6 +564,7 @@ def remove_member(campaign_id, user_id):
 
     if member:
         removed_username = member.user.username
+        CampaignService.detach_member_characters_from_campaign(campaign_id, user_id)
         db.session.delete(member)
         db.session.commit()
 
@@ -395,3 +578,116 @@ def remove_member(campaign_id, user_id):
         flash(f'Membre {removed_username} retiré de la campagne.', 'success')
 
     return redirect(url_for('campaign.campaign_settings', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/create', methods=['POST'])
+@login_required
+def create_campaign_session(campaign_id):
+    """Créer une nouvelle date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut planifier une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    scheduled_for_raw = request.form.get('scheduled_for', '').strip()
+    if not scheduled_for_raw:
+        flash('Veuillez renseigner une date et une heure.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    try:
+        scheduled_for = datetime.strptime(scheduled_for_raw, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        flash('Format de date invalide.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession(campaign_id=campaign.id, scheduled_for=scheduled_for)
+    db.session.add(session_entry)
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Nouvelle session planifiée',
+        message=f'Le MJ a planifié une session le {scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_created',
+        include_mj=False,
+    )
+
+    flash('Session planifiée avec succès.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/<int:session_id>/update', methods=['POST'])
+@login_required
+def update_campaign_session(campaign_id, session_id):
+    """Modifier une date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut modifier une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession.query.filter_by(id=session_id, campaign_id=campaign.id).first()
+    if not session_entry:
+        flash('Session introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    scheduled_for_raw = request.form.get('scheduled_for', '').strip()
+    try:
+        new_scheduled_for = datetime.strptime(scheduled_for_raw, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        flash('Format de date invalide.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry.scheduled_for = new_scheduled_for
+    session_entry.is_cancelled = False
+    session_entry.cancelled_at = None
+    session_entry.reminder_sent_at = None
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Session modifiée',
+        message=f'Le MJ a modifié une session : {new_scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_updated',
+        include_mj=False,
+    )
+
+    flash('Date de session mise à jour.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+
+@bp.route('/<int:campaign_id>/sessions/<int:session_id>/cancel', methods=['POST'])
+@login_required
+def cancel_campaign_session(campaign_id, session_id):
+    """Annuler une date de session (MJ uniquement)."""
+    campaign = CampaignService.get_campaign_with_access_check(campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut annuler une session.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry = CampaignSession.query.filter_by(id=session_id, campaign_id=campaign.id).first()
+    if not session_entry:
+        flash('Session introuvable.', 'error')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    if session_entry.is_cancelled:
+        flash('Cette session est déjà annulée.', 'info')
+        return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))
+
+    session_entry.is_cancelled = True
+    session_entry.cancelled_at = datetime.utcnow()
+    session_entry.reminder_sent_at = None
+    db.session.commit()
+
+    NotificationService.create_campaign_notification(
+        campaign,
+        title='Session annulée',
+        message=f'Le MJ a annulé la session du {session_entry.scheduled_for.strftime("%d/%m/%Y à %Hh%M")}.',
+        kind='campaign_session_cancelled',
+        include_mj=False,
+    )
+
+    flash('Session annulée.', 'success')
+    return redirect(url_for('campaign.view_campaign', campaign_id=campaign_id))

@@ -1,5 +1,6 @@
 """Configuration de l'application"""
 import os
+from datetime import timedelta
 
 
 def _as_bool(value, default=False):
@@ -14,6 +15,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///tracker.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    REQUIRE_DATABASE_URL = False
 
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
@@ -22,8 +24,9 @@ class Config:
 
     # Upload configuration
     UPLOAD_FOLDER = os.path.join("static", "uploads")
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "mp4", "webm", "mov"}
+    UPLOAD_MAX_MB = int(os.environ.get("UPLOAD_MAX_MB", 64))
+    MAX_CONTENT_LENGTH = UPLOAD_MAX_MB * 1024 * 1024
 
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.hostinger.com')
@@ -34,10 +37,16 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or MAIL_USERNAME
 
+    # Ollama configuration
+    OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://127.0.0.1:11434')
+    OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'llama3.2:1b')
+    OLLAMA_TIMEOUT_SECONDS = int(os.environ.get('OLLAMA_TIMEOUT_SECONDS', 600))
+
     # Security
     WTF_CSRF_ENABLED = True
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     SESSION_COOKIE_HTTPONLY = True
+    PERMANENT_SESSION_LIFETIME = timedelta(days=int(os.environ.get('REMEMBER_ME_DAYS', 30)))
 
 TEMPLATES_AUTO_RELOAD = True
 
@@ -49,6 +58,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_ECHO = False
+    REQUIRE_DATABASE_URL = True
 
 
 class PreprodConfig(ProductionConfig):

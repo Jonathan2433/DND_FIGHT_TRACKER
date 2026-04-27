@@ -1,0 +1,133 @@
+{
+  "id": "equipment_choice_rules",
+  "rules_version": "dnd_5_2024",
+  "entity_type": "ruleset",
+  "available_at_character_level": 1,
+  "builder_scope": "level_1_character_creation_only",
+  "supported_placeholder_item_shapes": [
+    {
+      "match_when_object_contains": [
+        "choice_from_category"
+      ],
+      "resolution": {
+        "select_one_item_from_catalog_id": "value_of_choice_from_category",
+        "replace_placeholder_with_selected_item_id": true,
+        "quantity_source": "placeholder.quantity_or_1"
+      }
+    },
+    {
+      "match_when_object_contains": [
+        "choice_from_catalogs"
+      ],
+      "resolution": {
+        "select_one_item_from_flattened_catalog_ids": "value_of_choice_from_catalogs",
+        "replace_placeholder_with_selected_item_id": true,
+        "quantity_source": "placeholder.quantity_or_1"
+      }
+    },
+    {
+      "match_when_object_contains": [
+        "choice_from_weapon_category"
+      ],
+      "resolution": {
+        "select_one_item_from_weapons_where": {
+          "weapon_category": "value_of_choice_from_weapon_category"
+        },
+        "restrict_to_class_weapon_proficiencies": true,
+        "replace_placeholder_with_selected_item_id": true,
+        "quantity_source": "placeholder.quantity_or_1"
+      }
+    },
+    {
+      "match_when_object_contains": [
+        "choice_from_weapon_filters"
+      ],
+      "resolution": {
+        "select_one_item_from_weapons_matching_filters": "value_of_choice_from_weapon_filters",
+        "restrict_to_class_weapon_proficiencies": true,
+        "replace_placeholder_with_selected_item_id": true,
+        "quantity_source": "placeholder.quantity_or_1"
+      }
+    },
+    {
+      "match_when_object_contains": [
+        "choice_from_item_ids"
+      ],
+      "resolution": {
+        "select_one_item_from_ids": "value_of_choice_from_item_ids",
+        "replace_placeholder_with_selected_item_id": true,
+        "quantity_source": "placeholder.quantity_or_1"
+      }
+    }
+  ],
+  "source_specific_placeholders": [
+    {
+      "source_type": "class",
+      "source_id": "bard",
+      "option_id": "bard_option_a",
+      "placeholder_id": "musical_instrument_choice",
+      "catalog_id": "musical_instrument",
+      "choose": 1
+    },
+    {
+      "source_type": "class",
+      "source_id": "monk",
+      "option_id": "monk_option_a",
+      "placeholder_id": "monk_tool_or_instrument_choice",
+      "catalog_ids": [
+        "artisans_tools",
+        "musical_instrument"
+      ],
+      "choose": 1,
+      "flatten_nested_catalogs": true
+    },
+    {
+      "source_type": "background",
+      "source_id": "artisan",
+      "option_id": "artisan_option_a",
+      "placeholder_id": "artisans_tools",
+      "catalog_id": "artisans_tools",
+      "choose": 1
+    },
+    {
+      "source_type": "background",
+      "source_id": "entertainer",
+      "option_id": "entertainer_option_a",
+      "placeholder_id": "musical_instrument",
+      "catalog_id": "musical_instrument",
+      "choose": 1
+    },
+    {
+      "source_type": "background",
+      "source_id": "guard",
+      "option_id": "guard_option_a",
+      "placeholder_id": "gaming_set",
+      "catalog_id": "gaming_set",
+      "choose": 1
+    },
+    {
+      "source_type": "background",
+      "source_id": "noble",
+      "option_id": "noble_option_a",
+      "placeholder_id": "gaming_set",
+      "catalog_id": "gaming_set",
+      "choose": 1
+    },
+    {
+      "source_type": "background",
+      "source_id": "soldier",
+      "option_id": "soldier_option_a",
+      "placeholder_id": "gaming_set",
+      "catalog_id": "gaming_set",
+      "choose": 1
+    },
+    {
+      "source_type": "background",
+      "source_id": "wayfarer",
+      "option_id": "wayfarer_option_a",
+      "placeholder_id": "gaming_set",
+      "catalog_id": "gaming_set",
+      "choose": 1
+    }
+  ]
+}

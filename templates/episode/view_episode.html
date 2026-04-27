@@ -6,7 +6,6 @@
             <div class="section-head__content">
                 <span class="section-eyebrow">Episode</span>
                 <h1 class="section-title">{{ episode.title }}</h1>
-                <p class="section-head__copy">Arc : {{ arc.name }} · Campagne : {{ campaign.name }}</p>
             </div>
             <div class="campaign-actions">
                 <a href="{{ url_for('story_arc.view_arc', arc_id=arc.id) }}" class="btn btn-secondary">Retour arc</a>
@@ -15,20 +14,101 @@
     </section>
 
     <section class="card">
-        <h2 class="section-head__title">Resume partage (MJ + joueurs)</h2>
+        <h2 class="section-head__title">Informations de l'episode</h2>
         {% if is_mj %}
-            <form method="POST" action="{{ url_for('episode.update_shared_summary', episode_id=episode.id) }}">
-                <textarea name="summary_shared" class="form-control" rows="6" placeholder="Resume visible par tous">{{ episode.summary_shared or '' }}</textarea>
-                <button type="submit" class="btn btn-primary" style="margin-top: 0.75rem;">Enregistrer le resume partage</button>
+            <form method="POST" action="{{ url_for('episode.update_episode', episode_id=episode.id) }}">
+                <input id="episode-title" type="text" name="title" class="form-control" value="{{ episode.title }}" required>
+                <textarea name="summary_shared" class="form-control" rows="6" placeholder="Resume visible par tous" style="margin-top: 0.75rem;">{{ episode.summary_shared or '' }}</textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top: 0.75rem;">Enregistrer les modifications</button>
             </form>
         {% else %}
+            <h3>{{ episode.title }}</h3>
             <p class="section-copy">{{ episode.summary_shared or "Aucun resume partage pour le moment." }}</p>
         {% endif %}
     </section>
 
     <section class="card">
+        <div class="section-head">
+            <div class="section-head__content">
+                <h2 class="section-head__title">Resume de l'episode</h2>
+                <p class="section-head__copy">
+                    Statut:
+                    <strong>{{ episode.summary_status or 'not_generated' }}</strong>
+                    {% if episode.summary_generated_at %}
+                        · Genere le {{ episode.summary_generated_at.strftime('%d/%m/%Y %H:%M') }}
+                    {% endif %}
+                    {% if episode.summary_model_name %}
+                        · Modele {{ episode.summary_model_name }}
+                    {% endif %}
+                </p>
+            </div>
+            {% if is_mj %}
+                <div class="campaign-actions">
+                    <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
+                        <input type="hidden" name="send_email" value="0">
+                        {% if episode.summary_public %}
+                            <input type="hidden" name="force_regenerate" value="1">
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
+                            {% if episode.summary_public %}Regenerer le resume{% else %}Generer le resume{% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('episode.generate_episode_summary', episode_id=episode.id) }}">
+                        <input type="hidden" name="send_email" value="1">
+                        {% if episode.summary_public %}
+                            <input type="hidden" name="force_regenerate" value="1">
+                        {% endif %}
+                        <button type="submit" class="btn btn-secondary" {% if episode.summary_status == 'pending' %}disabled{% endif %}>
+                            Generer et envoyer
+                        </button>
+                    </form>
+                    {% if episode.summary_public %}
+                        <form method="POST" action="{{ url_for('episode.send_episode_summary_email', episode_id=episode.id) }}">
+                            <button type="submit" class="btn btn-secondary">
+                                Envoyer par email
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% if episode.summary_status == 'pending' %}
+            <div class="status-banner info" style="margin-bottom: 1rem;">
+                La generation du resume est en cours. Cela peut prendre plusieurs minutes.
+            </div>
+        {% elif episode.summary_status == 'failed' %}
+            <div class="status-banner danger" style="margin-bottom: 1rem;">
+                La generation du resume a echoue.
+            </div>
+        {% endif %}
+        {% if episode.summary_public %}
+            <p class="section-head__copy" style="white-space: pre-line;">{{ episode.summary_public }}</p>
+        {% else %}
+            <p class="section-head__copy">Aucun resume public genere pour le moment.</p>
+        {% endif %}
+        {% if is_mj and episode.summary_generation_error %}
+            <p class="section-head__copy" style="color: var(--color-danger, #dc2626); margin-top: .75rem;">
+                Derniere erreur de generation : {{ episode.summary_generation_error }}
+            </p>
+        {% endif %}
+        {% if is_mj and episode.summary_email_status %}
+            <p class="section-head__copy" style="margin-top: .5rem;">
+                Email :
+                <strong>{{ episode.summary_email_status }}</strong>
+                {% if episode.summary_last_emailed_at %}
+                    · Dernier envoi le {{ episode.summary_last_emailed_at.strftime('%d/%m/%Y %H:%M') }}
+                {% endif %}
+            </p>
+            {% if episode.summary_email_error %}
+                <p class="section-head__copy" style="color: var(--color-danger, #dc2626);">
+                    Derniere erreur email : {{ episode.summary_email_error }}
+                </p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="card">
         <h2 class="section-head__title">Ma note partagee</h2>
-        <p class="section-head__copy">Cette note est visible par tous les participants de la campagne.</p>
         <form method="POST" action="{{ url_for('episode.update_my_notes', episode_id=episode.id) }}">
             <textarea name="notes" class="form-control" rows="8" placeholder="Votre note partagee...">{{ my_note.notes or '' }}</textarea>
             <button type="submit" class="btn btn-secondary" style="margin-top: 0.75rem;">Sauvegarder ma note</button>
@@ -41,7 +121,6 @@
 
     <section class="card">
         <h2 class="section-head__title">Ma note privee</h2>
-        <p class="section-head__copy">Cette note est visible uniquement par vous.</p>
         <form method="POST" action="{{ url_for('episode.update_my_private_notes', episode_id=episode.id) }}">
             <textarea name="private_notes" class="form-control" rows="8" placeholder="Votre note privee...">{{ my_note.private_notes or '' }}</textarea>
             <button type="submit" class="btn btn-secondary" style="margin-top: 0.75rem;">Sauvegarder ma note privee</button>
@@ -92,7 +171,7 @@
                             </div>
                         </div>
                         <div class="campaign-actions">
-                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.view_combat_player', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
+                            <a href="{{ url_for('combat.view_combat', combat_id=combat.id) if is_mj else url_for('combat.join_combat', combat_id=combat.id) }}" class="btn btn-primary">Ouvrir</a>
                         </div>
                     </article>
                 {% endfor %}

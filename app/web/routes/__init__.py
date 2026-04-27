@@ -4,7 +4,7 @@ This layer centralizes HTTP blueprint registration.
 """
 
 from . import main, combat, combatant, group, template, summary, xp
-from . import auth, campaign, story_arc, episode, pnj, notification
+from . import auth, campaign, story_arc, episode, pnj, notification, admin
 
 BLUEPRINTS = [
     main.bp,
@@ -20,6 +20,7 @@ BLUEPRINTS = [
     episode.bp,
     pnj.bp,
     notification.bp,
+    admin.bp,
 ]
 
 def register_blueprints(app):

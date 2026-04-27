@@ -1,0 +1,317 @@
+[
+  {
+    "class_id": "bard",
+    "class_name_fr": "Barde",
+    "class_name_en": "Bard",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "blade_ward",
+        "dancing_lights",
+        "friends",
+        "light",
+        "mage_hand",
+        "mending",
+        "message",
+        "minor_illusion",
+        "prestidigitation",
+        "true_strike",
+        "vicious_mockery"
+      ],
+      "1": [
+        "charm_person",
+        "color_spray",
+        "comprehend_languages",
+        "cure_wounds",
+        "detect_magic",
+        "disguise_self",
+        "dissonant_whispers",
+        "faerie_fire",
+        "feather_fall",
+        "healing_word",
+        "heroism",
+        "identify",
+        "longstrider",
+        "silent_image",
+        "sleep",
+        "speak_with_animals",
+        "tasha_s_hideous_laughter",
+        "thunderwave",
+        "unseen_servant"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "cleric",
+    "class_name_fr": "Clerc",
+    "class_name_en": "Cleric",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "guidance",
+        "light",
+        "mending",
+        "resistance",
+        "sacred_flame",
+        "spare_the_dying",
+        "thaumaturgy"
+      ],
+      "1": [
+        "bane",
+        "bless",
+        "command",
+        "create_or_destroy_water",
+        "cure_wounds",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "guiding_bolt",
+        "healing_word",
+        "inflict_wounds",
+        "protection_from_evil_and_good",
+        "purify_food_and_drink",
+        "sanctuary",
+        "shield_of_faith"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "druid",
+    "class_name_fr": "Druide",
+    "class_name_en": "Druid",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "druidcraft",
+        "guidance",
+        "mending",
+        "poison_spray",
+        "produce_flame",
+        "resistance",
+        "shillelagh",
+        "thorn_whip"
+      ],
+      "1": [
+        "animal_friendship",
+        "charm_person",
+        "create_or_destroy_water",
+        "cure_wounds",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "entangle",
+        "faerie_fire",
+        "fog_cloud",
+        "goodberry",
+        "healing_word",
+        "jump",
+        "longstrider",
+        "speak_with_animals",
+        "thunderwave"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "paladin",
+    "class_name_fr": "Paladin",
+    "class_name_en": "Paladin",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [],
+      "1": [
+        "bless",
+        "command",
+        "compelled_duel",
+        "cure_wounds",
+        "detect_evil_and_good",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "divine_favor",
+        "heroism",
+        "protection_from_evil_and_good",
+        "purify_food_and_drink",
+        "searing_smite",
+        "shield_of_faith",
+        "thunderous_smite",
+        "wrathful_smite"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "ranger",
+    "class_name_fr": "Rôdeur",
+    "class_name_en": "Ranger",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [],
+      "1": [
+        "alarm",
+        "animal_friendship",
+        "cure_wounds",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "ensnaring_strike",
+        "fog_cloud",
+        "goodberry",
+        "hunter_s_mark",
+        "jump",
+        "longstrider",
+        "speak_with_animals"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "sorcerer",
+    "class_name_fr": "Ensorceleur",
+    "class_name_en": "Sorcerer",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "acid_splash",
+        "blade_ward",
+        "chill_touch",
+        "dancing_lights",
+        "fire_bolt",
+        "light",
+        "mage_hand",
+        "mending",
+        "message",
+        "minor_illusion",
+        "poison_spray",
+        "prestidigitation",
+        "ray_of_frost",
+        "shocking_grasp",
+        "true_strike"
+      ],
+      "1": [
+        "burning_hands",
+        "charm_person",
+        "chromatic_orb",
+        "color_spray",
+        "comprehend_languages",
+        "detect_magic",
+        "disguise_self",
+        "expeditious_retreat",
+        "false_life",
+        "feather_fall",
+        "fog_cloud",
+        "jump",
+        "mage_armor",
+        "magic_missile",
+        "shield",
+        "silent_image",
+        "sleep",
+        "thunderwave"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "warlock",
+    "class_name_fr": "Occultiste",
+    "class_name_en": "Warlock",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "chill_touch",
+        "eldritch_blast",
+        "mage_hand",
+        "minor_illusion",
+        "poison_spray",
+        "prestidigitation",
+        "true_strike"
+      ],
+      "1": [
+        "armor_of_agathys",
+        "charm_person",
+        "comprehend_languages",
+        "detect_magic",
+        "expeditious_retreat",
+        "hellish_rebuke",
+        "hex",
+        "protection_from_evil_and_good",
+        "unseen_servant"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  },
+  {
+    "class_id": "wizard",
+    "class_name_fr": "Magicien",
+    "class_name_en": "Wizard",
+    "rules_version": "dnd_5_2024",
+    "spell_list_type": "class_spell_list",
+    "levels": {
+      "0": [
+        "acid_splash",
+        "blade_ward",
+        "chill_touch",
+        "dancing_lights",
+        "fire_bolt",
+        "light",
+        "mage_hand",
+        "mending",
+        "message",
+        "minor_illusion",
+        "poison_spray",
+        "prestidigitation",
+        "ray_of_frost",
+        "shocking_grasp",
+        "true_strike"
+      ],
+      "1": [
+        "alarm",
+        "burning_hands",
+        "charm_person",
+        "chromatic_orb",
+        "color_spray",
+        "comprehend_languages",
+        "detect_magic",
+        "disguise_self",
+        "expeditious_retreat",
+        "false_life",
+        "feather_fall",
+        "find_familiar",
+        "fog_cloud",
+        "grease",
+        "identify",
+        "jump",
+        "longstrider",
+        "mage_armor",
+        "magic_missile",
+        "shield",
+        "silent_image",
+        "sleep",
+        "thunderwave",
+        "unseen_servant"
+      ]
+    },
+    "notes": {
+      "source_of_truth": "derived_from_spells_json_available_to_classes"
+    }
+  }
+]

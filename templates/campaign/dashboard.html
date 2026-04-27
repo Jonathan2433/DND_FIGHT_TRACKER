@@ -12,7 +12,6 @@
             {% endif %}
             <a href="{{ url_for('summary.campaign_stats', campaign_id=campaign.id) }}" class="btn btn-secondary">Stats campagne</a>
             {% if is_mj %}
-                <span class="inl-campaign-044">Créez les combats depuis un arc narratif.</span>
             {% endif %}
         </div>
     </div>
@@ -39,6 +38,107 @@
             <h3 class="inl-campaign-009">📖 Arc Actuel</h3>
             <p class="inl-campaign-011">{{ current_arc.name if current_arc else "Aucun" }}</p>
         </div>
+
+        <div class="inl-campaign-008">
+            <h3 class="inl-campaign-009">✨ Inspiration</h3>
+            <p class="inl-campaign-010">{{ campaign.inspiration_points }}</p>
+        </div>
+    </div>
+
+    {% if is_mj %}
+    <div class="card campaign-inspiration-card">
+        <h2>✨ Pot d'inspiration de la campagne</h2>
+            <div class="campaign-inspiration-layout">
+                <div>
+                    <div class="campaign-inspiration-recap">
+                        <p>Points disponibles pour toute l'équipe :</p>
+                        <strong>{{ campaign.inspiration_points }}</strong>
+                    </div>
+                    <form method="POST" action="{{ url_for('campaign.update_inspiration_points', campaign_id=campaign.id) }}" class="campaign-inspiration-form">
+                        <label for="episode_id">Épisode lié :</label>
+                        <select id="episode_id" name="episode_id" required>
+                            <option value="">-- Sélectionnez un épisode --</option>
+                            {% for episode in campaign_episodes %}
+                                <option value="{{ episode.id }}">{{ episode.story_arc.name }} — {{ episode.title }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label for="delta">Ajustement (positif ou négatif) :</label>
+                        <input id="delta" name="delta" type="number" required min="-99" max="99">
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+
+                <div>
+                    <h3>Historique</h3>
+                    {% if inspiration_logs %}
+                        <div class="campaign-calendar__list">
+                            {% for log in inspiration_logs %}
+                                <div class="campaign-calendar__item">
+                                    <div>
+                                        <strong>
+                                            {% if log.delta > 0 %}+{{ log.delta }}{% else %}{{ log.delta }}{% endif %}
+                                        </strong>
+                                        <div>Total: {{ log.previous_total }} → {{ log.new_total }}</div>
+                                        <small>{{ log.episode.story_arc.name }} — {{ log.episode.title }}</small>
+                                    </div>
+                                    <div class="pj-meta">
+                                        Par {{ log.adjusted_by.username }} · {{ log.created_at.strftime('%d/%m/%Y %Hh%M') }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Aucun mouvement de points d'inspiration pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+    </div>
+    {% endif %}
+
+
+    <div class="card campaign-calendar">
+        <div class="campaign-calendar__header">
+            <h2>🗓️ Calendrier des sessions</h2>
+            {% if is_mj %}
+            <form method="POST" action="{{ url_for('campaign.create_campaign_session', campaign_id=campaign.id) }}" class="campaign-calendar__create">
+                <input type="datetime-local" name="scheduled_for" required>
+                <button type="submit" class="btn btn-primary">Planifier</button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if campaign_sessions %}
+            <div class="campaign-calendar__list">
+                {% for session_item in campaign_sessions %}
+                    <div class="campaign-calendar__item {% if session_item.is_cancelled %}is-cancelled{% endif %}">
+                        <div>
+                            <strong>{{ session_item.scheduled_for.strftime('%d/%m/%Y') }}</strong>
+                            <div>{{ session_item.scheduled_for.strftime('%Hh%M') }}</div>
+                            {% if session_item.is_cancelled %}
+                                <small>❌ Session annulée</small>
+                            {% endif %}
+                        </div>
+
+                        {% if is_mj %}
+                            <div class="campaign-calendar__actions">
+                                <form method="POST" action="{{ url_for('campaign.update_campaign_session', campaign_id=campaign.id, session_id=session_item.id) }}">
+                                    <input type="datetime-local" name="scheduled_for" value="{{ session_item.scheduled_for.strftime('%Y-%m-%dT%H:%M') }}" required>
+                                    <button type="submit" class="btn btn-secondary">Modifier</button>
+                                </form>
+                                {% if not session_item.is_cancelled %}
+                                <form method="POST" action="{{ url_for('campaign.cancel_campaign_session', campaign_id=campaign.id, session_id=session_item.id) }}" onsubmit="return confirm('Annuler cette session ?')">
+                                    <button type="submit" class="btn btn-danger">Annuler</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucune session planifiée pour le moment.</p>
+        {% endif %}
     </div>
 
     <div class="inl-campaign-012">
@@ -107,11 +207,14 @@
     <!-- ✅ NOUVELLE SECTION : Gestion des PJ par le MJ -->
     <div class="card">
         <h3>🧙 Personnages Joueurs de la campagne</h3>
+        {% if not members %}
+            <p>Aucun joueur dans la campagne pour recevoir un PJ.</p>
+        {% endif %}
 
         {% if campaign_pjs %}
             <div class="pj-notes-grid">
                 {% for pj in campaign_pjs %}
-                    <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="pj-note-card pj-note-card--link">
+                    <div class="pj-note-card">
                         <div class="pj-note-header">
                             <div class="pj-info">
                                 {% if pj.image_filename %}
@@ -133,10 +236,22 @@
                             </div>
 
                             <div class="pj-actions">
-                                <span class="btn btn-primary">👁️ Voir</span>
+                                <a href="{{ url_for('template.character_profile', id=pj.id) }}" class="btn btn-primary">👁️ Voir</a>
+                                {% if is_mj and pj.owner_id == g.current_user.id and members %}
+                                    <form method="POST" action="{{ url_for('campaign.assign_player_character', campaign_id=campaign.id) }}" class="inl-campaign-020">
+                                        <input type="hidden" name="character_id" value="{{ pj.id }}">
+                                        <select name="recipient_user_id" required aria-label="Joueur destinataire de {{ pj.name }}">
+                                            <option value="">-- Choisir un joueur --</option>
+                                            {% for member in members %}
+                                                <option value="{{ member.user_id }}">{{ member.user.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-secondary">🎁 Donner ce PJ</button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
-                    </a>
+                    </div>
                 {% endfor %}
             </div>
         {% else %}
@@ -257,7 +372,7 @@
     {% if recent_pnjs %}
         <div class="pj-dashboard-grid inl-campaign-023">
             {% for pnj in recent_pnjs[:6] %}
-                <div class="pj-dashboard-card inl-campaign-024">
+                <a href="{{ url_for('template.character_profile', id=pnj.id) }}" class="pj-dashboard-card inl-campaign-024">
                     <div class="template-avatar-container {% if pnj.image_filename %}has-image{% endif %}">
                         {% if pnj.image_filename %}
                             <img src="{{ url_for('static', filename='uploads/' + pnj.image_filename) }}" class="pj-dashboard-img inl-campaign-025" alt="{{ pnj.name }}">
@@ -279,7 +394,7 @@
                             <div class="inl-campaign-028">👁️ {{ pnj.visibility_level }}</div>
                         {% endif %}
                     {% endif %}
-                </div>
+                </a>
             {% endfor %}
         </div>
 
@@ -292,7 +407,6 @@
         <div class="inl-campaign-031">
             {% if is_mj %}
                 <p>🎭 Aucun PNJ créé</p>
-                <p class="inl-campaign-032">Les PNJ enrichissent votre monde et peuvent être partagés avec vos joueurs selon différents niveaux de visibilité.</p>
                 <a href="{{ url_for('pnj.create_pnj', campaign_id=campaign.id) }}" class="btn btn-primary">
                     ➕ Créer votre premier PNJ
                 </a>

@@ -10,107 +10,91 @@
         <a href="{{ url_for('template.character_profile', id=character.id) }}" class="btn btn-secondary">Retour</a>
     </div>
 
-    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data">
-        <div class="edit-grid edit-grid--spaced">
-            <section class="edit-section">
-                <h2>Identite</h2>
-
-                <label for="character-name">Nom</label>
-                <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
-
-                <label for="character-class">Classe</label>
-                <input id="character-class" type="text" name="character_class" value="{{ character.character_class }}" required>
-
-                <label for="character-level">Niveau</label>
-                <input id="character-level" type="number" name="level" value="{{ character.level }}" min="1" max="20" required>
-
-                <label for="character-notes">Notes partagees</label>
-                <textarea id="character-notes" name="notes" rows="5">{{ character.notes }}</textarea>
-
-                <label for="character-player-private-notes">Notes privees joueur</label>
-                <textarea id="character-player-private-notes" name="player_private_notes" rows="4" placeholder="Visible uniquement par le proprietaire du PJ">{{ character.player_private_notes or '' }}</textarea>
-            </section>
-
-            <section class="edit-section">
-                <h2>Combat</h2>
-
-                <label for="character-hp">PV max</label>
-                <input id="character-hp" type="number" name="hp_max" value="{{ character.hp_max }}" required>
-
-                <label for="character-ac">CA</label>
-                <input id="character-ac" type="number" name="ac_base" value="{{ character.ac_base }}" required>
-
-                <label for="character-init">Bonus initiative</label>
-                <input id="character-init" type="number" name="initiative_bonus" value="{{ character.initiative_bonus }}">
-            </section>
+    <form action="{{ url_for('template.edit_character_template', id=character.id) }}" method="POST" enctype="multipart/form-data" id="edit-character-form">
+        <div class="creation-wizard edit-wizard" data-total-steps="3">
+            <ol class="creation-steps-nav" aria-label="Etapes d'edition">
+                <li class="is-active" data-step="1"><button type="button" class="creation-step-trigger" data-step-target="1" aria-current="step">1. Identite</button></li>
+                <li data-step="2"><button type="button" class="creation-step-trigger" data-step-target="2">2. Apparence</button></li>
+                <li data-step="3"><button type="button" class="creation-step-trigger" data-step-target="3">3. Medias & visibilite</button></li>
+            </ol>
         </div>
 
-        <section class="edit-section edit-section--separator">
-            <h2>Caracteristiques</h2>
+        <section class="edit-section wizard-step is-active" data-step="1">
+            <h2>Identite</h2>
+
+            <label for="character-name">Nom</label>
+            <input id="character-name" type="text" name="name" value="{{ character.name }}" required>
+
+            <label for="character-player-name">Nom du joueur</label>
+            <input id="character-player-name" type="text" name="player_name" value="{{ character.player_name or '' }}">
+
+            <label for="character-campaign-name">Nom de campagne (affichage)</label>
+            <input id="character-campaign-name" type="text" name="campaign_name" value="{{ character.campaign_name or '' }}">
+
             <div class="stats-grid">
                 <div class="stat-input">
-                    <label for="force">Force</label>
-                    <input id="force" type="number" name="force" value="{{ character.force }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_force" {% if character.maitrise_force %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_force }} - Sauvegarde : {{ character.sauvegarde_force }}</small>
+                    <label for="character-gender">Genre</label>
+                    <input id="character-gender" type="text" name="gender" value="{{ character.gender or '' }}">
                 </div>
-
                 <div class="stat-input">
-                    <label for="dexterite">Dexterite</label>
-                    <input id="dexterite" type="number" name="dexterite" value="{{ character.dexterite }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_dexterite" {% if character.maitrise_dexterite %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_dexterite }} - Sauvegarde : {{ character.sauvegarde_dexterite }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="constitution">Constitution</label>
-                    <input id="constitution" type="number" name="constitution" value="{{ character.constitution }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_constitution" {% if character.maitrise_constitution %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_constitution }} - Sauvegarde : {{ character.sauvegarde_constitution }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="intelligence">Intelligence</label>
-                    <input id="intelligence" type="number" name="intelligence" value="{{ character.intelligence }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_intelligence" {% if character.maitrise_intelligence %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_intelligence }} - Sauvegarde : {{ character.sauvegarde_intelligence }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="sagesse">Sagesse</label>
-                    <input id="sagesse" type="number" name="sagesse" value="{{ character.sagesse }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_sagesse" {% if character.maitrise_sagesse %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_sagesse }} - Sauvegarde : {{ character.sauvegarde_sagesse }}</small>
-                </div>
-
-                <div class="stat-input">
-                    <label for="charisme">Charisme</label>
-                    <input id="charisme" type="number" name="charisme" value="{{ character.charisme }}" min="1" max="30">
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="maitrise_charisme" {% if character.maitrise_charisme %}checked{% endif %}>
-                        Maitrise sauvegarde
-                    </label>
-                    <small>Modificateur : {{ character.mod_charisme }} - Sauvegarde : {{ character.sauvegarde_charisme }}</small>
+                    <label for="character-age">Age</label>
+                    <input id="character-age" type="number" name="age" min="1" max="10000" value="{{ character.age or '' }}">
                 </div>
             </div>
+
+            <label for="character-alignment">Alignement</label>
+            <select id="character-alignment" name="alignment">
+                {% for alignment in dnd_alignments %}
+                    <option value="{{ alignment.value }}" {% if (character.alignment or '') == alignment.value %}selected{% endif %}>{{ alignment.label }}</option>
+                {% endfor %}
+                {% if character.alignment and character.alignment not in dnd_alignments|map(attribute='value')|list %}
+                    <option value="{{ character.alignment }}" selected>{{ character.alignment }}</option>
+                {% endif %}
+            </select>
+
+            <label for="character-languages">Langues</label>
+            <input id="character-languages" type="text" name="languages" list="character-languages-list" value="{{ character.languages or '' }}" placeholder="Ex: Commun, Elfique, Nain">
+            <datalist id="character-languages-list">
+                {% for language in common_languages %}
+                    <option value="{{ language }}">
+                {% endfor %}
+            </datalist>
         </section>
 
-        <section class="edit-section edit-section--separator">
+        <section class="edit-section edit-section--separator wizard-step" data-step="2" hidden>
+            <h2>Apparence</h2>
+
+            <div class="stats-grid">
+                <div class="stat-input">
+                    <label for="character-height">Taille</label>
+                    <input id="character-height" type="text" name="height" value="{{ character.height or '' }}">
+                </div>
+                <div class="stat-input">
+                    <label for="character-weight">Poids</label>
+                    <input id="character-weight" type="text" name="weight" value="{{ character.weight or '' }}">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-input">
+                    <label for="character-eyes">Yeux</label>
+                    <input id="character-eyes" type="text" name="eyes" value="{{ character.eyes or '' }}">
+                </div>
+                <div class="stat-input">
+                    <label for="character-skin">Peau</label>
+                    <input id="character-skin" type="text" name="skin" value="{{ character.skin or '' }}">
+                </div>
+                <div class="stat-input">
+                    <label for="character-hair">Cheveux</label>
+                    <input id="character-hair" type="text" name="hair" value="{{ character.hair or '' }}">
+                </div>
+            </div>
+
+            <label for="character-appearance">Description d'apparence</label>
+            <textarea id="character-appearance" name="character_appearance" rows="4">{{ character.character_appearance or '' }}</textarea>
+        </section>
+
+        <section class="edit-section edit-section--separator wizard-step" data-step="3" hidden>
             <h2>Medias</h2>
 
             <div class="media-preview">
@@ -135,28 +119,30 @@
                     <input id="character-pdf" type="file" name="pdf" accept=".pdf">
                 </div>
             </div>
+
+            <section class="edit-section edit-section--separator visibility-panel">
+                <h2>Visibilite</h2>
+                <label class="visibility-toggle" for="edit-is-public">
+                    <input type="checkbox" id="edit-is-public" name="is_public" value="1" {% if character.is_public %}checked{% endif %}>
+                    <span>
+                        <strong>Personnage public</strong>
+                        <small>Decoche pour garder la fiche privee. Les MJ proprietaires de campagne conservent tout de meme l'acces aux PJ rattaches.</small>
+                    </span>
+                </label>
+
+                <label for="edit-visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
+                <select id="edit-visibility-level" name="visibility_level">
+                    <option value="private" {% if character.visibility_level == 'private' %}selected{% endif %}>🔒 Prive (MJ uniquement)</option>
+                    <option value="reduced" {% if character.visibility_level == 'reduced' %}selected{% endif %}>👁️ Fiche reduite (nom, prenom, age, photo)</option>
+                    <option value="semi_complete" {% if character.visibility_level == 'semi_complete' %}selected{% endif %}>📊 Fiche semi-complete (+ caracteristiques)</option>
+                    <option value="complete" {% if character.visibility_level == 'complete' %}selected{% endif %}>📜 Fiche complete (tout sauf notes privees)</option>
+                </select>
+            </section>
         </section>
 
-        <section class="edit-section edit-section--separator visibility-panel">
-            <h2>Visibilite</h2>
-            <label class="visibility-toggle" for="edit-is-public">
-                <input type="checkbox" id="edit-is-public" name="is_public" value="1" {% if character.is_public %}checked{% endif %}>
-                <span>
-                    <strong>Personnage public</strong>
-                    <small>Decoche pour garder la fiche privee. Les MJ proprietaires de campagne conservent tout de meme l'acces aux PJ rattaches.</small>
-                </span>
-            </label>
-
-            <label for="edit-visibility-level">Partage avec les autres joueurs (dans la campagne)</label>
-            <select id="edit-visibility-level" name="visibility_level">
-                <option value="private" {% if character.visibility_level == 'private' %}selected{% endif %}>🔒 Prive (MJ uniquement)</option>
-                <option value="reduced" {% if character.visibility_level == 'reduced' %}selected{% endif %}>👁️ Fiche reduite (nom, prenom, age, photo)</option>
-                <option value="semi_complete" {% if character.visibility_level == 'semi_complete' %}selected{% endif %}>📊 Fiche semi-complete (+ caracteristiques)</option>
-                <option value="complete" {% if character.visibility_level == 'complete' %}selected{% endif %}>📜 Fiche complete (tout sauf notes privees)</option>
-            </select>
-        </section>
-
-        <div class="edit-actions">
+        <div class="edit-actions wizard-navigation">
+            <button type="button" class="btn btn-secondary" data-wizard-prev>Etape precedente</button>
+            <button type="button" class="btn btn-secondary" data-wizard-next>Etape suivante</button>
             <button type="submit" class="btn btn-primary btn-large">Enregistrer les modifications</button>
         </div>
     </form>
@@ -169,4 +155,59 @@
     </section>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('edit-character-form');
+    const stepItems = Array.from(editForm?.querySelectorAll('.creation-steps-nav li') || []);
+    const stepPanels = Array.from(editForm?.querySelectorAll('.wizard-step') || []);
+    const prevButton = editForm?.querySelector('[data-wizard-prev]');
+    const nextButton = editForm?.querySelector('[data-wizard-next]');
+    const submitButton = editForm?.querySelector('button[type="submit"]');
+    const totalSteps = 3;
+    let currentStep = 1;
+
+    const syncWizard = () => {
+        stepPanels.forEach((panel) => {
+            const panelStep = Number(panel.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            panel.hidden = !isActive;
+            panel.classList.toggle('is-active', isActive);
+        });
+
+        stepItems.forEach((item) => {
+            const panelStep = Number(item.dataset.step || 1);
+            const isActive = panelStep === currentStep;
+            item.classList.toggle('is-active', isActive);
+            item.classList.toggle('is-complete', panelStep < currentStep);
+            const trigger = item.querySelector('.creation-step-trigger');
+            if (trigger) {
+                trigger.setAttribute('aria-current', isActive ? 'step' : 'false');
+            }
+        });
+
+        if (prevButton) prevButton.hidden = currentStep <= 1;
+        if (nextButton) nextButton.hidden = currentStep >= totalSteps;
+        if (submitButton) submitButton.hidden = currentStep < totalSteps;
+    };
+
+    stepItems.forEach((item) => {
+        item.querySelector('.creation-step-trigger')?.addEventListener('click', () => {
+            currentStep = Number(item.dataset.step || currentStep);
+            syncWizard();
+        });
+    });
+
+    prevButton?.addEventListener('click', () => {
+        currentStep = Math.max(1, currentStep - 1);
+        syncWizard();
+    });
+
+    nextButton?.addEventListener('click', () => {
+        currentStep = Math.min(totalSteps, currentStep + 1);
+        syncWizard();
+    });
+
+    syncWizard();
+});
+</script>
 {% endblock %}

@@ -1,0 +1,2304 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <h1>Création de personnage</h1>
+    <style>
+        .ability-step-content {
+            display: grid;
+            gap: 10px;
+        }
+        .ability-scores-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .ability-scores-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-weight: 600;
+        }
+        .ability-scores-grid select {
+            width: 100%;
+            min-width: 0;
+        }
+        .origin-bonus-panel {
+            margin-top: 12px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .origin-bonus-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .origin-bonus-mode {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 10px 0 12px;
+        }
+        .origin-bonus-option {
+            position: relative;
+            min-height: 84px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+        }
+        .origin-bonus-option:hover {
+            border-color: rgba(126, 211, 255, 0.45);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+        .origin-bonus-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #7ed3ff;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+        .origin-bonus-option-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+            gap: 3px;
+        }
+        .origin-bonus-option-title {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .origin-bonus-option-detail {
+            font-size: 0.86rem;
+            opacity: 0.82;
+            line-height: 1.3;
+        }
+        .origin-bonus-option.is-active {
+            border-color: rgba(126, 211, 255, 0.85);
+            background: rgba(126, 211, 255, 0.14);
+            box-shadow: 0 0 0 1px rgba(126, 211, 255, 0.25);
+        }
+        .origin-bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .origin-bonus-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .origin-bonus-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .origin-bonus-checkboxes label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            width: 100%;
+            min-width: 0;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .origin-bonus-checkboxes input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+        .origin-bonus-checkbox-label {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+        .origin-bonus-helper {
+            margin: 10px 0 0;
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+        .appearance-story-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+        .appearance-story-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .appearance-story-field--full {
+            grid-column: 1 / -1;
+        }
+        .appearance-story-group-title {
+            grid-column: 1 / -1;
+            margin: 10px 0 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            opacity: 0.95;
+            text-transform: uppercase;
+        }
+        .appearance-story-group-title:first-of-type {
+            margin-top: 0;
+        }
+        @media (max-width: 900px) {
+            .ability-scores-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 640px) {
+            .ability-step-content {
+                gap: 8px;
+            }
+            .ability-scores-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .origin-bonus-panel {
+                padding: 10px;
+            }
+            .origin-bonus-mode {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .origin-bonus-option {
+                min-height: 70px;
+                padding: 10px 12px;
+            }
+            .origin-bonus-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .origin-bonus-checkboxes {
+                grid-template-columns: 1fr;
+            }
+            .appearance-story-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+
+    <form method="POST" action="{{ url_for('template.create_character_template') }}" id="guided-character-form" enctype="multipart/form-data">
+        <input type="hidden" name="character_type" value="PJ">
+        <input type="hidden" name="visibility_level" value="private">
+        <input type="hidden" name="ability_mode" id="ability-mode-hidden" value="standard_array">
+        <input type="hidden" name="ability_score_method" id="ability-score-method-hidden" value="standard_array">
+        <input type="hidden" name="weapon_loadout" value="">
+        <input type="hidden" name="ranged_weapon_loadout" value="">
+        <input type="hidden" name="armor_loadout" value="">
+        <input type="hidden" name="class_id" id="class-id-hidden" value="">
+        <input type="hidden" name="background_id" id="background-id-hidden" value="">
+        <input type="hidden" name="species_id" id="species-id-hidden" value="">
+        <input type="hidden" name="selected_cantrips" id="selected-cantrips-hidden" value="">
+        <input type="hidden" name="selected_level_1_spells" id="selected-level-one-hidden" value="">
+        <input type="hidden" name="equipment" id="equipment-hidden" value="">
+        <input type="hidden" name="language_1" value="common">
+        <input type="hidden" name="language_2" id="language-2-hidden" value="">
+        <input type="hidden" name="language_3" id="language-3-hidden" value="">
+        <input type="hidden" name="skill_proficiencies" id="skill-proficiencies-hidden" value="">
+        <input type="hidden" name="feat_choices" id="feat-choices-hidden" value="">
+        <input type="hidden" name="background_ability_bonus_mode" id="background-ability-bonus-mode-hidden" value="">
+        <input type="hidden" name="background_ability_bonus_allocations_json" id="background-ability-bonus-allocations-hidden" value="[]">
+        <div id="form-validation-errors" class="alert alert-danger" role="alert" hidden></div>
+
+        <div class="creation-wizard">
+            <ol class="creation-steps-nav" aria-label="Étapes de création" id="creation-steps-nav"></ol>
+            <div id="wizard-panels"></div>
+        </div>
+
+        <template id="step-template-choose_class">
+            <section class="wizard-step" data-step-id="choose_class" hidden>
+                <div class="form-group">
+                    <label for="class-choice">Classe</label>
+                    <select id="class-choice" name="character_class" required></select>
+                </div>
+                <div class="form-group">
+                    <ul id="class-auto-gains"></ul>
+                    <h3>Choix à faire</h3>
+                    <div id="class-required-choices"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_background">
+            <section class="wizard-step" data-step-id="choose_background" hidden>
+                <div class="form-group">
+                    <h3>Choix du background</h3>
+                    <label for="background-choice">Historique</label>
+                    <select id="background-choice" name="background_choice" required></select>
+                    <ul id="background-auto-gains"></ul>
+                    <p class="text-muted">Ces choix définissent votre passé d’aventurier et vos compétences de départ.</p>
+                    <div id="background-origin-feat-details"></div>
+                    <div id="background-origin-feat-choices"></div>
+                    <div id="background-required-choices"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_species">
+            <section class="wizard-step" data-step-id="choose_species" hidden>
+                <div class="form-group">
+                    <h3>Choix de la race</h3>
+                    <label for="species-choice">Espèce</label>
+                    <select id="species-choice" name="race" required></select>
+                    <h3>Gains automatiques (espèce)</h3>
+                    <ul id="species-auto-gains"></ul>
+                    <p class="text-muted">Choisissez les traits demandés pour finaliser votre race.</p>
+                    <div id="species-required-choices"></div>
+                    <div id="species-origin-feat-choices"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-assign_ability_scores">
+            <section class="wizard-step" data-step-id="assign_ability_scores" hidden>
+                <fieldset class="form-group">
+                    <legend>Caractéristiques de base</legend>
+                    <div class="ability-step-content">
+                        <label for="ability-method">Méthode de répartition</label>
+                        <select id="ability-method" name="ability_score_method"></select>
+                        <p class="text-muted">Conseil débutant : utilisez la méthode recommandée si vous découvrez Donjons & Dragons.</p>
+                        <p id="ability-method-description" class="text-muted"></p>
+                        <p id="ability-point-buy-budget" class="text-muted" hidden></p>
+                        <p id="ability-background-limits" class="text-muted"></p>
+                        <div class="ability-scores-grid">
+                            {% for key, label, default_value in [('force','Force',15),('dexterite','Dextérité',14),('constitution','Constitution',13),('intelligence','Intelligence',12),('sagesse','Sagesse',10),('charisme','Charisme',8)] %}
+                                <label>{{ label }}
+                                    <select
+                                        name="{{ key }}_base"
+                                        required
+                                        class="ability-base-field"
+                                        data-ability-key="{{ key }}"
+                                        data-default-value="{{ default_value }}"
+                                        data-placeholder="{{ label }} {{ default_value }}"
+                                    >
+                                        <option value="" disabled>{{ label }} {{ default_value }}</option>
+                                        {% for value in [15,14,13,12,10,8] %}
+                                            <option value="{{ value }}" {% if value == default_value %}selected{% endif %}>{{ value }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <input type="hidden" name="{{ key }}_bg_bonus" value="0">
+                            {% endfor %}
+                        </div>
+                        <div id="origin-bonus-controls"></div>
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_languages">
+            <section class="wizard-step" data-step-id="choose_languages" hidden>
+                <fieldset class="form-group">
+                    <legend>Langues</legend>
+                    <p>Langue commune incluse automatiquement.</p>
+                    <label for="language-2">Langue 2</label>
+                    <select id="language-2" required></select>
+                    <label for="language-3">Langue 3</label>
+                    <select id="language-3" required></select>
+                </fieldset>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_equipment">
+            <section class="wizard-step" data-step-id="choose_equipment" hidden>
+                <div class="form-group">
+                    <h3>Équipement de classe</h3>
+                    <div id="class-equipment"></div>
+                    <h3>Équipement d'historique</h3>
+                    <div id="background-equipment"></div>
+                    <h3>Armure et bouclier</h3>
+                    <div id="armor-shield-selection"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-choose_spells">
+            <section class="wizard-step" data-step-id="choose_spells" hidden>
+                <div class="form-group">
+                    <h3>Choix des sorts</h3>
+                    <p class="text-muted" id="spell-step-help">Si votre classe le permet, choisissez ici vos sorts.</p>
+                    <div id="spell-required-choices"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-appearance_story">
+            <section class="wizard-step" data-step-id="appearance_story" hidden>
+                <div class="form-group">
+                    <h3>Apparence et histoire</h3>
+                    <p class="text-muted">Renseignez les éléments d'identité narratifs de votre personnage.</p>
+                    <div class="appearance-story-grid">
+                        <p class="appearance-story-group-title">Identité visuelle</p>
+                        <div class="appearance-story-field">
+                            <label for="guided-genre">Genre</label>
+                            <select id="guided-genre" name="genre">
+                                <option value="" selected>Non précisé</option>
+                                <option value="Femme">Femme</option>
+                                <option value="Homme">Homme</option>
+                                <option value="Non-binaire">Non-binaire</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-age">Age</label>
+                            <input id="guided-age" type="number" name="age" min="1" max="10000" placeholder="Optionnel">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-height">Taille</label>
+                            <input id="guided-height" type="text" name="height" placeholder="Ex: 1m82">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-weight">Poids</label>
+                            <input id="guided-weight" type="text" name="weight" placeholder="Ex: 82 kg">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-eyes">Yeux</label>
+                            <input id="guided-eyes" type="text" name="eyes" placeholder="Ex: verts">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-hair">Cheveux</label>
+                            <input id="guided-hair" type="text" name="hair" placeholder="Ex: noirs">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-skin">Peau</label>
+                            <input id="guided-skin" type="text" name="skin" placeholder="Ex: hâlée">
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-image">Photo de profil</label>
+                            <input id="guided-image" type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+                            <small class="text-muted">Formats acceptés : PNG, JPG, JPEG, WEBP.</small>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-character-appearance">Apparence du personnage</label>
+                            <textarea id="guided-character-appearance" name="character_appearance" rows="3" placeholder="Description visuelle pour la page 2 du PDF"></textarea>
+                        </div>
+
+                        <p class="appearance-story-group-title">Histoire & éléments narratifs</p>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-personality-traits">Traits de personnalité</label>
+                            <textarea id="guided-personality-traits" name="personality_traits" rows="2" placeholder="Ex: Curieux, méfiant, loyal..."></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-ideals">Idéaux</label>
+                            <textarea id="guided-ideals" name="ideals" rows="2" placeholder="Principes qui guident votre personnage"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-bonds">Liens</label>
+                            <textarea id="guided-bonds" name="bonds" rows="2" placeholder="Personnes, lieux ou serments importants"></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-flaws">Défauts</label>
+                            <textarea id="guided-flaws" name="flaws" rows="2" placeholder="Faiblesses, travers, peurs..."></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-allies-organizations">Allies & organisations</label>
+                            <textarea id="guided-allies-organizations" name="allies_organizations" rows="2" placeholder="Factions, alliances, contacts"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-symbol-name">Nom du symbole</label>
+                            <input id="guided-symbol-name" type="text" name="symbol_name" placeholder="Ex: Blason de la Maison...">
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-additional-features">Traits supplementaires</label>
+                            <textarea id="guided-additional-features" name="additional_features_traits" rows="2" placeholder="Autres capacites et traits"></textarea>
+                        </div>
+                        <div class="appearance-story-field">
+                            <label for="guided-treasure">Tresor</label>
+                            <textarea id="guided-treasure" name="treasure" rows="2" placeholder="Or, objets, richesses"></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-backstory">Backstory du personnage</label>
+                            <textarea id="guided-backstory" name="backstory_text" rows="4" placeholder="Histoire personnelle, motivations, objectifs..."></textarea>
+                        </div>
+                        <div class="appearance-story-field appearance-story-field--full">
+                            <label for="guided-player-private-notes">Notes privees joueur</label>
+                            <textarea id="guided-player-private-notes" name="player_private_notes" rows="3" placeholder="Visible uniquement par vous"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                    <button type="button" class="btn btn-primary" data-next-step>Continuer</button>
+                </div>
+            </section>
+        </template>
+
+        <template id="step-template-finalize">
+            <section class="wizard-step" data-step-id="finalize" hidden>
+                <div class="form-group">
+                    <h3>Résumé final</h3>
+                    <div id="final-summary"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev-step>Retour</button>
+                </div>
+                <div class="form-group">
+                    <label for="character-name">Nom du personnage</label>
+                    <input id="character-name" name="name" required>
+                    <label for="alignment">Alignement</label>
+                    <select id="alignment" name="alignment">
+                        <option value="Loyal Bon">Loyal Bon</option>
+                        <option value="Neutre Bon">Neutre Bon</option>
+                        <option value="Chaotique Bon">Chaotique Bon</option>
+                        <option value="Loyal Neutre">Loyal Neutre</option>
+                        <option value="Neutre" selected>Neutre</option>
+                        <option value="Chaotique Neutre">Chaotique Neutre</option>
+                        <option value="Loyal Mauvais">Loyal Mauvais</option>
+                        <option value="Neutre Mauvais">Neutre Mauvais</option>
+                        <option value="Chaotique Mauvais">Chaotique Mauvais</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" type="button" id="export-character-json">Extraire (JSON)</button>
+                    <button class="btn btn-secondary" type="button" id="generate-character-pdf">Générer le PDF</button>
+                    <button class="btn btn-primary" type="submit">Créer le personnage</button>
+                </div>
+            </section>
+        </template>
+    </form>
+</section>
+
+<script>
+const rawRulesContext = {{ dnd_rules_context|tojson }};
+const rulesContext = (() => {
+    if (typeof rawRulesContext === 'string') {
+        try {
+            return JSON.parse(rawRulesContext);
+        } catch (error) {
+            console.error('Impossible de parser dnd_rules_context.', error);
+            return {};
+        }
+    }
+    return rawRulesContext || {};
+})();
+const form = document.getElementById('guided-character-form');
+const stepsNav = document.getElementById('creation-steps-nav');
+const wizardPanels = document.getElementById('wizard-panels');
+
+let classChoice = null;
+let backgroundChoice = null;
+let speciesChoice = null;
+let language2 = null;
+let language3 = null;
+let abilityMethod = null;
+let spellHelp = null;
+let exportCharacterJsonButton = null;
+let abilityMethodDescription = null;
+let pointBuyBudgetHint = null;
+let generateCharacterPdfButton = null;
+
+const hidden = {
+    mode: document.getElementById('ability-mode-hidden'),
+    abilityScoreMethod: document.getElementById('ability-score-method-hidden'),
+    classId: document.getElementById('class-id-hidden'),
+    backgroundId: document.getElementById('background-id-hidden'),
+    speciesId: document.getElementById('species-id-hidden'),
+    language2: document.getElementById('language-2-hidden'),
+    language3: document.getElementById('language-3-hidden'),
+    skills: document.getElementById('skill-proficiencies-hidden'),
+    cantrips: document.getElementById('selected-cantrips-hidden'),
+    spells: document.getElementById('selected-level-one-hidden'),
+    equipment: document.getElementById('equipment-hidden'),
+    weaponLoadout: form.querySelector('input[name="weapon_loadout"]'),
+    rangedWeaponLoadout: form.querySelector('input[name="ranged_weapon_loadout"]'),
+    armorLoadout: form.querySelector('input[name="armor_loadout"]'),
+    featChoices: document.getElementById('feat-choices-hidden'),
+    backgroundAbilityBonusMode: document.getElementById('background-ability-bonus-mode-hidden'),
+    backgroundAbilityBonusAllocations: document.getElementById('background-ability-bonus-allocations-hidden'),
+};
+let abilityBonusInputs = {};
+let abilityMethodsById = {};
+
+const state = {
+    class_id: null,
+    background_id: null,
+    species_id: null,
+    language_ids: [],
+    ability_score_method: null,
+    background_ability_bonus_mode: null,
+    background_ability_bonus_allocations: [],
+    backgroundAbilityBonuses: {
+        option: null,
+        selections: {},
+        distribution: {},
+    },
+    selected_choices_by_scope: {
+        class: {},
+        background: {},
+        species: {},
+        feat: {},
+    },
+};
+let latestPayload = null;
+const SPELL_CHOICE_TYPES = new Set(['spell', 'prepared_spell', 'spellbook_entry']);
+const STEP_LABELS = {
+    choose_class: 'Choisir une classe',
+    choose_background: 'Choisir un background',
+    choose_species: 'Choisir une espèce',
+    assign_ability_scores: 'Choisir les caractéristiques',
+    choose_languages: 'Choisir les langues',
+    choose_equipment: "Choisir l'équipement",
+    choose_spells: 'Choisir les sorts',
+    appearance_story: 'Apparence et histoire',
+    finalize: 'Résumé final',
+};
+const ARMOR_OPTIONS_BY_CATEGORY = {
+    light: ['Armure matelassee', 'Armure de cuir', 'Armure de cuir cloutee'],
+    medium: ['Chemise de mailles', 'Cuirasse', 'Demi-plate'],
+    heavy: ['Cotte de mailles', 'Harnois'],
+};
+const LEGACY_BG_FIELD_BY_ABILITY = {
+    strength: 'force',
+    dexterity: 'dexterite',
+    constitution: 'constitution',
+    intelligence: 'intelligence',
+    wisdom: 'sagesse',
+    charisma: 'charisme',
+};
+const MELEE_WEAPON_HINTS = ['epee', 'dague', 'hache', 'masse', 'lance', 'baton', 'marteau', 'glaive', 'fleau', 'hallebarde'];
+const RANGED_WEAPON_HINTS = ['arc', 'arbalete', 'fronde', 'javelot', 'sarbacane', 'dard'];
+
+const FRIENDLY_LABELS = {
+    saving_throw_proficiencies: 'Jets de sauvegarde maîtrisés',
+    weapon_proficiencies: 'Maîtrises d’armes',
+    armor_training: 'Maîtrises d’armures',
+    features_level_1: 'Capacités de niveau 1',
+    hit_die: 'Dé de vie',
+    traits_level_1: 'Traits de niveau 1',
+    size_options: 'Tailles possibles',
+    size_choice: 'Taille du personnage',
+    speed: 'Vitesse',
+    skill_proficiencies: 'Compétences maîtrisées',
+    origin_feat: 'Don d’origine',
+    skill_proficiency: 'Compétence',
+    tool_proficiency: 'Outil',
+    language: 'Langue',
+    spell: 'Sort',
+    simple_weapons: 'Armes simples',
+    martial_weapons: 'Armes martiales',
+    light_armor: 'Armure légère',
+    medium_armor: 'Armure intermédiaire',
+    heavy_armor: 'Armure lourde',
+    shields: 'Boucliers',
+    standard_array: 'Valeurs standard (15, 14, 13, 12, 10, 8)',
+    point_buy: 'Achat de points',
+    rolling: 'Jets aléatoires',
+    small: 'Petite',
+    medium: 'Moyenne',
+    large: 'Grande',
+    strength: 'Force',
+    dexterity: 'Dextérité',
+    constitution: 'Constitution',
+    intelligence: 'Intelligence',
+    wisdom: 'Sagesse',
+    charisma: 'Charisme',
+    species_trait_option: 'Trait d’espèce',
+    weapon_mastery: 'Maîtrise d’arme',
+    weapon_mastery_choices: 'Choix de maîtrise d’arme',
+    tool_proficiencies: 'Maîtrises d’outils',
+    tool_proficiency_choice: 'Choix d’outil',
+    skill_proficiencies: 'Compétences maîtrisées',
+    sleight_of_hand: 'Escamotage',
+    'sleight of hand': 'Escamotage',
+    stealth: 'Discrétion',
+    perception: 'Perception',
+    insight: 'Intuition',
+    persuasion: 'Persuasion',
+    intimidation: 'Intimidation',
+    deception: 'Tromperie',
+    performance: 'Représentation',
+    investigation: 'Investigation',
+    history: 'Histoire',
+    arcana: 'Arcanes',
+    religion: 'Religion',
+    nature: 'Nature',
+    medicine: 'Médecine',
+    athletics: 'Athlétisme',
+    acrobatics: 'Acrobaties',
+    animal_handling: 'Dressage',
+    'animal handling': 'Dressage',
+    survival: 'Survie',
+    gnome_gnomish_lineage_spellcasting_ability: 'Capacité d’incantation de la lignée gnome',
+    elf_elven_lineage_spellcasting_ability: 'Capacité d’incantation de la lignée elfique',
+    tiefling_fiendish_legacy_spellcasting_ability: 'Capacité d’incantation de l’héritage infernal',
+};
+
+function formatValue(value) {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+    if (Array.isArray(value)) {
+        const rendered = value.map((entry) => formatValue(entry)).filter(Boolean);
+        return rendered.length ? rendered.join(', ') : '—';
+    }
+    if (typeof value === 'object') {
+        return value.name_fr || value.label || value.id || Object.entries(value)
+            .filter(([, nested]) => nested !== null && nested !== undefined && nested !== '')
+            .map(([key, nested]) => `${key}: ${formatValue(nested)}`)
+            .join(' | ');
+    }
+    if (typeof value === 'string') {
+        if (FRIENDLY_LABELS[value]) return FRIENDLY_LABELS[value];
+        const normalizedValue = value.toLowerCase();
+        if (FRIENDLY_LABELS[normalizedValue]) return FRIENDLY_LABELS[normalizedValue];
+        return value
+            .replaceAll('_', ' ')
+            .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+    }
+    return String(value);
+}
+
+function getAbilityBaseFields() {
+    return Array.from(form.querySelectorAll('.ability-base-field'));
+}
+
+function setAbilityFieldOptions(fields, values, { preferDefaults = false } = {}) {
+    fields.forEach((field) => {
+        const currentValue = field.value;
+        const options = values.map((value) => ({ id: String(value), label: String(value) }));
+        field.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = field.dataset.placeholder || '— Sélectionnez —';
+        placeholder.disabled = true;
+        field.appendChild(placeholder);
+        options.forEach((entry) => {
+            const opt = document.createElement('option');
+            opt.value = entry.id;
+            opt.textContent = entry.label;
+            field.appendChild(opt);
+        });
+        if (currentValue && options.some((entry) => entry.id === currentValue)) {
+            field.value = currentValue;
+        } else if (preferDefaults && options.some((entry) => entry.id === String(field.dataset.defaultValue || ''))) {
+            field.value = String(field.dataset.defaultValue);
+        } else if (options.length) {
+            field.value = options[0].id;
+        } else {
+            field.value = '';
+        }
+    });
+}
+
+function updatePointBuyBudget(methodConfig) {
+    if (!pointBuyBudgetHint) return;
+    const modeId = abilityMethod?.value || '';
+    if (modeId !== 'point_buy') {
+        pointBuyBudgetHint.hidden = true;
+        return;
+    }
+    const rules = methodConfig?.rules || {};
+    const budget = Number(rules.budget ?? 27);
+    const costEntries = Array.isArray(rules.cost_table) ? rules.cost_table : [];
+    const costByScore = new Map(costEntries.map((entry) => [Number(entry.score), Number(entry.cost)]));
+    const totalCost = getAbilityBaseFields().reduce((acc, field) => {
+        const score = Number(field.value || 0);
+        return acc + (costByScore.get(score) ?? 0);
+    }, 0);
+    const remaining = budget - totalCost;
+    pointBuyBudgetHint.hidden = false;
+    pointBuyBudgetHint.textContent = `Point Buy : ${totalCost}/${budget} points utilisés (${remaining} restants).`;
+    pointBuyBudgetHint.style.color = remaining < 0 ? '#b00020' : '';
+}
+
+function applyAbilityMethodUI(methodId) {
+    const methodConfig = abilityMethodsById[methodId] || {};
+    const rules = methodConfig.rules || {};
+    const fields = getAbilityBaseFields();
+    if (!fields.length) return;
+
+    if (abilityMethodDescription) {
+        abilityMethodDescription.textContent = methodConfig.description_short_fr || '';
+    }
+
+    if (methodId === 'point_buy') {
+        const min = Number(rules.minimum_base_score ?? 8);
+        const max = Number(rules.maximum_base_score ?? 15);
+        setAbilityFieldOptions(fields, Array.from({ length: (max - min + 1) }, (_, idx) => min + idx));
+    } else if (methodId === 'manual_custom') {
+        const min = Number(rules.minimum_base_score ?? 3);
+        const max = Number(rules.maximum_base_score ?? 18);
+        setAbilityFieldOptions(fields, Array.from({ length: (max - min + 1) }, (_, idx) => min + idx));
+    } else {
+        const pool = Array.isArray(rules.base_scores_pool) && rules.base_scores_pool.length
+            ? rules.base_scores_pool
+            : [15, 14, 13, 12, 10, 8];
+        setAbilityFieldOptions(fields, pool, { preferDefaults: true });
+    }
+    fields.forEach((field) => { field.dataset.previousValue = field.value || ''; });
+    updatePointBuyBudget(methodConfig);
+}
+
+function applyStandardArraySwap(field) {
+    if (!field || (abilityMethod?.value || '') !== 'standard_array') return;
+    const previousValue = field.dataset.previousValue || '';
+    const nextValue = field.value || '';
+    if (!previousValue || !nextValue || previousValue === nextValue) {
+        field.dataset.previousValue = nextValue;
+        return;
+    }
+    const otherField = getAbilityBaseFields().find((candidate) => candidate !== field && candidate.value === nextValue);
+    if (otherField) {
+        otherField.value = previousValue;
+        otherField.dataset.previousValue = previousValue;
+    }
+    field.dataset.previousValue = nextValue;
+}
+
+function formatChoiceTitle(choice) {
+    const choiceLabel = choice.display_label || choice.label_fr || choice.label || choice.name_fr || choice.name;
+    if (choiceLabel) return formatValue(choiceLabel);
+    if (choice.name_fr) return choice.name_fr;
+    if (choice.type && FRIENDLY_LABELS[choice.type]) return FRIENDLY_LABELS[choice.type];
+    if (choice.id && FRIENDLY_LABELS[choice.id]) return FRIENDLY_LABELS[choice.id];
+    if (choice.id) {
+        const simplifiedId = choice.id
+            .replace(/^(barbarian|bard|cleric|druid|fighter|monk|paladin|ranger|rogue|sorcerer|warlock|wizard)_/, '')
+            .replace(/^(human|elf|dwarf|dragonborn|gnome|goliath|halfling|orc|tiefling)_/, '');
+        if (FRIENDLY_LABELS[simplifiedId]) return FRIENDLY_LABELS[simplifiedId];
+        return formatValue(simplifiedId);
+    }
+    return 'Choix';
+}
+
+function getChoiceBenefitHint(choice) {
+    const label = formatChoiceTitle(choice).toLowerCase();
+    const choiceType = (choice.type || '').toLowerCase();
+    const choiceId = (choice.id || '').toLowerCase();
+    const isSpeciesLineage = choiceType === 'species_trait_option' || choiceId.includes('species_trait_option');
+    const isSpellcastingAbility = choiceId.includes('spellcasting_ability');
+
+    if (choiceType === 'skill_proficiency' || label.includes('compétence')) {
+        return 'Une maîtrise de compétence ajoute votre bonus de maîtrise à tous les jets concernés : vous réussissez plus souvent les actions liées à cette compétence.';
+    }
+    if (isSpeciesLineage) {
+        return 'La lignée choisie définit vos traits de niveau 1 (capacités raciales, sorts, ou avantages passifs). Ce choix influence directement votre style de jeu dès le début.';
+    }
+    if (isSpellcastingAbility) {
+        return 'La capacité d’incantation est la caractéristique utilisée pour vos sorts (attaque magique, DD de sauvegarde et effets dépendants de la magie). Choisissez la plus adaptée à votre build.';
+    }
+    return '';
+}
+
+function setOptions(select, entries) {
+    if (!select) return;
+    select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— Sélectionnez —';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+    entries.forEach((entry) => {
+        const opt = document.createElement('option');
+        opt.value = entry.id;
+        opt.textContent = entry.label || entry.name_fr || entry.id;
+        select.appendChild(opt);
+    });
+}
+
+function renderList(targetId, rows) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '';
+    if (!rows.length) {
+        target.innerHTML = '<li>Aucun gain automatique.</li>';
+        return;
+    }
+    rows.forEach((row) => {
+        const li = document.createElement('li');
+        li.textContent = row;
+        target.appendChild(li);
+    });
+}
+
+function renderErrorMessages(errors = []) {
+    const target = document.getElementById('form-validation-errors');
+    if (!target) return;
+    if (!errors.length) {
+        target.hidden = true;
+        target.innerHTML = '';
+        return;
+    }
+    target.hidden = false;
+    target.innerHTML = `
+        <strong>Le formulaire contient des erreurs :</strong>
+        <ul>${errors.map((error) => `<li>${error}</li>`).join('')}</ul>
+    `;
+}
+
+function renderSummaryList(target, title, rows) {
+    const section = document.createElement('section');
+    const heading = document.createElement('h4');
+    heading.textContent = title;
+    section.appendChild(heading);
+    const list = document.createElement('ul');
+    if (!rows.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'Aucun élément.';
+        list.appendChild(empty);
+    } else {
+        rows.forEach((row) => {
+            const li = document.createElement('li');
+            li.textContent = row;
+            list.appendChild(li);
+        });
+    }
+    section.appendChild(list);
+    target.appendChild(section);
+}
+
+function renderFinalSummary(payload) {
+    const target = document.getElementById('final-summary');
+    if (!target) return;
+    target.innerHTML = '';
+    if (!payload) return;
+    const classSummary = payload.class_payload?.auto_granted_summary || [];
+    const backgroundSummary = payload.background_payload?.auto_granted_summary || [];
+    const speciesSummary = payload.species_payload?.auto_granted_summary || [];
+    const choicesSummary = [
+        ...(payload.class_payload?.required_choices_summary || []),
+        ...(payload.background_payload?.required_choices_summary || []),
+        ...(payload.species_payload?.required_choices_summary || []),
+    ];
+
+    renderSummaryList(
+        target,
+        'Gains automatiques',
+        [...classSummary, ...backgroundSummary, ...speciesSummary].map((entry) => `${entry.label} : ${formatValue(entry.value)}`)
+    );
+    renderSummaryList(
+        target,
+        'Choix requis',
+        choicesSummary.map((entry) => `${entry.label} (${entry.choose})`)
+    );
+}
+
+function renderChoiceBlock(choice, container, scope) {
+    const options = choice.options || [];
+    if (!options.length) return false;
+
+    const block = document.createElement('div');
+    block.style.marginBottom = '12px';
+    block.dataset.choiceId = choice.id;
+    block.dataset.scope = scope;
+    block.dataset.choose = String(choice.choose || 1);
+    block.dataset.required = choice.required ? '1' : '0';
+    block.classList.add('choice-group');
+    const title = document.createElement('p');
+    const label = formatChoiceTitle(choice);
+    title.textContent = `${label} — choisissez ${choice.choose}`;
+    block.appendChild(title);
+    const benefitHint = getChoiceBenefitHint(choice);
+    if (benefitHint) {
+        const hint = document.createElement('p');
+        hint.classList.add('text-muted');
+        hint.style.margin = '0 0 8px';
+        hint.textContent = benefitHint;
+        block.appendChild(hint);
+    }
+
+    options.forEach((option) => {
+        const rawOptionLabel = option.display_label || option.label_fr || option.label || option.name_fr || option.id;
+        const optionDisplayLabel = formatValue(rawOptionLabel);
+        const labelEl = document.createElement('label');
+        labelEl.style.display = 'block';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = option.id || option.label || option.name_fr;
+        input.dataset.optionLabel = optionDisplayLabel;
+        input.dataset.choiceId = choice.id;
+        input.dataset.choiceType = choice.type;
+        input.dataset.scope = scope;
+        if (option.source_choice_value) {
+            input.dataset.sourceChoiceValue = option.source_choice_value;
+        }
+        if (isChoiceOptionSelected(scope, choice.id, input.value)) {
+            input.checked = true;
+        }
+        input.addEventListener('change', () => {
+            const siblings = Array.from(block.querySelectorAll('input:checked'));
+            if (siblings.length > (choice.choose || 1)) {
+                input.checked = false;
+                return;
+            }
+            if (choice.type === 'origin_feat' && scope === 'species') {
+                const selectedOption = input.checked ? option : null;
+                renderFeatChoices('species-origin-feat-choices', selectedOption?.feat_payload || {}, 'species_bonus');
+            }
+            syncHiddenFields();
+        });
+        labelEl.classList.add('builder-choice-item');
+        labelEl.appendChild(input);
+        labelEl.append(` ${optionDisplayLabel}`);
+        block.appendChild(labelEl);
+    });
+    container.appendChild(block);
+    return true;
+}
+
+function renderSkillChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderToolChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderSpellChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderAbilityBonusChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderOriginFeatChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderEquipmentChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+function renderSizeChoice(choice, container, scope) { return renderChoiceBlock(choice, container, scope); }
+
+function renderChoiceByType(choice, container, scope) {
+    const rendererByType = {
+        skill_proficiency: renderSkillChoice,
+        tool_proficiency: renderToolChoice,
+        spell: renderSpellChoice,
+        prepared_spell: renderSpellChoice,
+        spellbook_entry: renderSpellChoice,
+        ability_bonus: renderAbilityBonusChoice,
+        origin_feat: renderOriginFeatChoice,
+        equipment: renderEquipmentChoice,
+        size_choice: renderSizeChoice,
+    };
+    const renderer = rendererByType[choice.type] || renderChoiceBlock;
+    return renderer(choice, container, scope);
+}
+
+function renderChoices(targetId, requiredChoices, type) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '';
+    if (!requiredChoices.length) {
+        target.textContent = 'Aucun choix requis.';
+        return;
+    }
+    let renderedChoices = 0;
+    for (const choice of requiredChoices) {
+        if (renderChoiceByType(choice, target, type)) {
+            renderedChoices += 1;
+        }
+    }
+    if (!renderedChoices) {
+        target.textContent = 'Aucun choix requis.';
+    }
+}
+
+function syncHiddenFields() {
+    const allChecked = Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+    const skillValues = allChecked
+        .filter((x) => x.dataset.choiceType === 'skill_proficiency')
+        .map((x) => x.dataset.optionLabel || x.value);
+    hidden.skills.value = skillValues.join(', ');
+
+    const selectedSpellInputs = allChecked.filter((x) => SPELL_CHOICE_TYPES.has(x.dataset.choiceType));
+    const spellValues = selectedSpellInputs.map((x) => x.value);
+    const cantripValues = selectedSpellInputs
+        .filter((input) => /cantrip/i.test(input.dataset.choiceId || ''))
+        .map((input) => input.value);
+    const levelOneSpellValues = selectedSpellInputs
+        .filter((input) => !/cantrip/i.test(input.dataset.choiceId || ''))
+        .map((input) => input.value);
+    hidden.cantrips.value = cantripValues.join(', ');
+    hidden.spells.value = levelOneSpellValues.join(', ');
+
+    const selectedEquipment = allChecked
+        .filter((x) => x.dataset.choiceType === 'equipment')
+        .map((x) => x.value);
+    const selectedEquipmentLabels = allChecked
+        .filter((x) => x.dataset.choiceType === 'equipment')
+        .map((x) => x.dataset.optionLabel || x.value)
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+    const selectedBundles = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((x) => x.value)
+        .filter(Boolean);
+    hidden.equipment.value = [...selectedBundles, ...selectedEquipment].join(', ');
+    const normalizeWeaponLabel = (label) => String(label || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    const findWeaponByHints = (hints) => selectedEquipmentLabels.find((label) => {
+        const normalized = normalizeWeaponLabel(label);
+        return hints.some((hint) => normalized.includes(hint));
+    }) || '';
+    if (hidden.weaponLoadout) hidden.weaponLoadout.value = findWeaponByHints(MELEE_WEAPON_HINTS);
+    if (hidden.rangedWeaponLoadout) hidden.rangedWeaponLoadout.value = findWeaponByHints(RANGED_WEAPON_HINTS);
+
+    const serializedChoices = allChecked
+        .filter((x) => String(x.dataset.choiceId || '').trim())
+        .map((x) => ({
+            scope: x.dataset.scope,
+            choice_id: x.dataset.choiceId,
+            choice_type: x.dataset.choiceType,
+            value: x.value,
+            label: x.dataset.optionLabel || x.value,
+            source_choice_value: x.dataset.sourceChoiceValue || null,
+        }));
+    hidden.featChoices.value = JSON.stringify(serializedChoices);
+    syncPersistedChoiceState(allChecked);
+    syncSubmissionChoiceInputs(allChecked);
+}
+
+function normalizeChoiceScope(scope) {
+    if (scope === 'class' || scope === 'background' || scope === 'species') return scope;
+    if (scope === 'spell') return 'class';
+    if (String(scope || '').startsWith('feat_')) return 'feat';
+    return null;
+}
+
+function isChoiceOptionSelected(scope, choiceId, optionValue) {
+    const normalizedScope = normalizeChoiceScope(scope);
+    const safeChoiceId = String(choiceId || '').trim();
+    const safeValue = String(optionValue || '').trim();
+    if (!normalizedScope || !safeChoiceId || !safeValue) return false;
+    const selectedByScope = state.selected_choices_by_scope?.[normalizedScope] || {};
+    const selectedValues = selectedByScope[safeChoiceId];
+    return Array.isArray(selectedValues) && selectedValues.includes(safeValue);
+}
+
+function getSelectedChoiceCount(scope, choiceId, optionValue) {
+    const normalizedScope = normalizeChoiceScope(scope);
+    const safeChoiceId = String(choiceId || '').trim();
+    const safeValue = String(optionValue || '').trim();
+    if (!normalizedScope || !safeChoiceId || !safeValue) return 0;
+    const selectedByScope = state.selected_choices_by_scope?.[normalizedScope] || {};
+    const selectedValues = Array.isArray(selectedByScope[safeChoiceId]) ? selectedByScope[safeChoiceId] : [];
+    return selectedValues.filter((value) => value === safeValue).length;
+}
+
+function syncPersistedChoiceState(allCheckedInputs = null) {
+    const checkedInputs = Array.isArray(allCheckedInputs)
+        ? allCheckedInputs
+        : Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+    const nextState = {
+        class: {},
+        background: {},
+        species: {},
+        feat: {},
+    };
+    checkedInputs.forEach((input) => {
+        const normalizedScope = normalizeChoiceScope(input.dataset.scope);
+        const choiceId = String(input.dataset.choiceId || '').trim();
+        const value = String(input.value || '').trim();
+        if (!normalizedScope || !choiceId || !value) return;
+        const bucket = nextState[normalizedScope];
+        if (!Array.isArray(bucket[choiceId])) bucket[choiceId] = [];
+        bucket[choiceId].push(value);
+    });
+    state.selected_choices_by_scope = nextState;
+}
+
+function syncSubmissionChoiceInputs(allCheckedInputs = null) {
+    const checkedInputs = Array.isArray(allCheckedInputs)
+        ? allCheckedInputs
+        : Array.from(form.querySelectorAll('input[data-choice-type]:checked'));
+
+    let bridge = form.querySelector('#choice-bridge-inputs');
+    if (!bridge) {
+        bridge = document.createElement('div');
+        bridge.id = 'choice-bridge-inputs';
+        bridge.hidden = true;
+        form.appendChild(bridge);
+    }
+    bridge.innerHTML = '';
+
+    const byScope = {
+        class: [],
+        species: [],
+        feat: [],
+    };
+
+    checkedInputs.forEach((input) => {
+        const value = String(input.value || '').trim();
+        if (!value) return;
+        const scope = String(input.dataset.scope || '').trim();
+        if (scope === 'class') {
+            byScope.class.push(value);
+            return;
+        }
+        if (scope === 'species') {
+            byScope.species.push(value);
+            return;
+        }
+        if (scope.startsWith('feat_')) {
+            byScope.feat.push(value);
+        }
+    });
+
+    const appendMany = (name, values) => {
+        values.forEach((value) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            bridge.appendChild(input);
+        });
+    };
+
+    appendMany('selected_class_choice_ids', byScope.class);
+    appendMany('selected_species_choice_ids', byScope.species);
+    appendMany('selected_feat_choice_ids', byScope.feat);
+}
+
+function splitSpellChoices(choices = []) {
+    return {
+        spellChoices: choices.filter((choice) => SPELL_CHOICE_TYPES.has(choice.type)),
+        nonSpellChoices: choices.filter((choice) => !SPELL_CHOICE_TYPES.has(choice.type)),
+    };
+}
+
+function renderOriginFeat(payload) {
+    const target = document.getElementById('background-origin-feat-details');
+    if (!target) return;
+    target.innerHTML = '';
+    const feat = payload?.origin_feat_details || {};
+    if (!feat || !Object.keys(feat).length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = `Don d’origine : ${feat.name_fr || feat.name || feat.id || '—'}`;
+    const desc = document.createElement('p');
+    desc.classList.add('text-muted');
+    desc.textContent = feat.description_short_fr || feat.short_description_fr || feat.description_short || feat.short_description || feat.description_fr || feat.description || 'Description non disponible.';
+    target.appendChild(title);
+    target.appendChild(desc);
+}
+
+function renderFeatChoices(targetId, featPayload, scope) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '';
+    const choices = featPayload?.required_choices || [];
+    if (!choices.length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = `Sous-choix de don (${featPayload?.feat?.name_fr || featPayload?.feat?.id || 'origin feat'})`;
+    target.appendChild(title);
+    const body = document.createElement('div');
+    body.id = `${targetId}-body`;
+    target.appendChild(body);
+    renderChoices(body.id, choices, `feat_${scope}`);
+}
+
+function renderEquipment(targetId, payload, scope) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '';
+    const options = payload?.equipment_options || [];
+    if (!options.length) return;
+
+    const title = document.createElement('h4');
+    title.textContent = 'Équipement';
+    target.appendChild(title);
+    const subtitle = document.createElement('p');
+    subtitle.classList.add('text-muted');
+    subtitle.textContent = 'Choisissez 1 option d’équipement, puis complétez les choix requis.';
+    target.appendChild(subtitle);
+
+    const aggregateLabelsWithCounts = (labels = []) => {
+        const counts = new Map();
+        const orderedKeys = [];
+        labels.forEach((rawLabel) => {
+            const label = String(rawLabel || '').trim();
+            if (!label) return;
+            if (!counts.has(label)) orderedKeys.push(label);
+            counts.set(label, (counts.get(label) || 0) + 1);
+        });
+        return orderedKeys.map((label) => ({
+            label,
+            count: counts.get(label) || 1,
+        }));
+    };
+
+    const selectLabel = document.createElement('label');
+    selectLabel.classList.add('builder-choice-item');
+    selectLabel.textContent = 'Option d’équipement';
+    const bundleSelect = document.createElement('select');
+    bundleSelect.dataset.choiceType = 'equipment_bundle';
+    bundleSelect.dataset.scope = scope;
+    bundleSelect.classList.add('builder-input');
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = 'Sélectionnez une option';
+    bundleSelect.appendChild(placeholderOption);
+    selectLabel.appendChild(bundleSelect);
+    target.appendChild(selectLabel);
+
+    const sectionByBundleValue = new Map();
+
+    options.forEach((option, optionIdx) => {
+        const bundleValue = `${scope}:${option.label || option.id}`;
+        const armorLabelsInOption = extractArmorLabelsFromEquipmentItems(option.items || []);
+        const selectOption = document.createElement('option');
+        selectOption.value = bundleValue;
+        selectOption.textContent = `Option ${option.label || option.id}`;
+        selectOption.dataset.armorOptions = JSON.stringify(armorLabelsInOption);
+        selectOption.dataset.containsShield = optionContainsShield(option.items || []) ? '1' : '0';
+        bundleSelect.appendChild(selectOption);
+
+        const section = document.createElement('div');
+        section.dataset.bundleValue = bundleValue;
+        section.hidden = optionIdx !== 0;
+        sectionByBundleValue.set(bundleValue, section);
+
+        const selectableItemTypes = new Set([
+            'choice_from_category',
+            'choice_from_catalogs',
+            'choice_from_weapon_category',
+            'choice_from_weapon_filters',
+            'choice_from_item_ids',
+        ]);
+        const fixedItems = (option.items || [])
+            .filter((item) => !selectableItemTypes.has(item.type))
+            .map((item) => {
+                if (item.type === 'gold_alternative') {
+                    return `${item.gold || 0} po`;
+                }
+                return item.label || item.name_fr || item.id;
+            });
+        aggregateLabelsWithCounts(fixedItems).forEach(({ label, count }) => {
+            const row = document.createElement('label');
+            row.classList.add('builder-choice-item');
+            row.style.display = 'block';
+            row.textContent = `- ${label}${count > 1 ? ` x${count}` : ''}`;
+            section.appendChild(row);
+        });
+
+        (option.items || []).filter((item) => selectableItemTypes.has(item.type)).forEach((item) => {
+            const title = document.createElement('p');
+            title.textContent = `Choix requis (${formatValue(item.id)}) - choisissez ${item.choose || 1}`;
+            section.appendChild(title);
+            const subOptions = item.options || [];
+            const shouldRenderQuantitySlots = (item.choose || 1) > 1 && subOptions.length === 1;
+
+            subOptions.forEach((subOption) => {
+                const slotCount = shouldRenderQuantitySlots ? (item.choose || 1) : 1;
+                const selectedCount = getSelectedChoiceCount(scope, item.id, subOption.id || subOption.label || subOption.name_fr);
+                for (let slotIdx = 0; slotIdx < slotCount; slotIdx += 1) {
+                    const subRow = document.createElement('label');
+                    subRow.classList.add('builder-choice-item');
+                    subRow.style.display = 'block';
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.dataset.choiceType = 'equipment';
+                    input.dataset.scope = scope;
+                    input.dataset.choiceId = item.id;
+                    input.dataset.choose = String(item.choose || 1);
+                    input.value = subOption.id || subOption.label || subOption.name_fr;
+                    input.dataset.optionLabel = subOption.label || subOption.name_fr || subOption.id || input.value;
+                    if (slotIdx < selectedCount) {
+                        input.checked = true;
+                    }
+                    input.addEventListener('change', () => {
+                        const siblings = Array.from(section.querySelectorAll(`input[data-choice-id="${item.id}"]:checked`));
+                        if (siblings.length > (item.choose || 1)) {
+                            input.checked = false;
+                            return;
+                        }
+                        renderArmorShieldSelection(latestPayload?.class_payload || {});
+                        syncHiddenFields();
+                    });
+                    subRow.appendChild(input);
+                    const optionLabel = subOption.label || subOption.name_fr || subOption.id;
+                    const slotSuffix = shouldRenderQuantitySlots ? ` (${slotIdx + 1}/${slotCount})` : '';
+                    subRow.append(` ${optionLabel}${slotSuffix}`);
+                    section.appendChild(subRow);
+                }
+            });
+        });
+
+        target.appendChild(section);
+    });
+
+    bundleSelect.value = options[0] ? `${scope}:${options[0].label || options[0].id}` : '';
+    bundleSelect.addEventListener('change', () => {
+        const selectedValue = bundleSelect.value;
+        sectionByBundleValue.forEach((section, bundleValue) => {
+            const isSelected = bundleValue === selectedValue;
+            section.hidden = !isSelected;
+            if (!isSelected) {
+                section.querySelectorAll('input[data-choice-type="equipment"]').forEach((input) => {
+                    input.checked = false;
+                });
+            }
+        });
+        renderArmorShieldSelection(latestPayload?.class_payload || {});
+        syncHiddenFields();
+    });
+    syncHiddenFields();
+}
+
+function extractArmorTrainingSet(classPayload = {}) {
+    const rawArmorTraining = classPayload?.automatic_gains?.armor_training || [];
+    const normalized = Array.isArray(rawArmorTraining) ? rawArmorTraining : [rawArmorTraining];
+    return new Set(normalized.map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean));
+}
+
+function computeAllowedArmorLoadouts(armorTrainingSet) {
+    const allowedArmorLabels = ['Sans armure'];
+    if (armorTrainingSet.has('light_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.light);
+    if (armorTrainingSet.has('medium_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.medium);
+    if (armorTrainingSet.has('heavy_armor')) allowedArmorLabels.push(...ARMOR_OPTIONS_BY_CATEGORY.heavy);
+    return [...new Set(allowedArmorLabels)];
+}
+
+function extractArmorLabelsFromEquipmentItems(items = []) {
+    const allowedArmor = new Set([
+        ...ARMOR_OPTIONS_BY_CATEGORY.light,
+        ...ARMOR_OPTIONS_BY_CATEGORY.medium,
+        ...ARMOR_OPTIONS_BY_CATEGORY.heavy,
+    ]);
+    const output = [];
+    const seen = new Set();
+
+    const pushIfArmor = (rawLabel) => {
+        const label = String(rawLabel || '').trim();
+        if (!label || !allowedArmor.has(label) || seen.has(label)) return;
+        seen.add(label);
+        output.push(label);
+    };
+
+    (items || []).forEach((item) => {
+        if (!item || typeof item !== 'object') return;
+        pushIfArmor(item.label || item.name_fr || item.id);
+        if (Array.isArray(item.options)) {
+            item.options.forEach((opt) => pushIfArmor(opt?.label || opt?.name_fr || opt?.id));
+        }
+    });
+
+    return output;
+}
+
+function optionContainsShield(items = []) {
+    const hasShieldLabel = (rawLabel) => String(rawLabel || '').trim() === 'Bouclier';
+    return (items || []).some((item) => {
+        if (!item || typeof item !== 'object') return false;
+        if (hasShieldLabel(item.label || item.name_fr || item.id)) return true;
+        if (Array.isArray(item.options)) {
+            return item.options.some((opt) => hasShieldLabel(opt?.label || opt?.name_fr || opt?.id));
+        }
+        return false;
+    });
+}
+
+function computeEquipmentDrivenArmorLoadouts() {
+    const selectedBundles = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((select) => select.selectedOptions?.[0])
+        .filter(Boolean);
+    const loadouts = [];
+    const seen = new Set();
+
+    selectedBundles.forEach((optionNode) => {
+        let labels = [];
+        try {
+            labels = JSON.parse(optionNode.dataset.armorOptions || '[]');
+        } catch (_error) {
+            labels = [];
+        }
+        labels.forEach((label) => {
+            const normalized = String(label || '').trim();
+            if (!normalized || seen.has(normalized)) return;
+            seen.add(normalized);
+            loadouts.push(normalized);
+        });
+    });
+    return loadouts;
+}
+
+function computeEquipmentDrivenShieldAvailability() {
+    return Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((select) => select.selectedOptions?.[0])
+        .filter(Boolean)
+        .some((optionNode) => optionNode.dataset.containsShield === '1');
+}
+
+function syncArmorLoadoutHiddenField() {
+    if (!hidden.armorLoadout) return;
+    const selectedArmor = document.getElementById('armor-loadout-choice')?.value || 'Sans armure';
+    const shieldChoice = document.getElementById('shield-choice')?.value || '0';
+    const hasShield = shieldChoice === '1';
+
+    if (!hasShield) {
+        hidden.armorLoadout.value = selectedArmor;
+        return;
+    }
+    hidden.armorLoadout.value = selectedArmor === 'Sans armure'
+        ? 'Bouclier'
+        : `${selectedArmor} + Bouclier`;
+}
+
+function renderArmorShieldSelection(classPayload = {}) {
+    const target = document.getElementById('armor-shield-selection');
+    if (!target) return;
+    target.innerHTML = '';
+
+    const equipmentDrivenLoadouts = computeEquipmentDrivenArmorLoadouts();
+    const shieldAvailableFromEquipment = computeEquipmentDrivenShieldAvailability();
+
+    const armorTrainingSet = extractArmorTrainingSet(classPayload);
+    const canUseShield = armorTrainingSet.has('shields') && shieldAvailableFromEquipment;
+    if (!equipmentDrivenLoadouts.length && !canUseShield) {
+        if (hidden.armorLoadout) hidden.armorLoadout.value = 'Sans armure';
+        target.innerHTML = '<p class="text-muted">Aucune armure distincte à choisir pour les options d’équipement sélectionnées.</p>';
+        return;
+    }
+
+    const classAllowedLoadouts = new Set(computeAllowedArmorLoadouts(armorTrainingSet));
+    const allowedLoadouts = equipmentDrivenLoadouts.filter((label) => classAllowedLoadouts.has(label));
+    if (!allowedLoadouts.length && !canUseShield) {
+        if (hidden.armorLoadout) hidden.armorLoadout.value = 'Sans armure';
+        target.innerHTML = '<p class="text-muted">Les options d’équipement choisies ne fournissent pas d’armure que votre classe peut utiliser.</p>';
+        return;
+    }
+
+    if (allowedLoadouts.length) {
+        const wrapper = document.createElement('label');
+        wrapper.classList.add('builder-choice-item');
+        wrapper.textContent = 'Sélection d’armure';
+
+        const select = document.createElement('select');
+        select.id = 'armor-loadout-choice';
+        select.classList.add('builder-input');
+        allowedLoadouts.forEach((label) => {
+            const option = document.createElement('option');
+            option.value = label;
+            option.textContent = label;
+            select.appendChild(option);
+        });
+        select.addEventListener('change', syncArmorLoadoutHiddenField);
+        wrapper.appendChild(select);
+        target.appendChild(wrapper);
+    }
+
+    if (canUseShield) {
+        const shieldWrapper = document.createElement('label');
+        shieldWrapper.classList.add('builder-choice-item');
+        shieldWrapper.textContent = 'Bouclier';
+
+        const shieldSelect = document.createElement('select');
+        shieldSelect.id = 'shield-choice';
+        shieldSelect.classList.add('builder-input');
+        [
+            { value: '0', label: 'Non' },
+            { value: '1', label: 'Oui' },
+        ].forEach((choice) => {
+            const option = document.createElement('option');
+            option.value = choice.value;
+            option.textContent = choice.label;
+            shieldSelect.appendChild(option);
+        });
+        shieldSelect.addEventListener('change', syncArmorLoadoutHiddenField);
+        shieldWrapper.appendChild(shieldSelect);
+        target.appendChild(shieldWrapper);
+    }
+
+    const hint = document.createElement('p');
+    hint.classList.add('text-muted');
+    if (allowedLoadouts.length) {
+        hint.textContent = `Armures proposées selon votre option d’équipement : ${allowedLoadouts.join(', ')}.`;
+    } else {
+        hint.textContent = 'Votre option d’équipement permet un bouclier, même sans armure sélectionnable.';
+    }
+    target.appendChild(hint);
+    syncArmorLoadoutHiddenField();
+}
+
+async function refreshPayload() {
+    const params = new URLSearchParams({
+        class_id: state.class_id || '',
+        background_id: state.background_id || '',
+        species_id: state.species_id || '',
+        ability_score_method: state.ability_score_method || '',
+        background_ability_bonus_mode: state.background_ability_bonus_mode || '',
+        background_ability_bonus_allocations_json: JSON.stringify(state.background_ability_bonus_allocations || []),
+    });
+    state.language_ids.forEach((value) => params.append('language_ids', value));
+
+    const res = await fetch(`{{ url_for('template.character_builder_funnel_payload') }}?${params.toString()}`);
+    const payload = await res.json();
+    latestPayload = payload;
+
+    const classAuto = payload.class_payload?.automatic_gains || {};
+    renderList('class-auto-gains', [
+        `Jets de sauvegarde : ${formatValue(classAuto.saving_throw_proficiencies)}`,
+        `Armes : ${formatValue(classAuto.weapon_proficiencies)}`,
+        `Armures : ${formatValue(classAuto.armor_training)}`,
+        `Capacités niveau 1 : ${formatValue(classAuto.features_level_1)}`,
+    ]);
+    const classChoices = splitSpellChoices(payload.class_payload?.required_choices || []);
+    renderChoices('class-required-choices', classChoices.nonSpellChoices, 'class');
+
+    const bgAuto = payload.background_payload?.automatic_gains || {};
+    renderList('background-auto-gains', [
+        `Compétences : ${formatValue(bgAuto.skill_proficiencies)}`,
+        `Don d'origine : ${formatValue(bgAuto.origin_feat)}`,
+    ]);
+    const backgroundChoices = splitSpellChoices(payload.background_payload?.required_choices || []);
+    renderChoices('background-required-choices', backgroundChoices.nonSpellChoices, 'background');
+    renderOriginFeat(payload.background_payload || {});
+    renderFeatChoices('background-origin-feat-choices', payload.background_payload?.origin_feat_payload || {}, 'background');
+
+    const speciesAuto = payload.species_payload?.automatic_gains || {};
+    renderList('species-auto-gains', [
+        `Traits : ${formatValue(speciesAuto.traits_level_1)}`,
+        `Tailles possibles : ${formatValue(speciesAuto.size_options)}`,
+        `Vitesse : ${formatValue(speciesAuto.speed)}`,
+    ]);
+    const speciesChoices = splitSpellChoices(payload.species_payload?.required_choices || []);
+    renderChoices('species-required-choices', speciesChoices.nonSpellChoices, 'species');
+    if (!speciesChoices.nonSpellChoices.some((choice) => choice.type === 'origin_feat')) {
+        const speciesFeatTarget = document.getElementById('species-origin-feat-choices');
+        if (speciesFeatTarget) speciesFeatTarget.innerHTML = '';
+    }
+
+    const spellChoices = [...classChoices.spellChoices, ...backgroundChoices.spellChoices, ...speciesChoices.spellChoices];
+    hasSpellStepChoices = spellChoices.length > 0;
+    renderChoices('spell-required-choices', spellChoices, 'spell');
+    if (spellHelp) {
+        spellHelp.textContent = spellChoices.length
+            ? 'Choisissez vos sorts disponibles selon votre classe/historique/espèce.'
+            : 'Aucun choix de sort requis pour vos sélections actuelles.';
+    }
+    setSpellStepVisibility(hasSpellStepChoices);
+    renderEquipment('class-equipment', payload.class_payload || {}, 'class');
+    renderEquipment('background-equipment', payload.background_payload || {}, 'background');
+    renderArmorShieldSelection(payload.class_payload || {});
+
+    const languagePayload = payload.languages_payload || {};
+    if (language2 && language3) {
+        setOptions(language2, languagePayload.options || []);
+        setOptions(language3, languagePayload.options || []);
+    }
+
+    const methods = payload.ability_payload?.methods || [];
+    abilityMethodsById = Object.fromEntries(
+        methods
+            .filter((method) => method && method.id)
+            .map((method) => [method.id, method])
+    );
+    setOptions(abilityMethod, methods.map((m) => ({
+        id: m.id,
+        label: `${m.label || m.name_fr || formatValue(m.id)}${m.recommended_default ? ' (recommandée)' : ''}`,
+    })));
+    if (methods.length && !abilityMethod.value) {
+        const recommended = methods.find((method) => method.recommended_default) || methods[0];
+        abilityMethod.value = recommended.id;
+        hidden.mode.value = recommended.id;
+        hidden.abilityScoreMethod.value = recommended.id;
+        state.ability_score_method = recommended.id;
+    }
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    applyAbilityMethodUI(abilityMethod.value || 'standard_array');
+    renderAbilityBonusControls(payload.ability_payload || {});
+    const allowed = payload.ability_payload?.background_ability_score_options?.allowed || [];
+    const abilityLimits = document.getElementById('ability-background-limits');
+    if (abilityLimits) {
+        abilityLimits.textContent =
+            allowed.length ? `Bonus d'origine autorisés : ${allowed.join(', ')}` : 'Aucune contrainte de bonus d’origine.';
+    }
+    renderFinalSummary(payload);
+    renderErrorMessages([]);
+    syncHiddenFields();
+}
+
+function resetBackgroundAbilityBonuses() {
+    Object.values(abilityBonusInputs).forEach((input) => { if (input) input.value = '0'; });
+}
+
+function getBackgroundBonusAllocations() {
+    const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
+    if (mode === '2-1') {
+        return {
+            mode,
+            allocations: [
+                { ability: form.querySelector('#origin-plus-two')?.value || '', bonus: 2 },
+                { ability: form.querySelector('#origin-plus-one')?.value || '', bonus: 1 },
+            ].filter((entry) => entry.ability),
+        };
+    }
+    const selected = Array.from(form.querySelectorAll('input[name="origin-plus-one-all"]:checked'));
+    return {
+        mode,
+        allocations: selected.map((checkbox) => ({ ability: checkbox.value, bonus: 1 })),
+    };
+}
+
+function buildOriginBonusStateFromUI() {
+    const { mode, allocations } = getBackgroundBonusAllocations();
+    const option = mode === '2-1' ? 'A' : 'B';
+    const distribution = {};
+    allocations.forEach((entry) => {
+        const ability = String(entry?.ability || '').trim().toLowerCase();
+        const bonus = Number(entry?.bonus || 0);
+        if (!ability || bonus <= 0) return;
+        distribution[ability] = (distribution[ability] || 0) + bonus;
+    });
+
+    const selections = option === 'A'
+        ? {
+            plus2: allocations.find((entry) => Number(entry.bonus) === 2)?.ability || null,
+            plus1: allocations.find((entry) => Number(entry.bonus) === 1)?.ability || null,
+        }
+        : {
+            first: allocations[0]?.ability || null,
+            second: allocations[1]?.ability || null,
+            third: allocations[2]?.ability || null,
+        };
+    return { mode, option, selections, allocations, distribution };
+}
+
+function buildFinalSubmitPayloadDebug() {
+    const formData = new FormData(form);
+    const payload = {};
+    formData.forEach((value, key) => {
+        if (Object.prototype.hasOwnProperty.call(payload, key)) {
+            if (Array.isArray(payload[key])) payload[key].push(value);
+            else payload[key] = [payload[key], value];
+        } else {
+            payload[key] = value;
+        }
+    });
+    payload.background_ability_distribution = { ...(state.backgroundAbilityBonuses?.distribution || {}) };
+    return payload;
+}
+
+function updateOriginBonusHiddenFields() {
+    resetBackgroundAbilityBonuses();
+    const originState = buildOriginBonusStateFromUI();
+    Object.entries(originState.distribution).forEach(([ability, bonus]) => {
+        const legacyKey = LEGACY_BG_FIELD_BY_ABILITY[ability];
+        if (!legacyKey || !abilityBonusInputs[legacyKey]) return;
+        abilityBonusInputs[legacyKey].value = String(bonus);
+    });
+    hidden.backgroundAbilityBonusMode.value = originState.mode;
+    hidden.backgroundAbilityBonusAllocations.value = JSON.stringify(originState.allocations);
+    state.background_ability_bonus_mode = originState.mode;
+    state.background_ability_bonus_allocations = originState.allocations;
+    state.backgroundAbilityBonuses = {
+        option: originState.option,
+        selections: originState.selections,
+        distribution: originState.distribution,
+    };
+}
+
+function renderAbilityBonusControls(abilityPayload) {
+    const target = document.getElementById('origin-bonus-controls');
+    target.innerHTML = '';
+    resetBackgroundAbilityBonuses();
+    const options = abilityPayload?.background_ability_score_options || {};
+    const allowed = options.allowed || [];
+    if (!allowed.length) {
+        target.textContent = 'Aucun bonus d’origine configurable.';
+        return;
+    }
+    const panel = document.createElement('div');
+    panel.className = 'origin-bonus-panel';
+    panel.innerHTML = `
+        <p class="origin-bonus-title">Bonus d'historique</p>
+        <p class="text-muted">Étape 1 : choisissez une répartition puis affectez les bonus aux capacités.</p>
+    `;
+    target.appendChild(panel);
+
+    const modeBlock = document.createElement('div');
+    modeBlock.className = 'origin-bonus-mode';
+    modeBlock.innerHTML = `
+        <label class="origin-bonus-option">
+            <input type="radio" name="origin_bonus_mode" value="2-1" checked>
+            <span class="origin-bonus-option-text">
+                <span class="origin-bonus-option-title">Option A : +2 et +1</span>
+                <span class="origin-bonus-option-detail">Spécialisation principale + bonus secondaire.</span>
+            </span>
+        </label>
+        <label class="origin-bonus-option">
+            <input type="radio" name="origin_bonus_mode" value="1-1-1">
+            <span class="origin-bonus-option-text">
+                <span class="origin-bonus-option-title">Option B : +1, +1 et +1</span>
+                <span class="origin-bonus-option-detail">Répartition équilibrée sur 3 capacités.</span>
+            </span>
+        </label>
+    `;
+    panel.appendChild(modeBlock);
+    const selectors = document.createElement('div');
+    selectors.id = 'origin-bonus-selectors';
+    panel.appendChild(selectors);
+    const helper = document.createElement('p');
+    helper.className = 'origin-bonus-helper text-muted';
+    helper.id = 'origin-bonus-helper';
+    helper.setAttribute('aria-live', 'polite');
+    panel.appendChild(helper);
+
+    const renderSelectors = () => {
+        selectors.innerHTML = '';
+        const mode = form.querySelector('input[name="origin_bonus_mode"]:checked')?.value || '2-1';
+        if (mode === '2-1') {
+            selectors.innerHTML = `
+                <div class="origin-bonus-grid">
+                    <label>Étape 2 — Capacité recevant +2
+                        <select id="origin-plus-two"></select>
+                    </label>
+                    <label>Étape 3 — Capacité recevant +1
+                        <select id="origin-plus-one"></select>
+                    </label>
+                </div>
+            `;
+            const entries = allowed.map((entry) => ({ id: entry, label: formatValue(entry) }));
+            setOptions(selectors.querySelector('#origin-plus-two'), entries);
+            setOptions(selectors.querySelector('#origin-plus-one'), entries);
+            const plusTwoSelect = selectors.querySelector('#origin-plus-two');
+            const plusOneSelect = selectors.querySelector('#origin-plus-one');
+            if (allowed.length > 1) {
+                plusTwoSelect.value = allowed[0];
+                plusOneSelect.value = allowed[1];
+            }
+            const syncDualSelectConstraints = () => {
+                const plusTwo = plusTwoSelect.value;
+                const plusOne = plusOneSelect.value;
+                Array.from(plusOneSelect.options).forEach((option) => {
+                    option.disabled = !!(option.value && option.value === plusTwo);
+                });
+                Array.from(plusTwoSelect.options).forEach((option) => {
+                    option.disabled = !!(option.value && option.value === plusOne);
+                });
+                if (plusOne && plusOne === plusTwo) {
+                    const fallback = allowed.find((ability) => ability !== plusTwo) || '';
+                    plusOneSelect.value = fallback;
+                }
+                helper.textContent = `Répartition active: +2 sur ${formatValue(plusTwoSelect.value || '')}, +1 sur ${formatValue(plusOneSelect.value || '')}.`;
+            };
+            plusTwoSelect.addEventListener('change', syncDualSelectConstraints);
+            plusOneSelect.addEventListener('change', syncDualSelectConstraints);
+            syncDualSelectConstraints();
+        } else {
+            const legend = document.createElement('p');
+            legend.textContent = 'Étape 2 : choisissez exactement 3 capacités distinctes (+1 chacune).';
+            selectors.appendChild(legend);
+            const checkboxGrid = document.createElement('div');
+            checkboxGrid.className = 'origin-bonus-checkboxes';
+            allowed.forEach((abilityId) => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'origin-plus-one-all';
+                checkbox.value = abilityId;
+                const text = document.createElement('span');
+                text.className = 'origin-bonus-checkbox-label';
+                text.textContent = formatValue(abilityId);
+                label.append(checkbox, text);
+                checkboxGrid.appendChild(label);
+            });
+            selectors.appendChild(checkboxGrid);
+            const updateCheckboxSummary = (changedInput = null) => {
+                const checked = Array.from(selectors.querySelectorAll('input[name="origin-plus-one-all"]:checked'));
+                if (checked.length > 3 && changedInput) {
+                    changedInput.checked = false;
+                }
+                const selected = Array.from(selectors.querySelectorAll('input[name="origin-plus-one-all"]:checked')).map((input) => formatValue(input.value));
+                helper.textContent = `Sélection: ${selected.length}/3${selected.length ? ` — ${selected.join(', ')}` : ''}.`;
+            };
+            selectors.querySelectorAll('input[name="origin-plus-one-all"]').forEach((checkbox) => {
+                checkbox.addEventListener('change', () => updateCheckboxSummary(checkbox));
+            });
+            updateCheckboxSummary();
+        }
+        updateOriginBonusHiddenFields();
+    };
+    const syncModeVisualState = () => {
+        modeBlock.querySelectorAll('.origin-bonus-option').forEach((option) => {
+            const radio = option.querySelector('input[name="origin_bonus_mode"]');
+            option.classList.toggle('is-active', !!radio?.checked);
+        });
+    };
+    syncModeVisualState();
+    modeBlock.querySelectorAll('input[name="origin_bonus_mode"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            syncModeVisualState();
+            renderSelectors();
+        });
+    });
+    selectors.addEventListener('change', updateOriginBonusHiddenFields);
+    renderSelectors();
+}
+
+const STEP_COMPONENTS = {
+    choose_class: () => document.getElementById('step-template-choose_class')?.content.cloneNode(true),
+    choose_background: () => document.getElementById('step-template-choose_background')?.content.cloneNode(true),
+    choose_species: () => document.getElementById('step-template-choose_species')?.content.cloneNode(true),
+    choose_languages: () => document.getElementById('step-template-choose_languages')?.content.cloneNode(true),
+    assign_ability_scores: () => document.getElementById('step-template-assign_ability_scores')?.content.cloneNode(true),
+    choose_equipment: () => document.getElementById('step-template-choose_equipment')?.content.cloneNode(true),
+    choose_spells: () => document.getElementById('step-template-choose_spells')?.content.cloneNode(true),
+    appearance_story: () => document.getElementById('step-template-appearance_story')?.content.cloneNode(true),
+    finalize: () => document.getElementById('step-template-finalize')?.content.cloneNode(true),
+};
+
+function syncStateFromUI() {
+    state.class_id = classChoice.value || null;
+    state.background_id = backgroundChoice.value || null;
+    state.species_id = speciesChoice.value || null;
+    state.language_ids = [language2.value, language3.value].filter(Boolean);
+    state.ability_score_method = abilityMethod.value || null;
+    hidden.classId.value = state.class_id || '';
+    hidden.backgroundId.value = state.background_id || '';
+    hidden.speciesId.value = state.species_id || '';
+}
+
+function bindStepElements() {
+    classChoice = document.getElementById('class-choice');
+    backgroundChoice = document.getElementById('background-choice');
+    speciesChoice = document.getElementById('species-choice');
+    language2 = document.getElementById('language-2');
+    language3 = document.getElementById('language-3');
+    abilityMethod = document.getElementById('ability-method');
+    spellHelp = document.getElementById('spell-step-help');
+    exportCharacterJsonButton = document.getElementById('export-character-json');
+    generateCharacterPdfButton = document.getElementById('generate-character-pdf');
+    abilityMethodDescription = document.getElementById('ability-method-description');
+    pointBuyBudgetHint = document.getElementById('ability-point-buy-budget');
+    abilityBonusInputs = Object.fromEntries(
+        ['force', 'dexterite', 'constitution', 'intelligence', 'sagesse', 'charisme'].map((key) => [key, form.querySelector(`input[name="${key}_bg_bonus"]`)])
+    );
+}
+
+function bindWizardEvents() {
+    [classChoice, backgroundChoice, speciesChoice].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('change', async () => { syncStateFromUI(); await refreshPayload(); });
+    });
+
+    [language2, language3].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('change', () => {
+            hidden.language2.value = language2?.value || '';
+            hidden.language3.value = language3?.value || '';
+            syncStateFromUI();
+        });
+    });
+
+    abilityMethod?.addEventListener('change', () => { hidden.mode.value = abilityMethod.value; });
+    exportCharacterJsonButton?.addEventListener('click', downloadCharacterExport);
+    generateCharacterPdfButton?.addEventListener('click', handleGeneratePdfPreview);
+
+    form.querySelectorAll('[data-next-step]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const visibleSteps = getVisibleSteps();
+            const index = visibleSteps.indexOf(currentStep);
+            const next = visibleSteps[index + 1];
+            if (next) renderStep(next);
+        });
+    });
+    form.querySelectorAll('[data-prev-step]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const visibleSteps = getVisibleSteps();
+            const index = visibleSteps.indexOf(currentStep);
+            const previous = visibleSteps[index - 1];
+            if (previous) renderStep(previous);
+        });
+    });
+    abilityMethod?.addEventListener('change', () => {
+        hidden.mode.value = abilityMethod.value;
+        hidden.abilityScoreMethod.value = abilityMethod.value;
+        state.ability_score_method = abilityMethod.value || null;
+        applyAbilityMethodUI(abilityMethod.value || 'standard_array');
+    });
+    getAbilityBaseFields().forEach((field) => {
+        field.dataset.previousValue = field.value || '';
+        field.addEventListener('focus', () => {
+            field.dataset.previousValue = field.value || '';
+        });
+        field.addEventListener('change', () => {
+            applyStandardArraySwap(field);
+            field.dataset.previousValue = field.value || '';
+            const methodConfig = abilityMethodsById[abilityMethod?.value || ''] || {};
+            updatePointBuyBudget(methodConfig);
+        });
+    });
+}
+
+function renderWizardPanels(effectiveSteps) {
+    wizardPanels.innerHTML = '';
+    effectiveSteps.forEach((stepId) => {
+        const factory = STEP_COMPONENTS[stepId];
+        if (!factory) return;
+        const fragment = factory();
+        if (fragment) wizardPanels.appendChild(fragment);
+    });
+}
+
+function getAllowedBackgroundBonusModes(abilityOptions = {}) {
+    const allocationModes = Array.isArray(abilityOptions.allocation_modes) ? abilityOptions.allocation_modes : [];
+    if (allocationModes.length) return new Set(allocationModes);
+    const increaseRule = abilityOptions.increase_rule || '';
+    if (increaseRule.includes('increase_one_by_2_and_one_by_1')) {
+        return new Set(['increase_one_by_2_and_one_by_1', 'increase_all_three_by_1']);
+    }
+    return new Set();
+}
+
+function validateBeforeSubmit(payload, currentState) {
+    const errors = [];
+    const choiceLabelById = new Map(
+        [
+            ...(payload?.class_payload?.required_choices_summary || []),
+            ...(payload?.background_payload?.required_choices_summary || []),
+            ...(payload?.species_payload?.required_choices_summary || []),
+        ].map((entry) => [String(entry.id || ''), entry.label || entry.id || 'choix'])
+    );
+    const requiredGroups = Array.from(form.querySelectorAll('.choice-group[data-required="1"]'));
+    requiredGroups.forEach((group) => {
+        const choose = Number(group.dataset.choose || '1');
+        const checkedInputs = Array.from(group.querySelectorAll('input[data-choice-id]:checked'));
+        const choiceId = String(group.dataset.choiceId || '');
+        const choiceLabel = choiceLabelById.get(choiceId) || formatChoiceTitle({ id: choiceId });
+        if (checkedInputs.length !== choose) {
+            errors.push(`Choix incomplet — ${choiceLabel} (${checkedInputs.length}/${choose}).`);
+        }
+        const inputType = group.querySelector('input[data-choice-type]')?.dataset.choiceType || '';
+        if (SPELL_CHOICE_TYPES.has(inputType) && checkedInputs.length !== choose) {
+            errors.push(`Sorts invalides — ${choiceId} (${checkedInputs.length}/${choose}).`);
+        }
+    });
+
+    const abilityOptions = payload?.ability_payload?.background_ability_score_options || {};
+    const allowedAbilities = new Set((abilityOptions.allowed || []).map((value) => String(value)));
+    const allowedModes = getAllowedBackgroundBonusModes(abilityOptions);
+    const { mode, allocations } = getBackgroundBonusAllocations();
+    const canonicalMode = mode === '2-1' ? 'increase_one_by_2_and_one_by_1' : 'increase_all_three_by_1';
+    if (allowedModes.size && !allowedModes.has(canonicalMode)) {
+        errors.push('Bonus d’origine invalide : le mode sélectionné n’est pas autorisé pour ce background.');
+    }
+    if (allocations.some((entry) => !allowedAbilities.has(entry.ability))) {
+        errors.push('Bonus d’origine invalide : certaines capacités choisies ne sont pas autorisées.');
+    }
+    const abilityKeys = allocations.map((entry) => entry.ability);
+    const uniqueAbilityCount = new Set(abilityKeys).size;
+    if (mode === '2-1') {
+        const bonuses = allocations.map((entry) => Number(entry.bonus)).sort((a, b) => b - a);
+        if (!(bonuses.length === 2 && bonuses[0] === 2 && bonuses[1] === 1 && uniqueAbilityCount === 2)) {
+            errors.push('Bonus d’origine invalide : le mode +2/+1 exige 2 capacités distinctes (+2 et +1).');
+        }
+    } else if (!(allocations.length === 3 && allocations.every((entry) => Number(entry.bonus) === 1) && uniqueAbilityCount === 3)) {
+        errors.push('Bonus d’origine invalide : le mode +1/+1/+1 exige 3 capacités distinctes.');
+    }
+
+    const equipmentChoiceGroups = Array.from(form.querySelectorAll('select[data-choice-type="equipment_bundle"]'))
+        .map((bundleSelect) => {
+            const selectedValue = bundleSelect.value;
+            if (!selectedValue) return null;
+            const root = bundleSelect.closest('[id$="-equipment"]') || form;
+            return root.querySelector(`div[data-bundle-value="${selectedValue}"]`);
+        })
+        .filter(Boolean);
+    equipmentChoiceGroups.forEach((group) => {
+        const choiceIds = [...new Set(Array.from(group.querySelectorAll('input[data-choice-type="equipment"]')).map((input) => input.dataset.choiceId))];
+        choiceIds.forEach((choiceId) => {
+            const choiceInputs = Array.from(group.querySelectorAll(`input[data-choice-type="equipment"][data-choice-id="${choiceId}"]`));
+            const choose = Number(choiceInputs[0]?.dataset.choose || '1');
+            const selected = choiceInputs.filter((input) => input.checked).length;
+            if (selected !== choose) {
+                errors.push(`Équipement incomplet : ${choiceId} (${selected}/${choose}).`);
+            }
+        });
+    });
+    if ((hidden.equipment.value || '').includes('undefined')) {
+        errors.push("Équipement invalide : un placeholder d'équipement n'a pas été résolu.");
+    }
+    if (!currentState.ability_score_method) {
+        errors.push('Méthode de caractéristiques obligatoire.');
+    }
+    return { ok: errors.length === 0, errors };
+}
+
+form.addEventListener('submit', (event) => {
+    syncStateFromUI();
+    updateOriginBonusHiddenFields();
+    syncHiddenFields();
+    const validationResult = validateBeforeSubmit(latestPayload || {}, state);
+    if (!validationResult.ok) {
+        event.preventDefault();
+        renderErrorMessages(validationResult.errors);
+        return;
+    }
+    renderErrorMessages([]);
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
+        event.preventDefault();
+        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Common.']);
+        return;
+    }
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    const debugPayload = buildFinalSubmitPayloadDebug();
+    console.log('origin option', state.backgroundAbilityBonuses?.option);
+    console.log('origin selections', state.backgroundAbilityBonuses?.selections);
+    console.log('final submit payload', debugPayload);
+});
+
+async function handleGeneratePdfPreview() {
+    syncStateFromUI();
+    updateOriginBonusHiddenFields();
+    syncHiddenFields();
+    const validationResult = validateBeforeSubmit(latestPayload || {}, state);
+    if (!validationResult.ok) {
+        renderErrorMessages(validationResult.errors);
+        return;
+    }
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
+        renderErrorMessages(['Veuillez choisir 2 langues différentes en plus de Common.']);
+        return;
+    }
+
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+    hidden.abilityScoreMethod.value = abilityMethod.value || 'standard_array';
+    const debugPayload = buildFinalSubmitPayloadDebug();
+    console.log('origin option', state.backgroundAbilityBonuses?.option);
+    console.log('origin selections', state.backgroundAbilityBonuses?.selections);
+    console.log('final submit payload', debugPayload);
+
+    const previousLabel = generateCharacterPdfButton?.textContent || '';
+    const pdfPreviewWindow = window.open('', '_blank', 'noopener,noreferrer');
+
+    if (generateCharacterPdfButton) {
+        generateCharacterPdfButton.disabled = true;
+        generateCharacterPdfButton.textContent = 'Génération...';
+    }
+    try {
+        const formData = new FormData(form);
+        const previewDebugEntries = {};
+        ['weapon_loadout', 'ranged_weapon_loadout', 'armor_loadout', 'personality_traits', 'ideals', 'bonds', 'flaws', 'character_appearance', 'allies_organizations', 'additional_features_traits', 'treasure', 'symbol_name'].forEach((key) => {
+            previewDebugEntries[key] = formData.get(key);
+        });
+        console.debug('preview PDF formData (critical fields)', previewDebugEntries);
+        const response = await fetch('{{ url_for("template.generate_guided_character_pdf") }}', {
+            method: 'POST',
+            body: formData,
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || !payload.pdf_url) {
+            const errors = Array.isArray(payload?.errors) && payload.errors.length
+                ? payload.errors
+                : ['Impossible de générer le PDF pour le moment.'];
+            renderErrorMessages(errors);
+            if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+                pdfPreviewWindow.close();
+            }
+            return;
+        }
+        renderErrorMessages([]);
+        if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+            pdfPreviewWindow.location.href = payload.pdf_url;
+        } else {
+            window.open(payload.pdf_url, '_blank', 'noopener,noreferrer');
+        }
+    } catch (error) {
+        console.error('Erreur pendant la génération PDF guidée.', error);
+        renderErrorMessages(['Une erreur réseau est survenue pendant la génération du PDF.']);
+        if (pdfPreviewWindow && !pdfPreviewWindow.closed) {
+            pdfPreviewWindow.close();
+        }
+    } finally {
+        if (generateCharacterPdfButton) {
+            generateCharacterPdfButton.disabled = false;
+            generateCharacterPdfButton.textContent = previousLabel || 'Générer le PDF';
+        }
+    }
+}
+
+let stepOrder = [];
+let currentStep = null;
+let hasSpellStepChoices = false;
+
+function getVisibleSteps() {
+    return stepOrder.filter((stepId) => {
+        const panel = form.querySelector(`.wizard-step[data-step-id="${stepId}"]`);
+        return Boolean(panel) && panel.dataset.stepEnabled !== '0';
+    });
+}
+
+function renderStep(stepId) {
+    const visibleSteps = getVisibleSteps();
+    const safeStep = visibleSteps.includes(stepId) ? stepId : (visibleSteps[0] || null);
+    currentStep = safeStep;
+    const stepPanels = Array.from(form.querySelectorAll('.wizard-step'));
+    stepPanels.forEach((panel) => {
+        const active = panel.dataset.stepId === safeStep;
+        panel.hidden = !active;
+        panel.classList.toggle('is-active', active);
+    });
+
+    const stepItems = Array.from(form.querySelectorAll('.creation-steps-nav li'));
+    stepItems.forEach((item) => {
+        const stepIdForItem = item.dataset.stepId;
+        const isVisible = visibleSteps.includes(stepIdForItem);
+        const active = isVisible && stepIdForItem === safeStep;
+        const idx = visibleSteps.indexOf(stepIdForItem);
+        const currentIdx = visibleSteps.indexOf(safeStep);
+        item.hidden = !isVisible;
+        item.classList.toggle('is-active', active);
+        item.classList.toggle('is-complete', idx > -1 && idx < currentIdx);
+        const trigger = item.querySelector('.creation-step-trigger');
+        if (trigger) trigger.setAttribute('aria-current', active ? 'step' : 'false');
+    });
+}
+
+function setSpellStepVisibility(enabled) {
+    const spellPanel = form.querySelector('.wizard-step[data-step-id="choose_spells"]');
+    const spellNavItem = stepsNav.querySelector('li[data-step-id="choose_spells"]');
+    const stepEnabled = enabled ? '1' : '0';
+    if (spellPanel) spellPanel.dataset.stepEnabled = stepEnabled;
+    if (spellNavItem) spellNavItem.dataset.stepEnabled = stepEnabled;
+    if (!enabled && currentStep === 'choose_spells') {
+        renderStep('finalize');
+        return;
+    }
+    if (currentStep) {
+        renderStep(currentStep);
+    }
+}
+
+function sanitizeFileName(value) {
+    return (value || 'personnage')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase() || 'personnage';
+}
+
+function buildCharacterExportPayload() {
+    syncHiddenFields();
+    hidden.language2.value = language2.value;
+    hidden.language3.value = language3.value;
+    hidden.mode.value = abilityMethod.value || 'standard_array';
+
+    const formData = new FormData(form);
+    const payload = {};
+    for (const [key, value] of formData.entries()) {
+        if (Object.prototype.hasOwnProperty.call(payload, key)) {
+            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+            payload[key].push(value);
+            continue;
+        }
+        payload[key] = value;
+    }
+
+    return {
+        exported_at: new Date().toISOString(),
+        state_snapshot: { ...state },
+        character_form_payload: payload,
+    };
+}
+
+function downloadCharacterExport() {
+    if (!language2?.value || !language3?.value || language2.value === language3.value) {
+        alert('Veuillez choisir 2 langues différentes en plus de Common avant extraction.');
+        return;
+    }
+
+    const exportPayload = buildCharacterExportPayload();
+    const characterName = form.querySelector('[name="name"]')?.value || 'personnage';
+    const safeName = sanitizeFileName(characterName);
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${safeName}-builder-export.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+}
+
+function renderWizardNav(effectiveSteps) {
+    stepsNav.innerHTML = '';
+    effectiveSteps.forEach((stepId, index) => {
+        const meta = (rulesContext.steps || []).find((entry) => (entry.id || entry) === stepId) || {};
+        const li = document.createElement('li');
+        li.dataset.stepId = stepId;
+        if (index === 0) li.classList.add('is-active');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'creation-step-trigger';
+        const stepLabel = meta.label || meta.name_fr || meta.name_en || STEP_LABELS[stepId] || stepId;
+        button.textContent = `${index + 1}. ${stepLabel}`;
+        button.addEventListener('click', () => renderStep(stepId));
+        li.appendChild(button);
+        stepsNav.appendChild(li);
+    });
+}
+
+const effectiveSteps = (Array.isArray(rulesContext.steps) ? rulesContext.steps : [])
+    .map((stepEntry) => stepEntry.id || stepEntry)
+    .filter((stepId) => Boolean(STEP_COMPONENTS[stepId]));
+if (!effectiveSteps.includes('choose_spells')) {
+    const finalizeIndex = effectiveSteps.indexOf('finalize');
+    if (finalizeIndex >= 0) {
+        effectiveSteps.splice(finalizeIndex, 0, 'choose_spells');
+    } else {
+        effectiveSteps.push('choose_spells');
+    }
+}
+if (!effectiveSteps.includes('appearance_story')) {
+    const finalizeIndex = effectiveSteps.indexOf('finalize');
+    if (finalizeIndex >= 0) {
+        effectiveSteps.splice(finalizeIndex, 0, 'appearance_story');
+    } else {
+        effectiveSteps.push('appearance_story');
+    }
+}
+renderWizardNav(effectiveSteps);
+renderWizardPanels(effectiveSteps);
+stepOrder = effectiveSteps;
+bindStepElements();
+bindWizardEvents();
+setOptions(classChoice, rulesContext.classes || []);
+setOptions(backgroundChoice, rulesContext.backgrounds || []);
+setOptions(speciesChoice, rulesContext.species || []);
+syncStateFromUI();
+setSpellStepVisibility(false);
+refreshPayload();
+renderStep(stepOrder[0] || 'choose_class');
+</script>
+{% endblock %}

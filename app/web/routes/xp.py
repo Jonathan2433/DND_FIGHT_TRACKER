@@ -17,19 +17,13 @@ def award_manual_xp(character_id):
     """Attribuer manuellement de l'XP a un personnage."""
     character = CharacterTemplate.query.get_or_404(character_id)
 
-    can_award = False
-    is_mj_context = False
-
-    if g.current_user.role == 'Admin':
-        can_award = True
-    elif character.campaign and g.current_user.is_mj_of(character.campaign):
-        can_award = True
-        is_mj_context = True
-    elif not character.campaign and character.owner_id == g.current_user.id:
-        can_award = True
+    is_main_campaign_mj = bool(character.campaign and g.current_user.is_mj_of(character.campaign))
+    is_linked_campaign_mj = any(g.current_user.is_mj_of(campaign) for campaign in character.campaigns)
+    can_award = is_main_campaign_mj or is_linked_campaign_mj
+    is_mj_context = can_award
 
     if not can_award:
-        flash("Vous n'etes pas autorise a attribuer de l'XP a ce personnage.", 'error')
+        flash("Seul le MJ de la campagne peut attribuer de l'XP a ce personnage.", 'error')
         return redirect(url_for('template.character_profile', id=character_id))
 
     xp_amount = int(request.form['xp_amount'])
@@ -107,6 +101,16 @@ def xp_history(character_id):
     if not character.can_be_viewed_by(g.current_user):
         flash("Vous n'etes pas autorise a voir l'historique de ce personnage.", 'error')
         return redirect(url_for('main.index'))
+
+    is_campaign_mj = bool(
+        (character.campaign and g.current_user.is_mj_of(character.campaign))
+        or any(g.current_user.is_mj_of(campaign) for campaign in character.campaigns)
+    )
+    can_view_xp = is_campaign_mj
+
+    if not can_view_xp:
+        flash("Seul le MJ de la campagne peut consulter l'historique XP de ce personnage.", 'error')
+        return redirect(url_for('template.character_profile', id=character_id))
 
     xp_logs = XPService.get_character_xp_history(character_id)
 

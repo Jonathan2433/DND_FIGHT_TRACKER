@@ -6,64 +6,84 @@
 
 MONSTER_TEMPLATES = {
     "Gobelin": {
+        "display_name": "Gobelin",
         "type": "Ennemi",
         "hp": 7,
         "ac": 15,
-        "initiative": 2
+        "initiative": 2,
+        "image": "monster_gobelin.svg"
     },
     "Hobgobelin": {
+        "display_name": "Hobgobelin",
         "type": "Ennemi",
         "hp": 11,
         "ac": 18,
-        "initiative": 1
+        "initiative": 1,
+        "image": "monster_hobgobelin.svg"
     },
-    "Bugbear": {
+    "Ours-gobelin": {
+        "display_name": "Ours-gobelin",
         "type": "Ennemi",
         "hp": 27,
         "ac": 16,
-        "initiative": 2
+        "initiative": 2,
+        "image": "monster_ours_gobelin.svg"
     },
-    "Redbrand Ruffian": {
+    "Brute des Manteaux-Rouges": {
+        "display_name": "Brute des Manteaux-Rouges",
         "type": "Ennemi",
-        "hp": 16,
+        "hp": 11,
         "ac": 14,
-        "initiative": 1
+        "initiative": 1,
+        "image": "monster_manteaux_rouges.svg"
     },
     "Loup": {
+        "display_name": "Loup",
         "type": "Ennemi",
         "hp": 11,
         "ac": 13,
-        "initiative": 2
+        "initiative": 2,
+        "image": "monster_loup.svg"
     },
     "Nothic": {
+        "display_name": "Nothic",
         "type": "Boss",
         "hp": 45,
         "ac": 15,
-        "initiative": 3
+        "initiative": 3,
+        "image": "monster_nothic.svg"
     },
     "Spectre": {
+        "display_name": "Spectre",
         "type": "Ennemi",
         "hp": 22,
         "ac": 12,
-        "initiative": 2
+        "initiative": 2,
+        "image": "monster_spectre.svg"
     },
-    "Gelatinous Cube": {
+    "Cube gélatineux": {
+        "display_name": "Cube gélatineux",
         "type": "Ennemi",
         "hp": 84,
         "ac": 6,
-        "initiative": -4
+        "initiative": -4,
+        "image": "monster_cube_gelatineux.svg"
     },
-    "Venomfang (Young Green Dragon)": {
+    "Veninmort (Jeune dragon vert)": {
+        "display_name": "Veninmort (Jeune dragon vert)",
         "type": "Boss",
         "hp": 136,
         "ac": 18,
-        "initiative": 1
+        "initiative": 1,
+        "image": "monster_veninmort.svg"
     },
     "Squelette": {
+        "display_name": "Squelette",
         "type": "Boss",
         "hp": 13,
         "ac": 13,
-        "initiative": 1
+        "initiative": 1,
+        "image": "squelette.png"
     }
 }
 

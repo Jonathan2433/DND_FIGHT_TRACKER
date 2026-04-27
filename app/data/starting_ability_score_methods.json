@@ -1,0 +1,100 @@
+[
+  {
+    "id": "standard_array",
+    "name_fr": "Répartition standard",
+    "name_en": "Standard Array",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_ability_score_method",
+    "available_at_character_level_1": true,
+    "recommended_default": true,
+    "builder_mode": "assign_fixed_values",
+    "rules": {
+      "base_scores_pool": [15, 14, 13, 12, 10, 8],
+      "assign_each_value_once": true,
+      "must_assign_all_values": true,
+      "target_abilities_count": 6
+    },
+    "validation": {
+      "allow_duplicate_scores": false,
+      "minimum_base_score": 8,
+      "maximum_base_score": 15
+    },
+    "description_short_fr": "Attribuer une fois chacun des scores 15, 14, 13, 12, 10 et 8 aux 6 caractéristiques."
+  },
+  {
+    "id": "point_buy",
+    "name_fr": "Achat par points",
+    "name_en": "Point Buy",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_ability_score_method",
+    "available_at_character_level_1": true,
+    "recommended_default": false,
+    "builder_mode": "spend_points",
+    "rules": {
+      "starting_score_each_ability": 8,
+      "budget": 27,
+      "minimum_base_score": 8,
+      "maximum_base_score": 15,
+      "abilities_count": 6,
+      "cost_table": [
+        { "score": 8, "cost": 0 },
+        { "score": 9, "cost": 1 },
+        { "score": 10, "cost": 2 },
+        { "score": 11, "cost": 3 },
+        { "score": 12, "cost": 4 },
+        { "score": 13, "cost": 5 },
+        { "score": 14, "cost": 7 },
+        { "score": 15, "cost": 9 }
+      ]
+    },
+    "validation": {
+      "must_spend_at_most_budget": true,
+      "allow_unspent_points": true,
+      "scores_above_15_before_origin_modifiers": false
+    },
+    "description_short_fr": "Commencer à 8 dans chaque caractéristique et dépenser 27 points selon la table de coût officielle."
+  },
+  {
+    "id": "manual_custom",
+    "name_fr": "Saisie manuelle",
+    "name_en": "Manual Custom",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_ability_score_method",
+    "available_at_character_level_1": true,
+    "recommended_default": false,
+    "builder_mode": "manual_entry",
+    "rules": {
+      "intended_use": "custom_or_dm_override",
+      "minimum_base_score": 3,
+      "maximum_base_score": 18,
+      "abilities_count": 6,
+      "enforce_standard_array_or_point_buy": false
+    },
+    "validation": {
+      "requires_explicit_enable_in_builder": true,
+      "should_show_warning": true,
+      "warning_code": "non_standard_character_creation_method"
+    },
+    "description_short_fr": "Permet une saisie libre des scores de base, utile pour un mode MJ, import ou création personnalisée."
+  },
+  {
+    "id": "rolled_scores",
+    "name_fr": "Jets de dés",
+    "name_en": "Rolled Scores",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_ability_score_method",
+    "available_at_character_level_1": false,
+    "recommended_default": false,
+    "builder_mode": "dice_roll_generation",
+    "rules": {
+      "default_formula": "4d6_drop_lowest",
+      "generate_scores_count": 6,
+      "assign_freely": true
+    },
+    "validation": {
+      "requires_explicit_enable_in_builder": true,
+      "disabled_by_default_in_this_project": true
+    },
+    "description_short_fr": "Méthode optionnelle par jets de dés, désactivée par défaut dans ce projet."
+  }
+]

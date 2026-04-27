@@ -2,7 +2,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, g
 
 from app.application.use_cases.campaign_service import CampaignService
+from app.application.use_cases.episode_email_service import EpisodeEmailService, EpisodeEmailServiceError
 from app.application.use_cases.episode_service import EpisodeService
+from app.application.use_cases.episode_summary_service import (
+    EpisodeSummaryAccessError,
+    EpisodeSummaryAlreadyRunningError,
+    EpisodeSummaryGenerationError,
+    EpisodeSummaryService,
+)
 from app.models.episode import Episode
 from app.utils.decorators import login_required
 
@@ -60,6 +67,28 @@ def view_episode(episode_id):
     )
 
 
+@bp.route('/<int:episode_id>/edit', methods=['POST'])
+@login_required
+def update_episode(episode_id):
+    """Modifier le titre et le resume partage de l'episode (MJ uniquement)."""
+    episode = Episode.query.get_or_404(episode_id)
+    campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
+
+    if not campaign or not g.current_user.is_mj_of(campaign):
+        flash('Seul le MJ peut modifier cet episode.', 'error')
+        return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+    title = request.form.get('title', '').strip()
+    if not title:
+        flash("Le titre de l'episode est obligatoire.", 'error')
+        return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+    summary_shared = request.form.get('summary_shared', '').strip()
+    EpisodeService.update_episode(episode_id, title, summary_shared)
+    flash('Episode mis a jour.', 'success')
+    return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+
 @bp.route('/<int:episode_id>/shared_summary', methods=['POST'])
 @login_required
 def update_shared_summary(episode_id):
@@ -108,4 +137,76 @@ def update_my_private_notes(episode_id):
     private_notes = request.form.get('private_notes', '').strip()
     EpisodeService.update_user_private_note(episode_id, g.current_user.id, private_notes)
     flash('Votre note privee a ete enregistree.', 'success')
+    return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+
+@bp.route('/<int:episode_id>/summary/generate', methods=['POST'])
+@login_required
+def generate_episode_summary(episode_id):
+    """Lancer la generation du resume public de l'episode en arriere-plan (MJ uniquement)."""
+    episode = Episode.query.get_or_404(episode_id)
+    campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
+    if not campaign:
+        flash('Acces interdit a cet episode.', 'error')
+        return redirect(url_for('main.index'))
+
+    send_email = (request.form.get('send_email') or '').lower() in {'1', 'true', 'on', 'yes'}
+    force_email = (request.form.get('force_email') or '').lower() in {'1', 'true', 'on', 'yes'}
+    force_regenerate = (request.form.get('force_regenerate') or '').lower() in {'1', 'true', 'on', 'yes'}
+
+    try:
+        EpisodeSummaryService.enqueue_public_summary_generation(
+            episode_id=episode_id,
+            triggered_by_user_id=g.current_user.id,
+            send_email=send_email,
+            force_email=force_email,
+            force_regenerate=force_regenerate,
+        )
+        flash(
+            'La generation du resume a ete lancee. Vous serez notifie a la fin du traitement.',
+            'info',
+        )
+
+    except EpisodeSummaryAlreadyRunningError as exc:
+        flash(str(exc), 'warning')
+    except EpisodeSummaryAccessError as exc:
+        flash(str(exc), 'error')
+    except EpisodeSummaryGenerationError as exc:
+        flash(f'Echec de generation du resume: {exc}', 'error')
+
+    return redirect(url_for('episode.view_episode', episode_id=episode_id))
+
+
+@bp.route('/<int:episode_id>/summary/send-email', methods=['POST'])
+@login_required
+def send_episode_summary_email(episode_id):
+    """Envoyer (ou renvoyer) le resume deja genere par email (MJ uniquement)."""
+    episode = Episode.query.get_or_404(episode_id)
+    campaign = CampaignService.get_campaign_with_access_check(episode.story_arc.campaign_id, g.current_user.id)
+    if not campaign:
+        flash('Acces interdit a cet episode.', 'error')
+        return redirect(url_for('main.index'))
+
+    force_email = (request.form.get('force_email') or '').lower() in {'1', 'true', 'on', 'yes'}
+
+    try:
+        EpisodeSummaryService._assert_can_manage_summary(g.current_user, campaign)
+        source_payload = EpisodeSummaryService.build_public_source_payload(episode)
+        source_hash = EpisodeSummaryService.compute_source_hash(source_payload)
+        result = EpisodeEmailService.send_episode_summary_email(
+            episode=episode,
+            source_hash=source_hash,
+            force=force_email,
+        )
+
+        if result.get('sent'):
+            flash(f"Resume envoye par email ({result.get('recipient_count', 0)} destinataires).", 'success')
+        else:
+            flash('Email non renvoye: ce resume a deja ete diffuse.', 'info')
+
+    except EpisodeSummaryAccessError as exc:
+        flash(str(exc), 'error')
+    except EpisodeEmailServiceError as exc:
+        flash(f'Echec de l\'envoi email: {exc}', 'error')
+
     return redirect(url_for('episode.view_episode', episode_id=episode_id))

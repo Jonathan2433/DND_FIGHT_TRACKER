@@ -156,6 +156,44 @@
     margin-top: 10px;
 }
 
+.ability-mode-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.ability-mode-toggle label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.ability-mode-toggle input[type="radio"] {
+    width: auto;
+    margin-top: 2px;
+    flex: 0 0 auto;
+}
+
+.ability-base--custom {
+    display: none;
+}
+
+.ability-base--custom:enabled {
+    display: block;
+}
+
+.ability-base--standard:disabled {
+    display: none;
+}
+
 .funnel-preview {
     display: block;
     margin-top: 6px;
@@ -165,15 +203,191 @@
 .funnel-summary {
     margin-top: 14px;
     padding: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(255, 60, 201, 0.35);
     border-radius: 10px;
-    background: #f9fafb;
+    background: rgba(12, 16, 52, 0.8);
+    color: #e6e9ff;
 }
 
 .funnel-summary p {
     margin: 0 0 6px;
+    color: #e6e9ff;
 }
 
 .funnel-summary p:last-child {
     margin-bottom: 0;
+}
+
+.creation-steps-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 18px;
+}
+
+.creation-steps-nav li {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-secondary);
+}
+
+.creation-step-trigger {
+    width: 100%;
+    display: block;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.creation-step-trigger:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.creation-steps-nav li.is-active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.creation-steps-nav li.is-complete {
+    color: #9ad1a0;
+    border-color: rgba(154, 209, 160, 0.6);
+}
+
+.wizard-step[hidden] {
+    display: none;
+}
+
+.wizard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.funnel-summary-inline {
+    margin-top: 12px;
+}
+
+.builder-choice-block {
+    margin-top: 14px;
+}
+
+.builder-choice-search {
+    margin-top: 8px;
+    margin-bottom: 10px;
+}
+
+.builder-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: 220px;
+    overflow: auto;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.builder-choice-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(20, 24, 66, 0.7);
+    cursor: pointer;
+    font-size: 0.88rem;
+    line-height: 1.3;
+}
+
+.builder-choice-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.builder-choice-item:has(input[type="checkbox"]:checked) {
+    border-color: var(--color-primary);
+    background: rgba(255, 60, 201, 0.12);
+}
+
+@media (max-width: 900px) {
+    .creation-steps-nav {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+    }
+
+    .creation-steps-nav li {
+        flex: 0 0 auto;
+        min-width: 140px;
+        white-space: nowrap;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 640px) {
+    .templates-title {
+        font-size: clamp(1.8rem, 8vw, 2.35rem);
+        line-height: 1.1;
+    }
+
+    .creation-steps-nav li {
+        min-width: 132px;
+        font-size: 0.82rem;
+    }
+
+    .creation-step-trigger {
+        padding: 8px 12px;
+    }
+
+    .ability-mode-toggle {
+        grid-template-columns: 1fr;
+    }
+
+    .ability-mode-toggle label {
+        align-items: center;
+        line-height: 1.35;
+    }
+
+    .builder-choice-grid {
+        grid-template-columns: 1fr;
+        max-height: 190px;
+    }
+}
+
+.skill-proficiencies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.skill-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.skill-option input[type="checkbox"] {
+    width: auto;
+    margin: 0;
 }

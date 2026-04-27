@@ -1,0 +1,790 @@
+[
+  {
+    "id": "acolyte",
+    "name_fr": "Acolyte",
+    "name_en": "Acolyte",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["intelligence", "wisdom", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "magic_initiate_cleric",
+      "name_fr": "Initié à la magie (Clerc)",
+      "name_en": "Magic Initiate (Cleric)"
+    },
+    "skill_proficiencies": ["insight", "religion"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "calligraphers_supplies"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "acolyte_option_a",
+        "label": "A",
+        "items": [
+          "calligraphers_supplies",
+          "book_prayers",
+          "holy_symbol",
+          {
+            "id": "parchment",
+            "quantity": 10
+          },
+          "robe"
+        ],
+        "gold": 8
+      },
+      {
+        "id": "acolyte_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "artisan",
+    "name_fr": "Artisan",
+    "name_en": "Artisan",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "dexterity", "intelligence"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "crafter",
+      "name_fr": "Façonneur",
+      "name_en": "Crafter"
+    },
+    "skill_proficiencies": ["investigation", "persuasion"],
+    "tool_proficiency": {
+      "type": "category_choice",
+      "category": "artisans_tools",
+      "choose": 1
+    },
+    "starting_equipment_options": [
+      {
+        "id": "artisan_option_a",
+        "label": "A",
+        "items": [
+          {
+            "id": "artisans_tools",
+            "choice_from_category": "artisans_tools",
+            "quantity": 1
+          },
+          {
+            "id": "pouch",
+            "quantity": 2
+          },
+          "travelers_clothes"
+        ],
+        "gold": 32
+      },
+      {
+        "id": "artisan_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "charlatan",
+    "name_fr": "Charlatan",
+    "name_en": "Charlatan",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["dexterity", "constitution", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "skilled",
+      "name_fr": "Talentueux",
+      "name_en": "Skilled"
+    },
+    "skill_proficiencies": ["deception", "sleight_of_hand"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "forgery_kit"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "charlatan_option_a",
+        "label": "A",
+        "items": [
+          "forgery_kit",
+          "costume",
+          "fine_clothes"
+        ],
+        "gold": 15
+      },
+      {
+        "id": "charlatan_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "criminal",
+    "name_fr": "Criminel",
+    "name_en": "Criminal",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["dexterity", "constitution", "intelligence"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "alert",
+      "name_fr": "Vigilant",
+      "name_en": "Alert"
+    },
+    "skill_proficiencies": ["sleight_of_hand", "stealth"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "thieves_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "criminal_option_a",
+        "label": "A",
+        "items": [
+          {
+            "id": "dagger",
+            "quantity": 2
+          },
+          "thieves_tools",
+          "crowbar",
+          {
+            "id": "pouch",
+            "quantity": 2
+          },
+          "travelers_clothes"
+        ],
+        "gold": 16
+      },
+      {
+        "id": "criminal_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "entertainer",
+    "name_fr": "Artiste",
+    "name_en": "Entertainer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "dexterity", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "musician",
+      "name_fr": "Musicien",
+      "name_en": "Musician"
+    },
+    "skill_proficiencies": ["acrobatics", "performance"],
+    "tool_proficiency": {
+      "type": "category_choice",
+      "category": "musical_instrument",
+      "choose": 1
+    },
+    "starting_equipment_options": [
+      {
+        "id": "entertainer_option_a",
+        "label": "A",
+        "items": [
+          {
+            "id": "musical_instrument",
+            "choice_from_category": "musical_instrument",
+            "quantity": 1
+          },
+          {
+            "id": "costume",
+            "quantity": 2
+          },
+          "mirror",
+          "perfume",
+          "travelers_clothes"
+        ],
+        "gold": 11
+      },
+      {
+        "id": "entertainer_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "farmer",
+    "name_fr": "Fermier",
+    "name_en": "Farmer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "constitution", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "tough",
+      "name_fr": "Robuste",
+      "name_en": "Tough"
+    },
+    "skill_proficiencies": ["animal_handling", "nature"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "carpenters_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "farmer_option_a",
+        "label": "A",
+        "items": [
+          "sickle",
+          "carpenters_tools",
+          "healers_kit",
+          "iron_pot",
+          "shovel",
+          "travelers_clothes"
+        ],
+        "gold": 30
+      },
+      {
+        "id": "farmer_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "guard",
+    "name_fr": "Garde",
+    "name_en": "Guard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "intelligence", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "alert",
+      "name_fr": "Vigilant",
+      "name_en": "Alert"
+    },
+    "skill_proficiencies": ["athletics", "perception"],
+    "tool_proficiency": {
+      "type": "category_choice",
+      "category": "gaming_set",
+      "choose": 1
+    },
+    "starting_equipment_options": [
+      {
+        "id": "guard_option_a",
+        "label": "A",
+        "items": [
+          "spear",
+          "light_crossbow",
+          {
+            "id": "crossbow_bolts",
+            "quantity": 20
+          },
+          {
+            "id": "gaming_set",
+            "choice_from_category": "gaming_set",
+            "quantity": 1
+          },
+          "hooded_lantern",
+          "manacles",
+          "quiver",
+          "travelers_clothes"
+        ],
+        "gold": 12
+      },
+      {
+        "id": "guard_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "guide",
+    "name_fr": "Guide",
+    "name_en": "Guide",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["dexterity", "constitution", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "magic_initiate_druid",
+      "name_fr": "Initié à la magie (Druide)",
+      "name_en": "Magic Initiate (Druid)"
+    },
+    "skill_proficiencies": ["stealth", "survival"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "cartographers_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "guide_option_a",
+        "label": "A",
+        "items": [
+          "shortbow",
+          {
+            "id": "arrows",
+            "quantity": 20
+          },
+          "cartographers_tools",
+          "bedroll",
+          "quiver",
+          "tent",
+          "travelers_clothes"
+        ],
+        "gold": 3
+      },
+      {
+        "id": "guide_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "hermit",
+    "name_fr": "Ermite",
+    "name_en": "Hermit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["constitution", "wisdom", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "healer",
+      "name_fr": "Guérisseur",
+      "name_en": "Healer"
+    },
+    "skill_proficiencies": ["medicine", "religion"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "herbalism_kit"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "hermit_option_a",
+        "label": "A",
+        "items": [
+          "quarterstaff",
+          "herbalism_kit",
+          "blanket",
+          {
+            "id": "book",
+            "subtype": "philosophy",
+            "quantity": 1
+          },
+          "lamp",
+          {
+            "id": "oil",
+            "quantity": 3
+          },
+          "travelers_clothes"
+        ],
+        "gold": 16
+      },
+      {
+        "id": "hermit_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "merchant",
+    "name_fr": "Marchand",
+    "name_en": "Merchant",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["constitution", "intelligence", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "lucky",
+      "name_fr": "Chanceux",
+      "name_en": "Lucky"
+    },
+    "skill_proficiencies": ["animal_handling", "persuasion"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "navigators_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "merchant_option_a",
+        "label": "A",
+        "items": [
+          "navigators_tools",
+          {
+            "id": "pouch",
+            "quantity": 2
+          },
+          "travelers_clothes"
+        ],
+        "gold": 22
+      },
+      {
+        "id": "merchant_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "noble",
+    "name_fr": "Noble",
+    "name_en": "Noble",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "intelligence", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "skilled",
+      "name_fr": "Talentueux",
+      "name_en": "Skilled"
+    },
+    "skill_proficiencies": ["history", "persuasion"],
+    "tool_proficiency": {
+      "type": "category_choice",
+      "category": "gaming_set",
+      "choose": 1
+    },
+    "starting_equipment_options": [
+      {
+        "id": "noble_option_a",
+        "label": "A",
+        "items": [
+          {
+            "id": "gaming_set",
+            "choice_from_category": "gaming_set",
+            "quantity": 1
+          },
+          "fine_clothes",
+          "perfume"
+        ],
+        "gold": 29
+      },
+      {
+        "id": "noble_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "sage",
+    "name_fr": "Sage",
+    "name_en": "Sage",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["constitution", "intelligence", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "magic_initiate_wizard",
+      "name_fr": "Initié à la magie (Magicien)",
+      "name_en": "Magic Initiate (Wizard)"
+    },
+    "skill_proficiencies": ["arcana", "history"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "calligraphers_supplies"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "sage_option_a",
+        "label": "A",
+        "items": [
+          "quarterstaff",
+          "calligraphers_supplies",
+          {
+            "id": "book",
+            "subtype": "history",
+            "quantity": 1
+          },
+          {
+            "id": "parchment",
+            "quantity": 8
+          },
+          "robe"
+        ],
+        "gold": 8
+      },
+      {
+        "id": "sage_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "sailor",
+    "name_fr": "Marin",
+    "name_en": "Sailor",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "dexterity", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "tavern_brawler",
+      "name_fr": "Bagarreur de taverne",
+      "name_en": "Tavern Brawler"
+    },
+    "skill_proficiencies": ["acrobatics", "perception"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "navigators_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "sailor_option_a",
+        "label": "A",
+        "items": [
+          "dagger",
+          "navigators_tools",
+          "rope",
+          "travelers_clothes"
+        ],
+        "gold": 20
+      },
+      {
+        "id": "sailor_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "scribe",
+    "name_fr": "Scribe",
+    "name_en": "Scribe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["dexterity", "intelligence", "wisdom"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "skilled",
+      "name_fr": "Talentueux",
+      "name_en": "Skilled"
+    },
+    "skill_proficiencies": ["investigation", "perception"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "calligraphers_supplies"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "scribe_option_a",
+        "label": "A",
+        "items": [
+          "calligraphers_supplies",
+          "fine_clothes",
+          "lamp",
+          {
+            "id": "oil",
+            "quantity": 3
+          },
+          {
+            "id": "parchment",
+            "quantity": 12
+          }
+        ],
+        "gold": 23
+      },
+      {
+        "id": "scribe_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "soldier",
+    "name_fr": "Soldat",
+    "name_en": "Soldier",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["strength", "dexterity", "constitution"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "savage_attacker",
+      "name_fr": "Attaquant sauvage",
+      "name_en": "Savage Attacker"
+    },
+    "skill_proficiencies": ["athletics", "intimidation"],
+    "tool_proficiency": {
+      "type": "category_choice",
+      "category": "gaming_set",
+      "choose": 1
+    },
+    "starting_equipment_options": [
+      {
+        "id": "soldier_option_a",
+        "label": "A",
+        "items": [
+          "spear",
+          "shortbow",
+          {
+            "id": "arrows",
+            "quantity": 20
+          },
+          {
+            "id": "gaming_set",
+            "choice_from_category": "gaming_set",
+            "quantity": 1
+          },
+          "healers_kit",
+          "quiver",
+          "travelers_clothes"
+        ],
+        "gold": 14
+      },
+      {
+        "id": "soldier_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  },
+  {
+    "id": "wayfarer",
+    "name_fr": "Voyageur",
+    "name_en": "Wayfarer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "background",
+    "origin_component": "background",
+    "available_at_character_level_1": true,
+    "ability_score_options": {
+      "allowed": ["dexterity", "wisdom", "charisma"],
+      "increase_rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "max_score_after_increase": 20
+    },
+    "origin_feat": {
+      "id": "lucky",
+      "name_fr": "Chanceux",
+      "name_en": "Lucky"
+    },
+    "skill_proficiencies": ["insight", "stealth"],
+    "tool_proficiency": {
+      "type": "fixed",
+      "item": "thieves_tools"
+    },
+    "starting_equipment_options": [
+      {
+        "id": "wayfarer_option_a",
+        "label": "A",
+        "items": [
+          {
+            "id": "dagger",
+            "quantity": 2
+          },
+          "thieves_tools",
+          {
+            "id": "gaming_set",
+            "choice_from_category": "gaming_set",
+            "quantity": 1
+          },
+          "bedroll",
+          {
+            "id": "pouch",
+            "quantity": 2
+          },
+          "travelers_clothes"
+        ],
+        "gold": 16
+      },
+      {
+        "id": "wayfarer_option_b",
+        "label": "B",
+        "items": [],
+        "gold": 50
+      }
+    ]
+  }
+]

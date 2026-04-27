@@ -1,0 +1,757 @@
+{
+  "id": "builder_output_schema",
+  "rules_version": "dnd_5_2024",
+  "entity_type": "technical_output_schema",
+  "builder_scope": "level_1_character_creation_only",
+  "description_fr": "Contrat technique de sortie du builder pour un personnage D&D 5 2024 niveau 1.",
+
+  "root_type": "object",
+
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "schema_id": {
+          "type": "string",
+          "const": "builder_output_schema"
+        },
+        "rules_version": {
+          "type": "string",
+          "const": "dnd_5_2024"
+        },
+        "builder_scope": {
+          "type": "string",
+          "const": "level_1_character_creation_only"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "valid", "invalid"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "iso_datetime"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "iso_datetime"
+        }
+      },
+      "required_fields": [
+        "schema_id",
+        "rules_version",
+        "builder_scope",
+        "status",
+        "created_at"
+      ]
+    },
+
+    "character": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "character_id": {
+          "type": "string"
+        },
+        "character_name": {
+          "type": ["string", "null"],
+          "max_length": 120
+        },
+        "player_name": {
+          "type": ["string", "null"],
+          "max_length": 120
+        },
+        "level": {
+          "type": "integer",
+          "const": 1
+        },
+        "proficiency_bonus": {
+          "type": "integer",
+          "const": 2
+        }
+      },
+      "required_fields": [
+        "character_id",
+        "level",
+        "proficiency_bonus"
+      ]
+    },
+
+    "identity": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "class_id": {
+          "type": "string"
+        },
+        "background_id": {
+          "type": "string"
+        },
+        "species_id": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "enum": ["small", "medium"]
+        },
+        "creature_type": {
+          "type": "string"
+        },
+        "speed": {
+          "type": "object",
+          "properties": {
+            "walk": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required_fields": ["walk"]
+        }
+      },
+      "required_fields": [
+        "class_id",
+        "background_id",
+        "species_id",
+        "size",
+        "creature_type",
+        "speed"
+      ]
+    },
+
+    "abilities": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "strength": { "$ref": "#/definitions/ability_score_block" },
+        "dexterity": { "$ref": "#/definitions/ability_score_block" },
+        "constitution": { "$ref": "#/definitions/ability_score_block" },
+        "intelligence": { "$ref": "#/definitions/ability_score_block" },
+        "wisdom": { "$ref": "#/definitions/ability_score_block" },
+        "charisma": { "$ref": "#/definitions/ability_score_block" }
+      },
+      "required_fields": [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "wisdom",
+        "charisma"
+      ]
+    },
+
+    "origin": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "ability_generation_method_id": {
+          "type": "string"
+        },
+        "background_ability_choices_applied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ability_id": {
+                "type": "string"
+              },
+              "increase": {
+                "type": "integer",
+                "enum": [1, 2]
+              }
+            },
+            "required_fields": [
+              "ability_id",
+              "increase"
+            ]
+          }
+        },
+        "origin_feat_id": {
+          "type": "string"
+        },
+        "bonus_origin_feat_id": {
+          "type": ["string", "null"]
+        }
+      },
+      "required_fields": [
+        "ability_generation_method_id",
+        "background_ability_choices_applied",
+        "origin_feat_id"
+      ]
+    },
+
+    "languages": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "string"
+      },
+      "unique_items": true,
+      "minimum_items": 1
+    },
+
+    "proficiencies": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "saving_throws": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_proficiency_block"
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "weapons": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "armor": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "shields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        }
+      },
+      "required_fields": [
+        "saving_throws",
+        "skills",
+        "tools",
+        "weapons",
+        "armor",
+        "shields"
+      ]
+    },
+
+    "resolved_choices": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "class_choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        },
+        "species_choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        },
+        "feat_choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        },
+        "background_choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        }
+      },
+      "required_fields": [
+        "class_choices",
+        "species_choices",
+        "feat_choices",
+        "background_choices"
+      ]
+    },
+
+    "features": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "class_features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/feature_instance_block"
+          }
+        },
+        "species_traits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/feature_instance_block"
+          }
+        },
+        "feats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/feat_instance_block"
+          }
+        }
+      },
+      "required_fields": [
+        "class_features",
+        "species_traits",
+        "feats"
+      ]
+    },
+
+    "combat": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "hit_points": {
+          "type": "object",
+          "properties": {
+            "max": { "type": "integer", "minimum": 1 },
+            "current": { "type": "integer", "minimum": 0 },
+            "formula": { "type": "string" }
+          },
+          "required_fields": ["max", "current", "formula"]
+        },
+        "armor_class": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "integer", "minimum": 1 },
+            "formula": { "type": "string" }
+          },
+          "required_fields": ["value", "formula"]
+        },
+        "initiative_modifier": {
+          "type": "integer"
+        },
+        "weapon_masteries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "weapon_id": { "type": "string" },
+              "mastery_id": { "type": "string" }
+            },
+            "required_fields": ["weapon_id", "mastery_id"]
+          }
+        }
+      },
+      "required_fields": [
+        "hit_points",
+        "armor_class",
+        "initiative_modifier",
+        "weapon_masteries"
+      ]
+    },
+
+    "equipment": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "currency": {
+          "type": "object",
+          "properties": {
+            "cp": { "type": "integer", "minimum": 0 },
+            "sp": { "type": "integer", "minimum": 0 },
+            "ep": { "type": "integer", "minimum": 0 },
+            "gp": { "type": "integer", "minimum": 0 },
+            "pp": { "type": "integer", "minimum": 0 }
+          },
+          "required_fields": ["cp", "sp", "ep", "gp", "pp"]
+        },
+        "equipped_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/item_stack_block"
+          }
+        },
+        "inventory_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/inventory_item_block"
+          }
+        },
+        "starting_equipment_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_type": {
+                "type": "string",
+                "enum": ["class", "background", "species", "feat"]
+              },
+              "source_id": {
+                "type": "string"
+              },
+              "option_id": {
+                "type": ["string", "null"]
+              }
+            },
+            "required_fields": [
+              "source_type",
+              "source_id"
+            ]
+          }
+        }
+      },
+      "required_fields": [
+        "currency",
+        "equipped_items",
+        "inventory_items",
+        "starting_equipment_sources"
+      ]
+    },
+
+    "spellcasting": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "is_spellcaster": {
+          "type": "boolean"
+        },
+        "spellcasting_ability": {
+          "type": ["string", "null"]
+        },
+        "spell_save_dc": {
+          "type": ["integer", "null"]
+        },
+        "spell_attack_bonus": {
+          "type": ["integer", "null"]
+        },
+        "focus_options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "spell_slots": {
+          "type": "object",
+          "properties": {
+            "1": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
+        "pact_magic": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "pact_slots": { "type": ["integer", "null"] },
+            "pact_slot_level": { "type": ["integer", "null"] }
+          },
+          "required_fields": [
+            "enabled",
+            "pact_slots",
+            "pact_slot_level"
+          ]
+        },
+        "cantrips_known": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "prepared_spells": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "always_prepared_spells": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "spellbook_spells": {
+          "type": "array",
+          "items": { "type": "string" },
+          "unique_items": true
+        },
+        "species_granted_spells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/granted_spell_block"
+          }
+        },
+        "feat_granted_spells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/granted_spell_block"
+          }
+        }
+      },
+      "required_fields": [
+        "is_spellcaster",
+        "spellcasting_ability",
+        "spell_save_dc",
+        "spell_attack_bonus",
+        "focus_options",
+        "spell_slots",
+        "pact_magic",
+        "cantrips_known",
+        "prepared_spells",
+        "always_prepared_spells",
+        "spellbook_spells",
+        "species_granted_spells",
+        "feat_granted_spells"
+      ]
+    },
+
+    "validation": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "is_valid": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validation_error_block"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validation_error_block"
+          }
+        }
+      },
+      "required_fields": [
+        "is_valid",
+        "errors",
+        "warnings"
+      ]
+    }
+  },
+
+  "required_fields": [
+    "meta",
+    "character",
+    "identity",
+    "abilities",
+    "origin",
+    "languages",
+    "proficiencies",
+    "resolved_choices",
+    "features",
+    "combat",
+    "equipment",
+    "spellcasting",
+    "validation"
+  ],
+
+  "definitions": {
+    "ability_score_block": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "modifier": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 10
+        },
+        "base_score_before_origin": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18
+        }
+      },
+      "required_fields": [
+        "score",
+        "modifier",
+        "base_score_before_origin"
+      ]
+    },
+
+    "skill_proficiency_block": {
+      "type": "object",
+      "properties": {
+        "skill_id": {
+          "type": "string"
+        },
+        "has_expertise": {
+          "type": "boolean"
+        }
+      },
+      "required_fields": [
+        "skill_id",
+        "has_expertise"
+      ]
+    },
+
+    "resolved_choice_block": {
+      "type": "object",
+      "properties": {
+        "choice_id": {
+          "type": "string"
+        },
+        "selected_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selected_values": {
+          "type": "array",
+          "items": {
+            "type": ["string", "integer", "boolean", "null"]
+          }
+        }
+      },
+      "required_fields": [
+        "choice_id"
+      ]
+    },
+
+    "feature_instance_block": {
+      "type": "object",
+      "properties": {
+        "feature_id": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "resolved_options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        }
+      },
+      "required_fields": [
+        "feature_id",
+        "source_id",
+        "resolved_options"
+      ]
+    },
+
+    "feat_instance_block": {
+      "type": "object",
+      "properties": {
+        "feat_id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["background", "species", "class", "bonus", "other"]
+        },
+        "resolved_choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resolved_choice_block"
+          }
+        }
+      },
+      "required_fields": [
+        "feat_id",
+        "source",
+        "resolved_choices"
+      ]
+    },
+
+    "item_stack_block": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required_fields": [
+        "item_id",
+        "quantity"
+      ]
+    },
+
+    "inventory_item_block": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contained_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/item_stack_block"
+          }
+        }
+      },
+      "required_fields": [
+        "item_id",
+        "quantity",
+        "contained_items"
+      ]
+    },
+
+    "granted_spell_block": {
+      "type": "object",
+      "properties": {
+        "spell_id": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "casting_ability": {
+          "type": ["string", "null"]
+        },
+        "available_now": {
+          "type": "boolean"
+        },
+        "unlock_level": {
+          "type": ["integer", "null"]
+        },
+        "free_cast_uses": {
+          "type": ["integer", "null"]
+        },
+        "recharge": {
+          "type": ["string", "null"]
+        }
+      },
+      "required_fields": [
+        "spell_id",
+        "source_id",
+        "available_now",
+        "unlock_level",
+        "free_cast_uses",
+        "recharge"
+      ]
+    },
+
+    "validation_error_block": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning"]
+        }
+      },
+      "required_fields": [
+        "code",
+        "message",
+        "path",
+        "severity"
+      ]
+    }
+  }
+}

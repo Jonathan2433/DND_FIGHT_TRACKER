@@ -146,10 +146,44 @@ class EmailService:
         return EmailService._send_message(msg, "email de vérification")
 
     @staticmethod
-    def send_password_reset_email(user_email, username, reset_url):
-        """Envoyer un email de reset de mot de passe (pour plus tard)"""
-        # Implémentation pour plus tard
-        pass
+    def send_password_reset_email(user_email, username, reset_url, expires_minutes=30):
+        """Envoyer un email de reinitialisation de mot de passe."""
+        subject = "🔐 Réinitialisation de votre mot de passe ExalQuest"
+
+        html_body = EmailService._build_email_shell(
+            title="Réinitialiser votre mot de passe",
+            intro=f"Bonjour {username}, nous avons reçu une demande de réinitialisation.",
+            cta_label="🔐 Choisir un nouveau mot de passe",
+            cta_url=reset_url,
+            body_content=(
+                "Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe. "
+                "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email."
+            ),
+            footer_content=(
+                f"Ce lien de sécurité expire dans {expires_minutes} minutes et n'est utilisable qu'une seule fois."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Reinitialisation de mot de passe
+
+        Bonjour {username},
+
+        Pour choisir un nouveau mot de passe, utilisez ce lien :
+        {reset_url}
+
+        Ce lien expire dans {expires_minutes} minutes et n'est utilisable qu'une seule fois.
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email reset mot de passe")
 
     @staticmethod
     def send_campaign_invitation(user_email, campaign_name, invitation_url, username):
@@ -233,3 +267,130 @@ class EmailService:
         )
 
         return EmailService._send_message(msg, "email invitation inscription campagne")
+
+    @staticmethod
+    def send_combat_invitation(user_email, username, campaign_name, combat_name, invitation_url):
+        """Envoyer un email d'invitation directe vers la vue joueur d'un combat."""
+        subject = f"⚔️ Invitation au combat : {combat_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Le combat commence !",
+            intro=f"Salut {username}, le MJ te convie immédiatement à la bataille.",
+            cta_label="⚔️ Rejoindre le combat",
+            cta_url=invitation_url,
+            body_content=(
+                "Tu es invité(e) à rejoindre le combat "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{combat_name}&nbsp;&raquo;</strong> "
+                f"de la campagne <strong>{campaign_name}</strong>."
+            ),
+            footer_content=(
+                "Clique sur le bouton pour arriver directement sur la vue joueur du combat. "
+                "Si tu n'es pas concerné(e), ignore simplement cet email."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Invitation au combat
+
+        Salut {username},
+
+        Tu es invité(e) au combat "{combat_name}" (campagne "{campaign_name}").
+
+        Rejoins directement la vue joueur ici :
+        {invitation_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email invitation combat")
+
+    @staticmethod
+    def send_campaign_session_reminder(user_email, username, campaign_name, scheduled_for):
+        """Envoyer un email de rappel de session de campagne à J-7."""
+        session_label = scheduled_for.strftime('%d/%m/%Y à %Hh%M')
+        campaign_url = f"{current_app.config.get('BASE_URL', '').rstrip('/')}/campaign/"
+        subject = f"🗓️ Rappel session dans 7 jours : {campaign_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Rappel de session",
+            intro=f"Salut {username}, votre prochaine aventure approche.",
+            cta_label="🎲 Voir la campagne",
+            cta_url=campaign_url,
+            body_content=(
+                "La prochaine session de la campagne "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{campaign_name}&nbsp;&raquo;</strong> "
+                f"est prévue le <strong>{session_label}</strong>."
+            ),
+            footer_content=(
+                "Ce rappel automatique est envoyé 7 jours avant la date de session. "
+                "Si la session est modifiée ou annulée, la date affichée peut évoluer."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Rappel de session
+
+        Salut {username},
+
+        La prochaine session de la campagne "{campaign_name}" est prévue le {session_label}.
+
+        Retrouve la campagne ici :
+        {campaign_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email rappel session campagne")
+
+    @staticmethod
+    def send_pj_assignment_email(user_email, username, campaign_name, character_name, campaign_url):
+        """Envoyer un email lorsqu'un MJ attribue un PJ à un joueur."""
+        subject = f"🎁 Nouveau PJ attribué : {character_name}"
+
+        html_body = EmailService._build_email_shell(
+            title="Un PJ vous attend !",
+            intro=f"Salut {username}, le MJ vient de vous confier un nouveau personnage.",
+            cta_label="🎲 Voir la campagne",
+            cta_url=campaign_url,
+            body_content=(
+                "Le MJ vous a attribué le PJ "
+                f"<strong style='color: #ffda3e;'>&laquo;&nbsp;{character_name}&nbsp;&raquo;</strong> "
+                f"dans la campagne <strong>{campaign_name}</strong>."
+            ),
+            footer_content=(
+                "Connectez-vous pour consulter la fiche et préparer votre prochaine session."
+            ),
+        )
+
+        text_body = f"""
+        ExalQuest - Nouveau PJ attribué
+
+        Salut {username},
+
+        Le MJ vous a attribué le PJ "{character_name}" dans la campagne "{campaign_name}".
+
+        Consultez votre campagne ici :
+        {campaign_url}
+        """
+
+        msg = Message(
+            subject=subject,
+            recipients=[user_email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+        )
+
+        return EmailService._send_message(msg, "email attribution PJ")

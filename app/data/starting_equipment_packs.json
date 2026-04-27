@@ -1,0 +1,127 @@
+[
+  {
+    "id": "burglars_pack",
+    "name_fr": "Sac d'exploration du cambrioleur",
+    "name_en": "Burglar's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 16, "unit": "gp" },
+    "weight_lb": 42,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "ball_bearings", "quantity": 1 },
+      { "item_id": "bell", "quantity": 1 },
+      { "item_id": "candle", "quantity": 10 },
+      { "item_id": "crowbar", "quantity": 1 },
+      { "item_id": "hooded_lantern", "quantity": 1 },
+      { "item_id": "oil", "quantity": 7 },
+      { "item_id": "rations", "quantity": 5 },
+      { "item_id": "rope", "quantity": 1 },
+      { "item_id": "tinderbox", "quantity": 1 },
+      { "item_id": "waterskin", "quantity": 1 }
+    ]
+  },
+  {
+    "id": "dungeoneers_pack",
+    "name_fr": "Sac d'exploration du spéléologue",
+    "name_en": "Dungeoneer's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 12, "unit": "gp" },
+    "weight_lb": 55,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "caltrops", "quantity": 1 },
+      { "item_id": "crowbar", "quantity": 1 },
+      { "item_id": "oil", "quantity": 2 },
+      { "item_id": "rations", "quantity": 10 },
+      { "item_id": "rope", "quantity": 1 },
+      { "item_id": "tinderbox", "quantity": 1 },
+      { "item_id": "torch", "quantity": 10 },
+      { "item_id": "waterskin", "quantity": 1 }
+    ]
+  },
+  {
+    "id": "entertainers_pack",
+    "name_fr": "Sac d'artiste",
+    "name_en": "Entertainer's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 40, "unit": "gp" },
+    "weight_lb": 58.5,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "bedroll", "quantity": 1 },
+      { "item_id": "bell", "quantity": 1 },
+      { "item_id": "bullseye_lantern", "quantity": 1 },
+      { "item_id": "costume", "quantity": 3 },
+      { "item_id": "mirror", "quantity": 1 },
+      { "item_id": "oil", "quantity": 8 },
+      { "item_id": "rations", "quantity": 9 },
+      { "item_id": "tinderbox", "quantity": 1 },
+      { "item_id": "waterskin", "quantity": 1 }
+    ]
+  },
+  {
+    "id": "explorers_pack",
+    "name_fr": "Sac d'explorateur",
+    "name_en": "Explorer's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 10, "unit": "gp" },
+    "weight_lb": 55,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "bedroll", "quantity": 1 },
+      { "item_id": "oil", "quantity": 2 },
+      { "item_id": "rations", "quantity": 10 },
+      { "item_id": "rope", "quantity": 1 },
+      { "item_id": "tinderbox", "quantity": 1 },
+      { "item_id": "torch", "quantity": 10 },
+      { "item_id": "waterskin", "quantity": 1 }
+    ]
+  },
+  {
+    "id": "priests_pack",
+    "name_fr": "Sac de prêtre",
+    "name_en": "Priest's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 33, "unit": "gp" },
+    "weight_lb": 29,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "blanket", "quantity": 1 },
+      { "item_id": "holy_water", "quantity": 1 },
+      { "item_id": "lamp", "quantity": 1 },
+      { "item_id": "rations", "quantity": 7 },
+      { "item_id": "robe", "quantity": 1 },
+      { "item_id": "tinderbox", "quantity": 1 }
+    ]
+  },
+  {
+    "id": "scholars_pack",
+    "name_fr": "Sac d'érudit",
+    "name_en": "Scholar's Pack",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "starting_equipment_pack",
+    "available_at_character_level_1": true,
+    "cost": { "quantity": 40, "unit": "gp" },
+    "weight_lb": 22,
+    "items": [
+      { "item_id": "backpack", "quantity": 1 },
+      { "item_id": "book", "quantity": 1 },
+      { "item_id": "ink", "quantity": 1 },
+      { "item_id": "ink_pen", "quantity": 1 },
+      { "item_id": "lamp", "quantity": 1 },
+      { "item_id": "oil", "quantity": 10 },
+      { "item_id": "parchment", "quantity": 10 },
+      { "item_id": "tinderbox", "quantity": 1 }
+    ]
+  }
+]

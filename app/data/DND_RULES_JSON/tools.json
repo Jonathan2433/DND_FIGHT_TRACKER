@@ -1,0 +1,298 @@
+[
+  {
+    "id": "alchemists_supplies",
+    "name_fr": "Fournitures d'alchimiste",
+    "name_en": "Alchemist's Supplies",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "brewers_supplies",
+    "name_fr": "Fournitures de brasseur",
+    "name_en": "Brewer's Supplies",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "calligraphers_supplies",
+    "name_fr": "Matériel de calligraphe",
+    "name_en": "Calligrapher's Supplies",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "carpenters_tools",
+    "name_fr": "Outils de charpentier",
+    "name_en": "Carpenter's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "cartographers_tools",
+    "name_fr": "Outils de cartographe",
+    "name_en": "Cartographer's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "cobblers_tools",
+    "name_fr": "Outils de cordonnier",
+    "name_en": "Cobbler's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "cooks_utensils",
+    "name_fr": "Ustensiles de cuisinier",
+    "name_en": "Cook's Utensils",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "glassblowers_tools",
+    "name_fr": "Outils de souffleur de verre",
+    "name_en": "Glassblower's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "jewelers_tools",
+    "name_fr": "Outils de joaillier",
+    "name_en": "Jeweler's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "leatherworkers_tools",
+    "name_fr": "Outils de travail du cuir",
+    "name_en": "Leatherworker's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "masons_tools",
+    "name_fr": "Outils de maçon",
+    "name_en": "Mason's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "painters_supplies",
+    "name_fr": "Fournitures de peintre",
+    "name_en": "Painter's Supplies",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "potters_tools",
+    "name_fr": "Outils de potier",
+    "name_en": "Potter's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "smiths_tools",
+    "name_fr": "Outils de forgeron",
+    "name_en": "Smith's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "tinkers_tools",
+    "name_fr": "Outils de bricoleur",
+    "name_en": "Tinker's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "weavers_tools",
+    "name_fr": "Outils de tisserand",
+    "name_en": "Weaver's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "woodcarvers_tools",
+    "name_fr": "Outils de sculpteur sur bois",
+    "name_en": "Woodcarver's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "artisans_tools"
+  },
+  {
+    "id": "dice_set",
+    "name_fr": "Jeu de dés",
+    "name_en": "Dice Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "gaming_set"
+  },
+  {
+    "id": "dragonchess_set",
+    "name_fr": "Jeu de dragonchess",
+    "name_en": "Dragonchess Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "gaming_set"
+  },
+  {
+    "id": "playing_card_set",
+    "name_fr": "Jeu de cartes",
+    "name_en": "Playing Card Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "gaming_set"
+  },
+  {
+    "id": "three_dragon_ante_set",
+    "name_fr": "Jeu de Three-Dragon Ante",
+    "name_en": "Three-Dragon Ante Set",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "gaming_set"
+  },
+  {
+    "id": "bagpipes",
+    "name_fr": "Cornemuse",
+    "name_en": "Bagpipes",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "drum",
+    "name_fr": "Tambour",
+    "name_en": "Drum",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "dulcimer",
+    "name_fr": "Dulcimer",
+    "name_en": "Dulcimer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "flute",
+    "name_fr": "Flûte",
+    "name_en": "Flute",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "horn",
+    "name_fr": "Cor",
+    "name_en": "Horn",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "lute",
+    "name_fr": "Luth",
+    "name_en": "Lute",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "lyre",
+    "name_fr": "Lyre",
+    "name_en": "Lyre",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "pan_flute",
+    "name_fr": "Flûte de Pan",
+    "name_en": "Pan Flute",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "shawm",
+    "name_fr": "Chalemie",
+    "name_en": "Shawm",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "viol",
+    "name_fr": "Viole",
+    "name_en": "Viol",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "musical_instrument"
+  },
+  {
+    "id": "disguise_kit",
+    "name_fr": "Kit de déguisement",
+    "name_en": "Disguise Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  },
+  {
+    "id": "forgery_kit",
+    "name_fr": "Kit de contrefaçon",
+    "name_en": "Forgery Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  },
+  {
+    "id": "herbalism_kit",
+    "name_fr": "Kit d'herboriste",
+    "name_en": "Herbalism Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  },
+  {
+    "id": "navigators_tools",
+    "name_fr": "Outils de navigateur",
+    "name_en": "Navigator's Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  },
+  {
+    "id": "poisoners_kit",
+    "name_fr": "Kit d'empoisonneur",
+    "name_en": "Poisoner's Kit",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  },
+  {
+    "id": "thieves_tools",
+    "name_fr": "Outils de voleur",
+    "name_en": "Thieves' Tools",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "tool",
+    "tool_category": "other_tool"
+  }
+]

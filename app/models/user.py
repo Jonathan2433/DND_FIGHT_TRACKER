@@ -1,5 +1,6 @@
 """Modeles lies aux utilisateurs et authentification."""
 from datetime import datetime, timedelta
+import hashlib
 import secrets
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -110,3 +111,59 @@ class EmailVerification(db.Model):
 
     def __repr__(self):
         return f'<EmailVerification {self.token[:8]}...>'
+
+
+class PasswordResetToken(db.Model):
+    """Token de reinitialisation de mot de passe (hashé en base)."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used_at = db.Column(db.DateTime)
+    requested_ip = db.Column(db.String(45))
+    requested_user_agent = db.Column(db.String(255))
+
+    user = db.relationship('User', backref='password_reset_tokens', lazy=True)
+
+    @staticmethod
+    def _hash_token(raw_token):
+        return hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+
+    @staticmethod
+    def generate_raw_token():
+        return secrets.token_urlsafe(48)
+
+    @staticmethod
+    def create_for_user(user_id, requested_ip=None, requested_user_agent=None, lifetime_minutes=30):
+        raw_token = PasswordResetToken.generate_raw_token()
+        reset_token = PasswordResetToken(
+            user_id=user_id,
+            token_hash=PasswordResetToken._hash_token(raw_token),
+            expires_at=datetime.utcnow() + timedelta(minutes=lifetime_minutes),
+            requested_ip=(requested_ip or '')[:45] or None,
+            requested_user_agent=(requested_user_agent or '')[:255] or None,
+        )
+        db.session.add(reset_token)
+        return reset_token, raw_token
+
+    @property
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
+
+    @property
+    def is_used(self):
+        return self.used_at is not None
+
+    @classmethod
+    def find_by_raw_token(cls, raw_token):
+        if not raw_token:
+            return None
+        token_hash = cls._hash_token(raw_token)
+        return cls.query.filter_by(token_hash=token_hash).first()
+
+    def mark_used(self):
+        self.used_at = datetime.utcnow()
+
+    def __repr__(self):
+        return f'<PasswordResetToken user_id={self.user_id} id={self.id}>'

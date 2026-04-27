@@ -1,0 +1,644 @@
+[
+  {
+    "id": "dagger",
+    "name_fr": "Dague",
+    "name_en": "Dagger",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "mastery_reference_codes": [
+      0
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "id": "mace",
+    "name_fr": "Masse d'armes",
+    "name_en": "Mace",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": [],
+    "mastery_reference_codes": [
+      6,
+      7
+    ]
+  },
+  {
+    "id": "spear",
+    "name_fr": "Pieu",
+    "name_en": "Spear",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      3,
+      8
+    ],
+    "versatile_damage": "1d8",
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "id": "quarterstaff",
+    "name_fr": "Bâton",
+    "name_en": "Quarterstaff",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      3,
+      9,
+      10
+    ],
+    "versatile_damage": "1d8"
+  },
+  {
+    "id": "club",
+    "name_fr": "Club",
+    "name_en": "Club",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery_reference_codes": [
+      11
+    ]
+  },
+  {
+    "id": "handaxe",
+    "name_fr": "Hachette",
+    "name_en": "Handaxe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "mastery_reference_codes": [
+      12
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "id": "javelin",
+    "name_fr": "Javelot",
+    "name_en": "Javelin",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown"
+    ],
+    "mastery_reference_codes": [
+      8,
+      13
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    }
+  },
+  {
+    "id": "light_hammer",
+    "name_fr": "Marteau léger",
+    "name_en": "Light Hammer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "mastery_reference_codes": [
+      14
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "id": "greatclub",
+    "name_fr": "Grande masse",
+    "name_en": "Greatclub",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      13
+    ]
+  },
+  {
+    "id": "sickle",
+    "name_fr": "Serpe",
+    "name_en": "Sickle",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery_reference_codes": [
+      15
+    ]
+  },
+  {
+    "id": "shortbow",
+    "name_fr": "Arc court",
+    "name_en": "Shortbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      16,
+      17
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    }
+  },
+  {
+    "id": "light_crossbow",
+    "name_fr": "Arbalète légère",
+    "name_en": "Light Crossbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "simple",
+    "attack_type": "ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      18,
+      19
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    }
+  },
+  {
+    "id": "shortsword",
+    "name_fr": "Épée courte",
+    "name_en": "Shortsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery_reference_codes": [
+      20,
+      21
+    ]
+  },
+  {
+    "id": "scimitar",
+    "name_fr": "Cimeterre",
+    "name_en": "Scimitar",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery_reference_codes": [
+      17,
+      19
+    ]
+  },
+  {
+    "id": "rapier",
+    "name_fr": "Rapière",
+    "name_en": "Rapier",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse"
+    ],
+    "mastery_reference_codes": [
+      22,
+      23
+    ]
+  },
+  {
+    "id": "longsword",
+    "name_fr": "Épée longue",
+    "name_en": "Longsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      8,
+      24
+    ],
+    "versatile_damage": "1d10"
+  },
+  {
+    "id": "greatsword",
+    "name_fr": "Épée à deux mains",
+    "name_en": "Greatsword",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      25,
+      26
+    ]
+  },
+  {
+    "id": "greataxe",
+    "name_fr": "Grande hache",
+    "name_en": "Greataxe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      5,
+      27
+    ]
+  },
+  {
+    "id": "warhammer",
+    "name_fr": "Marteau de guerre",
+    "name_en": "Warhammer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      7,
+      28
+    ],
+    "versatile_damage": "1d10"
+  },
+  {
+    "id": "battleaxe",
+    "name_fr": "Hache d'armes",
+    "name_en": "Battleaxe",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      29
+    ],
+    "versatile_damage": "1d10"
+  },
+  {
+    "id": "morningstar",
+    "name_fr": "Fléau d'armes",
+    "name_en": "Morningstar",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [],
+    "mastery_reference_codes": [
+      29,
+      30
+    ]
+  },
+  {
+    "id": "pike",
+    "name_fr": "Pique",
+    "name_en": "Pike",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      31
+    ]
+  },
+  {
+    "id": "glaive",
+    "name_fr": "Vouge",
+    "name_en": "Glaive",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      32
+    ]
+  },
+  {
+    "id": "halberd",
+    "name_fr": "Hallebarde",
+    "name_en": "Halberd",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      33
+    ]
+  },
+  {
+    "id": "trident",
+    "name_fr": "Trident",
+    "name_en": "Trident",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "mastery_reference_codes": [
+      34
+    ],
+    "versatile_damage": "1d8",
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "id": "maul",
+    "name_fr": "Maul",
+    "name_en": "Maul",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      35
+    ]
+  },
+  {
+    "id": "longbow",
+    "name_fr": "Arc long",
+    "name_en": "Longbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      25,
+      31
+    ],
+    "range": {
+      "normal": 150,
+      "long": 600
+    }
+  },
+  {
+    "id": "heavy_crossbow",
+    "name_fr": "Arbalète lourde",
+    "name_en": "Heavy Crossbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "ranged",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "loading",
+      "two_handed"
+    ],
+    "mastery_reference_codes": [
+      7,
+      26
+    ],
+    "range": {
+      "normal": 100,
+      "long": 400
+    }
+  },
+  {
+    "id": "hand_crossbow",
+    "name_fr": "Arbalète de poing",
+    "name_en": "Hand Crossbow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon",
+    "proficiency_group": "martial",
+    "attack_type": "ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "light",
+      "loading"
+    ],
+    "mastery_reference_codes": [
+      36,
+      37
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    }
+  }
+]

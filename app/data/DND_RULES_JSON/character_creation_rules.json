@@ -1,0 +1,266 @@
+{
+  "id": "character_creation_rules",
+  "rules_version": "dnd_5_2024",
+  "entity_type": "ruleset",
+  "available_for_character_level": 1,
+  "builder_scope": "level_1_character_creation_only",
+  "step_order": [
+    {
+      "step": 1,
+      "id": "choose_class",
+      "name_fr": "Choisir une classe",
+      "name_en": "Choose a Class",
+      "required": true,
+      "data_source": "class_catalog.json"
+    },
+    {
+      "step": 2,
+      "id": "determine_origin",
+      "name_fr": "Déterminer l'origine",
+      "name_en": "Determine Origin",
+      "required": true,
+      "substeps": [
+        {
+          "id": "choose_background",
+          "name_fr": "Choisir un background",
+          "name_en": "Choose a Background",
+          "data_source": "backgrounds.json"
+        },
+        {
+          "id": "choose_species",
+          "name_fr": "Choisir une espèce",
+          "name_en": "Choose a Species",
+          "data_source": "species.json"
+        },
+        {
+          "id": "choose_languages",
+          "name_fr": "Choisir les langues",
+          "name_en": "Choose Languages",
+          "data_source": "languages.json"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "id": "determine_ability_scores",
+      "name_fr": "Déterminer les caractéristiques",
+      "name_en": "Determine Ability Scores",
+      "required": true,
+      "data_source": "abilities.json"
+    },
+    {
+      "step": 4,
+      "id": "choose_equipment",
+      "name_fr": "Choisir l'équipement",
+      "name_en": "Choose Equipment",
+      "required": true,
+      "data_sources": [
+        "equipment_items.json",
+        "equipment_items_adventuring_gear.json",
+        "starting_equipment_packs.json"
+      ]
+    },
+    {
+      "step": 5,
+      "id": "choose_spells",
+      "name_fr": "Choisir les sorts",
+      "name_en": "Choose Spells",
+      "required": true,
+      "data_sources": [
+        "class_choice_rules.json",
+        "feat_choices_rules.json",
+        "subchoices_catalog.json",
+        "spells.json",
+        "spells_by_class.json"
+      ]
+    },
+    {
+      "step": 6,
+      "id": "finalize_character",
+      "name_fr": "Finaliser le personnage",
+      "name_en": "Finalize Character",
+      "required": true,
+      "substeps": [
+        {
+          "id": "apply_class_features",
+          "name_fr": "Appliquer les capacités de classe",
+          "name_en": "Apply Class Features",
+          "data_source": "class_features.json"
+        },
+        {
+          "id": "apply_origin_feat",
+          "name_fr": "Appliquer le don d'origine",
+          "name_en": "Apply Origin Feat",
+          "data_source": "origin_feats.json"
+        },
+        {
+          "id": "resolve_spellcasting",
+          "name_fr": "Résoudre le lancement de sorts",
+          "name_en": "Resolve Spellcasting",
+          "data_sources": [
+            "spellcasting_rules.json",
+            "spells_by_class.json",
+            "spells.json",
+            "subchoices_catalog.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "global_rules": {
+    "starting_level": 1,
+    "proficiency_bonus": 2,
+    "level_up_supported_in_this_ruleset": false,
+    "allow_multiclass_at_creation": false,
+    "allow_custom_lineage_or_custom_background": false,
+    "allow_duplicate_skills_from_same_grant": false,
+    "allow_duplicate_tool_proficiencies_from_same_grant": false,
+    "allow_duplicate_languages_from_same_grant": false
+  },
+  "ability_scores": {
+    "base_generation_methods_ref": "starting_ability_score_methods.json",
+    "default_method": "standard_array",
+    "minimum_score_before_modifiers": 3,
+    "maximum_score_before_modifiers": 18,
+    "maximum_score_after_creation_modifiers": 20,
+    "background_ability_increase_rule": {
+      "source": "background",
+      "rule": "increase_one_by_2_and_one_by_1_or_increase_all_three_by_1",
+      "must_choose_from_background_allowed_abilities": true
+    }
+  },
+  "languages": {
+    "default_known_languages": [
+      "common"
+    ],
+    "default_additional_language_choices": {
+      "choose": 2,
+      "from": "standard_languages"
+    },
+    "duplicates_not_allowed": true,
+    "special_languages_must_come_from_features": true
+  },
+  "hit_points": {
+    "level_1_rule": "max_hit_die_value_plus_constitution_modifier",
+    "minimum_hp_after_calculation": 1,
+    "species_or_feat_hp_modifiers_apply_after_class_base": true
+  },
+  "initiative": {
+    "formula": "dexterity_modifier"
+  },
+  "armor_class": {
+    "default_unarmored_formula": "10 + dexterity_modifier",
+    "class_or_species_features_can_override": true,
+    "shield_bonus_applies_if_proficient_and_equipped": true
+  },
+  "saving_throws": {
+    "class_grants_two_saving_throw_proficiencies": true
+  },
+  "skills": {
+    "skill_source_priority": [
+      "class",
+      "background",
+      "species",
+      "feat",
+      "class_feature"
+    ],
+    "duplicates_rule": "if_duplicate_would_be_granted_builder_must_prompt_for_valid_replacement_only_if_rules_source_explicitly_allows_replacement"
+  },
+  "tools": {
+    "tool_choice_categories_use": [
+      "artisans_tools",
+      "gaming_set",
+      "musical_instrument",
+      "any_tool"
+    ]
+  },
+  "species_rules": {
+    "size_choice_when_available": true,
+    "if_species_has_multiple_size_options_player_must_choose_one": true,
+    "species_traits_apply_at_level_1_only_if_listed_in_traits_level_1": true,
+    "future_traits_do_not_apply_at_creation": true
+  },
+  "background_rules": {
+    "background_is_mandatory": true,
+    "origin_feat_is_granted_by_background": true,
+    "background_equipment_choice_required": true,
+    "background_choice_b_options_can_grant_gold_instead_of_items": true
+  },
+  "equipment_rules": {
+    "class_starting_equipment_choice_required_if_available": true,
+    "background_starting_equipment_choice_required_if_available": true,
+    "buyable_items_must_have_selection_tag": "buyable_at_character_creation",
+    "starting_equipment_items_must_have_selection_tag": "starting_equipment",
+    "pack_resolution_enabled": true,
+    "coins_are_tracked_separately_from_items": true,
+    "weapon_catalog_source": "weapons_catalog.json"
+  },
+  "spellcasting_rules": {
+    "only_level_0_and_1_spells_in_scope": true,
+    "spell_lists_source": "spells_by_class.json",
+    "spell_details_source": "spells.json",
+    "prepared_vs_known_rules_must_follow_class_features": true,
+    "magic_initiate_uses_its_own_spell_list_choice_rules": true,
+    "species_granted_spells_do_not_expand_class_spell_list": true,
+    "subchoice_catalog_source": "subchoices_catalog.json"
+  },
+  "weapon_mastery_rules": {
+    "weapon_masteries_enabled": true,
+    "mastery_effects_source": "weapon_masteries.json",
+    "eligible_weapon_selection_must_follow_class_features": true
+  },
+  "derived_stats": {
+    "passive_perception_formula": "10 + perception_modifier",
+    "speed_source_priority": [
+      "species",
+      "temporary_modifiers_not_in_scope"
+    ],
+    "size_source_priority": [
+      "species"
+    ]
+  },
+  "validation_rules": {
+    "must_have_exactly_one_class": true,
+    "must_have_exactly_one_background": true,
+    "must_have_exactly_one_species": true,
+    "must_have_legal_ability_score_distribution": true,
+    "must_have_legal_language_selection": true,
+    "must_have_legal_equipment_selection": true,
+    "must_have_legal_spell_selection_if_spellcasting_class": true,
+    "must_have_legal_internal_choices_for_features_and_feats": true
+  },
+  "json_dependencies": {
+    "core": [
+      "abilities.json",
+      "class_catalog.json",
+      "backgrounds.json",
+      "species.json",
+      "skills.json",
+      "tools.json",
+      "languages.json",
+      "proficiencies.json"
+    ],
+    "equipment": [
+      "equipment_items.json",
+      "equipment_items_adventuring_gear.json",
+      "starting_equipment_packs.json",
+      "weapons_catalog.json"
+    ],
+    "features_and_choices": [
+      "class_features.json",
+      "origin_feats.json",
+      "fighting_styles.json",
+      "eldritch_invocations.json",
+      "weapon_masteries.json",
+      "class_choice_rules.json",
+      "species_choice_rules.json",
+      "feat_choices_rules.json",
+      "subchoices_catalog.json"
+    ],
+    "spellcasting": [
+      "spellcasting_rules.json",
+      "spells.json",
+      "spells_by_class.json"
+    ]
+  }
+}

@@ -1,0 +1,200 @@
+[
+  {
+    "id": "cleave",
+    "name_fr": "Fauchage",
+    "name_en": "Cleave",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit",
+      "requires": [
+        "melee_attack_roll",
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "extra_attack_roll_against_second_creature",
+      "target_rule": {
+        "second_creature_within_feet_of_first_target": 5,
+        "second_creature_must_also_be_within_your_reach": true
+      },
+      "damage_on_hit": {
+        "use_weapon_damage": true,
+        "add_ability_modifier": false,
+        "unless_modifier_negative": true
+      }
+    },
+    "limits": {
+      "max_uses_per_turn": 1
+    },
+    "description_short_fr": "Après avoir touché avec une attaque de mêlée, permet une attaque supplémentaire contre une seconde créature proche de la première."
+  },
+  {
+    "id": "graze",
+    "name_fr": "Éraflure",
+    "name_en": "Graze",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_miss",
+      "requires": [
+        "attack_roll_with_weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "deal_damage_on_miss",
+      "damage": {
+        "type": "same_as_attack_ability_modifier",
+        "damage_type": "same_as_weapon",
+        "minimum": 0
+      }
+    },
+    "description_short_fr": "Si l’attaque rate, inflige quand même des dégâts égaux au modificateur de caractéristique utilisé pour l’attaque."
+  },
+  {
+    "id": "nick",
+    "name_fr": "Entaille",
+    "name_en": "Nick",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "when_making_extra_attack_from_light_property",
+      "requires": [
+        "weapon_with_this_mastery",
+        "light_property_extra_attack"
+      ]
+    },
+    "effect": {
+      "type": "change_timing_of_light_property_extra_attack",
+      "new_timing": "as_part_of_attack_action_instead_of_bonus_action"
+    },
+    "limits": {
+      "max_uses_per_turn": 1
+    },
+    "description_short_fr": "L’attaque supplémentaire accordée par la propriété Light se fait dans l’Attack action au lieu d’utiliser la Bonus Action."
+  },
+  {
+    "id": "push",
+    "name_fr": "Repoussement",
+    "name_en": "Push",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit",
+      "requires": [
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "forced_movement",
+      "distance_feet": 10,
+      "direction": "straight_away_from_you"
+    },
+    "target_restrictions": {
+      "max_size": "large"
+    },
+    "description_short_fr": "Quand l’attaque touche, pousse la créature jusqu’à 10 feet en ligne droite si elle est de taille Large ou inférieure."
+  },
+  {
+    "id": "sap",
+    "name_fr": "Affaiblissement",
+    "name_en": "Sap",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit",
+      "requires": [
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "impose_disadvantage",
+      "applies_to": "next_attack_roll"
+    },
+    "duration": {
+      "until": "start_of_your_next_turn"
+    },
+    "description_short_fr": "La créature touchée a Disadvantage sur son prochain jet d’attaque avant le début de ton prochain tour."
+  },
+  {
+    "id": "slow",
+    "name_fr": "Ralentissement",
+    "name_en": "Slow",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit_and_damage_dealt",
+      "requires": [
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "speed_reduction",
+      "speed_delta_feet": -10
+    },
+    "duration": {
+      "until": "start_of_your_next_turn"
+    },
+    "stacking_rule": {
+      "multiple_hits_do_not_reduce_speed_beyond": -10
+    },
+    "description_short_fr": "Réduit la Speed de la cible de 10 feet jusqu’au début de ton prochain tour."
+  },
+  {
+    "id": "topple",
+    "name_fr": "Renversement",
+    "name_en": "Topple",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit",
+      "requires": [
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "force_saving_throw",
+      "saving_throw": {
+        "ability": "constitution",
+        "dc": {
+          "base": 8,
+          "ability_modifier_source": "attack_ability_modifier",
+          "add_proficiency_bonus": true
+        }
+      },
+      "on_failed_save": {
+        "apply_condition": "prone"
+      }
+    },
+    "description_short_fr": "Après avoir touché, force un jet de sauvegarde de Constitution ; en cas d’échec, la cible est Prone."
+  },
+  {
+    "id": "vex",
+    "name_fr": "Déstabilisation",
+    "name_en": "Vex",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "weapon_mastery",
+    "available_at_character_level_1": true,
+    "trigger": {
+      "event": "on_hit_and_damage_dealt",
+      "requires": [
+        "weapon_with_this_mastery"
+      ]
+    },
+    "effect": {
+      "type": "grant_advantage",
+      "applies_to": "your_next_attack_roll_against_same_creature"
+    },
+    "duration": {
+      "until": "end_of_your_next_turn"
+    },
+    "description_short_fr": "Donne Advantage sur ton prochain jet d’attaque contre la même créature avant la fin de ton prochain tour."
+  }
+]

@@ -1,0 +1,656 @@
+[
+  {
+    "id": "aasimar",
+    "name_fr": "Aasimar",
+    "name_en": "Aasimar",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium", "small"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "celestial_resistance",
+        "name_fr": "Résistance céleste",
+        "name_en": "Celestial Resistance",
+        "mechanics_status": "name_validated_details_pending"
+      },
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "mechanics_status": "name_validated_details_pending"
+      },
+      {
+        "id": "healing_hands",
+        "name_fr": "Mains guérisseuses",
+        "name_en": "Healing Hands",
+        "mechanics_status": "name_validated_details_pending"
+      },
+      {
+        "id": "light_bearer",
+        "name_fr": "Porteur de lumière",
+        "name_en": "Light Bearer",
+        "mechanics_status": "name_validated_details_pending"
+      }
+    ],
+    "future_traits": [
+      {
+        "id": "celestial_revelation",
+        "name_fr": "Révélation céleste",
+        "name_en": "Celestial Revelation",
+        "unlocked_at_character_level": 3,
+        "notes": "Le choix de la forme se fait à chaque activation en 2024."
+      }
+    ],
+    "source_refs": [
+      "dndbeyond_species_index",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "dragonborn",
+    "name_fr": "Drakéide",
+    "name_en": "Dragonborn",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "draconic_ancestry",
+        "name_fr": "Ascendance draconique",
+        "name_en": "Draconic Ancestry",
+        "choose": 1,
+        "options": [
+          { "id": "black", "name_fr": "Noir", "name_en": "Black", "damage_type": "acid" },
+          { "id": "blue", "name_fr": "Bleu", "name_en": "Blue", "damage_type": "lightning" },
+          { "id": "brass", "name_fr": "Airain", "name_en": "Brass", "damage_type": "fire" },
+          { "id": "bronze", "name_fr": "Bronze", "name_en": "Bronze", "damage_type": "lightning" },
+          { "id": "copper", "name_fr": "Cuivre", "name_en": "Copper", "damage_type": "acid" },
+          { "id": "gold", "name_fr": "Or", "name_en": "Gold", "damage_type": "fire" },
+          { "id": "green", "name_fr": "Vert", "name_en": "Green", "damage_type": "poison" },
+          { "id": "red", "name_fr": "Rouge", "name_en": "Red", "damage_type": "fire" },
+          { "id": "silver", "name_fr": "Argent", "name_en": "Silver", "damage_type": "cold" },
+          { "id": "white", "name_fr": "Blanc", "name_en": "White", "damage_type": "cold" }
+        ]
+      },
+      {
+        "id": "breath_weapon",
+        "name_fr": "Arme de souffle",
+        "name_en": "Breath Weapon",
+        "action_integration": "replace_one_attack_when_taking_attack_action",
+        "area_options": [
+          { "shape": "cone", "size": 15, "unit": "feet" },
+          { "shape": "line", "length": 30, "width": 5, "unit": "feet" }
+        ],
+        "save": {
+          "ability": "dexterity",
+          "dc_formula": "8 + constitution_modifier + proficiency_bonus"
+        },
+        "damage": {
+          "dice": "1d10",
+          "type_from": "draconic_ancestry"
+        },
+        "half_damage_on_success": true,
+        "uses": {
+          "count_formula": "proficiency_bonus",
+          "recharge": "long_rest"
+        }
+      },
+      {
+        "id": "damage_resistance",
+        "name_fr": "Résistance aux dégâts",
+        "name_en": "Damage Resistance",
+        "resistance_from": "draconic_ancestry"
+      },
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 60
+      }
+    ],
+    "future_traits": [
+      {
+        "id": "draconic_flight",
+        "name_fr": "Vol draconique",
+        "name_en": "Draconic Flight",
+        "unlocked_at_character_level": 5
+      }
+    ],
+    "source_refs": [
+      "dndbeyond_dragonborn_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "dwarf",
+    "name_fr": "Nain",
+    "name_en": "Dwarf",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 120
+      },
+      {
+        "id": "dwarven_resilience",
+        "name_fr": "Résilience naine",
+        "name_en": "Dwarven Resilience",
+        "damage_resistance": ["poison"],
+        "saving_throw_advantage_against_conditions": ["poisoned"]
+      },
+      {
+        "id": "dwarven_toughness",
+        "name_fr": "Robustesse naine",
+        "name_en": "Dwarven Toughness",
+        "max_hp_bonus_now": 1,
+        "max_hp_bonus_per_level": 1
+      },
+      {
+        "id": "stonecunning",
+        "name_fr": "Connaissance de la pierre",
+        "name_en": "Stonecunning",
+        "activation": "bonus_action",
+        "effect": "tremorsense",
+        "range_feet": 60,
+        "duration_minutes": 10,
+        "requirement": "must_be_on_or_touching_stone_surface",
+        "uses": {
+          "count_formula": "proficiency_bonus",
+          "recharge": "long_rest"
+        }
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_dwarf_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "elf",
+    "name_fr": "Elfe",
+    "name_en": "Elf",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 60
+      },
+      {
+        "id": "elven_lineage",
+        "name_fr": "Lignage elfique",
+        "name_en": "Elven Lineage",
+        "choose": 1,
+        "spellcasting_ability_choice": ["intelligence", "wisdom", "charisma"],
+        "options": [
+          {
+            "id": "drow",
+            "name_fr": "Drow",
+            "name_en": "Drow",
+            "level_1_benefits": {
+              "darkvision_range_override_feet": 120,
+              "cantrips_known": ["dancing_lights"]
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "faerie_fire" },
+              { "character_level": 5, "spell_id": "darkness" }
+            ]
+          },
+          {
+            "id": "high_elf",
+            "name_fr": "Haut Elfe",
+            "name_en": "High Elf",
+            "level_1_benefits": {
+              "cantrips_known": ["prestidigitation"],
+              "cantrip_replacement_rule": "replace_with_wizard_cantrip_on_long_rest"
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "detect_magic" },
+              { "character_level": 5, "spell_id": "misty_step" }
+            ]
+          },
+          {
+            "id": "wood_elf",
+            "name_fr": "Elfe des bois",
+            "name_en": "Wood Elf",
+            "level_1_benefits": {
+              "speed_bonus_feet": 5,
+              "cantrips_known": ["druidcraft"]
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "longstrider" },
+              { "character_level": 5, "spell_id": "pass_without_trace" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fey_ancestry",
+        "name_fr": "Ascendance féerique",
+        "name_en": "Fey Ancestry",
+        "saving_throw_advantage_against_conditions": ["charmed"]
+      },
+      {
+        "id": "keen_senses",
+        "name_fr": "Sens aiguisés",
+        "name_en": "Keen Senses",
+        "gain_skill_proficiency": {
+          "choose": 1,
+          "from": ["insight", "perception", "survival"]
+        }
+      },
+      {
+        "id": "trance",
+        "name_fr": "Transe",
+        "name_en": "Trance",
+        "does_not_need_sleep": true,
+        "magic_cant_put_you_to_sleep": true,
+        "long_rest_duration_hours": 4,
+        "retain_consciousness_during_rest": true
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_elf_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "gnome",
+    "name_fr": "Gnome",
+    "name_en": "Gnome",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["small"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 60
+      },
+      {
+        "id": "gnomish_cunning",
+        "name_fr": "Ruse gnome",
+        "name_en": "Gnomish Cunning",
+        "saving_throw_advantage": ["intelligence", "wisdom", "charisma"]
+      },
+      {
+        "id": "gnomish_lineage",
+        "name_fr": "Lignage gnome",
+        "name_en": "Gnomish Lineage",
+        "choose": 1,
+        "spellcasting_ability_choice": ["intelligence", "wisdom", "charisma"],
+        "options": [
+          {
+            "id": "forest_gnome",
+            "name_fr": "Gnome des forêts",
+            "name_en": "Forest Gnome",
+            "level_1_benefits": {
+              "cantrips_known": ["minor_illusion"],
+              "always_prepared_spells": ["speak_with_animals"],
+              "free_casts": [
+                {
+                  "spell_id": "speak_with_animals",
+                  "count_formula": "proficiency_bonus",
+                  "recharge": "long_rest"
+                }
+              ],
+              "can_cast_with_spell_slots": true
+            }
+          },
+          {
+            "id": "rock_gnome",
+            "name_fr": "Gnome des roches",
+            "name_en": "Rock Gnome",
+            "level_1_benefits": {
+              "cantrips_known": ["mending", "prestidigitation"],
+              "special_device_creation": {
+                "casting_time_minutes": 10,
+                "creates": "tiny_clockwork_device",
+                "max_devices": 3,
+                "device_duration_hours": 8,
+                "activation": "bonus_action_touch"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_gnome_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "goliath",
+    "name_fr": "Goliath",
+    "name_en": "Goliath",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium"],
+    "speed": {
+      "walk": 35
+    },
+    "traits_level_1": [
+      {
+        "id": "giant_ancestry",
+        "name_fr": "Ascendance des géants",
+        "name_en": "Giant Ancestry",
+        "choose": 1,
+        "uses": {
+          "count_formula": "proficiency_bonus",
+          "recharge": "long_rest"
+        },
+        "options": [
+          {
+            "id": "cloud_giant",
+            "name_fr": "Géant des nuages",
+            "name_en": "Cloud Giant",
+            "benefit": "teleport_up_to_30_feet_as_bonus_action"
+          },
+          {
+            "id": "fire_giant",
+            "name_fr": "Géant du feu",
+            "name_en": "Fire Giant",
+            "benefit": "deal_extra_1d10_fire_on_hit"
+          },
+          {
+            "id": "frost_giant",
+            "name_fr": "Géant du givre",
+            "name_en": "Frost Giant",
+            "benefit": "deal_extra_1d6_cold_on_hit_and_reduce_speed_by_10"
+          },
+          {
+            "id": "hill_giant",
+            "name_fr": "Géant des collines",
+            "name_en": "Hill Giant",
+            "benefit": "knock_large_or_smaller_target_prone_on_hit"
+          },
+          {
+            "id": "stone_giant",
+            "name_fr": "Géant des pierres",
+            "name_en": "Stone Giant",
+            "benefit": "reaction_reduce_damage_1d12_plus_con"
+          },
+          {
+            "id": "storm_giant",
+            "name_fr": "Géant des tempêtes",
+            "name_en": "Storm Giant",
+            "benefit": "reaction_deal_1d8_thunder_to_creature_within_60_feet_that_damaged_you"
+          }
+        ]
+      },
+      {
+        "id": "powerful_build",
+        "name_fr": "Puissante carrure",
+        "name_en": "Powerful Build",
+        "advantage_on_checks_to_end_condition": ["grappled"],
+        "carrying_capacity_count_as_one_size_larger": true
+      }
+    ],
+    "future_traits": [
+      {
+        "id": "large_form",
+        "name_fr": "Forme imposante",
+        "name_en": "Large Form",
+        "unlocked_at_character_level": 5
+      }
+    ],
+    "source_refs": [
+      "dndbeyond_goliath_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "halfling",
+    "name_fr": "Halfelin",
+    "name_en": "Halfling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["small"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "brave",
+        "name_fr": "Brave",
+        "name_en": "Brave",
+        "saving_throw_advantage_against_conditions": ["frightened"]
+      },
+      {
+        "id": "halfling_nimbleness",
+        "name_fr": "Agilité halfeline",
+        "name_en": "Halfling Nimbleness",
+        "can_move_through_space_of_creature_size_larger": true
+      },
+      {
+        "id": "luck",
+        "name_fr": "Chance",
+        "name_en": "Luck",
+        "trigger": "roll_1_on_d20_test",
+        "effect": "reroll_die_must_use_new_roll"
+      },
+      {
+        "id": "naturally_stealthy",
+        "name_fr": "Naturellement discret",
+        "name_en": "Naturally Stealthy",
+        "can_hide_when_obscured_by_larger_creature_only": true
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_halfling_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "human",
+    "name_fr": "Humain",
+    "name_en": "Human",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium", "small"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "resourceful",
+        "name_fr": "Débrouillard",
+        "name_en": "Resourceful",
+        "gain_heroic_inspiration_on": "long_rest"
+      },
+      {
+        "id": "skillful",
+        "name_fr": "Compétent",
+        "name_en": "Skillful",
+        "gain_skill_proficiency": {
+          "choose": 1,
+          "from": "any_skill"
+        }
+      },
+      {
+        "id": "versatile",
+        "name_fr": "Polyvalent",
+        "name_en": "Versatile",
+        "gain_extra_origin_feat": 1
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_human_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "orc",
+    "name_fr": "Orc",
+    "name_en": "Orc",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "adrenaline_rush",
+        "name_fr": "Montée d’adrénaline",
+        "name_en": "Adrenaline Rush",
+        "activation": "bonus_action",
+        "effect": "dash",
+        "temporary_hit_points": {
+          "formula": "proficiency_bonus"
+        },
+        "uses": {
+          "count_formula": "proficiency_bonus",
+          "recharge": "short_or_long_rest"
+        }
+      },
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 120
+      },
+      {
+        "id": "relentless_endurance",
+        "name_fr": "Endurance implacable",
+        "name_en": "Relentless Endurance",
+        "trigger": "reduced_to_0_hit_points_but_not_killed_outright",
+        "effect": "drop_to_1_hit_point_instead",
+        "recharge": "long_rest"
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_orc_page",
+      "dndbeyond_species_article_2024"
+    ]
+  },
+  {
+    "id": "tiefling",
+    "name_fr": "Tieffelin",
+    "name_en": "Tiefling",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "species",
+    "available_at_character_level_1": true,
+    "creature_type": "humanoid",
+    "size_options": ["medium", "small"],
+    "speed": {
+      "walk": 30
+    },
+    "traits_level_1": [
+      {
+        "id": "darkvision",
+        "name_fr": "Vision dans le noir",
+        "name_en": "Darkvision",
+        "range_feet": 60
+      },
+      {
+        "id": "fiendish_legacy",
+        "name_fr": "Héritage infernal",
+        "name_en": "Fiendish Legacy",
+        "choose": 1,
+        "spellcasting_ability_choice": ["intelligence", "wisdom", "charisma"],
+        "options": [
+          {
+            "id": "abyssal",
+            "name_fr": "Abyssal",
+            "name_en": "Abyssal",
+            "level_1_benefits": {
+              "damage_resistance": ["poison"],
+              "cantrips_known": ["poison_spray"]
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "ray_of_sickness" },
+              { "character_level": 5, "spell_id": "hold_person" }
+            ]
+          },
+          {
+            "id": "chthonic",
+            "name_fr": "Chtonien",
+            "name_en": "Chthonic",
+            "level_1_benefits": {
+              "damage_resistance": ["necrotic"],
+              "cantrips_known": ["chill_touch"]
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "false_life" },
+              { "character_level": 5, "spell_id": "ray_of_enfeeblement" }
+            ]
+          },
+          {
+            "id": "infernal",
+            "name_fr": "Infernal",
+            "name_en": "Infernal",
+            "level_1_benefits": {
+              "damage_resistance": ["fire"],
+              "cantrips_known": ["fire_bolt"]
+            },
+            "future_spells": [
+              { "character_level": 3, "spell_id": "hellish_rebuke" },
+              { "character_level": 5, "spell_id": "darkness" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "otherworldly_presence",
+        "name_fr": "Présence surnaturelle",
+        "name_en": "Otherworldly Presence",
+        "cantrips_known": ["thaumaturgy"],
+        "spellcasting_ability_from": "fiendish_legacy_choice"
+      }
+    ],
+    "future_traits": [],
+    "source_refs": [
+      "dndbeyond_tiefling_page",
+      "dndbeyond_species_article_2024"
+    ]
+  }
+]

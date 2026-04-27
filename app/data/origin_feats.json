@@ -1,0 +1,421 @@
+[
+  {
+    "id": "alert",
+    "name_fr": "Vigilant",
+    "name_en": "Alert",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["criminal", "guard"],
+    "effects_summary": [
+      "initiative_proficiency",
+      "initiative_swap"
+    ],
+    "mechanics": {
+      "initiative_bonus": {
+        "type": "add_proficiency_bonus"
+      },
+      "initiative_swap": {
+        "type": "swap_with_willing_ally",
+        "timing": "immediately_after_rolling_initiative",
+        "restriction": "neither_creature_incapacitated"
+      }
+    },
+    "description_short_fr": "Ajoute le bonus de maîtrise à l’initiative et permet d’échanger son initiative avec un allié consentant.",
+    "source_refs": [
+      "dndbeyond_feat_alert",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "crafter",
+    "name_fr": "Façonneur",
+    "name_en": "Crafter",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["artisan"],
+    "effects_summary": [
+      "tool_proficiency",
+      "discount",
+      "fast_crafting"
+    ],
+    "mechanics": {
+      "tool_proficiency": {
+        "type": "gain_tool_proficiencies",
+        "choose": 3,
+        "from_category": "artisans_tools"
+      },
+      "item_discount": {
+        "type": "discount_on_nonmagical_items",
+        "percentage": 20
+      },
+      "fast_crafting": {
+        "type": "craft_fast",
+        "requires_relevant_artisans_tools": true
+      }
+    },
+    "description_short_fr": "Donne des maîtrises d’outils d’artisan, une réduction sur certains achats non magiques et un accès à la fabrication rapide.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "healer",
+    "name_fr": "Guérisseur",
+    "name_en": "Healer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["hermit"],
+    "effects_summary": [
+      "battlefield_healing",
+      "healing_reroll_or_boost"
+    ],
+    "mechanics": {
+      "battle_medic": {
+        "type": "action_heal",
+        "activation": "utilize_action",
+        "requires_item": "healers_kit",
+        "consumes_use_of_item": true,
+        "target": "creature_within_5_feet",
+        "heal_formula": "1d4 + proficiency_bonus",
+        "additional_effect": "target_can_spend_one_hit_die",
+        "hit_die_heal_bonus": "proficiency_bonus",
+        "frequency": "no_limit_except_healers_kit_uses"
+      },
+      "healing_rerolls": {
+        "type": "passive",
+        "trigger": "when_you_roll_dice_to_heal_with_spell_or_healers_kit",
+        "effect": "reroll_any_1_on_healing_dice_once_must_use_new_roll"
+      }
+    },
+    "description_short_fr": "Améliore les soins prodigués et apporte une capacité de soutien orientée guérison.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "lucky",
+    "name_fr": "Chanceux",
+    "name_en": "Lucky",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["merchant", "wayfarer"],
+    "effects_summary": [
+      "luck_points",
+      "advantage_disadvantage_manipulation"
+    ],
+    "mechanics": {
+      "luck_points": {
+        "type": "resource_pool",
+        "resource_name": "luck_points",
+        "max_count_formula": "proficiency_bonus",
+        "recharge": "long_rest"
+      },
+      "luck_advantage": {
+        "type": "triggered_ability",
+        "trigger": "before_you_know_outcome_of_d20_test",
+        "cost": "1_luck_point",
+        "effect": "roll_additional_d20_and_choose_which_to_use",
+        "timing": "immediately_after_rolling"
+      },
+      "luck_impose_disadvantage": {
+        "type": "triggered_ability",
+        "trigger": "creature_attacks_you_before_outcome_known",
+        "cost": "1_luck_point",
+        "effect": "roll_additional_d20_attacker_must_use_lowest"
+      }
+    },
+    "description_short_fr": "Permet de provoquer des retournements favorables de dé grâce à une réserve de chance.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "magic_initiate",
+    "name_fr": "Initié à la magie",
+    "name_en": "Magic Initiate",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": true,
+    "repeatable_rule": "must_choose_a_different_spell_list_each_time",
+    "prerequisites": [],
+    "granted_by_backgrounds": [],
+    "effects_summary": [
+      "two_cantrips",
+      "one_level_1_spell",
+      "free_cast_once_per_long_rest",
+      "spell_change_on_level_up"
+    ],
+    "mechanics": {
+      "spell_list_choice": {
+        "choose": 1,
+        "from": ["cleric", "druid", "wizard"]
+      },
+      "cantrips_known": 2,
+      "level_1_spell_known": 1,
+      "level_1_spell_always_prepared": true,
+      "free_cast_uses": 1,
+      "free_cast_recharge": "long_rest",
+      "can_cast_with_spell_slots": true,
+      "spellcasting_ability": {
+        "choose": 1,
+        "from": ["intelligence", "wisdom", "charisma"]
+      },
+      "spell_change": {
+        "timing": "when_you_gain_a_level",
+        "rule": "replace_one_selected_spell_with_same_level_from_same_list"
+      }
+    },
+    "description_short_fr": "Apprend 2 sorts mineurs et 1 sort de niveau 1 d’une liste choisie, avec 1 lancement gratuit par repos long.",
+    "source_refs": [
+      "dndbeyond_feat_magic_initiate",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "magic_initiate_cleric",
+    "name_fr": "Initié à la magie (Clerc)",
+    "name_en": "Magic Initiate (Cleric)",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_variant",
+    "parent_feat_id": "magic_initiate",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["acolyte"],
+    "variant_data": {
+      "spell_list": "cleric"
+    },
+    "description_short_fr": "Version Clerc de Magic Initiate.",
+    "source_refs": [
+      "dndbeyond_feat_magic_initiate",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "magic_initiate_druid",
+    "name_fr": "Initié à la magie (Druide)",
+    "name_en": "Magic Initiate (Druid)",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_variant",
+    "parent_feat_id": "magic_initiate",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["guide"],
+    "variant_data": {
+      "spell_list": "druid"
+    },
+    "description_short_fr": "Version Druide de Magic Initiate.",
+    "source_refs": [
+      "dndbeyond_feat_magic_initiate",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "magic_initiate_wizard",
+    "name_fr": "Initié à la magie (Magicien)",
+    "name_en": "Magic Initiate (Wizard)",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_variant",
+    "parent_feat_id": "magic_initiate",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["sage"],
+    "variant_data": {
+      "spell_list": "wizard"
+    },
+    "description_short_fr": "Version Magicien de Magic Initiate.",
+    "source_refs": [
+      "dndbeyond_feat_magic_initiate",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "musician",
+    "name_fr": "Musicien",
+    "name_en": "Musician",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["entertainer"],
+    "effects_summary": [
+      "instrument_training",
+      "inspiring_song"
+    ],
+    "mechanics": {
+      "instrument_proficiency": {
+        "type": "gain_tool_proficiencies",
+        "choose": 3,
+        "from_category": "musical_instrument"
+      },
+      "inspiring_song": {
+        "type": "triggered_ability",
+        "activation": "during_short_or_long_rest",
+        "effect": "grant_heroic_inspiration_to_allies",
+        "target_count_formula": "proficiency_bonus",
+        "target_restriction": "allies_who_can_hear_you_within_30_feet",
+        "frequency": "once_per_long_rest"
+      }
+    },
+    "description_short_fr": "Apporte des maîtrises d’instruments et un effet de soutien inspirant pour le groupe.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "savage_attacker",
+    "name_fr": "Attaquant sauvage",
+    "name_en": "Savage Attacker",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["soldier"],
+    "effects_summary": [
+      "damage_reroll_once_per_turn"
+    ],
+    "mechanics": {
+      "damage_reroll": {
+        "type": "roll_weapon_damage_twice_use_either",
+        "frequency": "once_per_turn",
+        "trigger": "when_you_hit_with_a_weapon"
+      }
+    },
+    "description_short_fr": "Une fois par tour, quand tu touches avec une arme, tu peux lancer les dés de dégâts de l’arme deux fois et choisir l’un des résultats.",
+    "source_refs": [
+      "dndbeyond_basic_rules_feats",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "skilled",
+    "name_fr": "Talentueux",
+    "name_en": "Skilled",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": true,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["charlatan", "noble", "scribe"],
+    "effects_summary": [
+      "three_skill_or_tool_proficiencies"
+    ],
+    "mechanics": {
+      "proficiencies_gained": {
+        "choose": 3,
+        "from_any_combination_of": ["skills", "tools"]
+      }
+    },
+    "description_short_fr": "Donne la maîtrise de n’importe quelle combinaison de 3 compétences ou outils.",
+    "source_refs": [
+      "dndbeyond_basic_rules_feats",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "tavern_brawler",
+    "name_fr": "Bagarreur de taverne",
+    "name_en": "Tavern Brawler",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["sailor"],
+    "effects_summary": [
+      "improvised_weapon_combat",
+      "unarmed_combat_boost"
+    ],
+    "mechanics": {
+      "enhanced_unarmed_strike": {
+        "type": "passive",
+        "effect": "unarmed_strike_damage_die_upgrade",
+        "damage_die": "1d4",
+        "damage_type": "bludgeoning"
+      },
+      "improvised_weapon_proficiency": {
+        "type": "passive",
+        "effect": "gain_proficiency_with_improvised_weapons"
+      },
+      "push_on_unarmed_hit": {
+        "type": "triggered_ability",
+        "trigger": "when_you_hit_with_unarmed_strike_as_part_of_attack_action",
+        "effect": "push_target_5_feet_and_can_move_5_feet_without_provoking",
+        "frequency": "once_per_turn",
+        "target_size_max": "one_size_larger_than_you"
+      },
+      "furniture_as_weapon": {
+        "type": "passive",
+        "effect": "when_you_hit_with_improvised_weapon_you_can_push_target_5_feet",
+        "frequency": "once_per_turn"
+      }
+    },
+    "description_short_fr": "Améliore le combat au corps à corps improvisé et le style de bagarre.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  },
+  {
+    "id": "tough",
+    "name_fr": "Robuste",
+    "name_en": "Tough",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "repeatable": false,
+    "prerequisites": [],
+    "granted_by_backgrounds": ["farmer"],
+    "effects_summary": [
+      "extra_hit_points"
+    ],
+    "mechanics": {
+      "hit_point_bonus": {
+        "type": "passive_max_hp_increase",
+        "bonus_at_creation": 2,
+        "bonus_per_level": 2,
+        "formula": "2 * character_level",
+        "recalculates_on_level_up": true
+      }
+    },
+    "description_short_fr": "Augmente durablement les points de vie du personnage.",
+    "source_refs": [
+      "dndbeyond_feat_index",
+      "dndbeyond_backgrounds_index"
+    ]
+  }
+]

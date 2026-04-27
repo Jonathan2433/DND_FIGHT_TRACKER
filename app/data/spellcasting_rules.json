@@ -1,0 +1,293 @@
+{
+  "id": "spellcasting_rules",
+  "rules_version": "dnd_5_2024",
+  "entity_type": "ruleset",
+  "available_at_character_level": 1,
+  "builder_scope": "level_1_character_creation_only",
+  "global_spellcasting_rules": {
+    "spells_json_source": "spells.json",
+    "spells_by_class_source": "spells_by_class.json",
+    "subchoices_catalog_source": "subchoices_catalog.corrected.json",
+    "only_spell_levels_in_scope": [
+      0,
+      1
+    ],
+    "spellcasting_focus_required_if_material_component_without_cost": true,
+    "component_pouch_supported": true,
+    "spell_save_dc_formula": "8 + proficiency_bonus + spellcasting_ability_modifier",
+    "spell_attack_bonus_formula": "proficiency_bonus + spellcasting_ability_modifier",
+    "ritual_casting_supported": true,
+    "concentration_supported": true,
+    "duplicate_spells_in_same_spell_list_selection_not_allowed": true,
+    "species_or_feat_granted_spells_do_not_expand_class_spell_list": true,
+    "always_prepared_spells_do_not_count_against_prepared_spells_limit_unless_rule_says_otherwise": true,
+    "class_choice_rules_source": "class_choice_rules.corrected.json",
+    "feat_choice_rules_source": "feat_choices_rules.corrected.json",
+    "species_choice_rules_source": "species_choice_rules.json"
+  },
+  "class_spellcasting_models": [
+    {
+      "class_id": "bard",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "charisma",
+      "cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "bard_spell_list_level_1_or_lower",
+      "can_replace_cantrip_on_level_up": true,
+      "can_change_prepared_spells_on_level_up": true,
+      "focus_options": [
+        "musical_instrument",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "cleric",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "wisdom",
+      "cantrips_known": 3,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "cleric_spell_list_level_1_or_lower",
+      "can_change_prepared_spells_on_long_rest": true,
+      "focus_options": [
+        "holy_symbol",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "druid",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "wisdom",
+      "cantrips_known": 2,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "druid_spell_list_level_1_or_lower",
+      "can_change_prepared_spells_on_long_rest": true,
+      "focus_options": [
+        "druidic_focus",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "paladin",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "charisma",
+      "cantrips_known": 0,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "paladin_spell_list_level_1_or_lower",
+      "can_change_prepared_spells_on_long_rest": true,
+      "focus_options": [
+        "holy_symbol",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "ranger",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "wisdom",
+      "cantrips_known": 0,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "ranger_spell_list_level_1_or_lower",
+      "can_change_prepared_spells_on_long_rest": true,
+      "focus_options": [
+        "druidic_focus",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "sorcerer",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared",
+      "spellcasting_ability": "charisma",
+      "cantrips_known": 4,
+      "prepared_spells": 2,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "sorcerer_spell_list_level_1_or_lower",
+      "can_replace_cantrip_on_level_up": true,
+      "can_change_prepared_spells_on_level_up": true,
+      "focus_options": [
+        "arcane_focus",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "pact_magic",
+      "spellcasting_ability": "charisma",
+      "cantrips_known": 2,
+      "prepared_spells": 2,
+      "pact_slots": 1,
+      "pact_slot_level": 1,
+      "preparation_source": "warlock_spell_list_level_1_or_lower",
+      "slot_recharge": "short_or_long_rest",
+      "can_replace_cantrip_on_level_up": true,
+      "can_change_prepared_spells_on_level_up": true,
+      "focus_options": [
+        "arcane_focus",
+        "component_pouch"
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "has_spellcasting_at_level_1": true,
+      "casting_model": "prepared_from_spellbook",
+      "spellcasting_ability": "intelligence",
+      "cantrips_known": 3,
+      "spellbook_starting_spells_known": 6,
+      "prepared_spells": 4,
+      "spell_slots": {
+        "1": 2
+      },
+      "preparation_source": "wizard_spellbook_entries_only",
+      "can_replace_cantrip_on_level_up": true,
+      "can_change_prepared_spells_on_long_rest": true,
+      "focus_options": [
+        "arcane_focus",
+        "component_pouch"
+      ],
+      "ritual_casting_from_spellbook_without_preparing": true
+    }
+  ],
+  "non_spellcasting_classes": [
+    "barbarian",
+    "fighter",
+    "monk",
+    "rogue"
+  ],
+  "wizard_specific_rules": {
+    "spellbook_entry_rules": {
+      "starting_spellbook_entries_count": 6,
+      "all_entries_must_be_level_1_wizard_spells_at_character_creation": true,
+      "prepared_spells_must_be_subset_of_spellbook": true,
+      "prepared_spells_count_at_level_1": 4
+    },
+    "ritual_adept": {
+      "can_cast_ritual_tagged_wizard_spells_from_spellbook_without_preparing": true,
+      "must_have_ritual_adept_feature": true
+    }
+  },
+  "warlock_specific_rules": {
+    "pact_magic": {
+      "uses_pact_slots_instead_of_standard_spell_slots": true,
+      "pact_slots_at_level_1": 1,
+      "pact_slot_level_at_level_1": 1,
+      "recharge": "short_or_long_rest"
+    },
+    "eldritch_invocations_can_grant_at_will_spells": true
+  },
+  "prepared_spell_rules": {
+    "prepared_spells_must_come_from_class_spell_list_or_authorized_override": true,
+    "prepared_spells_must_be_spell_level_1_or_lower_at_character_level_1": true,
+    "cantrips_are_not_counted_against_prepared_spells": true,
+    "always_prepared_spells_are_tracked_separately": true
+  },
+  "cantrip_rules": {
+    "cantrips_use_known_selection_not_prepared_selection": true,
+    "cantrips_count_separately_from_levelled_spells": true,
+    "class_cantrips_must_come_from_class_catalog": true
+  },
+  "always_prepared_spell_rules": {
+    "supported_sources": [
+      "class_feature",
+      "species_trait",
+      "feat"
+    ],
+    "do_not_count_against_prepared_spells_limit": true,
+    "count_as_class_spells_if_rule_says_so": true
+  },
+  "focus_rules": {
+    "arcane_focus_supported_for": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "holy_symbol_supported_for": [
+      "cleric",
+      "paladin"
+    ],
+    "druidic_focus_supported_for": [
+      "druid",
+      "ranger"
+    ],
+    "musical_instrument_supported_for": [
+      "bard"
+    ],
+    "component_pouch_supported_for_all_spellcasting_classes": true
+  },
+  "magic_initiate_rules": {
+    "source_feat_ids": [
+      "magic_initiate",
+      "magic_initiate_cleric",
+      "magic_initiate_druid",
+      "magic_initiate_wizard"
+    ],
+    "choose_two_cantrips_and_one_level_1_spell": true,
+    "allowed_lists": [
+      "cleric",
+      "druid",
+      "wizard"
+    ],
+    "chosen_level_1_spell_is_always_prepared": true,
+    "free_casts_of_chosen_level_1_spell": 1,
+    "free_cast_recharge": "long_rest",
+    "can_also_cast_with_any_available_spell_slots": true,
+    "spellcasting_ability_must_be_chosen_from": [
+      "intelligence",
+      "wisdom",
+      "charisma"
+    ]
+  },
+  "species_granted_spell_rules": {
+    "species_spellcasting_ability_may_require_choice": true,
+    "species_spells_are_tracked_separately_from_class_prepared_spells": true,
+    "future_species_spells_remain_locked_until_required_level": true
+  },
+  "validation_rules": {
+    "spellcasters_must_have_valid_spellcasting_ability": true,
+    "spellcasters_must_have_legal_cantrip_count": true,
+    "spellcasters_must_have_legal_prepared_spell_count": true,
+    "wizard_must_have_legal_spellbook_entries": true,
+    "warlock_must_use_pact_magic_rules": true,
+    "all_spell_choices_must_reference_existing_spell_ids": true,
+    "all_spell_choices_must_match_allowed_source_catalog": true
+  },
+  "json_dependencies": {
+    "core": [
+      "class_catalog.json",
+      "class_features.json",
+      "spells.json",
+      "spells_by_class.json"
+    ],
+    "choice_resolution": [
+      "subchoices_catalog.corrected.json",
+      "class_choice_rules.corrected.json",
+      "species_choice_rules.json",
+      "feat_choices_rules.corrected.json"
+    ],
+    "feats_and_species": [
+      "origin_feats.json",
+      "species.json"
+    ]
+  }
+}

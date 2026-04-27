@@ -34,6 +34,12 @@
     padding: 8px 12px;
 }
 
+.pnj-filters select option,
+.pnj-arc-select option {
+    color: var(--color-charcoal);
+    background: var(--color-white);
+}
+
 @media (max-width: 768px) {
     .pnj-filters {
         flex-direction: column;

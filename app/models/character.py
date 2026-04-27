@@ -26,7 +26,30 @@ class CharacterTemplate(db.Model):
     # Identité
     name = db.Column(db.String(100), nullable=False)
     first_name = db.Column(db.String(50))  # Prénom
+    gender = db.Column(db.String(30))  # Genre affiche dans la fiche PDF
+    player_name = db.Column(db.String(100))  # Nom du joueur
+    campaign_name = db.Column(db.String(120))  # Nom de campagne pour la fiche PDF
+    alignment = db.Column(db.String(60))  # Alignement DnD
+    languages = db.Column(db.String(255))  # Langues parlées
+    height = db.Column(db.String(60))  # Taille libre
+    weight = db.Column(db.String(60))  # Poids libre
+    eyes = db.Column(db.String(60))  # Couleur des yeux
+    skin = db.Column(db.String(60))  # Teint/couleur de peau
+    hair = db.Column(db.String(60))  # Couleur/coiffure
+    equipment = db.Column(db.Text)  # Equipement principal pour la fiche
+    skill_proficiencies = db.Column(db.String(255))  # Competences maitrisees (CSV)
     age = db.Column(db.Integer)  # Âge
+    character_appearance = db.Column(db.Text)  # Zone "Character appearance"
+    allies_organizations = db.Column(db.Text)  # Zone "Allies & Organizations"
+    additional_features_traits = db.Column(db.Text)  # Zone "Additional Features & Traits"
+    treasure = db.Column(db.Text)  # Zone "Treasure"
+    symbol_name = db.Column(db.String(120))  # Nom dans le cartouche symbole (page 2)
+    spellcasting_class = db.Column(db.String(80))  # Classe de lancement de sorts
+    spellcasting_ability = db.Column(db.String(30))  # Caracteristique de lancement de sorts
+    spell_save_dc = db.Column(db.Integer)  # DD de sauvegarde des sorts
+    spell_attack_bonus = db.Column(db.Integer)  # Bonus d'attaque des sorts
+    selected_cantrips = db.Column(db.Text)  # Sorts mineurs selectionnes (CSV)
+    selected_level_1_spells = db.Column(db.Text)  # Sorts de niveau 1 selectionnes (CSV)
     background_story = db.Column(db.Text)  # Histoire/background
     character_class = db.Column(db.String(50))
     race = db.Column(db.String(50))
@@ -34,10 +57,18 @@ class CharacterTemplate(db.Model):
     notes = db.Column(db.Text)
     private_notes = db.Column(db.Text)
     player_private_notes = db.Column(db.Text)
+    personality_traits = db.Column(db.Text)
+    ideals = db.Column(db.Text)
+    bonds = db.Column(db.Text)
+    flaws = db.Column(db.Text)
+    inspiration = db.Column(db.Boolean, default=False)
 
     # Combat de base
     hp_max = db.Column(db.Integer, nullable=False)
+    hp_current = db.Column(db.Integer, nullable=False)
+    temp_hp = db.Column(db.Integer, default=0, nullable=False)
     ac_base = db.Column(db.Integer, nullable=False)
+    ac_bonus = db.Column(db.Integer, default=0, nullable=False)
     initiative_bonus = db.Column(db.Integer, default=0)
 
     # Caractéristiques principales
@@ -75,6 +106,18 @@ class CharacterTemplate(db.Model):
     # ========== PROPRIÉTÉS CALCULÉES (UNE SEULE FOIS) ==========
 
     # Modificateurs
+    @property
+    def hp_current_effective(self):
+        """Points de vie courants (fallback au max pour anciens enregistrements)."""
+        if self.hp_current is None:
+            return self.hp_max
+        return max(0, min(self.hp_current, self.hp_max))
+
+    @property
+    def ac_total(self):
+        """Classe d'armure totale actuelle (base + bonus/malus)."""
+        return self.ac_base + (self.ac_bonus or 0)
+
     @property
     def mod_force(self):
         """Modificateur de Force"""
@@ -358,7 +401,11 @@ class CharacterTemplate(db.Model):
         data.update({
             # Statistiques de combat
             'hp_max': self.hp_max,
+            'hp_current': self.hp_current_effective,
+            'temp_hp': max(0, self.temp_hp or 0),
             'ac_base': self.ac_base,
+            'ac_bonus': self.ac_bonus or 0,
+            'ac_total': self.ac_total,
             'initiative_bonus': self.initiative_bonus,
 
             # Maîtrises de sauvegarde
@@ -388,6 +435,9 @@ class CharacterTemplate(db.Model):
             # Histoire et notes (complètes pour le propriétaire/MJ)
             'notes': self.notes,
             'background_story': self.background_story,
+            'alignment': self.alignment,
+            'selected_cantrips': self.selected_cantrips,
+            'selected_level_1_spells': self.selected_level_1_spells,
 
             # Fichiers
             'pdf_filename': self.pdf_filename,

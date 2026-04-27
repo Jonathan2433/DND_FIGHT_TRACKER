@@ -1,90 +1,280 @@
 {% extends "base.html" %}
 {% block content %}
 {% set profile = visible_character if visible_character else {} %}
+{% set ability_mods = {
+    'force': character.mod_force,
+    'dexterite': character.mod_dexterite,
+    'constitution': character.mod_constitution,
+    'intelligence': character.mod_intelligence,
+    'sagesse': character.mod_sagesse,
+    'charisme': character.mod_charisme
+} %}
+{% set saving_throws = [
+    ('Force', character.sauvegarde_force, character.maitrise_force),
+    ('Dexterite', character.sauvegarde_dexterite, character.maitrise_dexterite),
+    ('Constitution', character.sauvegarde_constitution, character.maitrise_constitution),
+    ('Intelligence', character.sauvegarde_intelligence, character.maitrise_intelligence),
+    ('Sagesse', character.sauvegarde_sagesse, character.maitrise_sagesse),
+    ('Charisme', character.sauvegarde_charisme, character.maitrise_charisme)
+] %}
+{% set skill_labels_by_id = {
+    'acrobatics': 'Acrobaties',
+    'arcana': 'Arcanes',
+    'athletics': 'Athlétisme',
+    'animal_handling': 'Dressage',
+    'deception': 'Tromperie',
+    'history': 'Histoire',
+    'insight': 'Perspicacité',
+    'intimidation': 'Intimidation',
+    'investigation': 'Investigation',
+    'medicine': 'Médecine',
+    'nature': 'Nature',
+    'perception': 'Perception',
+    'performance': 'Représentation',
+    'persuasion': 'Persuasion',
+    'religion': 'Religion',
+    'sleight_of_hand': 'Escamotage',
+    'stealth': 'Discrétion',
+    'survival': 'Survie'
+} %}
+{% set skill_ability_map = {
+    'acrobatics': 'dexterite',
+    'animal_handling': 'sagesse',
+    'arcana': 'intelligence',
+    'athletics': 'force',
+    'deception': 'charisme',
+    'history': 'intelligence',
+    'insight': 'sagesse',
+    'intimidation': 'charisme',
+    'investigation': 'intelligence',
+    'medicine': 'sagesse',
+    'nature': 'intelligence',
+    'perception': 'sagesse',
+    'performance': 'charisme',
+    'persuasion': 'charisme',
+    'religion': 'intelligence',
+    'sleight_of_hand': 'dexterite',
+    'stealth': 'dexterite',
+    'survival': 'sagesse'
+} %}
+{% set skill_alias_to_id = {
+    'acrobatics': 'acrobatics',
+    'acrobaties': 'acrobatics',
+    'animal handling': 'animal_handling',
+    'dressage': 'animal_handling',
+    'arcana': 'arcana',
+    'arcanes': 'arcana',
+    'athletics': 'athletics',
+    'athletisme': 'athletics',
+    'deception': 'deception',
+    'tromperie': 'deception',
+    'history': 'history',
+    'histoire': 'history',
+    'insight': 'insight',
+    'perspicacite': 'insight',
+    'intuition': 'insight',
+    'intimidation': 'intimidation',
+    'investigation': 'investigation',
+    'medicine': 'medicine',
+    'medecine': 'medicine',
+    'nature': 'nature',
+    'perception': 'perception',
+    'performance': 'performance',
+    'representation': 'performance',
+    'persuasion': 'persuasion',
+    'religion': 'religion',
+    'sleight of hand': 'sleight_of_hand',
+    'escamotage': 'sleight_of_hand',
+    'stealth': 'stealth',
+    'discretion': 'stealth',
+    'survival': 'survival',
+    'survie': 'survival'
+} %}
+{% set all_skill_ids = [
+    'acrobatics', 'arcana', 'athletics', 'animal_handling', 'deception', 'history',
+    'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception',
+    'performance', 'persuasion', 'religion', 'sleight_of_hand', 'stealth', 'survival'
+] %}
+{% set selected_skills_raw = character.skill_proficiencies.split(',')|map('trim')|reject('equalto', '')|list if character.skill_proficiencies else [] %}
+{% set ns_skills = namespace(selected_skill_ids=[]) %}
+{% for raw_skill in selected_skills_raw %}
+    {% set normalized_raw_skill = raw_skill|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+    {% set canonical_skill_id = skill_alias_to_id.get(normalized_raw_skill, normalized_raw_skill) %}
+    {% if canonical_skill_id and canonical_skill_id not in ns_skills.selected_skill_ids %}
+        {% set ns_skills.selected_skill_ids = ns_skills.selected_skill_ids + [canonical_skill_id] %}
+    {% endif %}
+{% endfor %}
+{% set equipment_chunks = character.equipment.split('|')|map('trim')|list if character.equipment else [] %}
+{% set ns_expertise = namespace(selected_skill_ids=[]) %}
+{% for chunk in equipment_chunks %}
+    {% if chunk.startswith('Expertises:') %}
+        {% set expertise_values = chunk.replace('Expertises:', '', 1).split(',') %}
+        {% for raw_expertise in expertise_values %}
+            {% set normalized_raw_expertise = raw_expertise.strip()|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+            {% set canonical_expertise_id = skill_alias_to_id.get(normalized_raw_expertise, normalized_raw_expertise) %}
+            {% if canonical_expertise_id and canonical_expertise_id not in ns_expertise.selected_skill_ids %}
+                {% set ns_expertise.selected_skill_ids = ns_expertise.selected_skill_ids + [canonical_expertise_id] %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
 
 <div class="character-profile">
     <section class="character-hero card">
-        <div class="character-avatar">
-            <div class="character-avatar__frame {% if character.image_filename %}has-image{% endif %}">
-                {% if character.image_filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
-                         alt="{{ profile.name or character.name }}" class="character-avatar__image">
-                {% endif %}
-                <div class="character-avatar__placeholder">{{ (profile.name or character.name)[:2]|upper }}</div>
-            </div>
-
-            <span class="character-visibility {% if character.is_public %}character-visibility--public{% else %}character-visibility--private{% endif %}">
-                {% if character.is_public %}Public{% else %}Prive{% endif %}
-            </span>
-        </div>
-
-        <div class="character-summary">
-            <div class="character-summary__title">
-                <span class="section-eyebrow">{{ character.character_type }}</span>
-                <h1>{{ profile.name or character.name }}</h1>
-                <p class="character-summary__meta">{{ profile.character_class or character.character_class or 'Inconnu' }}{% if profile.level is defined or character.level %} - Niveau {{ profile.level if profile.level is defined else character.level }}{% endif %}</p>
-                {% if character.campaign %}
-                    <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
-                {% endif %}
-            </div>
-
-            <div class="profile-stats">
-                <div class="stat-box">
-                    <strong>Points de vie</strong>
-                    <span>{{ profile.hp_max if profile.hp_max is defined else '—' }}</span>
-                </div>
-                <div class="stat-box">
-                    <strong>Classe d'armure</strong>
-                    <span>{{ profile.ac_base if profile.ac_base is defined else '—' }}</span>
-                </div>
-                <div class="stat-box">
-                    <strong>Initiative</strong>
-                    <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
-                </div>
-                <div class="stat-box">
-                    <strong>Combats joues</strong>
-                    <span>{{ combats_played }}</span>
-                </div>
-            </div>
-
-            {% if can_edit %}
-                <div class="profile-actions">
-                    <h2>Actions rapides</h2>
-                    <div class="profile-actions__buttons">
-                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
-                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
-                                {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
-                            </a>
+        <div class="character-hero-shell">
+            <div class="character-hero-main">
+                <div class="character-avatar character-avatar--hero">
+                    <div class="character-avatar__frame {% if character.image_filename %}has-image{% endif %}">
+                        {% if character.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' + character.image_filename) }}"
+                                 alt="{{ profile.name or character.name }}" class="character-avatar__image">
                         {% endif %}
+                        <div class="character-avatar__placeholder">{{ (profile.name or character.name)[:2]|upper }}</div>
+                    </div>
+                    <span class="character-visibility {% if character.is_public %}character-visibility--public{% else %}character-visibility--private{% endif %}">
+                        {% if character.is_public %}Public{% else %}Prive{% endif %}
+                    </span>
+                </div>
 
-                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-primary">Modifier</a>
+                <div class="character-summary character-summary--hero">
+                    <div class="character-summary__top">
+                        <div class="character-summary__title">
+                            <span class="section-eyebrow">{{ character.character_type }}</span>
+                            <h1>{{ profile.name or character.name }}</h1>
+                            {% set raw_background = profile.background_story if profile.background_story is defined else '' %}
+                            {% set background_name = raw_background.split('\n\n')[0].strip() if raw_background else '' %}
+                            <p class="character-summary__meta">
+                                {% if limited_profile and visibility_mode == 'reduced' %}
+                                    Informations de profil limitees
+                                {% else %}
+                                    {{ profile.character_class or 'Inconnu' }}{% if profile.race is defined and profile.race %} - {{ profile.race }}{% endif %}{% if background_name %} - {{ background_name }}{% endif %}{% if profile.level is defined and profile.level %} - Niveau {{ profile.level }}{% endif %}
+                                {% endif %}
+                            </p>
+                            <p class="character-summary__meta">Alignement : {{ profile.alignment if profile.alignment is defined and profile.alignment else 'Non renseigne' }}</p>
+                            {% if character.campaign %}
+                                <p class="character-summary__meta">Campagne : {{ character.campaign.name }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="character-summary__stats-row">
+                            <div class="profile-stats profile-stats--hero">
+                                <div class="stat-box stat-box--highlight" data-live-hp-block>
+                                    <strong>Points de vie</strong>
+                                    {% if profile.hp_current is defined and profile.hp_max is defined %}
+                                        <span data-live-hp-text>{{ profile.hp_current }} / {{ profile.hp_max }}</span>
+                                        {% if profile.temp_hp is defined and profile.temp_hp > 0 %}
+                                            <small class="stat-box__helper" data-live-temp-hp>+{{ profile.temp_hp }} PV temporaires</small>
+                                        {% else %}
+                                            <small class="stat-box__helper" data-live-temp-hp>Aucun PV temporaire</small>
+                                        {% endif %}
+                                    {% elif profile.hp_max is defined %}
+                                        <span>{{ profile.hp_max }}</span>
+                                    {% else %}
+                                        <span>—</span>
+                                    {% endif %}
+                                </div>
+                                <div class="stat-box stat-box--highlight" data-live-ac-block>
+                                    <strong>Classe d'armure</strong>
+                                    {% if profile.ac_total is defined %}
+                                        <span data-live-ac-text>{{ profile.ac_total }}</span>
+                                    {% elif profile.ac_base is defined %}
+                                        <span data-live-ac-text>{{ profile.ac_base }}</span>
+                                    {% else %}
+                                        <span data-live-ac-text>—</span>
+                                    {% endif %}
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Initiative</strong>
+                                    <span>{% if profile.initiative_bonus is defined %}{% if profile.initiative_bonus >= 0 %}+{% endif %}{{ profile.initiative_bonus }}{% else %}—{% endif %}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Bonus de maitrise</strong>
+                                    <span>{% if character.bonus_maitrise is not none %}+{{ character.bonus_maitrise }}{% else %}—{% endif %}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Vitesse</strong>
+                                    <span>{{ speed_value ~ ' ft' if speed_value is not none else '—' }}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Nombre de combats</strong>
+                                    <span>{{ combats_played }}</span>
+                                </div>
+                                <div class="stat-box stat-box--highlight">
+                                    <strong>Degats infliges</strong>
+                                    <span>{{ total_damage_dealt }}</span>
+                                </div>
+                            </div>
+                            {% if can_edit %}
+                                <aside class="profile-actions profile-actions--identity-inline">
+                                    <div class="profile-actions__buttons profile-actions__buttons--identity">
+                                        {% if character.character_type == 'PJ' and current_user and character.owner_id == current_user.id %}
+                                            <a href="{{ url_for('template.join_campaign', character_id=character.id) }}" class="btn btn-secondary">
+                                                {% if character.campaign %}Changer de campagne{% else %}Rejoindre une campagne{% endif %}
+                                            </a>
+                                        {% endif %}
 
-                        {% if current_user and character.owner_id == current_user.id %}
-                            <form method="POST"
-                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
-                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
-                                  class="inl-character-004">
-                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                            </form>
-                        {% endif %}
+                                        <a href="{{ url_for('template.edit_character_template', id=character.id) }}" class="btn btn-secondary">Modifier</a>
+
+                                        {% if current_user and character.owner_id == current_user.id %}
+                                            <form method="POST"
+                                                  action="{{ url_for('template.delete_character_template', id=character.id) }}"
+                                                  onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce personnage ?');"
+                                                  class="inl-character-004">
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </aside>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="character-hero-details">
+            {% if can_edit %}
+                <aside class="character-hero-card__panel profile-actions profile-actions--quick character-hero-quick"
+                     {% if can_manage_combat_state and not limited_profile %}data-live-character-context
+                     data-character-id="{{ character.id }}"
+                     data-active-combat-ids='{{ active_combat_ids|tojson }}'{% endif %}>
+                    <h2>Etat de combat</h2>
+                    <div class="profile-actions__content">
+                        {% if can_manage_combat_state and not limited_profile %}
+                            <div class="combat-state-layout">
+                                <form method="POST" action="{{ url_for('template.update_character_combat_state', id=character.id) }}" class="award-xp-form combat-state-form combat-state-form--horizontal">
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV actuels</span>
+                                        <input type="number" name="hp_delta" placeholder="ex: -5, +8" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier PV temporaires</span>
+                                        <input type="number" name="temp_hp_delta" placeholder="ex: +3, -2" value="0" required>
+                                    </label>
+                                    <label class="combat-state-input">
+                                        <span>Modifier bonus/malus CA (temp)</span>
+                                        <input type="number" name="ac_delta" placeholder="ex: +2 (bonus), -2 (malus)" value="0" required>
+                                    </label>
+                                    <button type="submit" class="btn btn-primary profile-actions__apply">Appliquer</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </aside>
             {% elif current_user %}
-                <div class="profile-actions">
+                <aside class="character-hero-card__panel profile-actions profile-actions--quick character-hero-quick">
                     <h2>Consultation</h2>
                     <p class="section-head__copy">Vous pouvez consulter cette fiche, mais pas la modifier.</p>
-                </div>
+                </aside>
             {% endif %}
         </div>
     </section>
 
-    <div class="character-layout {% if not character.pdf_filename %}character-layout--full{% endif %}">
+    <div class="character-layout">
         <div class="character-main">
             <section class="char-details">
                 <div class="section-head">
                     <div class="section-head__content">
                         <h2 class="section-head__title">Caracteristiques</h2>
-                        <p class="section-head__copy">Vue compacte des statistiques, modificateurs et sauvegardes.</p>
                     </div>
                 </div>
 
@@ -92,42 +282,113 @@
                     <div class="char-stat">
                         <span class="stat-name">Force</span>
                         <span class="stat-value">{{ profile.force if profile.force is defined else '—' }}{% if profile.mod_force is defined %} ({{ profile.mod_force }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_force }}{% if character.maitrise_force %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Dexterite</span>
                         <span class="stat-value">{{ profile.dexterite if profile.dexterite is defined else '—' }}{% if profile.mod_dexterite is defined %} ({{ profile.mod_dexterite }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_dexterite }}{% if character.maitrise_dexterite %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Constitution</span>
                         <span class="stat-value">{{ profile.constitution if profile.constitution is defined else '—' }}{% if profile.mod_constitution is defined %} ({{ profile.mod_constitution }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_constitution }}{% if character.maitrise_constitution %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Intelligence</span>
                         <span class="stat-value">{{ profile.intelligence if profile.intelligence is defined else '—' }}{% if profile.mod_intelligence is defined %} ({{ profile.mod_intelligence }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_intelligence }}{% if character.maitrise_intelligence %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Sagesse</span>
                         <span class="stat-value">{{ profile.sagesse if profile.sagesse is defined else '—' }}{% if profile.mod_sagesse is defined %} ({{ profile.mod_sagesse }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_sagesse }}{% if character.maitrise_sagesse %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                     <div class="char-stat">
                         <span class="stat-name">Charisme</span>
                         <span class="stat-value">{{ profile.charisme if profile.charisme is defined else '—' }}{% if profile.mod_charisme is defined %} ({{ profile.mod_charisme }}){% endif %}</span>
-                        <span class="stat-save">{% if limited_profile %}Sauvegarde : —{% else %}Sauvegarde : {{ character.sauvegarde_charisme }}{% if character.maitrise_charisme %} - maitrise{% endif %}{% endif %}</span>
                     </div>
                 </div>
+
+                {% if not limited_profile %}
+                    <div class="combat-skill-section">
+                        <article class="combat-skill-panel">
+                            <h3>Saving throws</h3>
+                            <div class="combat-skill-grid combat-skill-grid--saves">
+                                {% for save_name, save_value, is_mastered in saving_throws %}
+                                    <div class="combat-skill-item">
+                                        <span>{{ save_name }}</span>
+                                        <strong>{% if save_value >= 0 %}+{% endif %}{{ save_value }}</strong>
+                                        {% if is_mastered %}
+                                            <small>Maitrise</small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                        <article class="combat-skill-panel">
+                            <h3>Skills</h3>
+                            <div class="combat-skill-grid combat-skill-grid--skills">
+                                {% for skill_id in all_skill_ids %}
+                                    {% set is_proficient = skill_id in ns_skills.selected_skill_ids %}
+                                    {% set is_expertise = skill_id in ns_expertise.selected_skill_ids %}
+                                    {% set ability_key = skill_ability_map.get(skill_id, 'sagesse') %}
+                                    {% set proficiency_multiplier = 2 if is_expertise else 1 if is_proficient else 0 %}
+                                    {% set total_skill = ability_mods.get(ability_key, 0) + (character.bonus_maitrise * proficiency_multiplier) %}
+                                    <div class="combat-skill-item">
+                                        <span>{{ skill_labels_by_id.get(skill_id, skill_id) }}</span>
+                                        <strong>{% if total_skill >= 0 %}+{% endif %}{{ total_skill }}</strong>
+                                        {% if is_expertise %}
+                                            <small>Expertise</small>
+                                        {% elif is_proficient %}
+                                            <small>Maitrise</small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+                {% endif %}
+
+                {% if not limited_profile and character.skill_proficiencies %}
+                    <div class="skill-proficiency-reminder">
+                        <strong>Maitrises de competences</strong>
+                        <div class="skill-proficiency-list">
+                            {% for skill in character.skill_proficiencies.split(',') if skill.strip() %}
+                                {% set skill_name = skill.strip() %}
+                                {% set normalized_skill_name = skill_name|lower|replace('é', 'e')|replace('è', 'e')|replace('ê', 'e')|replace('ë', 'e')|replace('à', 'a')|replace('â', 'a')|replace('ä', 'a')|replace('ù', 'u')|replace('û', 'u')|replace('ü', 'u')|replace('î', 'i')|replace('ï', 'i')|replace('ô', 'o')|replace('ö', 'o')|replace('ç', 'c') %}
+                                {% set skill_id = skill_alias_to_id.get(normalized_skill_name, normalized_skill_name) %}
+                                {% set ability_key = skill_ability_map.get(skill_id, 'sagesse') %}
+                                {% set skill_total = ability_mods.get(ability_key, 0) + character.bonus_maitrise %}
+                                <span class="skill-proficiency-tag"
+                                      title="Bonus total : {% if skill_total >= 0 %}+{% endif %}{{ skill_total }} (modificateur + maitrise)">
+                                    {{ skill_name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             </section>
 
-            {% if not limited_profile %}
+            {% if known_spells %}
+                <section class="char-details">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Sorts connus</h2>
+                        </div>
+                    </div>
+                    <div class="known-spells-grid">
+                        {% for spell in known_spells %}
+                            <a class="spell-card spell-card--interactive known-spell-card" href="{{ spell.href }}">
+                                <h3>{{ spell.name }}</h3>
+                                <p class="spell-card__meta">{{ spell.level_label }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if not limited_profile and show_xp_section %}
             <section class="xp-section">
                 <div class="section-head">
                     <div class="section-head__content">
                         <h2 class="section-head__title">Progression</h2>
-                        <p class="section-head__copy">Niveau actuel, avancee sur la barre d'XP et attribution manuelle selon vos droits.</p>
+                        <p class="section-head__copy">Niveau actuel et avancee sur la barre d'XP.</p>
                     </div>
                 </div>
 
@@ -172,15 +433,15 @@
                     </p>
                 {% endif %}
 
-                {% if current_user %}
+                {% if can_view_xp %}
                     <div class="profile-actions__buttons">
                         <a href="{{ url_for('xp.xp_history', character_id=character.id) }}" class="btn btn-secondary">Historique XP</a>
                     </div>
-                {% else %}
-                    <p class="section-head__copy">Connectez-vous pour acceder a l'historique XP.</p>
+                {% elif current_user and character.campaign %}
+                    <p class="section-head__copy">Seul le MJ de la campagne peut consulter l'historique XP.</p>
                 {% endif %}
             </section>
-            {% else %}
+            {% elif limited_profile %}
                 <section class="xp-section">
                     <div class="section-head">
                         <div class="section-head__content">
@@ -191,18 +452,25 @@
                 </section>
             {% endif %}
 
-            {% if not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
+        </div>
+    </div>
+
+    {% set has_notes_content = not limited_profile and (character.notes or (current_user and character.player_private_notes and character.owner_id == current_user.id) or (current_user and character.private_notes and character.can_add_private_notes(current_user))) %}
+    <div class="character-notes-pdf-layout {% if not has_notes_content %}character-notes-pdf-layout--single{% endif %}">
+        {% if has_notes_content %}
+            <div class="character-notes-pdf-layout__notes">
                 <section class="char-notes">
                     <div class="section-head">
                         <div class="section-head__content">
                             <h2 class="section-head__title">Notes</h2>
-                            <p class="section-head__copy">Notes partagees, notes privees joueur (proprietaire uniquement) et notes privees MJ.</p>
                         </div>
                     </div>
 
-                    {% if character.notes %}
-                        <p>{{ character.notes }}</p>
-                    {% endif %}
+                    <div>
+                        {% if character.notes %}
+                            <p>{{ character.notes }}</p>
+                        {% endif %}
+                    </div>
 
                     {% if current_user and character.player_private_notes and character.owner_id == current_user.id %}
                         <div class="mj-private-notes">
@@ -218,26 +486,159 @@
                         </div>
                     {% endif %}
                 </section>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
 
-        {% if not limited_profile and character.pdf_filename %}
-            <aside class="profile-pdf-preview">
-                <h2>Fiche officielle</h2>
-                <div class="pdf-preview-container">
-                    <embed src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                           type="application/pdf"
-                           class="pdf-preview">
-                    <div class="pdf-controls">
-                        <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
-                           target="_blank" class="btn btn-primary btn-pdf">
-                            Ouvrir le PDF complet
-                        </a>
+        {% if not limited_profile %}
+            <div class="character-notes-pdf-layout__pdf">
+                <section class="char-details character-lore-panel character-lore-panel--backstory">
+                    <div class="section-head">
+                        <div class="section-head__content">
+                            <h2 class="section-head__title">Backstory</h2>
+                        </div>
                     </div>
+                    <p class="character-lore-text">{{ character.background_story or 'Non renseigne' }}</p>
+                </section>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not limited_profile %}
+        <div class="character-lore-grid">
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Equipements</h2>
+                <p class="character-lore-text">{{ character.equipment or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Allies et organisations</h2>
+                <p class="character-lore-text">{{ character.allies_organizations or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Tresors</h2>
+                <p class="character-lore-text">{{ character.treasure or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Supplementaire</h2>
+                <p class="character-lore-text">{{ character.additional_features_traits or 'Non renseigne' }}</p>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Description du personnage</h2>
+                <div class="character-description-list">
+                    <p>Genre : {{ character.gender or 'Non renseigne' }}</p>
+                    <p>Alignement : {{ profile.alignment if profile.alignment is defined and profile.alignment else 'Non renseigne' }}</p>
+                    <p>Poids : {{ character.weight or 'Non renseigne' }}</p>
+                    <p>Langues : {{ character.languages or 'Non renseigne' }}</p>
                 </div>
-            </aside>
+            </section>
+
+            <section class="char-details character-lore-panel">
+                <h2 class="section-head__title">Apparence</h2>
+                <p class="character-lore-text">{{ character.character_appearance or 'Non renseigne' }}</p>
+            </section>
+        </div>
+    {% endif %}
+
+    <div class="character-pdf-layout {% if not character.pdf_filename and not can_edit %}character-pdf-layout--single{% endif %}">
+        {% if not limited_profile %}
+            <div class="character-pdf-layout__pdf">
+                <aside class="profile-pdf-preview">
+                    <h2>Fiche du personnage</h2>
+
+                    {% if character.pdf_filename %}
+                        <div class="pdf-preview-container">
+                            <div class="pdf-actions-row">
+                                {% if can_edit %}
+                                    <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                                        <button type="submit" class="btn btn-secondary">Regenerer la fiche PDF</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            <embed type="application/pdf"
+                                   class="pdf-preview"
+                                   src="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}">
+                            <div class="pdf-controls">
+                                <a href="{{ url_for('static', filename='uploads/' + character.pdf_filename) }}"
+                                   target="_blank" class="btn btn-primary btn-pdf">
+                                    Ouvrir le PDF complet
+                                </a>
+                            </div>
+                        </div>
+                    {% elif can_edit %}
+                        <h3>Fiche PDF</h3>
+                        <p class="section-head__copy">Aucun PDF pour ce personnage.</p>
+                        <form method="POST" action="{{ url_for('template.generate_character_pdf', id=character.id) }}">
+                            <button type="submit" class="btn btn-secondary">Generer la fiche PDF</button>
+                        </form>
+                    {% endif %}
+                </aside>
+            </div>
         {% endif %}
     </div>
 </div>
+
+<script>
+(() => {
+    const context = document.querySelector('[data-live-character-context]');
+    if (!context) return;
+
+    const socket = window.io ? io() : null;
+    const characterId = Number(context.dataset.characterId);
+    let activeCombatIds = JSON.parse(context.dataset.activeCombatIds || '[]').map((id) => Number(id));
+
+    const hpText = document.querySelector('[data-live-hp-text]');
+    const tempHpText = document.querySelector('[data-live-temp-hp]');
+    const acText = document.querySelector('[data-live-ac-text]');
+    const summaryHp = document.querySelector('[data-live-combat-hp]');
+    const summaryHpMax = document.querySelector('[data-live-combat-hp-max]');
+    const summaryTempHp = document.querySelector('[data-live-combat-temp-hp]');
+    const summaryAc = document.querySelector('[data-live-combat-ac]');
+
+    function applyLiveState(data) {
+        if (!data || !data.has_active_combat) return;
+
+        if (hpText) hpText.textContent = `${data.hp_current} / ${data.hp_max}`;
+        if (tempHpText) {
+            tempHpText.textContent = data.temp_hp > 0 ? `+${data.temp_hp} PV temporaires` : 'Aucun PV temporaire';
+        }
+        if (acText) acText.textContent = `${data.ac_total}`;
+        if (summaryHp) summaryHp.textContent = `${data.hp_current}`;
+        if (summaryHpMax) summaryHpMax.textContent = `${data.hp_max}`;
+        if (summaryTempHp) summaryTempHp.textContent = `${data.temp_hp}`;
+        if (summaryAc) summaryAc.textContent = `${data.ac_total}`;
+
+        activeCombatIds = (data.active_combat_ids || []).map((id) => Number(id));
+    }
+
+    async function refreshFromServer() {
+        try {
+            const response = await fetch(`/template/character/${characterId}/live_state`);
+            if (!response.ok) return;
+            const data = await response.json();
+            applyLiveState(data);
+        } catch (error) {
+            console.warn('Live sync combat indisponible.', error);
+        }
+    }
+
+    if (socket) {
+        activeCombatIds.forEach((combatId) => {
+            socket.emit('join_combat', { combat_id: combatId });
+        });
+
+        socket.on('combat_update', (payload) => {
+            if (!payload || !activeCombatIds.includes(Number(payload.combat_id))) {
+                return;
+            }
+            refreshFromServer();
+        });
+    }
+
+    refreshFromServer();
+})();
+</script>
 
 {% endblock %}

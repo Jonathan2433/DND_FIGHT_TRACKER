@@ -1,0 +1,313 @@
+[
+  {
+    "feat_id": "alert",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "crafter",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "crafter_tool_proficiencies",
+        "choice_type": "tool_proficiency",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "artisans_tools",
+        "duplicates_not_allowed": true,
+        "exclude_if_already_owned": false,
+        "catalog_source": "subchoices_catalog.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "healer",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "lucky",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "magic_initiate",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "magic_initiate_spell_list",
+        "choice_type": "spell_list",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "cleric",
+          "druid",
+          "wizard"
+        ],
+        "duplicates_not_allowed": true,
+        "spell_list_source": "spells_by_class.json"
+      },
+      {
+        "id": "magic_initiate_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "magic_initiate_cantrips",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "dynamic_from_previous_choice": "magic_initiate_spell_list",
+        "catalog_map": {
+          "cleric": "magic_initiate_cleric_cantrips",
+          "druid": "magic_initiate_druid_cantrips",
+          "wizard": "magic_initiate_wizard_cantrips"
+        },
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      },
+      {
+        "id": "magic_initiate_level_1_spell",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 1,
+        "dynamic_from_previous_choice": "magic_initiate_spell_list",
+        "catalog_map": {
+          "cleric": "magic_initiate_cleric_spell_level_1",
+          "druid": "magic_initiate_druid_spell_level_1",
+          "wizard": "magic_initiate_wizard_spell_level_1"
+        },
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "magic_initiate_cleric",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "parent_feat_id": "magic_initiate",
+    "locked_variant": "cleric",
+    "choices": [
+      {
+        "id": "magic_initiate_cleric_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "magic_initiate_cleric_cantrips",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "magic_initiate_cleric_cantrips",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      },
+      {
+        "id": "magic_initiate_cleric_level_1_spell",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 1,
+        "from_catalog": "magic_initiate_cleric_spell_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "magic_initiate_druid",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "parent_feat_id": "magic_initiate",
+    "locked_variant": "druid",
+    "choices": [
+      {
+        "id": "magic_initiate_druid_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "magic_initiate_druid_cantrips",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "magic_initiate_druid_cantrips",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      },
+      {
+        "id": "magic_initiate_druid_level_1_spell",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 1,
+        "from_catalog": "magic_initiate_druid_spell_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "magic_initiate_wizard",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "parent_feat_id": "magic_initiate",
+    "locked_variant": "wizard",
+    "choices": [
+      {
+        "id": "magic_initiate_wizard_spellcasting_ability",
+        "choice_type": "ability",
+        "required": true,
+        "choose": 1,
+        "options": [
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "duplicates_not_allowed": true
+      },
+      {
+        "id": "magic_initiate_wizard_cantrips",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 2,
+        "from_catalog": "magic_initiate_wizard_cantrips",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      },
+      {
+        "id": "magic_initiate_wizard_level_1_spell",
+        "choice_type": "spell",
+        "required": true,
+        "choose": 1,
+        "from_catalog": "magic_initiate_wizard_spell_level_1",
+        "duplicates_not_allowed": true,
+        "catalog_source": "subchoices_catalog.json",
+        "spell_detail_source": "spells.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "musician",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "musician_tool_proficiencies",
+        "choice_type": "tool_proficiency",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "musical_instrument",
+        "duplicates_not_allowed": true,
+        "exclude_if_already_owned": false,
+        "catalog_source": "subchoices_catalog.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "savage_attacker",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "skilled",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [
+      {
+        "id": "skilled_proficiencies",
+        "choice_type": "mixed",
+        "required": true,
+        "choose": 3,
+        "from_catalog": "skills_or_tools",
+        "duplicates_not_allowed": true,
+        "exclude_if_already_owned": false,
+        "catalog_source": "subchoices_catalog.json"
+      }
+    ],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "tavern_brawler",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  },
+  {
+    "feat_id": "tough",
+    "rules_version": "dnd_5_2024",
+    "entity_type": "feat_choice_rule",
+    "feat_category": "origin",
+    "available_at_character_level_1": true,
+    "choices": [],
+    "catalog_source": "subchoices_catalog.json"
+  }
+]

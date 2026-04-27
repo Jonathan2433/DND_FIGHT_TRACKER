@@ -39,6 +39,15 @@ class EpisodeService:
         return episode
 
     @staticmethod
+    def update_episode(episode_id, title, summary_shared):
+        """Mettre a jour les informations principales d'un episode."""
+        episode = Episode.query.get_or_404(episode_id)
+        episode.title = title
+        episode.summary_shared = summary_shared
+        db.session.commit()
+        return episode
+
+    @staticmethod
     def get_or_create_user_note(episode_id, user_id):
         """Recuperer ou creer la note perso d'un utilisateur."""
         note = EpisodeUserNote.query.filter_by(episode_id=episode_id, user_id=user_id).first()
