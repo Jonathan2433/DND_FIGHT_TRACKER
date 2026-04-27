@@ -25,7 +25,7 @@ MONSTER_TEMPLATES = {
     },
     "Redbrand Ruffian": {
         "type": "Ennemi",
-        "hp": 11,
+        "hp": 16,
         "ac": 14,
         "initiative": 1
     },
@@ -57,6 +57,12 @@ MONSTER_TEMPLATES = {
         "type": "Boss",
         "hp": 136,
         "ac": 18,
+        "initiative": 1
+    },
+    "Squelette": {
+        "type": "Boss",
+        "hp": 13,
+        "ac": 13,
         "initiative": 1
     }
 }
