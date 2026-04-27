@@ -27,7 +27,7 @@ MONSTER_TEMPLATES = {
         "hp": 27,
         "ac": 16,
         "initiative": 2,
-        "image": "monster_ours_gobelin.svg"
+        "image": "GOBELOURS.png"
     },
     "Brute des Manteaux-Rouges": {
         "display_name": "Brute des Manteaux-Rouges",
@@ -35,7 +35,7 @@ MONSTER_TEMPLATES = {
         "hp": 11,
         "ac": 14,
         "initiative": 1,
-        "image": "monster_manteaux_rouges.svg"
+        "image": "FER_ROUGE.png"
     },
     "Loup": {
         "display_name": "Loup",
@@ -51,7 +51,7 @@ MONSTER_TEMPLATES = {
         "hp": 45,
         "ac": 15,
         "initiative": 3,
-        "image": "monster_nothic.svg"
+        "image": "NOTHIC.png"
     },
     "Spectre": {
         "display_name": "Spectre",
